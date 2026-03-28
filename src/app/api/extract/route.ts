@@ -3,24 +3,24 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const SYSTEM_PROMPT = `Tu es un expert en fiches de paie israéliennes (תלוש שכר / tloush maskoret).
-Ton rôle est d'extraire toutes les informations d'une fiche de paie israélienne et de les retourner en JSON structuré.
-Les fiches de paie israéliennes sont généralement en hébreu. Tu dois :
-1. Lire tous les textes en hébreu
+const SYSTEM_PROMPT = `Tu es un expert en fiches de paie israeliennes (tloush maskoret).
+Ton role est d'extraire toutes les informations d'une fiche de paie israelienne et de les retourner en JSON structure.
+Les fiches de paie israeliennes sont generalement en hebreu. Tu dois :
+1. Lire tous les textes en hebreu
 2. Identifier chaque ligne (salaire de base, cotisations, avantages, etc.)
-3. Extraire les montants en shekel (₪ / ILS)
-4. Retourner un JSON conforme au schéma demandé
+3. Extraire les montants en shekel (ILS)
+4. Retourner un JSON conforme au schema demande
 
-IMPORTANT : Retourne UNIQUEMENT le JSON, sans texte avant ou après.`;
+IMPORTANT : Retourne UNIQUEMENT le JSON, sans texte avant ou apres.`;
 
-const USER_PROMPT = `Analyse cette fiche de paie israélienne et extrait toutes les informations.
+const USER_PROMPT = `Analyse cette fiche de paie israelienne et extrait toutes les informations.
 Retourne UNIQUEMENT ce JSON (sans markdown, sans explication) :
 
 {
   "employerName": "nom de l'employeur ou null",
-  "employeeName": "nom du salarié ou null",
-  "employeeId": "numéro d'employé (masqué si possible) ou null",
-  "period": "période ex: 'Avril 2024' ou '04/2024' ou null",
+  "employeeName": "nom du salarie ou null",
+  "employeeId": "numero d'employe ou null",
+  "period": "periode ex: 'Avril 2024' ou null",
   "paymentDate": "date de paiement JJ/MM/AAAA ou null",
   "baseSalary": nombre ou null,
   "grossSalary": nombre ou null,
@@ -32,37 +32,33 @@ Retourne UNIQUEMENT ce JSON (sans markdown, sans explication) :
   "totalDeductions": nombre ou null,
   "leaveBalance": nombre (jours) ou null,
   "sickBalance": nombre (jours) ou null,
-  "pensionDetected": true/false,
-  "nationalInsuranceDetected": true/false,
-  "incomeTaxDetected": true/false,
+  "pensionDetected": true ou false,
+  "nationalInsuranceDetected": true ou false,
+  "incomeTaxDetected": true ou false,
   "rawLines": [
     {
-      "hebrewLabel": "texte hébreu de la ligne",
-      "normalizedKey": "une des clés suivantes : baseSalary|grossSalary|netSalary|hourlyRate|regularHours|overtimeHours|travelAllowance|mealAllowance|vacationPay|sickPay|holidayBonus|pension|pensionCompensation|nationalInsurance|healthInsurance|incomeTax|unionFee|lunchDeduction|leaveBalance|sickBalance|seniority|bonus|commission|otherBenefit|otherDeduction|unknown",
-      "frenchLabel": "traduction française",
+      "hebrewLabel": "texte hebreu de la ligne",
+      "normalizedKey": "baseSalary|grossSalary|netSalary|hourlyRate|regularHours|overtimeHours|travelAllowance|mealAllowance|vacationPay|sickPay|holidayBonus|pension|pensionCompensation|nationalInsurance|healthInsurance|incomeTax|unionFee|lunchDeduction|leaveBalance|sickBalance|seniority|bonus|commission|otherBenefit|otherDeduction|unknown",
+      "frenchLabel": "traduction francaise",
       "value": nombre ou null,
-      "unit": "ILS ou hours ou days ou %",
-      "note": "explication si nécessaire ou omis"
+      "unit": "ILS ou hours ou days ou %"
     }
   ],
-  "confidenceScore": nombre entre 0 et 100 (ta confiance dans l'extraction),
+  "confidenceScore": nombre entre 0 et 100,
   "extractionMode": "ocr"
 }
 
-Règles importantes :
-- שכר יסוד = salaire de base (baseSalary)
-- ברוטו = brut (grossSalary)
-- נטו = net (netSalary)
-- ביטוח לאומי = sécurité sociale (nationalInsurance) → valeur NEGATIVE
-- ביטוח בריאות = assurance santé (healthInsurance) → valeur NEGATIVE
-- מס הכנסה = impôt sur le revenu (incomeTax) → valeur NEGATIVE
-- פנסיה = pension salarié (pension) → valeur NEGATIVE
-- נסיעות = remboursement transport (travelAllowance) → valeur POSITIVE
-- שעות נוספות = heures supplémentaires (overtimeHours)
-- יתרת חופשה = solde congés (leaveBalance) en jours
-- יתרת מחלה = solde maladie (sickBalance) en jours
-- Les déductions (cotisations, impôts) doivent être des valeurs NEGATIVES
-- Les avantages (transports, primes) doivent être des valeurs POSITIVES`;
+Regles importantes :
+- shkhar yesod = salaire de base (baseSalary)
+- bruto = brut (grossSalary)
+- neto = net (netSalary)
+- bituah leumi = securite sociale (nationalInsurance) -> valeur NEGATIVE
+- bituah briut = assurance sante (healthInsurance) -> valeur NEGATIVE
+- mas hachnasa = impot sur le revenu (incomeTax) -> valeur NEGATIVE
+- pensya = pension salarie (pension) -> valeur NEGATIVE
+- nesiot = remboursement transport (travelAllowance) -> valeur POSITIVE
+- Les deductions doivent etre des valeurs NEGATIVES
+- Les avantages doivent etre des valeurs POSITIVES`;
 
 export async function POST(req: NextRequest) {
   try {
@@ -70,71 +66,47 @@ export async function POST(req: NextRequest) {
     const file = formData.get("file") as File | null;
 
     if (!file) {
-      return NextResponse.json({ error: "Aucun fichier reçu" }, { status: 400 });
+      return NextResponse.json({ error: "Aucun fichier recu" }, { status: 400 });
     }
 
     const arrayBuffer = await file.arrayBuffer();
     const base64Data = Buffer.from(arrayBuffer).toString("base64");
-    const mimeType = file.type as string;
+    const mimeType = file.type;
 
-    // Build content based on file type
-    type ImageMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
-    type ContentBlock =
-      | { type: "text"; text: string }
-      | { type: "image"; source: { type: "base64"; media_type: ImageMediaType; data: string } }
-      | { type: "document"; source: { type: "base64"; media_type: "application/pdf"; data: string } };
-
-    let contentBlocks: ContentBlock[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let messageContent: any[];
 
     if (mimeType === "application/pdf") {
-      contentBlocks = [
+      messageContent = [
         { type: "text", text: USER_PROMPT },
         {
           type: "document",
-          source: {
-            type: "base64",
-            media_type: "application/pdf",
-            data: base64Data,
-          },
+          source: { type: "base64", media_type: "application/pdf", data: base64Data },
         },
       ];
     } else {
-      // image/jpeg or image/png
-      const imageMediaType = (
-        mimeType === "image/png" ? "image/png" : "image/jpeg"
-      ) as ImageMediaType;
-      contentBlocks = [
+      const imageType = mimeType === "image/png" ? "image/png" : "image/jpeg";
+      messageContent = [
         { type: "text", text: USER_PROMPT },
         {
           type: "image",
-          source: {
-            type: "base64",
-            media_type: imageMediaType,
-            data: base64Data,
-          },
+          source: { type: "base64", media_type: imageType, data: base64Data },
         },
       ];
     }
 
-    const message = await client.messages.create({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const anthropicClient = client as any;
+    const message = await anthropicClient.messages.create({
       model: "claude-sonnet-4-5",
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
-      // @ts-expect-error – document blocks require betas header handled by SDK
-      betas: mimeType === "application/pdf" ? ["pdfs-2024-09-25"] : undefined,
-      messages: [
-        {
-          role: "user",
-          // @ts-expect-error – mixed content blocks
-          content: contentBlocks,
-        },
-      ],
+      messages: [{ role: "user", content: messageContent }],
     });
 
     const rawText =
-      message.content[0].type === "text" ? message.content[0].text : "";
+      message.content[0]?.type === "text" ? message.content[0].text : "";
 
-    // Strip possible markdown fences
     const cleaned = rawText
       .replace(/^```(?:json)?\s*/i, "")
       .replace(/\s*```$/i, "")
@@ -144,12 +116,8 @@ export async function POST(req: NextRequest) {
     try {
       parsed = JSON.parse(cleaned);
     } catch {
-      // Return a minimal document with the raw text as a note
       return NextResponse.json(
-        {
-          error: "Impossible de parser la réponse de l'IA",
-          raw: rawText,
-        },
+        { error: "Impossible de parser la reponse de l'IA", raw: rawText },
         { status: 422 }
       );
     }
@@ -157,7 +125,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(parsed);
   } catch (err: unknown) {
     console.error("[/api/extract]", err);
-    const message = err instanceof Error ? err.message : "Erreur inconnue";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const msg = err instanceof Error ? err.message : "Erreur inconnue";
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
