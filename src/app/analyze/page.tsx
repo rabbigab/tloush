@@ -119,6 +119,11 @@ function AnalyzeContent() {
     }
   }, [isDemo, updateUserContext]);
 
+  // Scroll to top on every step transition
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [localStep]);
+
   const stepperStep =
     localStep === "upload"     ? 1 :
     localStep === "extracting" ? 1 :
