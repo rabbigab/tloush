@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { ElementType } from "react";
 import Link from "next/link";
 import { CheckCircle2, Info, AlertTriangle, XCircle, Trash2, Clock, ArrowLeft } from "lucide-react";
 import Header from "@/components/layout/Header";
@@ -15,10 +16,17 @@ interface SavedReport {
   report: FinalReport;
 }
 
-const ALERT_CONFIG: Record<string, { icon: React.ElementType; color: string; bg: string; label: string }> = {
+interface AlertConfig {
+  icon: ElementType;
+  color: string;
+  bg: string;
+  label: string;
+}
+
+const ALERT_CONFIG: Record<string, AlertConfig> = {
   none: { icon: CheckCircle2, color: "text-success", bg: "bg-success/10", label: "Aucune anomalie" },
-  low: { icon: Info, color: "text-brand-600", bg: "bg-brand-50", label: "Attention legere" },
-  medium: { icon: AlertTriangle, color: "text-warning", bg: "bg-warning/10", label: "A verifier" },
+  low: { icon: Info, color: "text-brand-600", bg: "bg-brand-50", label: "Attention légère" },
+  medium: { icon: AlertTriangle, color: "text-warning", bg: "bg-warning/10", label: "À vérifier" },
   high: { icon: XCircle, color: "text-danger", bg: "bg-danger/10", label: "Alerte importante" },
 };
 
@@ -28,17 +36,10 @@ export default function HistoryPage() {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored) as SavedReport[];
-        setReports(
-          parsed.sort(
-            (a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
-          )
-        );
-      }
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) setReports(JSON.parse(raw) as SavedReport[]);
     } catch {
-      setReports([]);
+      // ignore
     }
   }, []);
 
@@ -53,70 +54,98 @@ export default function HistoryPage() {
     }
   };
 
+  const formatDate = (iso: string) => {
+    const d = new Date(iso);
+    return d.toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   return (
     <main className="min-h-screen flex flex-col bg-neutral-50">
       <Header />
       <div className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-8">
         <Link
-          href="/analyze"
+          href="/"
           className="inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-brand-600 transition-colors mb-6"
         >
           <ArrowLeft size={14} /> Retour
         </Link>
 
-        <h1 className="text-2xl font-bold text-neutral-900 mb-2">Mes analyses</h1>
-        <p className="text-neutral-500 text-sm mb-8">
-          Retrouvez vos analyses de fiches de paie precedentes.
-        </p>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-neutral-900">Mes analyses</h1>
+            <p className="text-sm text-neutral-500 mt-0.5">
+              {reports.length === 0
+                ? "Aucune analyse sauvegardée"
+                : `${reports.length} analyse${reports.length > 1 ? "s" : ""} sauvegardée${reports.length > 1 ? "s" : ""}`}
+            </p>
+          </div>
+          {reports.length > 0 && (
+            <button
+              onClick={() => {
+                if (window.confirm("Supprimer tout l'historique ?")) {
+                  setReports([]);
+                  localStorage.removeItem(STORAGE_KEY);
+                }
+              }}
+              className="text-xs text-neutral-400 hover:text-danger transition-colors flex items-center gap-1"
+            >
+              <Trash2 size={12} /> Tout effacer
+            </button>
+          )}
+        </div>
 
         {reports.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-neutral-100 p-8 text-center">
-            <div className="text-4xl mb-3">📄</div>
-            <p className="font-semibold text-neutral-700 mb-1">Aucune analyse sauvegardee</p>
-            <p className="text-sm text-neutral-500 mb-4">
-              Vos prochaines analyses seront automatiquement enregistrees ici.
+          <div className="bg-white rounded-2xl border border-neutral-100 p-12 text-center">
+            <Clock size={32} className="text-neutral-300 mx-auto mb-3" />
+            <p className="font-medium text-neutral-600 mb-1">Aucune analyse pour le moment</p>
+            <p className="text-sm text-neutral-400 mb-4">
+              Vos analyses de fiches de paie apparaîtront ici automatiquement.
             </p>
-            <Link href="/analyze" className="btn-primary text-sm py-2 px-4">
+            <Link href="/analyze" className="btn-primary text-sm px-4 py-2">
               Analyser ma fiche de paie
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {reports.map((saved) => {
-              const level = saved.report.summary.alertLevel || "none";
-              const config = ALERT_CONFIG[level] || ALERT_CONFIG.none;
+              const level = saved.report.summary?.alertLevel ?? "none";
+              const config: AlertConfig = ALERT_CONFIG[level] ?? ALERT_CONFIG.none;
               const Icon = config.icon;
               return (
                 <div
                   key={saved.id}
-                  className="bg-white rounded-2xl border border-neutral-100 p-5 hover:border-neutral-200 transition-all"
+                  className="bg-white rounded-2xl border border-neutral-100 p-4 flex items-center gap-4"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <div className={"p-2 rounded-xl shrink-0 " + config.bg}>
-                        <Icon size={16} className={config.color} />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-semibold text-neutral-800 text-sm">
-                          {saved.report.summary.employer || "Employeur inconnu"}{" — "}
-                          {saved.report.summary.period || "Periode inconnue"}
-                        </p>
-                        <p className="text-xs text-neutral-500 mt-0.5">
-                          {saved.report.summary.alertCount > 0
-                            ? saved.report.summary.alertCount + " point(s) a verifier"
-                            : "Aucune anomalie detectee"}
-                        </p>
-                        <div className="flex items-center gap-1 mt-1.5 text-neutral-400" style={{fontSize: "11px"}}>
-                          <Clock size={11} />
-                          <span>{new Date(saved.savedAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</span>
-                        </div>
-                      </div>
-                    </div>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${config.bg}`}>
+                    <Icon size={18} className={config.color} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-neutral-800 text-sm truncate">
+                      {saved.report.summary?.employeeName ?? "Employé inconnu"}
+                    </p>
+                    <p className="text-xs text-neutral-400 flex items-center gap-1 mt-0.5">
+                      <Clock size={10} /> {formatDate(saved.savedAt)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${config.bg} ${config.color}`}>
+                      {config.label}
+                    </span>
                     <button
                       onClick={() => handleDelete(saved.id)}
-                      className={"shrink-0 text-xs px-2.5 py-1.5 rounded-lg transition-colors " + (confirmDelete === saved.id ? "bg-danger text-white" : "text-neutral-400 hover:text-danger")}
+                      className={`text-xs px-2 py-1 rounded-lg transition-colors ${
+                        confirmDelete === saved.id
+                          ? "bg-danger text-white"
+                          : "text-neutral-400 hover:text-danger hover:bg-danger/10"
+                      }`}
                     >
-                      {confirmDelete === saved.id ? "Confirmer" : <Trash2 size={14} />}
+                      {confirmDelete === saved.id ? "Confirmer" : <Trash2 size={13} />}
                     </button>
                   </div>
                 </div>
