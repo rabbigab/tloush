@@ -24,7 +24,7 @@ export default function ExpertsPage({
 }: {
   searchParams: { specialite?: string; ville?: string };
 }) {
-  const selectedSpecialty = searchParams.specialite as ExpertSpecialty | undefined;
+  const selectedSpecialty = searchParams.specialite;
   const selectedCity = searchParams.ville;
 
   const filtered = experts.filter((e) => {
