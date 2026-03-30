@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
@@ -11,7 +11,8 @@ import ReportSection from "@/components/report/ReportSection";
 import EmployerQuestionsCard from "@/components/report/EmployerQuestionsCard";
 import DisclaimerBlock from "@/components/shared/DisclaimerBlock";
 import { useAnalysisStore } from "@/store/analysisStore";
-import { CheckCircle2, ArrowLeft, FileText, RefreshCw } from "lucide-react";
+import { saveReport } from "@/lib/reportHistory";
+import { CheckCircle2, ArrowLeft, FileText, RefreshCw, History } from "lucide-react";
 
 // Section wrapper réutilisable
 function Section({
@@ -20,12 +21,14 @@ function Section({
   title,
   subtitle,
   children,
+  defaultOpen = true,
 }: {
   id: string;
   emoji: string;
   title: string;
   subtitle?: string;
   children: React.ReactNode;
+  defaultOpen?: boolean;
 }) {
   return (
     <section id={id} className="scroll-mt-20">
@@ -44,10 +47,21 @@ function Section({
 export default function ResultsPage() {
   const router = useRouter();
   const { finalReport, resetAll } = useAnalysisStore();
+  const savedRef = useRef(false);
 
   useEffect(() => {
     if (!finalReport) {
       router.replace("/analyze");
+      return;
+    }
+    // Auto-save to history (once per report)
+    if (!savedRef.current) {
+      savedRef.current = true;
+      try {
+        saveReport(finalReport);
+      } catch {
+        // localStorage can be unavailable (private mode), ignore silently
+      }
     }
   }, [finalReport, router]);
 
@@ -73,6 +87,12 @@ export default function ResultsPage() {
             <ArrowLeft size={16} /> Nouvelle analyse
           </Link>
           <div className="flex gap-2">
+            <Link
+              href="/history"
+              className="btn-secondary text-sm py-2 px-4 print:hidden inline-flex items-center gap-1.5"
+            >
+              <History size={15} /> Mes analyses
+            </Link>
             <button
               onClick={handlePrint}
               className="btn-secondary text-sm py-2 px-4 print:hidden"
@@ -86,6 +106,12 @@ export default function ResultsPage() {
               <RefreshCw size={15} /> Réinitialiser
             </button>
           </div>
+        </div>
+
+        {/* ---- Bandeau sauvegarde ---- */}
+        <div className="flex items-center gap-2 text-xs text-success bg-success/10 border border-success/20 rounded-lg px-3 py-2 print:hidden">
+          <CheckCircle2 size={13} />
+          <span>Rapport sauvegardé dans &quot;Mes analyses&quot; — accessible même après fermeture du navigateur.</span>
         </div>
 
         {/* ---- 1. Résumé global ---- */}
@@ -134,7 +160,7 @@ export default function ResultsPage() {
             id="flags"
             emoji="⚠️"
             title="Points à vérifier"
-            subtitle={`${flags.length} point${flags.length > 1 ? "s" : ""} nécessite${flags.length > 1 ? "nt" : ""} votre attention.`}
+            subtitle={`${flags.length} point${flags.length > 1 ? "s" : ""} nécessite${flags.length > 1 ? "nt" : ""} votre attention. Cliquez pour développer.`}
           >
             <div className="space-y-3">
               {highFlags.length > 0 && (
