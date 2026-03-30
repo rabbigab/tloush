@@ -1,15 +1,39 @@
 // ============================================================
-// TLOUSH — Types & Interfaces centraux
+// TLOUSH -- Types & Interfaces centraux
 // ============================================================
 
 export type PayrollLineKey =
-  | "baseSalary" | "grossSalary" | "netSalary" | "hourlyRate"
-  | "regularHours" | "overtimeHours" | "travelAllowance" | "mealAllowance"
-  | "vacationPay" | "sickPay" | "holidayBonus" | "pension"
-  | "pensionCompensation" | "nationalInsurance" | "healthInsurance"
-  | "incomeTax" | "unionFee" | "lunchDeduction" | "leaveBalance"
-  | "sickBalance" | "seniority" | "bonus" | "commission"
-  | "otherBenefit" | "otherDeduction" | "unknown";
+  | "baseSalary"
+  | "grossSalary"
+  | "netSalary"
+  | "hourlyRate"
+  | "regularHours"
+  | "overtimeHours"
+  | "overtimeHours125"
+  | "overtimeHours150"
+  | "travelAllowance"
+  | "mealAllowance"
+  | "vacationPay"
+  | "sickPay"
+  | "holidayBonus"
+  | "pension"
+  | "pensionCompensation"
+  | "pensionEmployer"
+  | "kerenHishtalmut"
+  | "bituahMenahalim"
+  | "nationalInsurance"
+  | "healthInsurance"
+  | "incomeTax"
+  | "unionFee"
+  | "lunchDeduction"
+  | "leaveBalance"
+  | "sickBalance"
+  | "seniority"
+  | "bonus"
+  | "commission"
+  | "otherBenefit"
+  | "otherDeduction"
+  | "unknown";
 
 export interface PayrollRawLine {
   hebrewLabel: string;
@@ -39,6 +63,7 @@ export interface PayrollDocument {
   pensionDetected: boolean;
   nationalInsuranceDetected: boolean;
   incomeTaxDetected: boolean;
+  kerenHishtalmutDetected: boolean;
   rawLines: PayrollRawLine[];
   confidenceScore: number;
   extractionMode: "mock" | "ocr" | "manual";
@@ -75,7 +100,16 @@ export interface UserContext {
 }
 
 export type FlagSeverity = "low" | "medium" | "high";
-export type FlagCategory = "salary" | "deductions" | "seniority" | "leave" | "sick" | "pension" | "overtime" | "readability" | "general";
+export type FlagCategory =
+  | "salary"
+  | "deductions"
+  | "seniority"
+  | "leave"
+  | "sick"
+  | "pension"
+  | "overtime"
+  | "readability"
+  | "general";
 
 export interface AnalysisFlag {
   id: string;
