@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -13,9 +13,90 @@ import { useAnalysisStore } from "@/store/analysisStore";
 import { simulateOcrExtraction, DEMO_PAYROLL_DOCUMENT, DEMO_USER_CONTEXT } from "@/data/mockPayroll";
 import { buildReport } from "@/lib/reportBuilder";
 import type { PayrollDocument, UserContext } from "@/types";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, CheckCircle2 } from "lucide-react";
 
 type LocalStep = "upload" | "extracting" | "review" | "questionnaire";
+
+// Messages affichés en rotation pendant l'analyse IA
+const LOADING_MESSAGES = [
+  { text: "Lecture du document...", done: false },
+  { text: "Identification des caracteres hebraiques...", done: false },
+  { text: "Traduction des lignes de salaire...", done: false },
+  { text: "Analyse des cotisations sociales...", done: false },
+  { text: "Verification des conges et absences...", done: false },
+  { text: "Calcul du score de confiance...", done: false },
+  { text: "Preparation de votre rapport...", done: false },
+];
+
+function LoadingState() {
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [completedIdx, setCompletedIdx] = useState(-1);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    timerRef.current = setInterval(() => {
+      setCompletedIdx((prev) => prev + 1);
+      setCurrentIdx((prev) => Math.min(prev + 1, LOADING_MESSAGES.length - 1));
+    }, 1800);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, []);
+
+  return (
+    <div className="card flex flex-col items-center justify-center gap-6 py-16 animate-fade-in-up">
+      {/* Spinner principal */}
+      <div className="relative">
+        <div className="w-20 h-20 bg-brand-50 rounded-full flex items-center justify-center">
+          <Loader2 size={36} className="text-brand-600 animate-spin" />
+        </div>
+        <div className="absolute -top-1 -right-1 w-6 h-6 bg-brand-600 rounded-full flex items-center justify-center">
+          <span className="text-white text-xs font-bold">{Math.min(currentIdx + 1, LOADING_MESSAGES.length)}</span>
+        </div>
+      </div>
+
+      {/* Titre */}
+      <div className="text-center">
+        <h3 className="font-bold text-neutral-800 text-lg mb-1">Analyse IA en cours</h3>
+        <p className="text-sm text-neutral-500 max-w-xs">
+          Notre IA lit et analyse votre fiche de paie hebraique. Cela prend quelques secondes.
+        </p>
+      </div>
+
+      {/* Messages rotatifs */}
+      <div className="w-full max-w-xs space-y-2">
+        {LOADING_MESSAGES.map((msg, idx) => {
+          const isComplete = idx <= completedIdx;
+          const isCurrent = idx === currentIdx && idx > completedIdx;
+          const isFuture = idx > currentIdx;
+          return (
+            <div
+              key={idx}
+              className={`flex items-center gap-2.5 transition-all duration-300 ${isFuture ? "opacity-30" : "opacity-100"}`}
+            >
+              {isComplete ? (
+                <CheckCircle2 size={14} className="text-success shrink-0" />
+              ) : isCurrent ? (
+                <span className="w-3.5 h-3.5 border-2 border-brand-500 border-t-transparent rounded-full animate-spin shrink-0" />
+              ) : (
+                <span className="w-3.5 h-3.5 rounded-full border border-neutral-200 shrink-0" />
+              )}
+              <span className={`text-xs ${isComplete ? "text-success font-medium" : isCurrent ? "text-brand-700 font-semibold" : "text-neutral-400"}`}>
+                {msg.text}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Barre de progression */}
+      <div className="w-full max-w-xs bg-neutral-100 rounded-full h-1.5">
+        <div
+          className="bg-brand-500 h-1.5 rounded-full transition-all duration-700"
+          style={{ width: `${((currentIdx + 1) / LOADING_MESSAGES.length) * 100}%` }}
+        />
+      </div>
+    </div>
+  );
+}
 
 function AnalyzeContent() {
   const router = useRouter();
@@ -30,7 +111,6 @@ function AnalyzeContent() {
   );
   const [extractionError, setExtractionError] = useState<string | null>(null);
 
-  // Si mode démo, on prépare aussi le contexte
   useEffect(() => {
     if (isDemo) {
       Object.entries(DEMO_USER_CONTEXT).forEach(([k, v]) => {
@@ -39,14 +119,11 @@ function AnalyzeContent() {
     }
   }, [isDemo, updateUserContext]);
 
-  // Step du stepper (1-based)
   const stepperStep =
-    localStep === "upload"        ? 1 :
-    localStep === "extracting"    ? 1 :
-    localStep === "review"        ? 2 :
-    /* questionnaire */             3;
+    localStep === "upload"     ? 1 :
+    localStep === "extracting" ? 1 :
+    localStep === "review"     ? 2 : 3;
 
-  // ---- Gestion upload ----
   const handleFileAccepted = async (file: File) => {
     setExtractionError(null);
     setLocalStep("extracting");
@@ -54,20 +131,21 @@ function AnalyzeContent() {
       const doc = await simulateOcrExtraction(file);
       setExtractedDoc(doc);
       setLocalStep("review");
-    } catch {
-      setExtractionError("Une erreur est survenue lors de la lecture du document. Réessayez avec un fichier de meilleure qualité.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erreur inconnue";
+      setExtractionError(
+        `Une erreur est survenue lors de la lecture du document. ${msg}. Reessayez avec un fichier PDF de meilleure qualite.`
+      );
       setLocalStep("upload");
     }
   };
 
-  // ---- Validation de l'extraction ----
   const handleExtractionConfirm = (doc: PayrollDocument) => {
     setPayrollDocument(doc);
     setExtractedDoc(doc);
     setLocalStep("questionnaire");
   };
 
-  // ---- Fin du questionnaire → génération du rapport ----
   const handleQuestionnaireComplete = (ctx: UserContext) => {
     if (!extractedDoc) return;
     const report = buildReport(extractedDoc, ctx);
@@ -80,99 +158,55 @@ function AnalyzeContent() {
       <Header />
       <div className="flex-1 max-w-2xl mx-auto w-full px-4 sm:px-6 py-8">
 
-        {/* Bandeau démo */}
         {isDemo && (
           <div className="flex items-center gap-2 bg-brand-50 border border-brand-100 rounded-xl px-4 py-3 mb-6 text-sm text-brand-700">
             <Sparkles size={15} className="shrink-0" />
-            <span>
-              <strong>Mode démo</strong> — Vous visualisez une fiche de paie fictive représentative.
-            </span>
+            <span><strong>Mode demo</strong> — Vous visualisez une fiche de paie fictive representative.</span>
           </div>
         )}
 
-        {/* Stepper */}
         <div className="mb-8">
           <ProgressStepper steps={ANALYZE_STEPS} currentStep={stepperStep} />
         </div>
 
-        {/* ===== STEP 1 — UPLOAD ===== */}
         {localStep === "upload" && (
           <div className="space-y-6 animate-fade-in-up">
             <div>
-              <h2 className="section-title">Téléversez votre fiche de paie</h2>
+              <h2 className="section-title">Telechargez votre fiche de paie</h2>
               <p className="section-subtitle">
-                Glissez-déposez votre tloush (bulletin de salaire) ou sélectionnez-le.
-                Formats acceptés : PDF, JPG, PNG.
+                Glissez-deposez votre tloush (bulletin de salaire) ou selectionnez-le.
+                Formats acceptes : PDF, JPG, PNG.
               </p>
             </div>
             <UploadZone onFileAccepted={handleFileAccepted} />
             {extractionError && (
               <div className="bg-danger/10 border border-danger/20 rounded-xl px-4 py-3 text-sm text-danger">
-                {extractionError}
+                <p className="font-semibold mb-1">Erreur d'analyse</p>
+                <p>{extractionError}</p>
               </div>
             )}
             <DisclaimerBlock compact />
           </div>
         )}
 
-        {/* ===== STEP 1b — EXTRACTION EN COURS ===== */}
-        {localStep === "extracting" && (
-          <div className="card flex flex-col items-center justify-center gap-6 py-16 animate-fade-in-up">
-            <div className="relative">
-              <div className="w-20 h-20 bg-brand-50 rounded-full flex items-center justify-center">
-                <Loader2 size={36} className="text-brand-600 animate-spin" />
-              </div>
-            </div>
-            <div className="text-center">
-              <h3 className="font-bold text-neutral-800 text-lg mb-2">
-                Analyse en cours…
-              </h3>
-              <p className="text-sm text-neutral-500 max-w-sm">
-                Nous lisons et identifions les lignes de votre fiche de paie.
-                Cela prend quelques secondes.
-              </p>
-            </div>
-            <div className="flex flex-col gap-2 text-xs text-neutral-400 items-start">
-              <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />
-                Lecture du document…
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-brand-400 rounded-full animate-pulse animation-delay-100" />
-                Identification des lignes hébraïques…
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-neutral-300 rounded-full" />
-                Traduction et normalisation…
-              </span>
-            </div>
-          </div>
-        )}
+        {localStep === "extracting" && <LoadingState />}
 
-        {/* ===== STEP 2 — REVIEW ===== */}
         {localStep === "review" && extractedDoc && (
           <div className="animate-fade-in-up">
-            <ExtractionReviewForm
-              document={extractedDoc}
-              onConfirm={handleExtractionConfirm}
-            />
+            <ExtractionReviewForm document={extractedDoc} onConfirm={handleExtractionConfirm} />
           </div>
         )}
 
-        {/* ===== STEP 3 — QUESTIONNAIRE ===== */}
         {localStep === "questionnaire" && (
           <div className="space-y-6 animate-fade-in-up">
             <div>
               <h2 className="section-title">Quelques questions sur votre situation</h2>
               <p className="section-subtitle">
-                Ces informations nous permettent de personnaliser votre analyse
-                et de détecter des anomalies spécifiques à votre contexte.
+                Ces informations nous permettent de personaliser votre analyse
+                et de detecter des anomalies specifiques a votre contexte.
               </p>
             </div>
-            <SmartQuestionnaire
-              initialContext={userContext}
-              onComplete={handleQuestionnaireComplete}
-            />
+            <SmartQuestionnaire initialContext={userContext} onComplete={handleQuestionnaireComplete} />
             <DisclaimerBlock compact />
           </div>
         )}
