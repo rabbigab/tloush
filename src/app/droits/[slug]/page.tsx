@@ -31,7 +31,7 @@ function renderMarkdown(md: string): string {
       const tag = 'td';
       return '<tr>' + cells.map(c => `<${tag} class="px-3 py-2 text-sm border border-neutral-200">${c.trim()}</${tag}>`).join('') + '</tr>';
     })
-    .replace(/(<tr>.*<\/tr>\n?)+/gs, (rows) =>
+    .replace(/(<tr>[\s\S]*?<\/tr>\n?)+/g, (rows) =>
       `<div class="overflow-x-auto my-4"><table class="w-full border-collapse border border-neutral-200 rounded-xl overflow-hidden">${rows}</table></div>`
     )
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
