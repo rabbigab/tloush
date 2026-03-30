@@ -29,6 +29,7 @@ const USER_PROMPT = `Analyse cette fiche de paie israelienne. Retourne ce JSON e
   "pensionDetected": false,
   "nationalInsuranceDetected": false,
   "incomeTaxDetected": false,
+  "kerenHishtalmutDetected": false,
   "rawLines": [],
   "confidenceScore": 0,
   "extractionMode": "ocr"
@@ -37,26 +38,34 @@ const USER_PROMPT = `Analyse cette fiche de paie israelienne. Retourne ce JSON e
 REGLES D'EXTRACTION :
 
 === SALAIRES ===
-- shkhar yesod / shekhar basis = salaire de base -> baseSalary (positif)
-- bruto / shkhar bruto = salaire brut -> grossSalary (positif)
-- neto / le-tashlum = salaire net -> netSalary (positif)
-- teur le-sha'a = taux horaire -> hourlyRate
+- שכר יסוד / שכר בסיס (shkhar yesod / shekhar basis) = salaire de base -> baseSalary (positif)
+- ברוטו / שכר ברוטו / סה"כ ברוטו (bruto) = salaire brut -> grossSalary (positif)
+- נטו / לתשלום / שכר נטו (neto / le-tashlum) = salaire net -> netSalary (positif)
+- תעריף שעתי (teur sha'ati) = taux horaire -> hourlyRate
+- שכר חודשי (shekher hodshi) = salaire mensuel -> baseSalary
 
 === HEURES ===
-- sha'ot ragil / sha'ot rgilot = heures normales -> regularHours (unit: hours)
-- sha'ot nosafot / sha'ot nospafot = heures supplementaires -> overtimeHours (unit: hours)
+- שעות רגילות / שעות עבודה (sha'ot ragil) = heures normales -> regularHours (unit: hours)
+- שעות נוספות (sha'ot nosafot) = heures supplementaires -> overtimeHours (unit: hours)
+- שעות נוספות 125% = heures sup 125% -> overtimeHours (unit: hours)
+- שעות נוספות 150% = heures sup 150% -> overtimeHours (unit: hours)
 
 === AVANTAGES (valeurs POSITIVES) ===
-- nesiot / dmei nesiot = transport -> travelAllowance
-- mazon / dmei mazon = repas -> mealAllowance
-- havra'a / dmei havra'a = convalescence -> holidayBonus
-- bonus / pramya = prime -> bonus
+- נסיעות / החזר נסיעות / דמי נסיעות (nesiot) = transport -> travelAllowance
+- אש"ל / דמי מזון (mazon) = repas -> mealAllowance
+- הבראה / דמי הבראה (havra'a) = convalescence -> holidayBonus
+- בונוס / מענק / פרמיה (bonus / pramya) = prime -> bonus
+- עמלות / עמלה = commissions -> commission
 
 === DEDUCTIONS OBLIGATOIRES (valeurs NEGATIVES) ===
-- bituah leumi = securite sociale -> nationalInsurance (negatif) -> nationalInsuranceDetected: true
-- bituah briut = assurance sante -> healthInsurance (negatif)
-- mas hachnasa = impot revenu -> incomeTax (negatif) -> incomeTaxDetected: true
-- pensya / keren pensia / ktsat pikduim = pension salarie -> pension (negatif) -> pensionDetected: true
+- ביטוח לאומי / דמי ביטוח לאומי (bituah leumi) = securite sociale -> nationalInsurance (negatif) -> nationalInsuranceDetected: true
+- ביטוח בריאות / דמי בריאות (bituah briut) = assurance sante -> healthInsurance (negatif)
+- מס הכנסה (mas hachnasa) = impot revenu -> incomeTax (negatif) -> incomeTaxDetected: true
+- פנסיה / קרן פנסיה (pensya) = pension salarie -> pension (negatif) -> pensionDetected: true
+- קרן השתלמות (keren hishtalmut) = epargne formation -> kerenHishtalmut -> kerenHishtalmutDetected: true
+- ביטוח מנהלים (bituah menahalim) = assurance cadres -> bituahMenahalim
+- קופת גמל = caisse retraite complementaire -> pension
+- אבדן כושר עבודה = assurance incapacite -> otherDeduction
 
 === CONGES ET MALADIE (TRES IMPORTANT) ===
 Les fiches israeliennes ont souvent un TABLEAU en bas avec les soldes de conges.
