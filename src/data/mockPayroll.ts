@@ -48,6 +48,7 @@ export function createEmptyPayrollDocument(): PayrollDocument {
     regularHours: null, overtimeHours: null, totalBenefits: null, totalDeductions: null,
     leaveBalance: null, sickBalance: null, pensionDetected: false,
     nationalInsuranceDetected: false, incomeTaxDetected: false,
+    kerenHishtalmutDetected: false,
     rawLines: [], confidenceScore: 0, extractionMode: "manual",
   };
 }
