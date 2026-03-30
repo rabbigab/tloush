@@ -127,7 +127,7 @@ export default function HistoryPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-neutral-800 text-sm truncate">
-                      {saved.report.summary?.employeeName ?? "Employé inconnu"}
+                      {saved.report.summary?.employer ?? "Employé inconnu"}
                     </p>
                     <p className="text-xs text-neutral-400 flex items-center gap-1 mt-0.5">
                       <Clock size={10} /> {formatDate(saved.savedAt)}
