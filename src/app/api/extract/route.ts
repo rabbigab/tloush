@@ -3,9 +3,34 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const SYSTEM_PROMPT = `Tu es un expert en fiches de paie israeliennes (tloush maskoret).
-Ton role est d'extraire TOUTES les informations d'une fiche de paie israelienne.
-Les fiches israeliennes sont en hebreu. Tu lis l'hebreu couramment.
+const SYSTEM_PROMPT = `Tu es un expert en fiches de paie israeliennes (tloush maskoret / תלוש משכורת).
+Tu lis l'hebreu couramment et tu es specialise dans l'extraction precise de donnees depuis des documents hebreux scannes ou photographies.
+
+REGLES CRITIQUES DE LECTURE DE L'HEBREU :
+1. L'hebreu se lit de DROITE A GAUCHE (RTL). Ne confonds pas l'ordre des mots.
+2. CONFUSIONS DE LETTRES FREQUENTES - Fais tres attention a ces paires :
+   - ב (bet) vs כ (kaf) - tres similaires, regarde le dagesh (point interieur)
+   - ד (dalet) vs ר (resh) - le dalet a un angle droit, le resh est arrondi
+   - ו (vav) vs ז (zayin) - le zayin a un petit trait en haut a gauche
+   - ח (het) vs ת (tav) - le tav a un pied a gauche
+   - ח (het) vs ה (he) - le he a une ouverture en haut a gauche
+   - ם (mem sofit) vs ס (samekh) - le mem sofit est carre, le samekh est arrondi
+   - ע (ayin) vs צ (tsadi) - formes differentes mais confondues en basse resolution
+   - כ (kaf) vs ב (bet) - le kaf est plus arrondi
+   - ג (gimel) vs נ (nun) - le gimel a un pied, le nun est plus droit
+   - ש (shin) vs שׂ (sin) - le point est a droite pour shin, a gauche pour sin
+3. LETTRES FINALES (SOFIT) - A la fin d'un mot, certaines lettres changent de forme :
+   - מ → ם (mem → mem sofit)
+   - נ → ן (nun → nun sofit)
+   - צ → ץ (tsadi → tsadi sofit)
+   - פ → ף (pe → pe sofit)
+   - כ → ך (kaf → kaf sofit)
+4. Pour les NOMS PROPRES (personnes et entreprises), sois EXTREMEMENT attentif car :
+   - Les noms ne sont pas dans le dictionnaire, tu ne peux pas deviner
+   - Chaque lettre compte - une confusion ב/כ ou ד/ר change completement le nom
+   - Lis chaque lettre individuellement, puis verifie que le mot entier est coherent
+   - Si un nom semble etrange, relis-le lettre par lettre depuis la droite
+
 IMPORTANT : Retourne UNIQUEMENT le JSON demande, sans texte avant ou apres, sans markdown.`;
 
 const USER_PROMPT = `Analyse cette fiche de paie israelienne. Retourne ce JSON exact (sans markdown) :
@@ -35,7 +60,29 @@ const USER_PROMPT = `Analyse cette fiche de paie israelienne. Retourne ce JSON e
   "extractionMode": "ocr"
 }
 
-REGLES D'EXTRACTION :
+=== NOMS (TRES IMPORTANT - LIRE AVEC PRECISION) ===
+Les noms de l'employeur et du salarie sont les informations les PLUS sensibles.
+Une seule lettre erronee rend le nom incorrect et inutilisable.
+
+Ou trouver le NOM DE L'EMPLOYEUR (שם מעביד / שם מעסיק / שם חברה) :
+- En haut du document, souvent pres du logo de l'entreprise
+- A cote des mots : מעביד (maavid), מעסיק (maasik), חברה (hevra), שם החברה
+- Parfois dans un en-tete encadre ou en gras
+
+Ou trouver le NOM DU SALARIE (שם עובד / שם העובד) :
+- Pres des mots : עובד (oved), שם העובד (shem haoved), שם פרטי (prenom), שם משפחה (nom de famille)
+- Souvent a cote du numero de ת.ז. (teudat zehut = carte d'identite)
+- Le format est generalement : שם משפחה + שם פרטי (nom de famille puis prenom)
+
+REGLES POUR LIRE LES NOMS :
+1. Lis CHAQUE LETTRE une par une de droite a gauche
+2. Fais tres attention aux paires confondantes :
+   ב/כ, ד/ר, ו/ז, ח/ת, ח/ה, ם/ס, ע/צ, ג/נ
+3. Verifie les lettres finales : ם ן ץ ף ך (uniquement en fin de mot)
+4. Si le nom contient un guillemet (") c'est souvent une abbreviation (resh"tav etc.)
+5. Copie le texte EXACTEMENT comme il apparait, lettre par lettre
+6. Ne traduis PAS les noms, ne les modifie PAS, ne les "corrige" PAS
+7. En cas de doute sur une lettre, choisis celle qui forme un nom plausible en hebreu
 
 === SALAIRES ===
 - שכר יסוד / שכר בסיס (shkhar yesod / shekhar basis) = salaire de base -> baseSalary (positif)
@@ -62,54 +109,32 @@ REGLES D'EXTRACTION :
 - ביטוח בריאות / דמי בריאות (bituah briut) = assurance sante -> healthInsurance (negatif)
 - מס הכנסה (mas hachnasa) = impot revenu -> incomeTax (negatif) -> incomeTaxDetected: true
 - פנסיה / קרן פנסיה (pensya) = pension salarie -> pension (negatif) -> pensionDetected: true
-- קרן השתלמות (keren hishtalmut) = epargne formation -> kerenHishtalmut -> kerenHishtalmutDetected: true
+- קרן השתלמות (keren hishtalmut) = epargne formation -> kerenHishtalmutDetected: true
 - ביטוח מנהלים (bituah menahalim) = assurance cadres -> bituahMenahalim
 - קופת גמל = caisse retraite complementaire -> pension
 - אבדן כושר עבודה = assurance incapacite -> otherDeduction
 
-=== CONGES ET MALADIE (TRES IMPORTANT) ===
-Les fiches israeliennes ont souvent un TABLEAU en bas avec les soldes de conges.
-Ce tableau montre generalement 3 colonnes : accumule / utilise / restant (yitrah).
-Tu dois extraire le SOLDE RESTANT (yitrah / nitshal) en jours.
-
-Termes pour les CONGES PAYES :
-- yitrat chofshe / yitrat chofsha / yitrat chufsha = solde conges -> leaveBalance (unit: days)
-- chofesh / yamei chofesh = conges
-- La valeur leaveBalance = le nombre de jours RESTANTS disponibles
-
-Termes pour la MALADIE :
-- yitrat machala / yitrat makhal = solde maladie -> sickBalance (unit: days)  
-- machala / yamei machala = maladie
-- La valeur sickBalance = le nombre de jours RESTANTS disponibles
-
-IMPORTANT leaveBalance et sickBalance :
-- Ces valeurs sont des NOMBRES DE JOURS (pas des montants en shekel)
-- Cherche dans TOUT le document, y compris les tableaux en bas de page
-- Si tu vois un tableau avec colonnes (tzvar/nitshal/shurtash), prends la colonne "yitrah" (restant)
-- Ces valeurs peuvent etre 0 (zero) si le salarie a utilise tous ses jours
-- Mets la valeur numerique dans leaveBalance et sickBalance ET dans rawLines
+=== CONGES ET MALADIE ===
+- יתרת חופשה / יתרה חופשה (yitrat chofsha) = solde conges -> leaveBalance (unit: days)
+- יתרת מחלה (yitrat machala) = solde maladie -> sickBalance (unit: days)
+- Cherche dans les tableaux en bas de page les colonnes : צבר/ניצל/יתרה (accumule/utilise/restant)
+- Prends la colonne יתרה (restant/solde)
 
 === RAWLINES ===
-Pour CHAQUE ligne de la fiche (salaires, avantages, deductions, soldes), ajoute une entree :
-{
-  "hebrewLabel": "texte hebreu exact de la ligne",
-  "normalizedKey": "une cle parmi : baseSalary|grossSalary|netSalary|hourlyRate|regularHours|overtimeHours|travelAllowance|mealAllowance|vacationPay|sickPay|holidayBonus|pension|pensionCompensation|nationalInsurance|healthInsurance|incomeTax|unionFee|lunchDeduction|leaveBalance|sickBalance|seniority|bonus|commission|otherBenefit|otherDeduction|unknown",
-  "frenchLabel": "traduction en francais",
-  "value": nombre (negatif pour deductions),
-  "unit": "ILS ou hours ou days ou %"
-}
-Pour les soldes de conges/maladie dans rawLines : normalizedKey="leaveBalance" ou "sickBalance", unit="days", value=nombre de jours restants
+Pour CHAQUE ligne de la fiche, ajoute une entree :
+{ "hebrewLabel": "texte hebreu exact", "normalizedKey": "cle", "frenchLabel": "traduction", "value": nombre, "unit": "ILS ou hours ou days ou %" }
 
 === SCORE DE CONFIANCE ===
 - 90-100 : document clair, toutes les valeurs lisibles
 - 70-89 : la plupart des valeurs lisibles
-- 50-69 : certaines valeurs incertaines  
-- 0-49 : document peu lisible ou incomplet`;
+- 50-69 : certaines valeurs incertaines
+- 0-49 : document peu lisible`;
 
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
+
     if (!file) {
       return NextResponse.json({ error: "Aucun fichier recu" }, { status: 400 });
     }
@@ -120,6 +145,7 @@ export async function POST(req: NextRequest) {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let messageContent: any[];
+
     if (mimeType === "application/pdf") {
       messageContent = [
         { type: "text", text: USER_PROMPT },
@@ -152,12 +178,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Post-processing: si leaveBalance/sickBalance null, essaie de les extraire depuis rawLines
-    const rawLines = Array.isArray(parsed.rawLines) ? parsed.rawLines as Array<{normalizedKey:string, value:number|null, unit?:string}> : [];
-    
+    const rawLines = Array.isArray(parsed.rawLines)
+      ? parsed.rawLines as Array<{normalizedKey:string, value:number|null, unit?:string}>
+      : [];
+
     if (parsed.leaveBalance === null || parsed.leaveBalance === undefined) {
       const leaveLine = rawLines.find(l => l.normalizedKey === "leaveBalance" && l.value !== null);
       if (leaveLine) parsed.leaveBalance = leaveLine.value;
     }
+
     if (parsed.sickBalance === null || parsed.sickBalance === undefined) {
       const sickLine = rawLines.find(l => l.normalizedKey === "sickBalance" && l.value !== null);
       if (sickLine) parsed.sickBalance = sickLine.value;
@@ -166,6 +195,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(parsed);
   } catch (err: unknown) {
     console.error("[/api/extract]", err);
-    return NextResponse.json({ error: err instanceof Error ? err.message : "Erreur inconnue" }, { status: 500 });
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Erreur inconnue" },
+      { status: 500 }
+    );
   }
 }
