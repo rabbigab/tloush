@@ -26,6 +26,7 @@ export const DEMO_PAYROLL_DOCUMENT: PayrollDocument = {
   regularHours: 182, overtimeHours: 10, totalBenefits: 550, totalDeductions: 1584,
   leaveBalance: 14, sickBalance: 18, pensionDetected: true,
   nationalInsuranceDetected: true, incomeTaxDetected: true,
+  kerenHishtalmutDetected: true,
   rawLines: DEMO_PAYROLL_LINES, confidenceScore: 82, extractionMode: "mock",
 };
 
