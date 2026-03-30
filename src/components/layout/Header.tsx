@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShieldCheck, ClockIcon, Menu, X, ChevronDown } from "lucide-react";
+import { ShieldCheck, Clock, Menu, X, ChevronDown } from "lucide-react";
 
 const NAV_ITEMS = [
   {
@@ -105,7 +105,7 @@ export default function Header() {
             href="/history"
             className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-brand-600 transition-colors px-2 py-1.5 rounded-lg hover:bg-brand-50"
           >
-            <ClockIcon size={14} />
+            <Clock size={14} />
             <span>Mes analyses</span>
           </Link>
           <Link
@@ -147,7 +147,7 @@ export default function Header() {
           ))}
           <div className="pt-2 border-t border-neutral-100 mt-2">
             <Link href="/history" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 px-3 py-2.5 text-sm text-neutral-600">
-              <ClockIcon size={14} /> Mes analyses
+              <Clock size={14} /> Mes analyses
             </Link>
             <Link href="/analyze" onClick={() => setMobileOpen(false)} className="btn-primary w-full text-center mt-2 py-2.5 text-sm">
               Analyser ma fiche
