@@ -11,7 +11,7 @@ import ReportSection from "@/components/report/ReportSection";
 import EmployerQuestionsCard from "@/components/report/EmployerQuestionsCard";
 import DisclaimerBlock from "@/components/shared/DisclaimerBlock";
 import { useAnalysisStore } from "@/store/analysisStore";
-import { CheckCircle2, ArrowLeft, FileText, RefreshCw, History } from "lucide-react";
+import { CheckCircle2, ArrowLeft, FileText, RefreshCw, Clock } from "lucide-react";
 import type { FinalReport } from "@/types";
 
 const STORAGE_KEY = "tloush_analysis_history";
@@ -98,7 +98,7 @@ export default function ResultsPage() {
           </Link>
           <div className="flex gap-2">
             <Link href="/history" className="btn-ghost text-sm print:hidden">
-              <History size={15} /> Mes analyses
+              <Clock size={15} /> Mes analyses
             </Link>
             <button onClick={handlePrint} className="btn-secondary text-sm py-2 px-4 print:hidden">
               <FileText size={15} /> Imprimer / PDF
