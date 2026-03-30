@@ -73,6 +73,7 @@ export async function simulateOcrExtraction(file: File): Promise<PayrollDocument
     sickBalance: data.sickBalance ?? null, pensionDetected: data.pensionDetected ?? false,
     nationalInsuranceDetected: data.nationalInsuranceDetected ?? false,
     incomeTaxDetected: data.incomeTaxDetected ?? false,
+    kerenHishtalmutDetected: data.kerenHishtalmutDetected ?? false,
     rawLines: Array.isArray(data.rawLines) ? data.rawLines : [],
     confidenceScore: typeof data.confidenceScore === "number" ? data.confidenceScore : 50,
     extractionMode: "ocr",
