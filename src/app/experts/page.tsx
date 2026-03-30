@@ -1,4 +1,4 @@
-import Link from "next/link";
+himport Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { experts, SPECIALTY_LABELS, ExpertSpecialty } from "@/data/experts";
@@ -30,7 +30,7 @@ export default function ExpertsPage({
   const filtered = experts.filter((e) => {
     if (!e.active) return false;
     if (selectedSpecialty && selectedSpecialty !== "all") {
-      if (!e.specialties.includes(selectedSpecialty)) return false;
+      if (!e.specialties.includes(selectedSpecialty as ExpertSpecialty)) return false;
     }
     if (selectedCity && selectedCity !== "all") {
       if (e.city !== selectedCity) return false;
