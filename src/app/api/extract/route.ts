@@ -18,6 +18,9 @@ REGLES CRITIQUES DE LECTURE DE L'HEBREU :
    - ע (ayin) vs צ (tsadi) - formes differentes mais confondues en basse resolution
    - כ (kaf) vs ב (bet) - le kaf est plus arrondi
    - ג (gimel) vs נ (nun) - le gimel a un pied, le nun est plus droit
+   - ג׳ (gimel + geresh = son "j") - utilise dans les noms d'origine etrangere (ex: ג'ורג' = George). Ne pas confondre le geresh (׳) avec une apostrophe
+   - ז׳ (zayin + geresh = son "zh") - dans les noms comme Jean, Jacques
+   - צ׳ (tsadi + geresh = son "tch") - dans les noms comme Charlie, Richard
    - ש (shin) vs שׂ (sin) - le point est a droite pour shin, a gauche pour sin
 3. LETTRES FINALES (SOFIT) - A la fin d'un mot, certaines lettres changent de forme :
    - מ → ם (mem → mem sofit)
@@ -77,7 +80,7 @@ Ou trouver le NOM DU SALARIE (שם עובד / שם העובד) :
 REGLES POUR LIRE LES NOMS :
 1. Lis CHAQUE LETTRE une par une de droite a gauche
 2. Fais tres attention aux paires confondantes :
-   ב/כ, ד/ר, ו/ז, ח/ת, ח/ה, ם/ס, ע/צ, ג/נ
+   ב/כ, ד/ר, ו/ז, ח/ת, ח/ה, ם/ס, ע/צ, ג/נ, ג׳/ג
 3. Verifie les lettres finales : ם ן ץ ף ך (uniquement en fin de mot)
 4. Si le nom contient un guillemet (") c'est souvent une abbreviation (resh"tav etc.)
 5. Copie le texte EXACTEMENT comme il apparait, lettre par lettre
