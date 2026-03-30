@@ -20,7 +20,7 @@ const CATEGORIES: { value: GuideCategory | "all"; label: string; emoji: string }
 ];
 
 export default function DroitsPage({ searchParams }: { searchParams: { categorie?: string } }) {
-  const selectedCategory = searchParams.categorie as GuideCategory | undefined;
+  const selectedCategory = searchParams.categorie;
 
   const filtered = selectedCategory && selectedCategory !== "all"
     ? guides.filter((g) => g.category === selectedCategory)
