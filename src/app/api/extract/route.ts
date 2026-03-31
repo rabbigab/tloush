@@ -3,89 +3,43 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const SYSTEM_PROMPT = `Tu es un expert en lecture de fiches de paie israeliennes (תלוש משכורת).
-Tu lis l'hebreu couramment. Tu connais parfaitement la structure standard d'un tloush israelien.
-Retourne UNIQUEMENT le JSON demande, sans texte, sans markdown.`;
+const EXTRACTION_PROMPT = `Regarde attentivement cette fiche de paie israelienne.
 
-const USER_PROMPT = `Analyse cette fiche de paie israelienne et extrait les informations.
+ETAPE 1 - Lis d'abord le HAUT du document (en-tete) :
+- Trouve le texte a cote de 'שם החברה' ou 'שם המעסיק' = c'est le nom de l'EMPLOYEUR
+- Trouve le texte a cote de 'שם עובד' ou 'שם העובד' = c'est le nom du SALARIE
+- IGNORE tout texte en bas du document apres 'בוצע ע"י' ou 'באמצעות' (c'est le logiciel de paie, PAS l'employeur)
 
-=== STRUCTURE D'UNE FICHE DE PAIE ISRAELIENNE ===
-Une fiche de paie israelienne a une structure standard. Voici ou trouver chaque information :
-
-EN-TETE (coin superieur droit) :
-- שם החברה ou שם המעסיק = NOM DE L'EMPLOYEUR (c'est l'entreprise qui emploie le salarie)
-- שם עובד ou שם העובד = NOM DU SALARIE (la personne qui recoit le salaire)
-- מס' עובד = numero d'employe
-- תעריף שעתי = taux horaire
-- תעריף יום = taux journalier
-
-ATTENTION : En bas du document il y a souvent "בוצע ע"י" ou "באמצעות" suivi du nom du LOGICIEL DE PAIE ou de la societe de traitement. Ce n'est PAS l'employeur ! Ignore cette ligne pour employerName.
-
-PERIODE ET DATE :
-- Le mois/annee est souvent en haut au centre : "תלוש משכורת לחודש MM/YYYY"
-- La date de paiement peut etre en bas : "בתאריך DD/MM/YYYY"
-
-CORPS DU DOCUMENT :
-Colonne de droite = AVANTAGES (תשלומים) - valeurs POSITIVES :
+ETAPE 2 - Lis les montants :
 - שכר יסוד = salaire de base (baseSalary)
-- נסיעות = transport
-- הבראה = convalescence
-- שעות נוספות = heures supplementaires
-- בונוס / מענק / פרמיה = prime
+- ברוטו / סה"כ תשלומים = brut (grossSalary)
+- נטו / נטו לתשלום = net (netSalary)
+- שעות רגילות = heures normales (regularHours), שעות נוספות = heures sup (overtimeHours)
+- ביטוח לאומי = securite sociale → nationalInsuranceDetected: true
+- מס הכנסה = impot → incomeTaxDetected: true
+- פנסיה = pension → pensionDetected: true
+- קרן השתלמות = epargne formation → kerenHishtalmutDetected: true
+- נסיעות = transport, הבראה = convalescence, בונוס/מענק = prime
 
-Colonne de gauche = DEDUCTIONS (ניכויים) - valeurs NEGATIVES :
-- ביטוח לאומי = securite sociale (nationalInsuranceDetected: true)
-- דמי בריאות / ביטוח בריאות = assurance sante
-- מס הכנסה = impot sur le revenu (incomeTaxDetected: true)
-- פנסיה / קרן פנסיה = pension (pensionDetected: true)
-- קרן השתלמות = epargne formation (kerenHishtalmutDetected: true)
+ETAPE 3 - Lis le tableau des conges en bas :
+- חופש/חופשה colonne יתרה = solde conges en jours (leaveBalance)
+- מחלה colonne יתרה = solde maladie en jours (sickBalance)
 
-TOTAUX :
-- סה"כ תשלומים = total paiements (totalBenefits)
-- סה"כ ניכויים = total deductions (totalDeductions)
-- ברוטו / שכר ברוטו = salaire brut (grossSalary)
-- נטו / נטו לתשלום / שכר נטו = salaire net (netSalary)
-
-TABLEAU EN BAS - CONGES ET MALADIE :
-- חופש / חופשה → colonne יתרה = solde conges en jours (leaveBalance)
-- מחלה → colonne יתרה = solde maladie en jours (sickBalance)
-
-=== REGLES IMPORTANTES ===
-1. employerName = le nom a cote de שם החברה ou שם המעסיק (EN HAUT du document, PAS en bas)
-2. employeeName = le nom a cote de שם עובד ou שם העובד
-3. NE CONFONDS PAS l'employeur avec le logiciel de paie en bas (בוצע ע"י / באמצעות)
-4. Copie les noms hebreux EXACTEMENT comme ils apparaissent, sans les traduire
-5. Les deductions sont des valeurs NEGATIVES
-6. leaveBalance et sickBalance sont en JOURS (pas en shekels)
-
-Retourne ce JSON exact (sans markdown) :
+Retourne UNIQUEMENT ce JSON (sans markdown) :
 {
-  "employerName": "nom de l'employeur (שם החברה) ou null",
-  "employeeName": "nom du salarie (שם עובד) ou null",
-  "employeeId": "numero employe ou null",
-  "period": "MM/YYYY ou Mois YYYY ou null",
+  "employerName": "nom exact en hebreu ou null",
+  "employeeName": "nom exact en hebreu ou null",
+  "employeeId": "numero ou null",
+  "period": "MM/YYYY ou null",
   "paymentDate": "JJ/MM/AAAA ou null",
-  "baseSalary": nombre ou null,
-  "grossSalary": nombre ou null,
-  "netSalary": nombre ou null,
-  "hourlyRate": nombre ou null,
-  "regularHours": nombre ou null,
-  "overtimeHours": nombre ou null,
-  "totalBenefits": nombre ou null,
-  "totalDeductions": nombre ou null,
-  "leaveBalance": nombre (jours) ou null,
-  "sickBalance": nombre (jours) ou null,
-  "pensionDetected": true/false,
-  "nationalInsuranceDetected": true/false,
-  "incomeTaxDetected": true/false,
-  "kerenHishtalmutDetected": true/false,
-  "rawLines": [
-    { "hebrewLabel": "texte hebreu", "normalizedKey": "cle", "frenchLabel": "traduction", "value": nombre, "unit": "ILS|hours|days|%" }
-  ],
-  "confidenceScore": 0-100,
-  "extractionMode": "ocr"
+  "baseSalary": null, "grossSalary": null, "netSalary": null,
+  "hourlyRate": null, "regularHours": null, "overtimeHours": null,
+  "totalBenefits": null, "totalDeductions": null,
+  "leaveBalance": null, "sickBalance": null,
+  "pensionDetected": false, "nationalInsuranceDetected": false,
+  "incomeTaxDetected": false, "kerenHishtalmutDetected": false,
+  "rawLines": [], "confidenceScore": 0, "extractionMode": "ocr"
 }`;
-
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -104,27 +58,43 @@ export async function POST(req: NextRequest) {
 
     if (mimeType === "application/pdf") {
       messageContent = [
-        { type: "text", text: USER_PROMPT },
+        { type: "text", text: EXTRACTION_PROMPT },
         { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64Data } },
       ];
     } else {
       const imgType = mimeType === "image/png" ? "image/png" : "image/jpeg";
       messageContent = [
-        { type: "text", text: USER_PROMPT },
+        { type: "text", text: EXTRACTION_PROMPT },
         { type: "image", source: { type: "base64", media_type: imgType, data: base64Data } },
       ];
     }
 
+    // Use extended thinking so the model carefully reads the document before answering
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const msg = await (client as any).messages.create({
-      model: "claude-sonnet-4-5",
-      max_tokens: 4096,
-      system: SYSTEM_PROMPT,
+      model: "claude-sonnet-4-5-20250514",
+      max_tokens: 16000,
+      thinking: {
+        type: "enabled",
+        budget_tokens: 10000,
+      },
       messages: [{ role: "user", content: messageContent }],
     });
 
-    const rawText = msg.content[0]?.type === "text" ? msg.content[0].text : "";
-        const cleaned = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+    // Extract the text block (skip thinking blocks)
+    let rawText = "";
+    for (const block of msg.content) {
+      if (block.type === "text") {
+        rawText = block.text;
+        break;
+      }
+    }
+
+    // Strip possible markdown fences
+    const cleaned = rawText
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
 
     let parsed: Record<string, unknown>;
     try {
