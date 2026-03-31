@@ -41,7 +41,7 @@ Retourne UNIQUEMENT ce JSON (sans markdown, sans explication) :
       "normalizedKey": "une des clés suivantes : baseSalary|grossSalary|netSalary|hourlyRate|regularHours|overtimeHours|travelAllowance|mealAllowance|vacationPay|sickPay|holidayBonus|pension|pensionCompensation|nationalInsurance|healthInsurance|incomeTax|unionFee|lunchDeduction|leaveBalance|sickBalance|seniority|bonus|commission|otherBenefit|otherDeduction|unknown",
       "frenchLabel": "traduction française",
       "value": nombre ou null,
-      "unit": "ILS ou hours ou days or %",
+      "unit": "ILS ou hours ou days ou %",
       "note": "explication si nécessaire ou omis"
     }
   ],
@@ -120,7 +120,6 @@ export async function POST(req: NextRequest) {
       model: "claude-sonnet-4-5",
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
-      // @ts-expect-error – document blocks require betas header handled by SDK
       betas: mimeType === "application/pdf" ? ["pdfs-2024-09-25"] : undefined,
       messages: [
         {
