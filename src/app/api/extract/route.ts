@@ -124,7 +124,6 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: "user",
-          // @ts-expect-error – mixed content blocks
           content: contentBlocks,
         },
       ],

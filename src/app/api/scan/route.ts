@@ -207,6 +207,7 @@ export async function POST(req: NextRequest) {
     }
 
     const arrayBuffer = await file.arrayBuffer();
+    const base64Data = Buffer.from(arrayBuffer).toString("baseayBuffer = await file.arrayBuffer();
     const base64Data = Buffer.from(arrayBuffer).toString("base64");
     const mimeType = file.type as string;
 
@@ -254,12 +255,10 @@ export async function POST(req: NextRequest) {
       model: "claude-sonnet-4-5",
       max_tokens: 4096,
       system: SYSTEM_PROMPTS[documentType],
-      // @ts-expect-error – document blocks require betas header handled by SDK
       betas: mimeType === "application/pdf" ? ["pdfs-2024-09-25"] : undefined,
       messages: [
         {
           role: "user",
-          // @ts-expect-error – mixed content blocks
           content: contentBlocks,
         },
       ],
