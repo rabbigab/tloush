@@ -3,43 +3,61 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const EXTRACTION_PROMPT = `Regarde attentivement cette fiche de paie israelienne.
+const SYSTEM_PROMPT = `Tu es un expert en fiches de paie israeliennes (tloush maskoret).
+Ton role est d'extraire TOUTES les informations d'une fiche de paie israelienne.
+Les fiches israeliennes sont en hebreu. Tu lis l'hebreu couramment.
+IMPORTANT : Retourne UNIQUEMENT le JSON demande, sans texte avant ou apres, sans markdown.`;
 
-ETAPE 1 - Lis d'abord le HAUT du document (en-tete) :
-- Trouve le texte a cote de 'שם החברה' ou 'שם המעסיק' = c'est le nom de l'EMPLOYEUR
-- Trouve le texte a cote de 'שם עובד' ou 'שם העובד' = c'est le nom du SALARIE
-- IGNORE tout texte en bas du document apres 'בוצע ע"י' ou 'באמצעות' (c'est le logiciel de paie, PAS l'employeur)
+const USER_PROMPT = `Analyse cette fiche de paie israelienne.
+Retourne ce JSON exact (sans markdown) :
 
-ETAPE 2 - Lis les montants :
-- שכר יסוד = salaire de base (baseSalary)
-- ברוטו / סה"כ תשלומים = brut (grossSalary)
-- נטו / נטו לתשלום = net (netSalary)
-- שעות רגילות = heures normales (regularHours), שעות נוספות = heures sup (overtimeHours)
-- ביטוח לאומי = securite sociale → nationalInsuranceDetected: true
-- מס הכנסה = impot → incomeTaxDetected: true
-- פנסיה = pension → pensionDetected: true
-- קרן השתלמות = epargne formation → kerenHishtalmutDetected: true
-- נסיעות = transport, הבראה = convalescence, בונוס/מענק = prime
-
-ETAPE 3 - Lis le tableau des conges en bas :
-- חופש/חופשה colonne יתרה = solde conges en jours (leaveBalance)
-- מחלה colonne יתרה = solde maladie en jours (sickBalance)
-
-Retourne UNIQUEMENT ce JSON (sans markdown) :
 {
-  "employerName": "nom exact en hebreu ou null",
-  "employeeName": "nom exact en hebreu ou null",
-  "employeeId": "numero ou null",
-  "period": "MM/YYYY ou null",
+  "employerName": "nom employeur ou null",
+  "employeeName": "nom salarie ou null",
+  "employeeId": "numero employe masque ou null",
+  "period": "periode ex Avril 2024 ou null",
   "paymentDate": "JJ/MM/AAAA ou null",
-  "baseSalary": null, "grossSalary": null, "netSalary": null,
-  "hourlyRate": null, "regularHours": null, "overtimeHours": null,
-  "totalBenefits": null, "totalDeductions": null,
-  "leaveBalance": null, "sickBalance": null,
-  "pensionDetected": false, "nationalInsuranceDetected": false,
-  "incomeTaxDetected": false, "kerenHishtalmutDetected": false,
-  "rawLines": [], "confidenceScore": 0, "extractionMode": "ocr"
-}`;
+  "baseSalary": null,
+  "grossSalary": null,
+  "netSalary": null,
+  "hourlyRate": null,
+  "regularHours": null,
+  "overtimeHours": null,
+  "totalBenefits": null,
+  "totalDeductions": null,
+  "leaveBalance": null,
+  "sickBalance": null,
+  "pensionDetected": false,
+  "nationalInsuranceDetected": false,
+  "incomeTaxDetected": false,
+  "kerenHishtalmutDetected": false,
+  "rawLines": [],
+  "confidenceScore": 0,
+  "extractionMode": "ocr"
+}
+
+REGLES :
+- employerName : cherche le texte a cote de "שם החברה" ou "שם המעסיק" EN HAUT du document. ATTENTION : le texte en bas apres "בוצע ע\"י" ou "באמצעות" est le logiciel de paie, PAS l'employeur.
+- employeeName : cherche le texte a cote de "שם עובד" ou "שם העובד".
+- שכר יסוד = salaire de base -> baseSalary
+- ברוטו = brut -> grossSalary
+- נטו / לתשלום = net -> netSalary
+- ביטוח לאומי = securite sociale -> nationalInsuranceDetected: true
+- מס הכנסה = impot revenu -> incomeTaxDetected: true
+- פנסיה = pension -> pensionDetected: true
+- קרן השתלמות = epargne formation -> kerenHishtalmutDetected: true
+- נסיעות = transport, הבראה = convalescence, בונוס = prime
+- שעות רגילות = heures normales -> regularHours
+- שעות נוספות = heures supplementaires -> overtimeHours
+- יתרת חופשה = solde conges en JOURS -> leaveBalance
+- יתרת מחלה = solde maladie en JOURS -> sickBalance
+- Les deductions sont des valeurs NEGATIVES
+- Les avantages sont des valeurs POSITIVES
+
+Pour rawLines, ajoute chaque ligne :
+{ "hebrewLabel": "texte hebreu", "normalizedKey": "cle", "frenchLabel": "traduction", "value": nombre, "unit": "ILS ou hours ou days ou %" }
+
+Score de confiance : 90-100 = clair, 70-89 = correct, 50-69 = incertain, 0-49 = peu lisible`;
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -58,43 +76,27 @@ export async function POST(req: NextRequest) {
 
     if (mimeType === "application/pdf") {
       messageContent = [
-        { type: "text", text: EXTRACTION_PROMPT },
+        { type: "text", text: USER_PROMPT },
         { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64Data } },
       ];
     } else {
       const imgType = mimeType === "image/png" ? "image/png" : "image/jpeg";
       messageContent = [
-        { type: "text", text: EXTRACTION_PROMPT },
+        { type: "text", text: USER_PROMPT },
         { type: "image", source: { type: "base64", media_type: imgType, data: base64Data } },
       ];
     }
 
-    // Use extended thinking so the model carefully reads the document before answering
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const msg = await (client as any).messages.create({
       model: "claude-sonnet-4-5",
-      max_tokens: 16000,
-      thinking: {
-        type: "enabled",
-        budget_tokens: 10000,
-      },
+      max_tokens: 4096,
+      system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: messageContent }],
     });
 
-    // Extract the text block (skip thinking blocks)
-    let rawText = "";
-    for (const block of msg.content) {
-      if (block.type === "text") {
-        rawText = block.text;
-        break;
-      }
-    }
-
-    // Strip possible markdown fences
-    const cleaned = rawText
-      .replace(/^```(?:json)?\s*/i, "")
-      .replace(/\s*```$/i, "")
-      .trim();
+    const rawText = msg.content[0]?.type === "text" ? msg.content[0].text : "";
+    const cleaned = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
 
     let parsed: Record<string, unknown>;
     try {
@@ -103,7 +105,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Impossible de parser la reponse", raw: rawText }, { status: 422 });
     }
 
-    // Post-processing: extraire leaveBalance/sickBalance depuis rawLines si null
+    // Post-processing: si leaveBalance/sickBalance null, extraire depuis rawLines
     const rawLines = Array.isArray(parsed.rawLines)
       ? parsed.rawLines as Array<{normalizedKey:string, value:number|null}>
       : [];
