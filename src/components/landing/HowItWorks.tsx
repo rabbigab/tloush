@@ -1,35 +1,86 @@
-import { Upload, FileSearch, ClipboardList, FileText } from "lucide-react";
+"use client";
+
+import { Upload, Zap, CheckCircle2 } from "lucide-react";
+import { motion } from "framer-motion";
 
 const STEPS = [
-  { icon: Upload, number: "01", title: "Téléversez votre fiche", desc: "Glissez-déposez votre tloush (PDF ou photo). Votre document n'est utilisé que pour l'analyse.", color: "bg-brand-50 text-brand-600" },
-  { icon: FileSearch, number: "02", title: "Vérifiez l'extraction", desc: "Notre système identifie et traduit les lignes hébraïques. Vous corrigez si nécessaire.", color: "bg-purple-50 text-purple-600" },
-  { icon: ClipboardList, number: "03", title: "Répondez au questionnaire", desc: "Quelques questions sur votre situation : congés, heures sup, ancienneté…", color: "bg-amber-50 text-amber-600" },
-  { icon: FileText, number: "04", title: "Recevez votre rapport", desc: "Un rapport clair en français : ce qui est cohérent, ce qui est à vérifier, les questions à poser.", color: "bg-green-50 text-green-600" },
+  {
+    icon: Upload,
+    emoji: "📤",
+    number: "1",
+    title: "Uploadez",
+    desc: "Déposez votre document en hébreu (PDF, photo)",
+  },
+  {
+    icon: Zap,
+    emoji: "🤖",
+    number: "2",
+    title: "On analyse",
+    desc: "Notre IA traduit, structure et vérifie chaque ligne",
+  },
+  {
+    icon: CheckCircle2,
+    emoji: "✅",
+    number: "3",
+    title: "Agissez",
+    desc: "Recevez un rapport clair avec les actions à mener",
+  },
 ];
 
 export default function HowItWorks() {
   return (
     <section id="how-it-works" className="max-w-5xl mx-auto px-4 sm:px-6 py-16">
-      <div className="text-center mb-12">
-        <h2 className="text-3xl font-extrabold text-neutral-900 mb-3">Comment ça marche ?</h2>
-        <p className="text-neutral-500 max-w-xl mx-auto text-base">Un parcours guidé en 4 étapes, sans jargon technique ni hébreu obligatoire.</p>
-      </div>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {STEPS.map((step) => {
-          const Icon = step.icon;
-          return (
-            <div key={step.number} className="card flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${step.color}`}><Icon size={20} /></div>
-                <span className="text-3xl font-black text-neutral-100">{step.number}</span>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="text-center mb-12"
+      >
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 mb-3">
+          Comment ça marche ?
+        </h2>
+        <p className="text-neutral-600 max-w-xl mx-auto text-base">
+          3 étapes simples pour comprendre vos documents en français
+        </p>
+      </motion.div>
+
+      <div className="grid md:grid-cols-3 gap-8">
+        {STEPS.map((step, idx) => (
+          <motion.div
+            key={step.number}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: idx * 0.1 }}
+            className="relative"
+          >
+            {/* Connector line (hidden on mobile) */}
+            {idx < STEPS.length - 1 && (
+              <div className="hidden md:block absolute top-8 left-1/2 w-full h-0.5 bg-gradient-to-r from-brand-200 to-transparent -z-10 transform translate-x-1/2" />
+            )}
+
+            <div className="card flex flex-col items-center text-center gap-4">
+              {/* Number badge */}
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-600 text-white font-bold text-lg">
+                {step.number}
               </div>
+
+              {/* Emoji icon */}
+              <div className="text-4xl">{step.emoji}</div>
+
+              {/* Content */}
               <div>
-                <h3 className="font-bold text-neutral-800 mb-1 text-base">{step.title}</h3>
-                <p className="text-sm text-neutral-500 leading-relaxed">{step.desc}</p>
+                <h3 className="font-bold text-neutral-800 mb-1 text-base">
+                  {step.title}
+                </h3>
+                <p className="text-sm text-neutral-500 leading-relaxed">
+                  {step.desc}
+                </p>
               </div>
             </div>
-          );
-        })}
+          </motion.div>
+        ))}
       </div>
     </section>
   );

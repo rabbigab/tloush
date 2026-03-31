@@ -7,7 +7,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Experts francophones en Israël — Tloush",
-  description: "Trouvez un avocat, comptable ou conseiller RH francophone en Israël. Des professionnels qualifiés qui parlent votre langue.",
+  description:
+    "Trouvez un avocat, comptable ou conseiller RH francophone en Israël. Des professionnels qualifiés qui parlent votre langue.",
 };
 
 const SPECIALTY_OPTIONS: { value: ExpertSpecialty | "all"; label: string }[] = [
@@ -30,7 +31,8 @@ export default function ExpertsPage({
   const filtered = experts.filter((e) => {
     if (!e.active) return false;
     if (selectedSpecialty && selectedSpecialty !== "all") {
-      if (!e.specialties.includes(selectedSpecialty as ExpertSpecialty)) return false;
+      if (!e.specialties.includes(selectedSpecialty as ExpertSpecialty))
+        return false;
     }
     if (selectedCity && selectedCity !== "all") {
       if (e.city !== selectedCity) return false;
@@ -61,28 +63,54 @@ export default function ExpertsPage({
 
         {/* Filtres */}
         <div className="bg-white rounded-2xl border border-neutral-100 p-4 mb-8 flex flex-wrap gap-3 items-center">
-          <span className="text-sm font-medium text-neutral-600 mr-1">Filtrer :</span>
+          <span className="text-sm font-medium text-neutral-600 mr-1">
+            Filtrer :
+          </span>
           <div className="flex flex-wrap gap-2">
             {SPECIALTY_OPTIONS.map((opt) => {
-              const isActive = (!selectedSpecialty && opt.value === "all") || selectedSpecialty === opt.value;
+              const isActive =
+                (!selectedSpecialty && opt.value === "all") ||
+                selectedSpecialty === opt.value;
               return (
                 <Link
                   key={opt.value}
-                  href={opt.value === "all" ? "/experts" : `/experts?specialite=${opt.value}`}
-                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${isActive ? "bg-brand-600 text-white border-brand-600" : "bg-white text-neutral-600 border-neutral-200 hover:border-brand-300"}`}
+                  href={
+                    opt.value === "all"
+                      ? "/experts"
+                      : `/experts?specialite=${opt.value}`
+                  }
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                    isActive
+                      ? "bg-brand-600 text-white border-brand-600"
+                      : "bg-white text-neutral-600 border-neutral-200 hover:border-brand-300"
+                  }`}
                 >
                   {opt.label}
                 </Link>
               );
             })}
           </div>
+
           {cities.length > 1 && (
             <div className="flex flex-wrap gap-2 ml-auto">
               {["all", ...cities].map((city) => (
                 <Link
                   key={city}
-                  href={city === "all" ? (selectedSpecialty ? `/experts?specialite=${selectedSpecialty}` : "/experts") : (selectedSpecialty ? `/experts?specialite=${selectedSpecialty}&ville=${city}` : `/experts?ville=${city}`)}
-                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${(!selectedCity && city === "all") || selectedCity === city ? "bg-neutral-800 text-white border-neutral-800" : "bg-white text-neutral-600 border-neutral-200 hover:border-neutral-400"}`}
+                  href={
+                    city === "all"
+                      ? selectedSpecialty
+                        ? `/experts?specialite=${selectedSpecialty}`
+                        : "/experts"
+                      : selectedSpecialty
+                        ? `/experts?specialite=${selectedSpecialty}&ville=${city}`
+                        : `/experts?ville=${city}`
+                  }
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                    (!selectedCity && city === "all") ||
+                    selectedCity === city
+                      ? "bg-neutral-800 text-white border-neutral-800"
+                      : "bg-white text-neutral-600 border-neutral-200 hover:border-neutral-400"
+                  }`}
                 >
                   {city === "all" ? "Toutes villes" : city}
                 </Link>
@@ -95,10 +123,14 @@ export default function ExpertsPage({
         {filtered.length === 0 ? (
           <div className="text-center py-16">
             <div className="text-4xl mb-3">🔍</div>
-            <p className="font-semibold text-neutral-700 mb-1">Aucun expert trouvé</p>
+            <p className="font-semibold text-neutral-700 mb-1">
+              Aucun expert trouvé
+            </p>
             <p className="text-sm text-neutral-500 mb-4">
               Essayez de modifier vos filtres ou{" "}
-              <Link href="/experts" className="text-brand-600 underline">voir tous les experts</Link>
+              <Link href="/experts" className="text-brand-600 underline">
+                voir tous les experts
+              </Link>
             </p>
           </div>
         ) : (
@@ -114,24 +146,39 @@ export default function ExpertsPage({
                     {expert.name.charAt(0)}
                   </div>
                   <div>
-                    <p className="font-semibold text-neutral-900 text-sm group-hover:text-brand-700 transition-colors">{expert.name}</p>
+                    <p className="font-semibold text-neutral-900 text-sm group-hover:text-brand-700 transition-colors">
+                      {expert.name}
+                    </p>
                     <p className="text-xs text-neutral-500">{expert.title}</p>
                   </div>
                 </div>
+
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   {expert.specialties.map((s) => (
-                    <span key={s} className="text-[10px] font-medium bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full">
+                    <span
+                      key={s}
+                      className="text-[10px] font-medium bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full"
+                    >
                       {SPECIALTY_LABELS[s]}
                     </span>
                   ))}
                 </div>
+
                 <div className="flex items-center gap-3 text-xs text-neutral-500 mb-3">
-                  <span className="flex items-center gap-1"><MapPin size={11} />{expert.city}</span>
+                  <span className="flex items-center gap-1">
+                    <MapPin size={11} />
+                    {expert.city}
+                  </span>
                   <span>{expert.languages.join(", ")}</span>
                 </div>
-                {expert.tarif && <p className="text-xs text-neutral-400 mb-3">{expert.tarif}</p>}
+
+                {expert.tarif && (
+                  <p className="text-xs text-neutral-400 mb-3">{expert.tarif}</p>
+                )}
+
                 <div className="flex items-center gap-1 text-xs font-medium text-brand-600 group-hover:gap-2 transition-all">
-                  Voir le profil <ChevronRight size={12} />
+                  Voir le profil
+                  <ChevronRight size={12} />
                 </div>
               </Link>
             ))}
@@ -140,9 +187,17 @@ export default function ExpertsPage({
 
         {/* CTA pro */}
         <div className="mt-12 bg-gradient-to-r from-brand-600 to-brand-700 rounded-2xl p-6 text-white text-center">
-          <h2 className="font-bold text-lg mb-1">Vous êtes professionnel francophone ?</h2>
-          <p className="text-brand-100 text-sm mb-4">Rejoignez notre annuaire et connectez-vous avec des clients francophones en Israël.</p>
-          <Link href="/experts/rejoindre" className="inline-block bg-white text-brand-700 font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-brand-50 transition-colors">
+          <h2 className="font-bold text-lg mb-1">
+            Vous êtes professionnel francophone ?
+          </h2>
+          <p className="text-brand-100 text-sm mb-4">
+            Rejoignez notre annuaire et connectez-vous avec des clients
+            francophones en Israël.
+          </p>
+          <Link
+            href="/experts/rejoindre"
+            className="inline-block bg-white text-brand-700 font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-brand-50 transition-colors"
+          >
             Rejoindre le répertoire
           </Link>
         </div>
