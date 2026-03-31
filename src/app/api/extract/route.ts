@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
     // Use extended thinking so the model carefully reads the document before answering
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const msg = await (client as any).messages.create({
-      model: "claude-sonnet-4-5-20250514",
+      model: "claude-sonnet-4-5",
       max_tokens: 16000,
       thinking: {
         type: "enabled",
