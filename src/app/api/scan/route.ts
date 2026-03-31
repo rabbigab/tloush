@@ -258,7 +258,8 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: "user",
-          content: contentBlocks,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          content: contentBlocks as any,
         },
       ],
     });

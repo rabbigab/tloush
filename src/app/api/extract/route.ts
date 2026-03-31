@@ -41,7 +41,7 @@ Retourne UNIQUEMENT ce JSON (sans markdown, sans explication) :
       "normalizedKey": "une des clés suivantes : baseSalary|grossSalary|netSalary|hourlyRate|regularHours|overtimeHours|travelAllowance|mealAllowance|vacationPay|sickPay|holidayBonus|pension|pensionCompensation|nationalInsurance|healthInsurance|incomeTax|unionFee|lunchDeduction|leaveBalance|sickBalance|seniority|bonus|commission|otherBenefit|otherDeduction|unknown",
       "frenchLabel": "traduction française",
       "value": nombre ou null,
-      "unit": "ILS ou hours ou days ou %",
+      "unit": "ILS ou hours or days ou %",
       "note": "explication si nécessaire ou omis"
     }
   ],
@@ -124,7 +124,8 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: "user",
-          content: contentBlocks,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          content: contentBlocks as any,
         },
       ],
     });
