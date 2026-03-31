@@ -3,135 +3,88 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const SYSTEM_PROMPT = `Tu es un expert en fiches de paie israeliennes (tloush maskoret / תלוש משכורת).
-Tu lis l'hebreu couramment et tu es specialise dans l'extraction precise de donnees depuis des documents hebreux scannes ou photographies.
+const SYSTEM_PROMPT = `Tu es un expert en lecture de fiches de paie israeliennes (תלוש משכורת).
+Tu lis l'hebreu couramment. Tu connais parfaitement la structure standard d'un tloush israelien.
+Retourne UNIQUEMENT le JSON demande, sans texte, sans markdown.`;
 
-REGLES CRITIQUES DE LECTURE DE L'HEBREU :
-1. L'hebreu se lit de DROITE A GAUCHE (RTL). Ne confonds pas l'ordre des mots.
-2. CONFUSIONS DE LETTRES FREQUENTES - Fais tres attention a ces paires :
-   - ב (bet) vs כ (kaf) - tres similaires, regarde le dagesh (point interieur)
-   - ד (dalet) vs ר (resh) - le dalet a un angle droit, le resh est arrondi
-   - ו (vav) vs ז (zayin) - le zayin a un petit trait en haut a gauche
-   - ח (het) vs ת (tav) - le tav a un pied a gauche
-   - ח (het) vs ה (he) - le he a une ouverture en haut a gauche
-   - ם (mem sofit) vs ס (samekh) - le mem sofit est carre, le samekh est arrondi
-   - ע (ayin) vs צ (tsadi) - formes differentes mais confondues en basse resolution
-   - כ (kaf) vs ב (bet) - le kaf est plus arrondi
-   - ג (gimel) vs נ (nun) - le gimel a un pied, le nun est plus droit
-   - ג׳ (gimel + geresh = son "j") - utilise dans les noms d'origine etrangere (ex: ג'ורג' = George). Ne pas confondre le geresh (׳) avec une apostrophe
-   - ז׳ (zayin + geresh = son "zh") - dans les noms comme Jean, Jacques
-   - צ׳ (tsadi + geresh = son "tch") - dans les noms comme Charlie, Richard
-   - ש (shin) vs שׂ (sin) - le point est a droite pour shin, a gauche pour sin
-3. LETTRES FINALES (SOFIT) - A la fin d'un mot, certaines lettres changent de forme :
-   - מ → ם (mem → mem sofit)
-   - נ → ן (nun → nun sofit)
-   - צ → ץ (tsadi → tsadi sofit)
-   - פ → ף (pe → pe sofit)
-   - כ → ך (kaf → kaf sofit)
-4. Pour les NOMS PROPRES (personnes et entreprises), sois EXTREMEMENT attentif car :
-   - Les noms ne sont pas dans le dictionnaire, tu ne peux pas deviner
-   - Chaque lettre compte - une confusion ב/כ ou ד/ר change completement le nom
-   - Lis chaque lettre individuellement, puis verifie que le mot entier est coherent
-   - Si un nom semble etrange, relis-le lettre par lettre depuis la droite
+const USER_PROMPT = `Analyse cette fiche de paie israelienne et extrait les informations.
 
-IMPORTANT : Retourne UNIQUEMENT le JSON demande, sans texte avant ou apres, sans markdown.`;
+=== STRUCTURE D'UNE FICHE DE PAIE ISRAELIENNE ===
+Une fiche de paie israelienne a une structure standard. Voici ou trouver chaque information :
 
-const USER_PROMPT = `Analyse cette fiche de paie israelienne. Retourne ce JSON exact (sans markdown) :
+EN-TETE (coin superieur droit) :
+- שם החברה ou שם המעסיק = NOM DE L'EMPLOYEUR (c'est l'entreprise qui emploie le salarie)
+- שם עובד ou שם העובד = NOM DU SALARIE (la personne qui recoit le salaire)
+- מס' עובד = numero d'employe
+- תעריף שעתי = taux horaire
+- תעריף יום = taux journalier
 
+ATTENTION : En bas du document il y a souvent "בוצע ע"י" ou "באמצעות" suivi du nom du LOGICIEL DE PAIE ou de la societe de traitement. Ce n'est PAS l'employeur ! Ignore cette ligne pour employerName.
+
+PERIODE ET DATE :
+- Le mois/annee est souvent en haut au centre : "תלוש משכורת לחודש MM/YYYY"
+- La date de paiement peut etre en bas : "בתאריך DD/MM/YYYY"
+
+CORPS DU DOCUMENT :
+Colonne de droite = AVANTAGES (תשלומים) - valeurs POSITIVES :
+- שכר יסוד = salaire de base (baseSalary)
+- נסיעות = transport
+- הבראה = convalescence
+- שעות נוספות = heures supplementaires
+- בונוס / מענק / פרמיה = prime
+
+Colonne de gauche = DEDUCTIONS (ניכויים) - valeurs NEGATIVES :
+- ביטוח לאומי = securite sociale (nationalInsuranceDetected: true)
+- דמי בריאות / ביטוח בריאות = assurance sante
+- מס הכנסה = impot sur le revenu (incomeTaxDetected: true)
+- פנסיה / קרן פנסיה = pension (pensionDetected: true)
+- קרן השתלמות = epargne formation (kerenHishtalmutDetected: true)
+
+TOTAUX :
+- סה"כ תשלומים = total paiements (totalBenefits)
+- סה"כ ניכויים = total deductions (totalDeductions)
+- ברוטו / שכר ברוטו = salaire brut (grossSalary)
+- נטו / נטו לתשלום / שכר נטו = salaire net (netSalary)
+
+TABLEAU EN BAS - CONGES ET MALADIE :
+- חופש / חופשה → colonne יתרה = solde conges en jours (leaveBalance)
+- מחלה → colonne יתרה = solde maladie en jours (sickBalance)
+
+=== REGLES IMPORTANTES ===
+1. employerName = le nom a cote de שם החברה ou שם המעסיק (EN HAUT du document, PAS en bas)
+2. employeeName = le nom a cote de שם עובד ou שם העובד
+3. NE CONFONDS PAS l'employeur avec le logiciel de paie en bas (בוצע ע"י / באמצעות)
+4. Copie les noms hebreux EXACTEMENT comme ils apparaissent, sans les traduire
+5. Les deductions sont des valeurs NEGATIVES
+6. leaveBalance et sickBalance sont en JOURS (pas en shekels)
+
+Retourne ce JSON exact (sans markdown) :
 {
-  "employerName": "nom employeur ou null",
-  "employeeName": "nom salarie ou null",
-  "employeeId": "numero employe masque ou null",
-  "period": "periode ex Avril 2024 ou null",
+  "employerName": "nom de l'employeur (שם החברה) ou null",
+  "employeeName": "nom du salarie (שם עובד) ou null",
+  "employeeId": "numero employe ou null",
+  "period": "MM/YYYY ou Mois YYYY ou null",
   "paymentDate": "JJ/MM/AAAA ou null",
-  "baseSalary": null,
-  "grossSalary": null,
-  "netSalary": null,
-  "hourlyRate": null,
-  "regularHours": null,
-  "overtimeHours": null,
-  "totalBenefits": null,
-  "totalDeductions": null,
-  "leaveBalance": null,
-  "sickBalance": null,
-  "pensionDetected": false,
-  "nationalInsuranceDetected": false,
-  "incomeTaxDetected": false,
-  "kerenHishtalmutDetected": false,
-  "rawLines": [],
-  "confidenceScore": 0,
+  "baseSalary": nombre ou null,
+  "grossSalary": nombre ou null,
+  "netSalary": nombre ou null,
+  "hourlyRate": nombre ou null,
+  "regularHours": nombre ou null,
+  "overtimeHours": nombre ou null,
+  "totalBenefits": nombre ou null,
+  "totalDeductions": nombre ou null,
+  "leaveBalance": nombre (jours) ou null,
+  "sickBalance": nombre (jours) ou null,
+  "pensionDetected": true/false,
+  "nationalInsuranceDetected": true/false,
+  "incomeTaxDetected": true/false,
+  "kerenHishtalmutDetected": true/false,
+  "rawLines": [
+    { "hebrewLabel": "texte hebreu", "normalizedKey": "cle", "frenchLabel": "traduction", "value": nombre, "unit": "ILS|hours|days|%" }
+  ],
+  "confidenceScore": 0-100,
   "extractionMode": "ocr"
-}
-
-=== NOMS (TRES IMPORTANT - LIRE AVEC PRECISION) ===
-Les noms de l'employeur et du salarie sont les informations les PLUS sensibles.
-Une seule lettre erronee rend le nom incorrect et inutilisable.
-
-Ou trouver le NOM DE L'EMPLOYEUR (שם מעביד / שם מעסיק / שם חברה) :
-- En haut du document, souvent pres du logo de l'entreprise
-- A cote des mots : מעביד (maavid), מעסיק (maasik), חברה (hevra), שם החברה
-- Parfois dans un en-tete encadre ou en gras
-
-Ou trouver le NOM DU SALARIE (שם עובד / שם העובד) :
-- Pres des mots : עובד (oved), שם העובד (shem haoved), שם פרטי (prenom), שם משפחה (nom de famille)
-- Souvent a cote du numero de ת.ז. (teudat zehut = carte d'identite)
-- Le format est generalement : שם משפחה + שם פרטי (nom de famille puis prenom)
-
-REGLES POUR LIRE LES NOMS :
-1. Lis CHAQUE LETTRE une par une de droite a gauche
-2. Fais tres attention aux paires confondantes :
-   ב/כ, ד/ר, ו/ז, ח/ת, ח/ה, ם/ס, ע/צ, ג/נ, ג׳/ג
-3. Verifie les lettres finales : ם ן ץ ף ך (uniquement en fin de mot)
-4. Si le nom contient un guillemet (") c'est souvent une abbreviation (resh"tav etc.)
-5. Copie le texte EXACTEMENT comme il apparait, lettre par lettre
-6. Ne traduis PAS les noms, ne les modifie PAS, ne les "corrige" PAS
-7. En cas de doute sur une lettre, choisis celle qui forme un nom plausible en hebreu
-
-=== SALAIRES ===
-- שכר יסוד / שכר בסיס (shkhar yesod / shekhar basis) = salaire de base -> baseSalary (positif)
-- ברוטו / שכר ברוטו / סה"כ ברוטו (bruto) = salaire brut -> grossSalary (positif)
-- נטו / לתשלום / שכר נטו (neto / le-tashlum) = salaire net -> netSalary (positif)
-- תעריף שעתי (teur sha'ati) = taux horaire -> hourlyRate
-- שכר חודשי (shekher hodshi) = salaire mensuel -> baseSalary
-
-=== HEURES ===
-- שעות רגילות / שעות עבודה (sha'ot ragil) = heures normales -> regularHours (unit: hours)
-- שעות נוספות (sha'ot nosafot) = heures supplementaires -> overtimeHours (unit: hours)
-- שעות נוספות 125% = heures sup 125% -> overtimeHours (unit: hours)
-- שעות נוספות 150% = heures sup 150% -> overtimeHours (unit: hours)
-
-=== AVANTAGES (valeurs POSITIVES) ===
-- נסיעות / החזר נסיעות / דמי נסיעות (nesiot) = transport -> travelAllowance
-- אש"ל / דמי מזון (mazon) = repas -> mealAllowance
-- הבראה / דמי הבראה (havra'a) = convalescence -> holidayBonus
-- בונוס / מענק / פרמיה (bonus / pramya) = prime -> bonus
-- עמלות / עמלה = commissions -> commission
-
-=== DEDUCTIONS OBLIGATOIRES (valeurs NEGATIVES) ===
-- ביטוח לאומי / דמי ביטוח לאומי (bituah leumi) = securite sociale -> nationalInsurance (negatif) -> nationalInsuranceDetected: true
-- ביטוח בריאות / דמי בריאות (bituah briut) = assurance sante -> healthInsurance (negatif)
-- מס הכנסה (mas hachnasa) = impot revenu -> incomeTax (negatif) -> incomeTaxDetected: true
-- פנסיה / קרן פנסיה (pensya) = pension salarie -> pension (negatif) -> pensionDetected: true
-- קרן השתלמות (keren hishtalmut) = epargne formation -> kerenHishtalmutDetected: true
-- ביטוח מנהלים (bituah menahalim) = assurance cadres -> bituahMenahalim
-- קופת גמל = caisse retraite complementaire -> pension
-- אבדן כושר עבודה = assurance incapacite -> otherDeduction
-
-=== CONGES ET MALADIE ===
-- יתרת חופשה / יתרה חופשה (yitrat chofsha) = solde conges -> leaveBalance (unit: days)
-- יתרת מחלה (yitrat machala) = solde maladie -> sickBalance (unit: days)
-- Cherche dans les tableaux en bas de page les colonnes : צבר/ניצל/יתרה (accumule/utilise/restant)
-- Prends la colonne יתרה (restant/solde)
-
-=== RAWLINES ===
-Pour CHAQUE ligne de la fiche, ajoute une entree :
-{ "hebrewLabel": "texte hebreu exact", "normalizedKey": "cle", "frenchLabel": "traduction", "value": nombre, "unit": "ILS ou hours ou days ou %" }
-
-=== SCORE DE CONFIANCE ===
-- 90-100 : document clair, toutes les valeurs lisibles
-- 70-89 : la plupart des valeurs lisibles
-- 50-69 : certaines valeurs incertaines
-- 0-49 : document peu lisible`;
+}`;
 
 export async function POST(req: NextRequest) {
   try {
@@ -171,7 +124,7 @@ export async function POST(req: NextRequest) {
     });
 
     const rawText = msg.content[0]?.type === "text" ? msg.content[0].text : "";
-    const cleaned = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+        const cleaned = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
 
     let parsed: Record<string, unknown>;
     try {
@@ -180,19 +133,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Impossible de parser la reponse", raw: rawText }, { status: 422 });
     }
 
-    // Post-processing: si leaveBalance/sickBalance null, essaie de les extraire depuis rawLines
+    // Post-processing: extraire leaveBalance/sickBalance depuis rawLines si null
     const rawLines = Array.isArray(parsed.rawLines)
-      ? parsed.rawLines as Array<{normalizedKey:string, value:number|null, unit?:string}>
+      ? parsed.rawLines as Array<{normalizedKey:string, value:number|null}>
       : [];
 
-    if (parsed.leaveBalance === null || parsed.leaveBalance === undefined) {
-      const leaveLine = rawLines.find(l => l.normalizedKey === "leaveBalance" && l.value !== null);
-      if (leaveLine) parsed.leaveBalance = leaveLine.value;
+    if (parsed.leaveBalance == null) {
+      const line = rawLines.find(l => l.normalizedKey === "leaveBalance" && l.value != null);
+      if (line) parsed.leaveBalance = line.value;
     }
-
-    if (parsed.sickBalance === null || parsed.sickBalance === undefined) {
-      const sickLine = rawLines.find(l => l.normalizedKey === "sickBalance" && l.value !== null);
-      if (sickLine) parsed.sickBalance = sickLine.value;
+    if (parsed.sickBalance == null) {
+      const line = rawLines.find(l => l.normalizedKey === "sickBalance" && l.value != null);
+      if (line) parsed.sickBalance = line.value;
     }
 
     return NextResponse.json(parsed);
