@@ -17,8 +17,7 @@
     "tailwind-merge": "^2.3.0",
     "lucide-react": "^0.383.0",
     "framer-motion": "^11.2.12",
-    "@anthropic-ai/sdk": "^0.24.3",
-    "tesseract.js": "^5.1.1"
+    "@anthropic-ai/sdk": "^0.24.3"
   },
   "devDependencies": {
     "typescript": "^5",
