@@ -1,46 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { createWorker } from "tesseract.js";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const GOOGLE_VISION_API_KEY = process.env.GOOGLE_VISION_API_KEY;
 
-// Step 1: Use Google Cloud Vision to extract raw text from the image/PDF
-async function extractTextWithVision(base64Data: string): Promise<string> {
-  const url = `https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_VISION_API_KEY}`;
-
-  const body = {
-    requests: [
-      {
-        image: { content: base64Data },
-        features: [{ type: "DOCUMENT_TEXT_DETECTION" }],
-        imageContext: {
-          languageHints: ["he", "en"],
-        },
-      },
-    ],
-  };
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Google Vision API error: ${res.status} ${err}`);
-  }
-
-  const data = await res.json();
-  const fullText = data.responses?.[0]?.fullTextAnnotation?.text ?? "";
-  return fullText;
+// Step 1: Extract raw Hebrew text using Tesseract.js OCR
+async function extractTextWithTesseract(imageBuffer: Buffer): Promise<string> {
+  const worker = await createWorker("heb+eng");
+  const { data: { text } } = await worker.recognize(imageBuffer);
+  await worker.terminate();
+  return text;
 }
 
-// Step 2: Use Claude to structure the extracted text into JSON
+// Step 2: Claude structures the extracted text into JSON
 const SYSTEM_PROMPT = `Tu es un expert en fiches de paie israeliennes (tloush maskoret).
-Tu recois le texte brut extrait par OCR d'une fiche de paie israelienne.
+Tu recois le texte brut extrait par OCR d'une fiche de paie israelienne en hebreu.
 Ton role est d'identifier et structurer toutes les informations en JSON.
-Les fiches israeliennes sont en hebreu. Tu lis l'hebreu couramment.
+Tu lis l'hebreu couramment.
 IMPORTANT : Retourne UNIQUEMENT le JSON demande, sans texte avant ou apres, sans markdown.`;
 
 const USER_PROMPT_TEMPLATE = `Voici le texte brut extrait par OCR d'une fiche de paie israelienne :
@@ -66,7 +42,7 @@ A partir de ce texte, retourne ce JSON exact (sans markdown) :
 }
 
 REGLES :
-- employerName = texte a cote de "שם החברה" ou "שם המעסיק". ATTENTION : ignorer le texte apres "בוצע ע\"י" ou "באמצעות" (c'est le logiciel de paie).
+- employerName = texte a cote de "שם החברה" ou "שם המעסיק". ATTENTION : le texte apres "בוצע ע\"י" ou "באמצעות" en bas du document est le LOGICIEL DE PAIE, pas l'employeur.
 - employeeName = texte a cote de "שם עובד" ou "שם העובד".
 - שכר יסוד = baseSalary, ברוטו = grossSalary, נטו/לתשלום = netSalary
 - ביטוח לאומי → nationalInsuranceDetected: true, מס הכנסה → incomeTaxDetected: true
@@ -85,44 +61,44 @@ export async function POST(req: NextRequest) {
     }
 
     const arrayBuffer = await file.arrayBuffer();
-    const base64Data = Buffer.from(arrayBuffer).toString("base64");
+    const imageBuffer = Buffer.from(arrayBuffer);
+    const base64Data = imageBuffer.toString("base64");
     const mimeType = file.type;
 
-    // STEP 1: Extract text using Google Cloud Vision OCR
+    // STEP 1: Try Tesseract.js OCR for images
     let ocrText = "";
-    if (GOOGLE_VISION_API_KEY) {
+    if (mimeType !== "application/pdf") {
       try {
-        ocrText = await extractTextWithVision(base64Data);
-        console.log("[OCR] Google Vision extracted", ocrText.length, "chars");
-      } catch (visionErr) {
-        console.error("[OCR] Google Vision failed, falling back to Claude vision:", visionErr);
+        ocrText = await extractTextWithTesseract(imageBuffer);
+        console.log("[OCR] Tesseract extracted", ocrText.length, "chars");
+      } catch (tessErr) {
+        console.error("[OCR] Tesseract failed:", tessErr);
       }
-    } else {
-      console.log("[OCR] No GOOGLE_VISION_API_KEY, using Claude vision directly");
     }
 
     // STEP 2: Send to Claude for structuring
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let messageContent: any[];
 
-    if (ocrText) {
-      // We have OCR text - send it as text only (more reliable)
+    if (ocrText && ocrText.length > 50) {
+      // Good OCR text - send as text only to Claude (no image needed)
       const prompt = USER_PROMPT_TEMPLATE.replace("TEXT_PLACEHOLDER", ocrText);
       messageContent = [{ type: "text", text: prompt }];
-    } else if (mimeType === "application/pdf") {
-      // Fallback: send image/pdf directly to Claude
-      const fallbackPrompt = USER_PROMPT_TEMPLATE.replace("TEXT_PLACEHOLDER", "(Lis le document ci-joint)");
-      messageContent = [
-        { type: "text", text: fallbackPrompt },
-        { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64Data } },
-      ];
     } else {
-      const imgType = mimeType === "image/png" ? "image/png" : "image/jpeg";
-      const fallbackPrompt = USER_PROMPT_TEMPLATE.replace("TEXT_PLACEHOLDER", "(Lis l'image ci-jointe)");
-      messageContent = [
-        { type: "text", text: fallbackPrompt },
-        { type: "image", source: { type: "base64", media_type: imgType, data: base64Data } },
-      ];
+      // Fallback: send image/pdf directly to Claude for vision reading
+      const fallbackPrompt = USER_PROMPT_TEMPLATE.replace("TEXT_PLACEHOLDER", "(Lis le document ci-joint)");
+      if (mimeType === "application/pdf") {
+        messageContent = [
+          { type: "text", text: fallbackPrompt },
+          { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64Data } },
+        ];
+      } else {
+        const imgType = mimeType === "image/png" ? "image/png" : "image/jpeg";
+        messageContent = [
+          { type: "text", text: fallbackPrompt },
+          { type: "image", source: { type: "base64", media_type: imgType, data: base64Data } },
+        ];
+      }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
