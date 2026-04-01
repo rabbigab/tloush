@@ -85,7 +85,7 @@ export interface SeverancePolicy {
 }
 
 /**
- * Recuperation days (דמי הבראה) - additional paid days for long service
+ * Recuperation days (××× ×××¨××) - additional paid days for long service
  */
 export interface RecuperationPolicy {
   name: string;
@@ -295,7 +295,7 @@ export const LABOR_LAW_2025: LaborLaw = {
     { minYears: 13, maxYears: 13, days: 24, netDays: 24, brutoDays: 27 },
     { minYears: 14, maxYears: 999, days: 24, netDays: 24, brutoDays: 28 },
   ],
-  // Full detailed schedule validated from Kol Zchut (כל-זכות)
+  // Full detailed schedule validated from Kol Zchut (××-××××ª)
   annualLeaveSchedule: {
     // === 5-DAY WORK WEEK ===
     fiveDayWeek: {
@@ -311,8 +311,9 @@ export const LABOR_LAW_2025: LaborLaw = {
       // (fewer than 4 employees, household workers, gov companies, etc.)
       withoutTzoHarchava: [
         { minYears: 1, maxYears: 4, days: 12, netDays: 12, brutoDays: 16 },
-        { minYears: 5, maxYears: 5, days: 12, netDays: 12, netDays: 12, brutoDays: 16 },
-        { minYears: 6, maxYears: 6, days: 12, netDays: 12, brutoDa     { minYears: 7, maxYears: 7, days: 15, netDays: 15, brutoDays: 21 },
+        { minYears: 5, maxYears: 5, days: 12, netDays: 12, brutoDays: 16 },
+        { minYears: 6, maxYears: 6, days: 12, netDays: 12, brutoDays: 18 },
+        { minYears: 7, maxYears: 7, days: 15, netDays: 15, brutoDays: 21 },
         { minYears: 8, maxYears: 8, days: 16, netDays: 16, brutoDays: 22 },
         { minYears: 9, maxYears: 9, days: 17, netDays: 17, brutoDays: 23 },
         { minYears: 10, maxYears: 10, days: 18, netDays: 18, brutoDays: 24 },
@@ -338,15 +339,15 @@ export const LABOR_LAW_2025: LaborLaw = {
       { minYears: 14, maxYears: 999, days: 24, netDays: 24, brutoDays: 28 },
     ],
     notes: [
-      "Source: Kol Zchut (כל-זכות) - site officiel des droits en Israël",
+      "Source: Kol Zchut (××-××××ª) - site officiel des droits en IsraÃ«l",
       "Les jours bruto incluent les jours de repos hebdomadaire (vendredi+samedi pour 5j, samedi pour 6j)",
-      "5j/semaine: 5 jours de repos effectifs pour chaque 7 jours bruto de congé",
-      "6j/semaine: 6 jours de repos effectifs pour chaque 7 jours bruto de congé",
-      "Pour bénéficier du quota complet: avoir travaillé au moins 200 jours dans l'année (employé toute l'année) ou 240 jours (employé une partie de l'année)",
-      "Sinon: calcul proportionnel = (jours travaillés / 200 ou 240) × quota bruto",
-      "Le Tzo Harchava s'applique à la majorité des secteurs: industrie, commerce, sécurité, nettoyage, bureaux, import/export, etc.",
-      "Ne s'applique PAS aux: < 4 employés, employés de maison, sociétés gouvernementales, sociétés municipales",
-      "Jeunes (< 18 ans): 18 jours de congé quelle que soit l'ancienneté",
+      "5j/semaine: 5 jours de repos effectifs pour chaque 7 jours bruto de congÃ©",
+      "6j/semaine: 6 jours de repos effectifs pour chaque 7 jours bruto de congÃ©",
+      "Pour bÃ©nÃ©ficier du quota complet: avoir travaillÃ© au moins 200 jours dans l'annÃ©e (employÃ© toute l'annÃ©e) ou 240 jours (employÃ© une partie de l'annÃ©e)",
+      "Sinon: calcul proportionnel = (jours travaillÃ©s / 200 ou 240) Ã quota bruto",
+      "Le Tzo Harchava s'applique Ã  la majoritÃ© des secteurs: industrie, commerce, sÃ©curitÃ©, nettoyage, bureaux, import/export, etc.",
+      "Ne s'applique PAS aux: < 4 employÃ©s, employÃ©s de maison, sociÃ©tÃ©s gouvernementales, sociÃ©tÃ©s municipales",
+      "Jeunes (< 18 ans): 18 jours de congÃ© quelle que soit l'anciennetÃ©",
     ],
   },
   sickLeave: {
@@ -361,8 +362,8 @@ export const LABOR_LAW_2025: LaborLaw = {
     minTenure: 12, // minimum 12 months for eligibility
     noticePeriod: {
       // Monthly salary employee:
-      under6Months: "1 jour par mois travaillé (ex: 4 mois = 4 jours calendaires)",
-      months6to12: "1 jour par mois pour les 6 premiers mois + 2,5 jours par mois complet supplémentaire (ex: 9 mois = 6 + 7,5 = 13,5 jours)",
+      under6Months: "1 jour par mois travaillÃ© (ex: 4 mois = 4 jours calendaires)",
+      months6to12: "1 jour par mois pour les 6 premiers mois + 2,5 jours par mois complet supplÃ©mentaire (ex: 9 mois = 6 + 7,5 = 13,5 jours)",
       over1Year: "1 mois complet (30 jours calendaires)",
       // Hourly/daily salary employee:
       // Year 1: 1 day per month worked
@@ -371,11 +372,11 @@ export const LABOR_LAW_2025: LaborLaw = {
       // 3+ years: 1 month (30 days)
     },
   },
-  // Havraah (דמי הבראה) - validated from Kol Zchut
-  // Private sector daily rate: 418₪ (frozen since 2023, same for 2024-2025)
-  // Public sector daily rate: 471.4₪
+  // Havraah (××× ×××¨××) - validated from Kol Zchut
+  // Private sector daily rate: 418âª (frozen since 2023, same for 2024-2025)
+  // Public sector daily rate: 471.4âª
   recuperation: {
-    name: "דמי הבראה",
+    name: "××× ×××¨××",
     daysPerYear: [
       { minYears: 1, maxYears: 1, days: 5, netDays: 5, brutoDays: 5 },
       { minYears: 2, maxYears: 3, days: 6, netDays: 6, brutoDays: 6 },
@@ -384,7 +385,7 @@ export const LABOR_LAW_2025: LaborLaw = {
       { minYears: 16, maxYears: 19, days: 9, netDays: 9, brutoDays: 9 },
       { minYears: 20, maxYears: 999, days: 10, netDays: 10, brutoDays: 10 },
     ],
-    dailyRate: 418, // ₪ per day, private sector (frozen since 2023)
+    dailyRate: 418, // âª per day, private sector (frozen since 2023)
   },
   travelAllowance: {
     maxDaily: 22.6,
@@ -507,96 +508,96 @@ export const MATERNITY_2025: MaternityBenefits = {
 export const OLIM_RIGHTS: OlimRight[] = [
   {
     id: "sal-klita",
-    titleFR: "Panier d'intégration (Sal Klita)",
-    titleHE: "סל קליטה",
+    titleFR: "Panier d'intÃ©gration (Sal Klita)",
+    titleHE: "×¡× ×§××××",
     description:
-      "Package d'aide directe versée en 8 paiements mensuels. Montant total d'environ 25 000₪. Destiné à couvrir les frais initiaux d'installation et d'intégration en Israël.",
-    amount: "~25,000₪ total",
+      "Package d'aide directe versÃ©e en 8 paiements mensuels. Montant total d'environ 25 000âª. DestinÃ© Ã  couvrir les frais initiaux d'installation et d'intÃ©gration en IsraÃ«l.",
+    amount: "~25,000âª total",
     duration: "6 mois",
-    deadline: "Dès l'arrivée",
-    eligibility: "Olim enregistrés auprès du Ministère de l'Absorption",
+    deadline: "DÃ¨s l'arrivÃ©e",
+    eligibility: "Olim enregistrÃ©s auprÃ¨s du MinistÃ¨re de l'Absorption",
     howToClaim:
-      "1. S'enregistrer auprès du Ministère de l'Absorption (Misrad Haklita) dans les 30 jours. 2. Présenter le passeport et le visa d'olé. 3. Les paiements sont versés automatiquement si vous êtes enregistré.",
+      "1. S'enregistrer auprÃ¨s du MinistÃ¨re de l'Absorption (Misrad Haklita) dans les 30 jours. 2. PrÃ©senter le passeport et le visa d'olÃ©. 3. Les paiements sont versÃ©s automatiquement si vous Ãªtes enregistrÃ©.",
     category: "financial",
     priority: "high",
     updatedYear: 2025,
   },
   {
     id: "tax-credit-points",
-    titleFR: "Points de crédit d'impôt (Nekudot Zikui)",
-    titleHE: "נקודות זיכוי",
+    titleFR: "Points de crÃ©dit d'impÃ´t (Nekudot Zikui)",
+    titleHE: "× ×§××××ª ×××××",
     description:
-      "Crédit d'impôt annuel de 4,5 points supplémentaires pour les 42 premiers mois. Chaque point vaut environ 235₪ par mois. Réduit directement vos impôts mensuels.",
-    amount: "~235₪ par point/mois",
+      "CrÃ©dit d'impÃ´t annuel de 4,5 points supplÃ©mentaires pour les 42 premiers mois. Chaque point vaut environ 235âª par mois. RÃ©duit directement vos impÃ´ts mensuels.",
+    amount: "~235âª par point/mois",
     duration: "42 mois",
     deadline: "Automatique",
-    eligibility: "Tous les olim, olimim déclarés",
+    eligibility: "Tous les olim, olimim dÃ©clarÃ©s",
     howToClaim:
-      "1. Déclarer le statut d'olé à l'administration fiscale (Misrad Hareset). 2. Fournir la preuve du visa d'olé. 3. Le crédit est automatiquement appliqué à votre déclaration de revenus.",
+      "1. DÃ©clarer le statut d'olÃ© Ã  l'administration fiscale (Misrad Hareset). 2. Fournir la preuve du visa d'olÃ©. 3. Le crÃ©dit est automatiquement appliquÃ© Ã  votre dÃ©claration de revenus.",
     category: "tax",
     priority: "high",
     updatedYear: 2025,
   },
   {
     id: "foreign-income-exemption",
-    titleFR: "Exemption de l'impôt sur les revenus étrangers",
-    titleHE: "פטור מס הכנסה עו״ד",
+    titleFR: "Exemption de l'impÃ´t sur les revenus Ã©trangers",
+    titleHE: "×¤×××¨ ××¡ ××× ×¡× ×¢××´×",
     description:
-      "Les revenus générés en dehors d'Israël sont exonérés d'impôt pour 10 ans. Aucune déclaration requise avant 2026. À partir de 2026, déclaration obligatoire aux autorités fiscales.",
+      "Les revenus gÃ©nÃ©rÃ©s en dehors d'IsraÃ«l sont exonÃ©rÃ©s d'impÃ´t pour 10 ans. Aucune dÃ©claration requise avant 2026. Ã partir de 2026, dÃ©claration obligatoire aux autoritÃ©s fiscales.",
     amount: null,
     duration: "10 ans",
-    deadline: "Déclaration requise à partir de 2026",
-    eligibility: "Olim avec revenus étrangers (indépendants, pensions, dividendes)",
+    deadline: "DÃ©claration requise Ã  partir de 2026",
+    eligibility: "Olim avec revenus Ã©trangers (indÃ©pendants, pensions, dividendes)",
     howToClaim:
-      "1. Avant 2026 : Aucune déclaration requise, exemption automatique. 2. À partir de 2026 : Déclarer les revenus étrangers à Misrad Hareset avec preuve de source étrangère. 3. Conserver les documents justificatifs de revenus étrangers.",
+      "1. Avant 2026 : Aucune dÃ©claration requise, exemption automatique. 2. Ã partir de 2026 : DÃ©clarer les revenus Ã©trangers Ã  Misrad Hareset avec preuve de source Ã©trangÃ¨re. 3. Conserver les documents justificatifs de revenus Ã©trangers.",
     category: "tax",
     priority: "high",
     updatedYear: 2026,
   },
   {
     id: "israeli-income-exemption",
-    titleFR: "Exemption de l'impôt sur les revenus israéliens (NOUVEAU 2026)",
-    titleHE: "פטור הכנסה ישראלית חדש 2026",
+    titleFR: "Exemption de l'impÃ´t sur les revenus israÃ©liens (NOUVEAU 2026)",
+    titleHE: "×¤×××¨ ××× ×¡× ××©×¨××××ª ×××© 2026",
     description:
-      "Les nouveaux olim peuvent être exonérés jusqu'à 1 million de shéquels par an de revenus israéliens pour les deux premières années fiscales. Décision gouvernementale de 2026.",
-    amount: "Jusqu'à 1M₪/an",
+      "Les nouveaux olim peuvent Ãªtre exonÃ©rÃ©s jusqu'Ã  1 million de shÃ©quels par an de revenus israÃ©liens pour les deux premiÃ¨res annÃ©es fiscales. DÃ©cision gouvernementale de 2026.",
+    amount: "Jusqu'Ã  1Mâª/an",
     duration: "2 ans fiscaux",
-    deadline: "À partir de 2026",
-    eligibility: "Olim enregistrés après 2024, revenus israéliens",
+    deadline: "Ã partir de 2026",
+    eligibility: "Olim enregistrÃ©s aprÃ¨s 2024, revenus israÃ©liens",
     howToClaim:
-      "1. Demander l'exemption auprès de Misrad Hareset. 2. Présenter la preuve du statut d'olé et la date d'arrivée. 3. Appliquer l'exemption sur votre déclaration fiscale pour les deux premières années fiscales.",
+      "1. Demander l'exemption auprÃ¨s de Misrad Hareset. 2. PrÃ©senter la preuve du statut d'olÃ© et la date d'arrivÃ©e. 3. Appliquer l'exemption sur votre dÃ©claration fiscale pour les deux premiÃ¨res annÃ©es fiscales.",
     category: "tax",
     priority: "high",
     updatedYear: 2026,
   },
   {
     id: "arnona-reduction",
-    titleFR: "Réduction de la taxe foncière (Arnona)",
-    titleHE: "הנחה על ארנונה",
+    titleFR: "RÃ©duction de la taxe fonciÃ¨re (Arnona)",
+    titleHE: "×× ×× ×¢× ××¨× ×× ×",
     description:
-      "Réduction de 25-33% sur la taxe foncière (arnona) pour les habitations résidentielles principales pendant 12 mois suivant l'arrivée.",
-    amount: "25-33% de réduction",
+      "RÃ©duction de 25-33% sur la taxe fonciÃ¨re (arnona) pour les habitations rÃ©sidentielles principales pendant 12 mois suivant l'arrivÃ©e.",
+    amount: "25-33% de rÃ©duction",
     duration: "12 mois",
-    deadline: "Dès l'enregistrement de propriété",
-    eligibility: "Olim propriétaires de leur résidence principale",
+    deadline: "DÃ¨s l'enregistrement de propriÃ©tÃ©",
+    eligibility: "Olim propriÃ©taires de leur rÃ©sidence principale",
     howToClaim:
-      "1. S'enregistrer auprès de la municipalité locale avec preuve du statut d'olé. 2. Présenter le contrat de propriété et le visa d'olé. 3. La municipalité applique la réduction automatiquement sur la prochaine facture d'arnona.",
+      "1. S'enregistrer auprÃ¨s de la municipalitÃ© locale avec preuve du statut d'olÃ©. 2. PrÃ©senter le contrat de propriÃ©tÃ© et le visa d'olÃ©. 3. La municipalitÃ© applique la rÃ©duction automatiquement sur la prochaine facture d'arnona.",
     category: "financial",
     priority: "medium",
     updatedYear: 2025,
   },
   {
     id: "tv-license-exemption",
-    titleFR: "Exemption de taxe télévision",
-    titleHE: "פטור מרשיון טלוויזיה",
+    titleFR: "Exemption de taxe tÃ©lÃ©vision",
+    titleHE: "×¤×××¨ ××¨×©××× ××××××××",
     description:
-      "Exemption de la taxe télévision (redevance télévisuelle) pour 12 mois. Tarif normal : environ 80₪ par mois.",
-    amount: "~80₪/mois",
+      "Exemption de la taxe tÃ©lÃ©vision (redevance tÃ©lÃ©visuelle) pour 12 mois. Tarif normal : environ 80âª par mois.",
+    amount: "~80âª/mois",
     duration: "12 mois",
-    deadline: "Dès la demande",
-    eligibility: "Tous les olim enregistrés",
+    deadline: "DÃ¨s la demande",
+    eligibility: "Tous les olim enregistrÃ©s",
     howToClaim:
-      "1. Contacter la Société de Radiodiffusion Israélienne (Rashut Hashidur). 2. Présenter le visa d'olé et la preuve d'enregistrement. 3. L'exemption est appliquée au compte pour 12 mois.",
+      "1. Contacter la SociÃ©tÃ© de Radiodiffusion IsraÃ©lienne (Rashut Hashidur). 2. PrÃ©senter le visa d'olÃ© et la preuve d'enregistrement. 3. L'exemption est appliquÃ©e au compte pour 12 mois.",
     category: "financial",
     priority: "low",
     updatedYear: 2025,
@@ -604,47 +605,47 @@ export const OLIM_RIGHTS: OlimRight[] = [
   {
     id: "customs-duty-exemption",
     titleFR: "Exemption des droits de douane - biens personnels et automobile",
-    titleHE: "פטור מיבוא בדיוקס",
+    titleHE: "×¤×××¨ ××××× ×××××§×¡",
     description:
-      "Exemption des droits de douane sur les biens personnels et possessions transportés depuis le pays d'origine. Possibilité d'importer une voiture d'occasion sans droits de douane si éligible.",
+      "Exemption des droits de douane sur les biens personnels et possessions transportÃ©s depuis le pays d'origine. PossibilitÃ© d'importer une voiture d'occasion sans droits de douane si Ã©ligible.",
     amount: null,
     duration: "Permanent",
-    deadline: "Dans les 12 mois suivant l'arrivée",
-    eligibility: "Olim avec biens personnels. Automobile : conditions spécifiques d'âge et de valeur",
+    deadline: "Dans les 12 mois suivant l'arrivÃ©e",
+    eligibility: "Olim avec biens personnels. Automobile : conditions spÃ©cifiques d'Ã¢ge et de valeur",
     howToClaim:
-      "1. Contacter les douanes israéliennes (Misrad Misuim). 2. Remplir le formulaire d'importation d'olé avec liste des biens. 3. Pour automobile : consulter l'administration pour les conditions de tarif réduit. 4. Fournir la preuve du statut d'olé et des documents d'ownership.",
+      "1. Contacter les douanes israÃ©liennes (Misrad Misuim). 2. Remplir le formulaire d'importation d'olÃ© avec liste des biens. 3. Pour automobile : consulter l'administration pour les conditions de tarif rÃ©duit. 4. Fournir la preuve du statut d'olÃ© et des documents d'ownership.",
     category: "financial",
     priority: "medium",
     updatedYear: 2025,
   },
   {
     id: "ulpan-hebrew",
-    titleFR: "Cours d'hébreu gratuit (Ulpan)",
-    titleHE: "קורס עברית חינם - אולפן",
+    titleFR: "Cours d'hÃ©breu gratuit (Ulpan)",
+    titleHE: "×§××¨×¡ ×¢××¨××ª ××× × - ××××¤×",
     description:
-      "Programme gratuit d'enseignement intensif de l'hébreu : 500 heures de cours sur plusieurs mois. Offert par le Ministère de l'Absorption pour tous les olim.",
+      "Programme gratuit d'enseignement intensif de l'hÃ©breu : 500 heures de cours sur plusieurs mois. Offert par le MinistÃ¨re de l'Absorption pour tous les olim.",
     amount: null,
     duration: "3-6 mois",
-    deadline: "Dès l'arrivée",
-    eligibility: "Tous les olim enregistrés",
+    deadline: "DÃ¨s l'arrivÃ©e",
+    eligibility: "Tous les olim enregistrÃ©s",
     howToClaim:
-      "1. S'enregistrer au Misrad Haklita (Ministère de l'Absorption). 2. Demander l'accès à un programme ulpan. 3. Choisir un ulpan (public, kibboutz, ou académique). 4. Commencer les cours - généralement gratuits ou à coût réduit.",
+      "1. S'enregistrer au Misrad Haklita (MinistÃ¨re de l'Absorption). 2. Demander l'accÃ¨s Ã  un programme ulpan. 3. Choisir un ulpan (public, kibboutz, ou acadÃ©mique). 4. Commencer les cours - gÃ©nÃ©ralement gratuits ou Ã  coÃ»t rÃ©duit.",
     category: "education",
     priority: "high",
     updatedYear: 2025,
   },
   {
     id: "housing-assistance",
-    titleFR: "Assistance au logement (prêts et subventions)",
-    titleHE: "סיוע דיור",
+    titleFR: "Assistance au logement (prÃªts et subventions)",
+    titleHE: "×¡×××¢ ××××¨",
     description:
-      "Le Misrad Haklita propose des prêts sans intérêt et des subventions pour l'achat ou la location d'un logement. Les conditions varient selon le profil et la région.",
+      "Le Misrad Haklita propose des prÃªts sans intÃ©rÃªt et des subventions pour l'achat ou la location d'un logement. Les conditions varient selon le profil et la rÃ©gion.",
     amount: "Variable selon profil",
     duration: "Variable",
-    deadline: "Dès l'enregistrement",
-    eligibility: "Olim avec demande prouvée. Priorité aux profils défavorisés et zones périphériques.",
+    deadline: "DÃ¨s l'enregistrement",
+    eligibility: "Olim avec demande prouvÃ©e. PrioritÃ© aux profils dÃ©favorisÃ©s et zones pÃ©riphÃ©riques.",
     howToClaim:
-      "1. Contacter le Misrad Haklita localement ou en ligne. 2. Présenter preuve de revenus et demande de logement. 3. Remplir les formulaires d'aide au logement. 4. Attendre évaluation et approbation. 5. Les prêts sont généralement sans intérêt et remboursables sur plusieurs années.",
+      "1. Contacter le Misrad Haklita localement ou en ligne. 2. PrÃ©senter preuve de revenus et demande de logement. 3. Remplir les formulaires d'aide au logement. 4. Attendre Ã©valuation et approbation. 5. Les prÃªts sont gÃ©nÃ©ralement sans intÃ©rÃªt et remboursables sur plusieurs annÃ©es.",
     category: "housing",
     priority: "high",
     updatedYear: 2025,
@@ -652,63 +653,63 @@ export const OLIM_RIGHTS: OlimRight[] = [
   {
     id: "health-insurance",
     titleFR: "Assurance maladie (Kupat Holim)",
-    titleHE: "ביטוח בריאות קופת חולים",
+    titleHE: "××××× ××¨××××ª ×§××¤×ª ×××××",
     description:
-      "Accès immédiat à l'assurance maladie avec choix entre 4 fournisseurs de soins : Clalit, Maccabi, Leumit, Meuhedet. Couverture complète dès l'arrivée.",
+      "AccÃ¨s immÃ©diat Ã  l'assurance maladie avec choix entre 4 fournisseurs de soins : Clalit, Maccabi, Leumit, Meuhedet. Couverture complÃ¨te dÃ¨s l'arrivÃ©e.",
     amount: null,
     duration: "Permanent",
-    deadline: "Dès l'arrivée",
-    eligibility: "Tous les olim - obligation légale",
+    deadline: "DÃ¨s l'arrivÃ©e",
+    eligibility: "Tous les olim - obligation lÃ©gale",
     howToClaim:
-      "1. S'enregistrer auprès du Bituach Leumi (Sécurité Sociale) dès l'arrivée. 2. Choisir une Kupat Holim (provider de santé). 3. S'inscrire auprès de votre provider choisi. 4. Recevoir la couverture santé immédiatement et complète.",
+      "1. S'enregistrer auprÃ¨s du Bituach Leumi (SÃ©curitÃ© Sociale) dÃ¨s l'arrivÃ©e. 2. Choisir une Kupat Holim (provider de santÃ©). 3. S'inscrire auprÃ¨s de votre provider choisi. 4. Recevoir la couverture santÃ© immÃ©diatement et complÃ¨te.",
     category: "health",
     priority: "high",
     updatedYear: 2025,
   },
   {
     id: "university-tuition-reduction",
-    titleFR: "Réduction des frais de scolarité universitaires",
-    titleHE: "הנחה על לימודים אוניברסיטאיים",
+    titleFR: "RÃ©duction des frais de scolaritÃ© universitaires",
+    titleHE: "×× ×× ×¢× ××××××× ××× ×××¨×¡××××××",
     description:
-      "Les étudiants olim reçoivent une réduction significative des frais d'inscription et de scolarité dans les universités israéliennes (généralement 30-50% de réduction).",
-    amount: "30-50% de réduction",
-    duration: "Durée des études",
-    deadline: "À l'inscription",
-    eligibility: "Olim étudiants dans universités israéliennes reconnues",
+      "Les Ã©tudiants olim reÃ§oivent une rÃ©duction significative des frais d'inscription et de scolaritÃ© dans les universitÃ©s israÃ©liennes (gÃ©nÃ©ralement 30-50% de rÃ©duction).",
+    amount: "30-50% de rÃ©duction",
+    duration: "DurÃ©e des Ã©tudes",
+    deadline: "Ã l'inscription",
+    eligibility: "Olim Ã©tudiants dans universitÃ©s israÃ©liennes reconnues",
     howToClaim:
-      "1. Contacter le bureau des étudiants olim de l'université. 2. Présenter le visa d'olé et preuve d'enregistrement. 3. Remplir formulaire de demande de réduction. 4. Les frais réduits sont appliqués automatiquement à l'inscription.",
+      "1. Contacter le bureau des Ã©tudiants olim de l'universitÃ©. 2. PrÃ©senter le visa d'olÃ© et preuve d'enregistrement. 3. Remplir formulaire de demande de rÃ©duction. 4. Les frais rÃ©duits sont appliquÃ©s automatiquement Ã  l'inscription.",
     category: "education",
     priority: "medium",
     updatedYear: 2025,
   },
   {
     id: "employment-assistance",
-    titleFR: "Assistance à l'emploi et centres d'orientation",
-    titleHE: "סיוע להעסקה",
+    titleFR: "Assistance Ã  l'emploi et centres d'orientation",
+    titleHE: "×¡×××¢ ×××¢×¡×§×",
     description:
-      "Les centres pour l'emploi (Misrad HaTa'asuka) offrent des services gratuits : aide à la rédaction CV, préparation entretien, placement professionnel, formation professionnelle.",
+      "Les centres pour l'emploi (Misrad HaTa'asuka) offrent des services gratuits : aide Ã  la rÃ©daction CV, prÃ©paration entretien, placement professionnel, formation professionnelle.",
     amount: null,
     duration: "Services continus",
-    deadline: "Dès l'enregistrement",
+    deadline: "DÃ¨s l'enregistrement",
     eligibility: "Tous les olim cherchant emploi",
     howToClaim:
-      "1. Visiter le centre pour l'emploi local (Misrad HaTa'asuka). 2. S'enregistrer en tant que demandeur d'emploi olé. 3. Bénéficier de conseils en orientation professionnelle. 4. Accéder à offres d'emploi et programmes de formation.",
+      "1. Visiter le centre pour l'emploi local (Misrad HaTa'asuka). 2. S'enregistrer en tant que demandeur d'emploi olÃ©. 3. BÃ©nÃ©ficier de conseils en orientation professionnelle. 4. AccÃ©der Ã  offres d'emploi et programmes de formation.",
     category: "employment",
     priority: "high",
     updatedYear: 2025,
   },
   {
     id: "keren-klita",
-    titleFR: "Keren Klita - subventions d'absorption pour professions spécifiques",
-    titleHE: "קרן קליטה",
+    titleFR: "Keren Klita - subventions d'absorption pour professions spÃ©cifiques",
+    titleHE: "×§×¨× ×§××××",
     description:
-      "Subventions et bourses additionnelles pour olim dans certaines professions prioritaires : enseignement, secteur hi-tech, santé, agriculture, startup. Montants variables selon profession.",
+      "Subventions et bourses additionnelles pour olim dans certaines professions prioritaires : enseignement, secteur hi-tech, santÃ©, agriculture, startup. Montants variables selon profession.",
     amount: "Variable par profession",
     duration: "Variable",
-    deadline: "À vérifier par profession",
-    eligibility: "Olim dans professions désignées, avec qualifications",
+    deadline: "Ã vÃ©rifier par profession",
+    eligibility: "Olim dans professions dÃ©signÃ©es, avec qualifications",
     howToClaim:
-      "1. Identifier si votre profession bénéficie du Keren Klita (consulter Misrad Haklita). 2. Rassembler certificats de qualification et diplômes étrangers. 3. Demander reconnaissance de diplômes si nécessaire. 4. Soumettre demande auprès de l'organisme gestionnaire du Keren Klita.",
+      "1. Identifier si votre profession bÃ©nÃ©ficie du Keren Klita (consulter Misrad Haklita). 2. Rassembler certificats de qualification et diplÃ´mes Ã©trangers. 3. Demander reconnaissance de diplÃ´mes si nÃ©cessaire. 4. Soumettre demande auprÃ¨s de l'organisme gestionnaire du Keren Klita.",
     category: "financial",
     priority: "medium",
     updatedYear: 2025,
@@ -716,15 +717,15 @@ export const OLIM_RIGHTS: OlimRight[] = [
   {
     id: "right-to-vote",
     titleFR: "Droit de vote et participation politique",
-    titleHE: "זכות בחירה",
+    titleHE: "××××ª ××××¨×",
     description:
-      "Les olim peuvent voter et se présenter aux élections une fois citoyens israéliens. Accès à la citoyenneté simplifiée via la Loi du Retour après 3 ans de résidence.",
+      "Les olim peuvent voter et se prÃ©senter aux Ã©lections une fois citoyens israÃ©liens. AccÃ¨s Ã  la citoyennetÃ© simplifiÃ©e via la Loi du Retour aprÃ¨s 3 ans de rÃ©sidence.",
     amount: null,
-    duration: "Après 3 ans ou plus",
-    deadline: "Après naturalisation",
-    eligibility: "Olim devenant citoyens israéliens",
+    duration: "AprÃ¨s 3 ans ou plus",
+    deadline: "AprÃ¨s naturalisation",
+    eligibility: "Olim devenant citoyens israÃ©liens",
     howToClaim:
-      "1. Résider en Israël pour la durée requise (généralement 3 ans minimum). 2. Demander la citoyenneté auprès du Ministère de l'Intérieur. 3. Recevoir le certificat de citoyenneté israélienne. 4. Vous pouvez alors voter et vous présenter aux élections.",
+      "1. RÃ©sider en IsraÃ«l pour la durÃ©e requise (gÃ©nÃ©ralement 3 ans minimum). 2. Demander la citoyennetÃ© auprÃ¨s du MinistÃ¨re de l'IntÃ©rieur. 3. Recevoir le certificat de citoyennetÃ© israÃ©lienne. 4. Vous pouvez alors voter et vous prÃ©senter aux Ã©lections.",
     category: "employment",
     priority: "low",
     updatedYear: 2025,
@@ -736,46 +737,46 @@ export const OLIM_RIGHTS: OlimRight[] = [
  */
 export const DOCUMENT_TYPES: Record<string, DocumentType> = {
   payslip: {
-    nameHE: "תלוש שכר",
+    nameHE: "×ª×××© ×©××¨",
     nameFR: "Fiche de paie",
     description:
-      "Document mensuel détaillant salaire brut, déductions, cotisations sociales et montant net. Utilisé pour vérifier revenus et calculs de paie.",
+      "Document mensuel dÃ©taillant salaire brut, dÃ©ductions, cotisations sociales et montant net. UtilisÃ© pour vÃ©rifier revenus et calculs de paie.",
   },
   employmentContract: {
-    nameHE: "חוזה עבודה",
+    nameHE: "×××× ×¢××××",
     nameFR: "Contrat de travail",
     description:
-      "Accord légal entre employeur et employé définissant termes d'emploi, salaire, heures, droits et obligations.",
+      "Accord lÃ©gal entre employeur et employÃ© dÃ©finissant termes d'emploi, salaire, heures, droits et obligations.",
   },
   terminationLetter: {
-    nameHE: "מכתב פיטורין",
+    nameHE: "×××ª× ×¤××××¨××",
     nameFR: "Lettre de licenciement",
     description:
-      "Document officiel notifiant la fin de contrat de travail. Inclut date effective, raison, et droits à indemnités de licenciement.",
+      "Document officiel notifiant la fin de contrat de travail. Inclut date effective, raison, et droits Ã  indemnitÃ©s de licenciement.",
   },
   taxAssessment: {
-    nameHE: "שומת מס",
+    nameHE: "×©×××ª ××¡",
     nameFR: "Avis d'imposition",
     description:
-      "Document du Misrad Hareset (administration fiscale) détaillant revenus imposables, impôts dus, et crédits d'impôt appliqués.",
+      "Document du Misrad Hareset (administration fiscale) dÃ©taillant revenus imposables, impÃ´ts dus, et crÃ©dits d'impÃ´t appliquÃ©s.",
   },
   officialLetter: {
-    nameHE: "מכתב רשמי",
+    nameHE: "×××ª× ×¨×©××",
     nameFR: "Lettre officielle",
     description:
-      "Correspondance officielle de gouvernement israélien, municipalité, ou institution. Peut concerner impôts, allocations, enregistrement, etc.",
+      "Correspondance officielle de gouvernement israÃ©lien, municipalitÃ©, ou institution. Peut concerner impÃ´ts, allocations, enregistrement, etc.",
   },
   lease: {
-    nameHE: "חוזה שכירות",
+    nameHE: "×××× ×©×××¨××ª",
     nameFR: "Contrat de location",
     description:
-      "Accord de location pour résidence ou propriété. Définit loyer, conditions, durée bail, et droits/obligations propriétaire et locataire.",
+      "Accord de location pour rÃ©sidence ou propriÃ©tÃ©. DÃ©finit loyer, conditions, durÃ©e bail, et droits/obligations propriÃ©taire et locataire.",
   },
   bituachLeumiLetter: {
-    nameHE: "מכתב ביטוח לאומי",
+    nameHE: "×××ª× ××××× ×××××",
     nameFR: "Courrier Bituach Leumi",
     description:
-      "Correspondance du Bituach Leumi (Sécurité Sociale israélienne) concernant cotisations, droits aux allocations, statut d'assuré.",
+      "Correspondance du Bituach Leumi (SÃ©curitÃ© Sociale israÃ©lienne) concernant cotisations, droits aux allocations, statut d'assurÃ©.",
   },
 };
 
@@ -785,14 +786,14 @@ export const DOCUMENT_TYPES: Record<string, DocumentType> = {
  */
 export const FRENCH_HEBREW_GLOSSARY: GlossaryEntry[] = [
   {
-    hebrew: "שכר",
+    hebrew: "×©××¨",
     french: "Salaire",
     category: "salaire",
     explanation:
-      "Rémunération versée par l'employeur à l'employé pour travail effectué.",
+      "RÃ©munÃ©ration versÃ©e par l'employeur Ã  l'employÃ© pour travail effectuÃ©.",
   },
   {
-    hebrew: "שכר מינימום",
+    hebrew: "×©××¨ ××× ××××",
     french: "Salaire minimum",
     category: "salaire",
     explanation:
