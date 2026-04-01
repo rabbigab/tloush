@@ -179,6 +179,7 @@ export function createEmptyPayrollDocument(): PayrollDocument {
     pensionDetected: false,
     nationalInsuranceDetected: false,
     incomeTaxDetected: false,
+    kerenHishtalmutDetected: false,
     rawLines: [],
     confidenceScore: 0,
     extractionMode: "manual",
