@@ -119,6 +119,7 @@ export const DEMO_PAYROLL_DOCUMENT: PayrollDocument = {
   pensionDetected: true,
   nationalInsuranceDetected: true,
   incomeTaxDetected: true,
+  kerenHishtalmutDetected: false,
 
   rawLines: DEMO_PAYROLL_LINES,
   confidenceScore: 82,
