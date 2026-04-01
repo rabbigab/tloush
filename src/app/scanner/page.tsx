@@ -12,10 +12,10 @@ import clsx from "clsx";
 import type { DocumentType, DocumentAnalysis, ScanApiResponse, DocumentTypeCard } from "@/types/scanner";
 import { DOCUMENT_TYPES } from "@/types/scanner";
 
-const SCANNER_STEPS = [
-  { step: 1, label: "Type de document", description: "Choisissez votre document" },
-  { step: 2, label: "Téléversement", description: "Envoyez votre fichier" },
-  { step: 3, label: "Résultats", description: "Analysez vos résultats" },
+const SCANNER_STEPS: import("@/components/shared/ProgressStepper").Step[] = [
+  { id: 1, label: "Type de document", shortLabel: "Type" },
+  { id: 2, label: "Téléversement", shortLabel: "Upload" },
+  { id: 3, label: "Résultats", shortLabel: "Résultats" },
 ];
 
 type LocalStep = "selectType" | "upload" | "analyzing" | "results";
@@ -118,13 +118,13 @@ function ScannerContent() {
           <ProgressStepper steps={SCANNER_STEPS} currentStep={stepperStep} />
         </div>
 
-        {/* ===== STEP 1 — SELECT DOCUMENT TYPE ===== */}
+        {/* ===== STEP 1 â SELECT DOCUMENT TYPE ===== */}
         {localStep === "selectType" && (
           <div className="space-y-6 animate-fade-in-up">
             <div>
               <h2 className="section-title">Quel type de document analysez-vous ?</h2>
               <p className="section-subtitle">
-                Sélectionnez le type de document hébraïque que vous souhaitez analyser.
+                SÃ©lectionnez le type de document hÃ©braÃ¯que que vous souhaitez analyser.
               </p>
             </div>
 
@@ -161,7 +161,7 @@ function ScannerContent() {
           </div>
         )}
 
-        {/* ===== STEP 2 — UPLOAD ===== */}
+        {/* ===== STEP 2 â UPLOAD ===== */}
         {localStep === "upload" && selectedDocType && (
           <div className="space-y-6 animate-fade-in-up">
             <div className="flex items-center gap-3 mb-2">
@@ -169,15 +169,15 @@ function ScannerContent() {
                 onClick={handleBackToTypes}
                 className="text-brand-600 hover:text-brand-700 text-sm font-semibold flex items-center gap-1"
               >
-                ← Retour
+                â Retour
               </button>
             </div>
 
             <div>
-              <h2 className="section-title">Téléversez votre document</h2>
+              <h2 className="section-title">TÃ©lÃ©versez votre document</h2>
               <p className="section-subtitle">
-                Glissez-déposez votre fichier ou sélectionnez-le.
-                Formats acceptés : PDF, JPG, PNG.
+                Glissez-dÃ©posez votre fichier ou sÃ©lectionnez-le.
+                Formats acceptÃ©s : PDF, JPG, PNG.
               </p>
             </div>
 
@@ -194,7 +194,7 @@ function ScannerContent() {
           </div>
         )}
 
-        {/* ===== STEP 2b — ANALYZING ===== */}
+        {/* ===== STEP 2b â ANALYZING ===== */}
         {localStep === "analyzing" && (
           <div className="card flex flex-col items-center justify-center gap-6 py-16 animate-fade-in-up">
             <div className="relative">
@@ -204,31 +204,31 @@ function ScannerContent() {
             </div>
             <div className="text-center">
               <h3 className="font-bold text-neutral-800 text-lg mb-2">
-                Analyse en cours…
+                Analyse en coursâ¦
               </h3>
               <p className="text-sm text-neutral-500 max-w-sm">
-                Nous lisons et analysons votre document hébraïque.
+                Nous lisons et analysons votre document hÃ©braÃ¯que.
                 Cela prend quelques secondes.
               </p>
             </div>
             <div className="flex flex-col gap-2 text-xs text-neutral-400 items-start">
               <span className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />
-                Lecture du document…
+                Lecture du documentâ¦
               </span>
               <span className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 bg-brand-400 rounded-full animate-pulse animation-delay-100" />
-                Identification du contenu…
+                Identification du contenuâ¦
               </span>
               <span className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 bg-neutral-300 rounded-full" />
-                Extraction des données…
+                Extraction des donnÃ©esâ¦
               </span>
             </div>
           </div>
         )}
 
-        {/* ===== STEP 3 — RESULTS ===== */}
+        {/* ===== STEP 3 â RESULTS ===== */}
         {localStep === "results" && analysisResult && (
           <div className="space-y-6 animate-fade-in-up">
             <div className="flex items-center gap-3 mb-2">
@@ -236,13 +236,13 @@ function ScannerContent() {
                 onClick={handleBackToUpload}
                 className="text-brand-600 hover:text-brand-700 text-sm font-semibold flex items-center gap-1"
               >
-                ← Modifier
+                â Modifier
               </button>
             </div>
 
             {/* Document type badge */}
             <div>
-              <h2 className="section-title">Résultats de l'analyse</h2>
+              <h2 className="section-title">RÃ©sultats de l'analyse</h2>
               <p className="section-subtitle">
                 Voici les informations extraites de votre document.
               </p>
@@ -292,7 +292,7 @@ function ScannerContent() {
             {/* Alerts section */}
             {hasAlerts(analysisResult.data) && (
               <div className="space-y-3">
-                <h3 className="font-semibold text-neutral-800">Alertes détectées</h3>
+                <h3 className="font-semibold text-neutral-800">Alertes dÃ©tectÃ©es</h3>
                 {getAlerts(analysisResult.data).map((alert, idx) => (
                   <div
                     key={idx}
@@ -406,16 +406,16 @@ function ContractResults({ data }: any) {
           <ResultField label="Employeur" value={data.employerName} />
         )}
         {data.employeeName && (
-          <ResultField label="Salarié" value={data.employeeName} />
+          <ResultField label="SalariÃ©" value={data.employeeName} />
         )}
         {data.salary && (
-          <ResultField label="Salaire mensuel" value={`${data.salary.toLocaleString()} ₪`} />
+          <ResultField label="Salaire mensuel" value={`${data.salary.toLocaleString()} âª`} />
         )}
         {data.workHours && (
           <ResultField label="Heures/semaine" value={`${data.workHours} h`} />
         )}
         {data.startDate && (
-          <ResultField label="Date de début" value={new Date(data.startDate).toLocaleDateString("fr-FR")} />
+          <ResultField label="Date de dÃ©but" value={new Date(data.startDate).toLocaleDateString("fr-FR")} />
         )}
         {data.endDate && (
           <ResultField label="Date de fin" value={new Date(data.endDate).toLocaleDateString("fr-FR")} />
@@ -428,7 +428,7 @@ function ContractResults({ data }: any) {
           <div className="flex flex-wrap gap-2">
             {data.benefits.pension && <Badge label="Pension" color="success" />}
             {data.benefits.kerenHishtalmut && <Badge label="Keren Hishtalmut" color="success" />}
-            {data.benefits.healthInsurance && <Badge label="Assurance santé" color="success" />}
+            {data.benefits.healthInsurance && <Badge label="Assurance santÃ©" color="success" />}
             {data.benefits.other?.map((b: string) => (
               <Badge key={b} label={b} color="info" />
             ))}
@@ -443,7 +443,7 @@ function ContractResults({ data }: any) {
           data.overallAssessment === "attention_needed" && "bg-warning/5 border-l-4 border-l-warning",
           data.overallAssessment === "problematic" && "bg-danger/5 border-l-4 border-l-danger"
         )}>
-          <h4 className="font-semibold text-neutral-900">Évaluation</h4>
+          <h4 className="font-semibold text-neutral-900">Ãvaluation</h4>
           <p className={clsx(
             "text-sm mt-1",
             data.overallAssessment === "standard" && "text-success-700",
@@ -452,7 +452,7 @@ function ContractResults({ data }: any) {
           )}>
             {data.overallAssessment === "standard" ? "Contrat standard" :
              data.overallAssessment === "attention_needed" ? "Attention requise" :
-             "Contrat problématique"}
+             "Contrat problÃ©matique"}
           </p>
         </div>
       )}
@@ -464,7 +464,7 @@ function OfficialLetterResults({ data }: any) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
-        {data.sender && <ResultField label="Expéditeur" value={data.sender} />}
+        {data.sender && <ResultField label="ExpÃ©diteur" value={data.sender} />}
         {data.subject && <ResultField label="Sujet" value={data.subject} />}
         {data.deadline && (
           <ResultField label="Date limite" value={new Date(data.deadline).toLocaleDateString("fr-FR")} />
@@ -480,7 +480,7 @@ function OfficialLetterResults({ data }: any) {
                 data.urgencyLevel === "urgent" ? "Urgent" :
                 data.urgencyLevel === "action_required" ? "Action requise" :
                 data.urgencyLevel === "informational" ? "Informatif" :
-                "À archiver"
+                "Ã archiver"
               }
               color={
                 data.urgencyLevel === "urgent" ? "danger" :
@@ -495,7 +495,7 @@ function OfficialLetterResults({ data }: any) {
 
       {data.summary && (
         <div className="card p-4 bg-brand-50">
-          <h4 className="font-semibold text-neutral-900 mb-2 text-sm">Résumé</h4>
+          <h4 className="font-semibold text-neutral-900 mb-2 text-sm">RÃ©sumÃ©</h4>
           <p className="text-sm text-neutral-700">{data.summary}</p>
         </div>
       )}
@@ -514,12 +514,12 @@ function TaxNoticeResults({ data }: any) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
-        {data.taxYear && <ResultField label="Année fiscale" value={data.taxYear} />}
+        {data.taxYear && <ResultField label="AnnÃ©e fiscale" value={data.taxYear} />}
         {data.totalIncome && (
-          <ResultField label="Revenu total" value={`${data.totalIncome.toLocaleString()} ₪`} />
+          <ResultField label="Revenu total" value={`${data.totalIncome.toLocaleString()} âª`} />
         )}
         {data.totalTax && (
-          <ResultField label="Impôt total" value={`${data.totalTax.toLocaleString()} ₪`} />
+          <ResultField label="ImpÃ´t total" value={`${data.totalTax.toLocaleString()} âª`} />
         )}
       </div>
 
@@ -529,13 +529,13 @@ function TaxNoticeResults({ data }: any) {
           data.refundAmount > 0 ? "bg-success/5 border-l-4 border-l-success" : "bg-warning/5 border-l-4 border-l-warning"
         )}>
           <h4 className="font-semibold text-neutral-900 text-sm mb-1">
-            {data.refundAmount > 0 ? "Remboursement prévu" : "Montant dû"}
+            {data.refundAmount > 0 ? "Remboursement prÃ©vu" : "Montant dÃ»"}
           </h4>
           <p className={clsx(
             "text-lg font-bold",
             data.refundAmount > 0 ? "text-success" : "text-warning"
           )}>
-            {Math.abs(data.refundAmount).toLocaleString()} ₪
+            {Math.abs(data.refundAmount).toLocaleString()} âª
           </p>
         </div>
       )}
@@ -544,7 +544,7 @@ function TaxNoticeResults({ data }: any) {
         <div className="card p-4 bg-info/5 border-l-4 border-l-info">
           <div className="flex items-center gap-2">
             <CheckCircle size={18} className="text-info" />
-            <p className="text-sm font-semibold text-neutral-900">Avantages olim appliqués</p>
+            <p className="text-sm font-semibold text-neutral-900">Avantages olim appliquÃ©s</p>
           </div>
         </div>
       )}
@@ -556,21 +556,21 @@ function LeaseResults({ data }: any) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
-        {data.landlordName && <ResultField label="Propriétaire" value={data.landlordName} />}
+        {data.landlordName && <ResultField label="PropriÃ©taire" value={data.landlordName} />}
         {data.tenantName && <ResultField label="Locataire" value={data.tenantName} />}
         {data.monthlyRent && (
-          <ResultField label="Loyer mensuel" value={`${data.monthlyRent.toLocaleString()} ₪`} />
+          <ResultField label="Loyer mensuel" value={`${data.monthlyRent.toLocaleString()} âª`} />
         )}
         {data.deposit && (
-          <ResultField label="Dépôt" value={`${data.deposit.toLocaleString()} ₪`} />
+          <ResultField label="DÃ©pÃ´t" value={`${data.deposit.toLocaleString()} âª`} />
         )}
         {data.address && <ResultField label="Adresse" value={data.address} />}
-        {data.duration && <ResultField label="Durée" value={data.duration} />}
+        {data.duration && <ResultField label="DurÃ©e" value={data.duration} />}
       </div>
 
       {data.abusiveClauses && data.abusiveClauses.length > 0 && (
         <div className="space-y-2">
-          <h4 className="font-semibold text-neutral-900 text-sm">Clauses problématiques</h4>
+          <h4 className="font-semibold text-neutral-900 text-sm">Clauses problÃ©matiques</h4>
           {data.abusiveClauses.map((clause: any, idx: number) => (
             <div
               key={idx}
@@ -591,7 +591,7 @@ function TerminationResults({ data }: any) {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         {data.employerName && <ResultField label="Employeur" value={data.employerName} />}
-        {data.employeeName && <ResultField label="Salarié" value={data.employeeName} />}
+        {data.employeeName && <ResultField label="SalariÃ©" value={data.employeeName} />}
         {data.terminationDate && (
           <ResultField label="Date de licenciement" value={new Date(data.terminationDate).toLocaleDateString("fr-FR")} />
         )}
@@ -602,9 +602,9 @@ function TerminationResults({ data }: any) {
 
       {data.severanceMentioned?.present && (
         <div className="card p-4 bg-brand-50">
-          <h4 className="font-semibold text-neutral-900 text-sm mb-1">Indemnité de fin de contrat</h4>
+          <h4 className="font-semibold text-neutral-900 text-sm mb-1">IndemnitÃ© de fin de contrat</h4>
           <p className="text-lg font-bold text-brand-700">
-            {data.severanceMentioned.amount?.toLocaleString()} ₪
+            {data.severanceMentioned.amount?.toLocaleString()} âª
           </p>
         </div>
       )}
@@ -614,16 +614,16 @@ function TerminationResults({ data }: any) {
           "card p-4",
           data.pitzuimCalculation.matches ? "bg-success/5 border-l-4 border-l-success" : "bg-danger/5 border-l-4 border-l-danger"
         )}>
-          <h4 className="font-semibold text-neutral-900 text-sm mb-2">Vérification du pitzuim</h4>
+          <h4 className="font-semibold text-neutral-900 text-sm mb-2">VÃ©rification du pitzuim</h4>
           <div className="space-y-1 text-xs">
             <p className="text-neutral-700">
-              Montant attendu : <span className="font-semibold">{data.pitzuimCalculation.expected?.toLocaleString()} ₪</span>
+              Montant attendu : <span className="font-semibold">{data.pitzuimCalculation.expected?.toLocaleString()} âª</span>
             </p>
             <p className="text-neutral-700">
-              Montant mentionné : <span className="font-semibold">{data.pitzuimCalculation.mentioned?.toLocaleString()} ₪</span>
+              Montant mentionnÃ© : <span className="font-semibold">{data.pitzuimCalculation.mentioned?.toLocaleString()} âª</span>
             </p>
             {data.pitzuimCalculation.matches === false && (
-              <p className="text-danger font-semibold mt-2">⚠️ Les montants ne correspondent pas</p>
+              <p className="text-danger font-semibold mt-2">â ï¸ Les montants ne correspondent pas</p>
             )}
           </div>
         </div>
@@ -631,7 +631,7 @@ function TerminationResults({ data }: any) {
 
       {data.legalComplianceIssues && data.legalComplianceIssues.length > 0 && (
         <div className="space-y-2">
-          <h4 className="font-semibold text-neutral-900 text-sm">Problèmes légaux</h4>
+          <h4 className="font-semibold text-neutral-900 text-sm">ProblÃ¨mes lÃ©gaux</h4>
           {data.legalComplianceIssues.map((issue: any, idx: number) => (
             <div
               key={idx}
@@ -643,7 +643,7 @@ function TerminationResults({ data }: any) {
               )}
             >
               <p className="text-xs font-semibold text-neutral-900 mb-1">{issue.issue}</p>
-              <p className="text-xs text-neutral-600">→ {issue.recommendation}</p>
+              <p className="text-xs text-neutral-600">â {issue.recommendation}</p>
             </div>
           ))}
         </div>
