@@ -224,6 +224,7 @@ export async function simulateOcrExtraction(
     pensionDetected: data.pensionDetected ?? false,
     nationalInsuranceDetected: data.nationalInsuranceDetected ?? false,
     incomeTaxDetected: data.incomeTaxDetected ?? false,
+    kerenHishtalmutDetected: data.kerenHishtalmutDetected ?? false,
     rawLines: Array.isArray(data.rawLines) ? data.rawLines : [],
     confidenceScore: typeof data.confidenceScore === "number" ? data.confidenceScore : 50,
     extractionMode: "ocr",
