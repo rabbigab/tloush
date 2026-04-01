@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 
@@ -17,22 +16,14 @@ export default function Header() {
             <span className="text-[10px] text-neutral-400 hidden sm:block">Analyse de fiche de paie</span>
           </div>
         </Link>
-
         {/* Nav */}
         <nav className="flex items-center gap-1 sm:gap-2">
-          <Link
-            href="/droits-olim"
-            className="flex items-center gap-1.5 text-xs sm:text-sm text-neutral-500 hover:text-brand-600 transition-colors px-2 py-1.5 rounded-lg hover:bg-brand-50"
-          >
-            <span className="hidden sm:inline">Mes Droits</span>
-            <span className="sm:hidden">Droits</span>
-          </Link>
           <Link
             href="/privacy"
             className="flex items-center gap-1.5 text-xs sm:text-sm text-neutral-500 hover:text-brand-600 transition-colors px-2 py-1.5 rounded-lg hover:bg-brand-50"
           >
             <ShieldCheck size={14} />
-            <span className="hidden sm:inline">Confidentialité</span>
+            <span className="hidden sm:inline">Confidentialit\u00e9</span>
           </Link>
           <Link href="/analyze" className="btn-primary text-sm py-2 px-4">
             Analyser ma fiche
