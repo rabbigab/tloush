@@ -250,7 +250,8 @@ export async function POST(req: NextRequest) {
 
     const startTime = Date.now();
 
-    const message = await client.messages.create({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const message = await (client.messages.create as any)({
       model: "claude-sonnet-4-5",
       max_tokens: 4096,
       system: SYSTEM_PROMPTS[documentType],
@@ -258,8 +259,7 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: "user",
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          content: contentBlocks as any,
+          content: contentBlocks,
         },
       ],
     });
