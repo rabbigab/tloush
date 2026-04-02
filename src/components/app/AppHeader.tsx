@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { LogOut, Moon, Sun, Sparkles } from 'lucide-react'
+import { LogOut, Moon, Sun } from 'lucide-react'
 import { useTheme } from '@/components/providers/ThemeProvider'
 
 export default function AppHeader({ userEmail }: { userEmail: string }) {
@@ -20,10 +21,8 @@ export default function AppHeader({ userEmail }: { userEmail: string }) {
   return (
     <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 shadow-lg shadow-blue-500/10 dark:shadow-none">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-        <Link href="/inbox" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 bg-white/20 dark:bg-blue-500/20 rounded-xl flex items-center justify-center group-hover:bg-white/30 dark:group-hover:bg-blue-500/30 transition-colors">
-            <Sparkles size={16} className="text-white dark:text-blue-400" />
-          </div>
+        <Link href="/inbox" className="flex items-center gap-2.5 group">
+          <Image src="/icon.png" alt="Tloush" width={32} height={32} className="rounded-lg group-hover:scale-105 transition-transform" />
           <span className="text-lg font-extrabold text-white tracking-tight">
             Tloush
           </span>

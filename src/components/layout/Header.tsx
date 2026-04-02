@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { ShieldCheck, LayoutDashboard, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -19,13 +20,11 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-neutral-100 dark:border-slate-700 shadow-sm">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center shadow-sm group-hover:bg-brand-700 transition-colors">
-            <span className="text-white font-bold text-sm">T</span>
-          </div>
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <Image src="/icon.png" alt="Tloush" width={32} height={32} className="rounded-lg group-hover:scale-105 transition-transform" />
           <div className="flex flex-col leading-none">
             <span className="font-bold text-neutral-900 dark:text-slate-100 text-base tracking-tight">Tloush</span>
-            <span className="text-[10px] text-neutral-400 dark:text-slate-500 hidden sm:block">Analyse de fiche de paie</span>
+            <span className="text-[10px] text-neutral-400 dark:text-slate-500 hidden sm:block">Documents israeliens en francais</span>
           </div>
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2">

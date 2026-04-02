@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { CheckCircle } from 'lucide-react'
 
 export default function ResetPasswordPage() {
@@ -74,9 +75,9 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block">
-            <h1 className="text-3xl font-extrabold text-brand-600">Tloush</h1>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Votre assistant administratif en Israel</p>
+          <Link href="/" className="inline-flex flex-col items-center gap-3">
+            <Image src="/logo.png" alt="Tloush" width={180} height={48} className="h-12 w-auto" priority />
+            <p className="text-slate-500 dark:text-slate-400 text-sm">Votre assistant administratif en Israel</p>
           </Link>
         </div>
 
