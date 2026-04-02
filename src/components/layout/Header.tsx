@@ -20,11 +20,11 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-neutral-100 dark:border-slate-700 shadow-sm">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <Image src="/icon.png" alt="Tloush" width={32} height={32} className="rounded-lg group-hover:scale-105 transition-transform" />
+        <Link href="/" className="flex items-center gap-3 group">
+          <Image src="/icon.png" alt="Tloush" width={44} height={44} className="rounded-xl group-hover:scale-105 transition-transform" />
           <div className="flex flex-col leading-none">
-            <span className="font-bold text-neutral-900 dark:text-slate-100 text-base tracking-tight">Tloush</span>
-            <span className="text-[10px] text-neutral-400 dark:text-slate-500 hidden sm:block">Documents israeliens en francais</span>
+            <span className="font-bold text-neutral-900 dark:text-slate-100 text-lg tracking-tight">Tloush</span>
+            <span className="text-[11px] text-neutral-400 dark:text-slate-500 hidden sm:block">Documents israeliens en francais</span>
           </div>
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2">
