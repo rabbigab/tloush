@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
+import { escapeHtml } from '@/lib/fileValidation'
 
 /**
  * Sends an urgent document alert email to the user.
@@ -80,23 +81,23 @@ export async function POST(req: NextRequest) {
       <table style="width:100%;border-collapse:collapse">
         <tr>
           <td style="padding:8px 0;font-size:13px;color:#64748b;width:120px">Document</td>
-          <td style="padding:8px 0;font-size:14px;color:#0f172a;font-weight:600">${doc.file_name}</td>
+          <td style="padding:8px 0;font-size:14px;color:#0f172a;font-weight:600">${escapeHtml(doc.file_name)}</td>
         </tr>
         <tr>
           <td style="padding:8px 0;font-size:13px;color:#64748b">Type</td>
-          <td style="padding:8px 0;font-size:14px;color:#334155">${doc.document_type || 'Document'}</td>
+          <td style="padding:8px 0;font-size:14px;color:#334155">${escapeHtml(doc.document_type || 'Document')}</td>
         </tr>
         <tr>
           <td style="padding:8px 0;font-size:13px;color:#64748b;vertical-align:top">Résumé</td>
-          <td style="padding:8px 0;font-size:14px;color:#334155">${doc.summary_fr || 'Analyse disponible dans votre inbox'}</td>
+          <td style="padding:8px 0;font-size:14px;color:#334155">${escapeHtml(doc.summary_fr || 'Analyse disponible dans votre inbox')}</td>
         </tr>
         ${doc.action_description ? `<tr>
           <td style="padding:8px 0;font-size:13px;color:#64748b;vertical-align:top">Action requise</td>
-          <td style="padding:8px 0;font-size:14px;color:#dc2626;font-weight:600">${doc.action_description}</td>
+          <td style="padding:8px 0;font-size:14px;color:#dc2626;font-weight:600">${escapeHtml(doc.action_description)}</td>
         </tr>` : ''}
         ${deadline ? `<tr>
           <td style="padding:8px 0;font-size:13px;color:#64748b">Date limite</td>
-          <td style="padding:8px 0;font-size:14px;color:#dc2626;font-weight:700">${deadline}</td>
+          <td style="padding:8px 0;font-size:14px;color:#dc2626;font-weight:700">${escapeHtml(deadline)}</td>
         </tr>` : ''}
       </table>
     </div>

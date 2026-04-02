@@ -19,13 +19,13 @@ export default function GlobalError({
   return (
     <html lang="fr">
       <body>
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-950 px-4">
           <div className="text-center max-w-md">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-4">
               Une erreur est survenue
             </h2>
-            <p className="text-gray-600 mb-6">
-              Nous sommes désolés, quelque chose s'est mal passé. Notre équipe a été notifiée.
+            <p className="text-gray-600 dark:text-slate-400 mb-6">
+              Nous sommes désolés, quelque chose s&apos;est mal passé. Notre équipe a été notifiée.
             </p>
             <button
               onClick={reset}

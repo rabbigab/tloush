@@ -7,15 +7,15 @@ export default function NotFound() {
       <Header />
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="text-center max-w-md">
-          <div className="text-6xl font-extrabold text-slate-200 mb-4">404</div>
-          <h1 className="text-xl font-bold text-slate-900 mb-2">Page introuvable</h1>
-          <p className="text-sm text-slate-500 mb-6">
+          <div className="text-6xl font-extrabold text-slate-200 dark:text-slate-700 mb-4">404</div>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">Page introuvable</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
             Cette page n'existe pas ou a été déplacée.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/"
-              className="text-sm font-medium text-slate-600 px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
+              className="text-sm font-medium text-slate-600 dark:text-slate-300 px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
               Accueil
             </Link>

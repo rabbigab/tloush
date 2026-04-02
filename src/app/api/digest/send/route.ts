@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
+import { escapeHtml } from '@/lib/fileValidation'
 
 // Verify cron secret to prevent unauthorized calls
 function verifyCronAuth(req: NextRequest): boolean {
@@ -58,13 +59,16 @@ export async function POST(req: NextRequest) {
     const urgentCount = docs.filter(d => d.is_urgent).length
     const actionCount = docs.filter(d => d.action_required).length
 
-    const docRows = docs.map(d => `
+    const docRows = docs.map(d => {
+      const summary = d.summary_fr || ''
+      const truncated = summary.length > 80 ? summary.substring(0, 80) + '...' : summary
+      return `
       <tr>
-        <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;color:#334155">${d.document_type || 'Document'}</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;color:#334155">${(d.summary_fr || '').substring(0, 80)}${(d.summary_fr || '').length > 80 ? '...' : ''}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;color:#334155">${escapeHtml(d.document_type || 'Document')}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;color:#334155">${escapeHtml(truncated)}</td>
         <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;text-align:center">${d.is_urgent ? '<span style="color:#dc2626;font-weight:600">Urgent</span>' : '<span style="color:#16a34a">OK</span>'}</td>
-      </tr>
-    `).join('')
+      </tr>`
+    }).join('')
 
     const html = `
 <!DOCTYPE html>
