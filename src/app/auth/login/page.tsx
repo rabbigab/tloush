@@ -38,30 +38,32 @@ function LoginForm() {
 
       <form onSubmit={handleLogin} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label htmlFor="login-email" className="block text-sm font-medium text-slate-700 mb-1">
             Email
           </label>
           <input
+            id="login-email"
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
             placeholder="vous@email.com"
-            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-slate-900 placeholder-slate-400"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label htmlFor="login-password" className="block text-sm font-medium text-slate-700 mb-1">
             Mot de passe
           </label>
           <input
+            id="login-password"
             type="password"
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
             placeholder="••••••••"
-            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-slate-900 placeholder-slate-400"
           />
         </div>
 
@@ -74,7 +76,7 @@ function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2.5 rounded-xl transition-colors"
+          className="w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors active:scale-[0.99]"
         >
           {loading ? 'Connexion...' : 'Se connecter'}
         </button>
@@ -82,8 +84,8 @@ function LoginForm() {
 
       <div className="mt-6 text-center text-sm text-slate-500">
         Pas encore de compte ?{' '}
-        <Link href="/auth/register" className="text-blue-600 hover:underline font-medium">
-          Créer un compte
+        <Link href="/auth/register" className="text-brand-600 hover:underline font-medium">
+          Creer un compte
         </Link>
       </div>
     </div>
@@ -96,15 +98,15 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
-            <h1 className="text-3xl font-extrabold text-blue-600">Tloush</h1>
-            <p className="text-slate-500 text-sm mt-1">Votre assistant administratif en Israël</p>
+            <h1 className="text-3xl font-extrabold text-brand-600">Tloush</h1>
+            <p className="text-slate-500 text-sm mt-1">Votre assistant administratif en Israel</p>
           </Link>
         </div>
-        <Suspense fallback={<div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 h-64" />}>
+        <Suspense fallback={<div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 h-64 animate-pulse" />}>
           <LoginForm />
         </Suspense>
         <p className="text-center text-xs text-slate-400 mt-4">
-          <Link href="/privacy" className="underline hover:text-slate-500">Politique de confidentialité</Link>
+          <Link href="/privacy" className="underline hover:text-slate-500">Politique de confidentialite</Link>
         </p>
       </div>
     </div>

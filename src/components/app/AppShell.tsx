@@ -21,7 +21,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <AppHeader userEmail={userEmail} />
       <AppNav />
-      <main className="flex-1 pb-20 md:pb-0">
+      <main className="flex-1 pb-24 md:pb-0">
         {children}
       </main>
     </div>

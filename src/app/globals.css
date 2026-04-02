@@ -17,6 +17,15 @@
     color: #1e293b;
     -webkit-font-smoothing: antialiased;
   }
+  /* Keyboard focus visible ring */
+  :focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+  }
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
 }
 
 @layer components {
@@ -56,6 +65,19 @@
   }
   .section-subtitle {
     @apply text-sm text-neutral-500 mb-6;
+  }
+  /* Card with hover elevation */
+  .card-interactive {
+    @apply bg-white rounded-2xl border border-slate-200 p-4 transition-all duration-200
+           hover:shadow-md hover:border-slate-300;
+  }
+  /* Page heading */
+  .page-title {
+    @apply text-lg font-bold text-slate-900;
+  }
+  /* Section heading inside cards */
+  .section-heading {
+    @apply text-sm font-bold text-slate-900;
   }
 }
 

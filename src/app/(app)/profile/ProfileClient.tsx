@@ -109,9 +109,9 @@ export default function ProfileClient({
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 w-full">
 
         {/* Infos compte */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <User size={18} className="text-blue-600" />
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <h2 className="section-heading mb-4 flex items-center gap-2">
+            <User size={18} className="text-brand-600" />
             Mon compte
           </h2>
           <div className="space-y-3">
@@ -127,21 +127,21 @@ export default function ProfileClient({
                     type="text"
                     value={nameInput}
                     onChange={e => setNameInput(e.target.value)}
-                    className="border border-slate-200 rounded-lg px-2 py-1 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="border border-slate-200 rounded-lg px-2 py-1.5 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-brand-400"
                     autoFocus
                     onKeyDown={e => { if (e.key === 'Enter') saveDisplayName(); if (e.key === 'Escape') { setEditingName(false); setNameInput(displayName) } }}
                   />
-                  <button onClick={saveDisplayName} disabled={nameSaving} className="text-green-600 hover:text-green-700">
+                  <button onClick={saveDisplayName} disabled={nameSaving} className="w-9 h-9 flex items-center justify-center text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors" aria-label="Sauvegarder">
                     <Check size={16} />
                   </button>
-                  <button onClick={() => { setEditingName(false); setNameInput(displayName) }} className="text-slate-400 hover:text-slate-600">
+                  <button onClick={() => { setEditingName(false); setNameInput(displayName) }} className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors" aria-label="Annuler">
                     <X size={16} />
                   </button>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-slate-800">{displayName || 'Non défini'}</span>
-                  <button onClick={() => setEditingName(true)} className="text-slate-400 hover:text-blue-600">
+                  <span className="text-sm font-medium text-slate-800">{displayName || 'Non defini'}</span>
+                  <button onClick={() => setEditingName(true)} className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors" aria-label="Modifier le nom">
                     <Pencil size={14} />
                   </button>
                 </div>
@@ -157,74 +157,82 @@ export default function ProfileClient({
             <div className="flex items-center justify-between py-2">
               <span className="text-sm text-slate-500 flex items-center gap-1">
                 <FileText size={13} />
-                Documents analysés
+                Documents analyses
               </span>
-              <span className="text-sm font-semibold text-blue-600">{documentCount}</span>
+              <span className="text-sm font-semibold text-brand-600">{documentCount}</span>
             </div>
           </div>
         </div>
 
         {/* Notifications */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <Bell size={18} className="text-blue-600" />
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <h2 className="section-heading mb-4 flex items-center gap-2">
+            <Bell size={18} className="text-brand-600" />
             Notifications
           </h2>
-          <div className="flex items-center justify-between py-2 border-b border-slate-100">
-            <div className="flex items-center gap-3">
-              <Mail size={16} className="text-slate-400" />
-              <div>
-                <p className="text-sm font-medium text-slate-800">Résumé hebdomadaire</p>
-                <p className="text-xs text-slate-500">Recevez un email chaque lundi avec le résumé de vos documents</p>
-              </div>
+
+          {prefsLoading ? (
+            <div className="space-y-4">
+              <div className="h-14 bg-slate-100 animate-pulse rounded-xl" />
+              <div className="h-14 bg-slate-100 animate-pulse rounded-xl" />
             </div>
-            <button
-              onClick={toggleDigest}
-              disabled={prefsLoading}
-              role="switch"
-              aria-checked={digestEnabled}
-              aria-label="Activer le résumé hebdomadaire"
-              className={`relative w-11 h-6 rounded-full transition-colors ${digestEnabled ? 'bg-blue-600' : 'bg-slate-300'} ${prefsLoading ? 'opacity-50' : ''}`}
-            >
-              <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${digestEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
-            </button>
-          </div>
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center gap-3">
-              <AlertTriangle size={16} className="text-slate-400" />
-              <div>
-                <p className="text-sm font-medium text-slate-800">Alertes urgentes</p>
-                <p className="text-xs text-slate-500">Recevez un email immédiat quand un document urgent est détecté</p>
+          ) : (
+            <>
+              <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <Mail size={16} className="text-slate-500" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">Resume hebdomadaire</p>
+                    <p className="text-xs text-slate-500">Recevez un email chaque lundi avec le resume de vos documents</p>
+                  </div>
+                </div>
+                <button
+                  onClick={toggleDigest}
+                  role="switch"
+                  aria-checked={digestEnabled}
+                  aria-label="Activer le resume hebdomadaire"
+                  className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${digestEnabled ? 'bg-brand-600' : 'bg-slate-300'}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${digestEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                </button>
               </div>
-            </div>
-            <button
-              onClick={toggleUrgentAlerts}
-              disabled={prefsLoading}
-              role="switch"
-              aria-checked={urgentAlertsEnabled}
-              aria-label="Activer les alertes urgentes"
-              className={`relative w-11 h-6 rounded-full transition-colors ${urgentAlertsEnabled ? 'bg-red-500' : 'bg-slate-300'} ${prefsLoading ? 'opacity-50' : ''}`}
-            >
-              <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${urgentAlertsEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
-            </button>
-          </div>
+              <div className="flex items-center justify-between py-3">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle size={16} className="text-slate-500" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">Alertes urgentes</p>
+                    <p className="text-xs text-slate-500">Recevez un email immediat quand un document urgent est detecte</p>
+                  </div>
+                </div>
+                <button
+                  onClick={toggleUrgentAlerts}
+                  role="switch"
+                  aria-checked={urgentAlertsEnabled}
+                  aria-label="Activer les alertes urgentes"
+                  className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${urgentAlertsEnabled ? 'bg-red-500' : 'bg-slate-300'}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${urgentAlertsEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                </button>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Actions */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-bold text-slate-900 mb-4">Actions</h2>
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <h2 className="section-heading mb-4">Actions</h2>
           <div className="space-y-3">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-sm transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-sm transition-colors min-h-[44px]"
             >
               <LogOut size={16} />
-              Se déconnecter
+              Se deconnecter
             </button>
 
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-red-200 hover:bg-red-50 text-red-600 text-sm transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-red-200 hover:bg-red-50 text-red-600 text-sm transition-colors min-h-[44px]"
             >
               <Trash2 size={16} />
               Supprimer mon compte
@@ -238,9 +246,9 @@ export default function ProfileClient({
             <div className="flex items-start gap-3 mb-4">
               <AlertTriangle size={18} className="text-red-600 shrink-0 mt-0.5" />
               <div>
-                <p className="font-semibold text-red-800 text-sm">Suppression définitive du compte</p>
+                <p className="font-semibold text-red-800 text-sm">Suppression definitive du compte</p>
                 <p className="text-xs text-red-600 mt-1">
-                  Cette action est irréversible. Tous vos documents ({documentCount}), conversations et données seront définitivement supprimés.
+                  Cette action est irreversible. Tous vos documents ({documentCount}), conversations et donnees seront definitivement supprimes.
                 </p>
               </div>
             </div>
@@ -253,21 +261,21 @@ export default function ProfileClient({
               onChange={e => setDeleteInput(e.target.value)}
               placeholder="SUPPRIMER"
               aria-label="Tapez SUPPRIMER pour confirmer"
-              className="w-full border border-red-200 rounded-xl px-3 py-2 text-sm text-red-800 placeholder-red-300 focus:outline-none focus:ring-2 focus:ring-red-400 mb-3"
+              className="w-full border border-red-200 rounded-xl px-3 py-2.5 text-sm text-red-800 placeholder-red-300 focus:outline-none focus:ring-2 focus:ring-red-400 mb-3"
             />
             <div className="flex gap-2">
               <button
                 onClick={() => { setShowDeleteConfirm(false); setDeleteInput('') }}
-                className="flex-1 px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-sm hover:bg-slate-50 transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm hover:bg-slate-50 transition-colors min-h-[44px]"
               >
                 Annuler
               </button>
               <button
                 onClick={handleDeleteAccount}
                 disabled={deleteInput !== 'SUPPRIMER' || deleting}
-                className="flex-1 px-4 py-2 rounded-xl bg-red-600 text-white text-sm hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 text-white text-sm hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px]"
               >
-                {deleting ? 'Suppression...' : 'Supprimer définitivement'}
+                {deleting ? 'Suppression...' : 'Supprimer definitivement'}
               </button>
             </div>
           </div>

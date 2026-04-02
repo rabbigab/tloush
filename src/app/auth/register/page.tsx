@@ -14,6 +14,10 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
+  const passwordLength = password.length
+  const passwordStrong = passwordLength >= 8
+  const passwordsMatch = password === confirm && confirm.length > 0
+
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
@@ -26,7 +30,7 @@ export default function RegisterPage() {
     }
 
     if (password.length < 8) {
-      setError('Le mot de passe doit contenir au moins 8 caractères')
+      setError('Le mot de passe doit contenir au moins 8 caracteres')
       setLoading(false)
       return
     }
@@ -55,17 +59,19 @@ export default function RegisterPage() {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
         <div className="w-full max-w-md text-center">
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-            <div className="text-4xl mb-4">📬</div>
-            <h2 className="text-xl font-bold text-slate-900 mb-2">Vérifiez votre email</h2>
+            <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">📬</span>
+            </div>
+            <h2 className="text-xl font-bold text-slate-900 mb-2">Verifiez votre email</h2>
             <p className="text-slate-500 text-sm">
-              Nous avons envoyé un lien de confirmation à <strong>{email}</strong>.
+              Nous avons envoye un lien de confirmation a <strong>{email}</strong>.
               Cliquez sur le lien pour activer votre compte.
             </p>
             <Link
               href="/auth/login"
-              className="mt-6 inline-block text-blue-600 hover:underline text-sm font-medium"
+              className="mt-6 inline-block text-brand-600 hover:underline text-sm font-medium"
             >
-              Retour à la connexion
+              Retour a la connexion
             </Link>
           </div>
         </div>
@@ -79,55 +85,69 @@ export default function RegisterPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
-            <h1 className="text-3xl font-extrabold text-blue-600">Tloush</h1>
-            <p className="text-slate-500 text-sm mt-1">Votre assistant administratif en Israël</p>
+            <h1 className="text-3xl font-extrabold text-brand-600">Tloush</h1>
+            <p className="text-slate-500 text-sm mt-1">Votre assistant administratif en Israel</p>
           </Link>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-          <h2 className="text-xl font-bold text-slate-900 mb-6">Créer un compte</h2>
+          <h2 className="text-xl font-bold text-slate-900 mb-6">Creer un compte</h2>
 
           <form onSubmit={handleRegister} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="reg-email" className="block text-sm font-medium text-slate-700 mb-1">
                 Email
               </label>
               <input
+                id="reg-email"
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
                 placeholder="vous@email.com"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-slate-900 placeholder-slate-400"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="reg-password" className="block text-sm font-medium text-slate-700 mb-1">
                 Mot de passe
               </label>
               <input
+                id="reg-password"
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
-                placeholder="Minimum 8 caractères"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400"
+                placeholder="Minimum 8 caracteres"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-slate-900 placeholder-slate-400"
               />
+              {passwordLength > 0 && (
+                <p className={`text-xs mt-1.5 ${passwordStrong ? 'text-green-600' : 'text-amber-600'}`}>
+                  {passwordStrong ? '✓ Mot de passe valide' : `${passwordLength}/8 caracteres minimum`}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="reg-confirm" className="block text-sm font-medium text-slate-700 mb-1">
                 Confirmer le mot de passe
               </label>
               <input
+                id="reg-confirm"
                 type="password"
                 value={confirm}
                 onChange={e => setConfirm(e.target.value)}
                 required
                 placeholder="••••••••"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-slate-900 placeholder-slate-400"
               />
+              {confirm.length > 0 && !passwordsMatch && (
+                <p className="text-xs mt-1.5 text-red-600">Les mots de passe ne correspondent pas</p>
+              )}
+              {passwordsMatch && (
+                <p className="text-xs mt-1.5 text-green-600">✓ Les mots de passe correspondent</p>
+              )}
             </div>
 
             {error && (
@@ -139,23 +159,23 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2.5 rounded-xl transition-colors"
+              className="w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors active:scale-[0.99]"
             >
-              {loading ? 'Création...' : 'Créer mon compte'}
+              {loading ? 'Creation...' : 'Creer mon compte'}
             </button>
           </form>
 
           <div className="mt-6 text-center text-sm text-slate-500">
-            Déjà un compte ?{' '}
-            <Link href="/auth/login" className="text-blue-600 hover:underline font-medium">
+            Deja un compte ?{' '}
+            <Link href="/auth/login" className="text-brand-600 hover:underline font-medium">
               Se connecter
             </Link>
           </div>
         </div>
 
         <p className="text-center text-xs text-slate-400 mt-4">
-          En créant un compte, vous acceptez notre{' '}
-          <Link href="/privacy" className="underline hover:text-slate-500">politique de confidentialité</Link>.
+          En creant un compte, vous acceptez notre{' '}
+          <Link href="/privacy" className="underline hover:text-slate-500">politique de confidentialite</Link>.
         </p>
       </div>
     </div>

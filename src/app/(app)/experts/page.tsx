@@ -46,11 +46,11 @@ export default function ExpertsPage() {
       </div>
 
       {/* Coming soon banner */}
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
-        <Clock size={18} className="text-amber-500 shrink-0 mt-0.5" />
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
+        <Clock size={18} className="text-amber-600 shrink-0 mt-0.5" />
         <div>
           <p className="text-sm font-semibold text-amber-800">Annuaire en construction</p>
-          <p className="text-xs text-amber-600 mt-0.5">
+          <p className="text-xs text-amber-700 mt-0.5">
             Nous selectionnons des professionnels francophones verifies. Les premiers profils arrivent bientot.
           </p>
         </div>
@@ -91,17 +91,17 @@ export default function ExpertsPage() {
       </div>
 
       {/* CTA for professionals */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white text-center">
+      <div className="bg-gradient-to-r from-brand-600 to-brand-700 rounded-2xl p-6 text-white text-center shadow-md">
         <h2 className="font-bold text-lg mb-1">Vous etes professionnel francophone ?</h2>
-        <p className="text-blue-100 text-sm mb-4">
+        <p className="text-brand-100 text-sm mb-4">
           Rejoignez Tloush et connectez-vous avec des clients francophones en Israel qui ont besoin de votre expertise.
         </p>
         <Link
           href="/experts/rejoindre"
-          className="inline-flex items-center gap-2 bg-white text-blue-700 font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-blue-50 transition-colors"
+          className="inline-flex items-center gap-2 bg-white text-brand-700 font-bold text-sm px-6 py-3 rounded-xl hover:bg-brand-50 shadow-sm transition-all hover:shadow-md active:scale-95"
         >
           Devenir expert reference
-          <ArrowRight size={14} />
+          <ArrowRight size={15} />
         </Link>
       </div>
     </div>

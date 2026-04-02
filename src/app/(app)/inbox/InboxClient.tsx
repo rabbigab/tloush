@@ -22,38 +22,37 @@ interface Document {
 }
 
 const DOC_LABELS: Record<string, string> = {
-  payslip: '💰 Fiche de paie',
-  bituah_leumi: '🏥 Bituah Leumi',
-  tax_notice: '🧾 Avis d\'impôt',
-  work_contract: '📋 Contrat de travail',
-  pension: '🏦 Retraite',
-  health_insurance: '🩺 Assurance santé',
-  rental: '🏠 Logement',
-  bank: '🏦 Bancaire',
-  official_letter: '📨 Courrier officiel',
-  contract: '📋 Contrat',
-  tax: '🧾 Fiscal',
-  other: '📄 Document',
-  unknown: '📄 Document'
+  payslip: 'Fiche de paie',
+  bituah_leumi: 'Bituah Leumi',
+  tax_notice: 'Avis d\'impot',
+  work_contract: 'Contrat de travail',
+  pension: 'Retraite',
+  health_insurance: 'Assurance sante',
+  rental: 'Logement',
+  bank: 'Bancaire',
+  official_letter: 'Courrier officiel',
+  contract: 'Contrat',
+  tax: 'Fiscal',
+  other: 'Document',
+  unknown: 'Document'
 }
 
 const DOC_COLORS: Record<string, string> = {
-  payslip: 'bg-blue-50 text-blue-700 border-blue-200',
-  bituah_leumi: 'bg-teal-50 text-teal-700 border-teal-200',
-  tax_notice: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  work_contract: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-  pension: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  health_insurance: 'bg-cyan-50 text-cyan-700 border-cyan-200',
-  rental: 'bg-amber-50 text-amber-700 border-amber-200',
-  bank: 'bg-violet-50 text-violet-700 border-violet-200',
-  official_letter: 'bg-orange-50 text-orange-700 border-orange-200',
-  contract: 'bg-purple-50 text-purple-700 border-purple-200',
-  tax: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  other: 'bg-slate-50 text-slate-700 border-slate-200',
-  unknown: 'bg-slate-50 text-slate-700 border-slate-200'
+  payslip: 'bg-blue-100 text-blue-800 border-blue-200',
+  bituah_leumi: 'bg-teal-100 text-teal-800 border-teal-200',
+  tax_notice: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  work_contract: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+  pension: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  health_insurance: 'bg-cyan-100 text-cyan-800 border-cyan-200',
+  rental: 'bg-amber-100 text-amber-800 border-amber-200',
+  bank: 'bg-violet-100 text-violet-800 border-violet-200',
+  official_letter: 'bg-orange-100 text-orange-800 border-orange-200',
+  contract: 'bg-purple-100 text-purple-800 border-purple-200',
+  tax: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  other: 'bg-slate-100 text-slate-700 border-slate-200',
+  unknown: 'bg-slate-100 text-slate-700 border-slate-200'
 }
 
-// Category mapping for filter tabs
 const CATEGORY_MAP: Record<string, string> = {
   payslip: 'travail',
   work_contract: 'travail',
@@ -73,7 +72,7 @@ const CATEGORY_MAP: Record<string, string> = {
 const CATEGORY_TABS = [
   { key: 'all', label: 'Tous' },
   { key: 'travail', label: 'Travail' },
-  { key: 'securite_sociale', label: 'Sécu sociale' },
+  { key: 'securite_sociale', label: 'Secu sociale' },
   { key: 'fiscal', label: 'Fiscal' },
   { key: 'retraite', label: 'Retraite' },
   { key: 'logement', label: 'Logement' },
@@ -86,17 +85,15 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
   const [uploadError, setUploadError] = useState('')
   const [docs, setDocs] = useState<Document[]>(documents)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
   const inputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 
-  // Apply category filter, then text search
   const categoryDocs = activeCategory === 'all'
     ? docs
-    : docs.filter(d => {
-        return CATEGORY_MAP[d.document_type] === activeCategory
-      })
+    : docs.filter(d => CATEGORY_MAP[d.document_type] === activeCategory)
 
   const filteredDocs = search.trim()
     ? categoryDocs.filter(d =>
@@ -110,7 +107,6 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
   const urgentDocs = docs.filter(d => d.is_urgent)
   const actionDocs = docs.filter(d => d.action_required && !d.is_urgent)
 
-  // Count docs per category for tab badges
   const categoryCounts = CATEGORY_TABS.reduce((acc, tab) => {
     if (tab.key === 'all') {
       acc[tab.key] = docs.length
@@ -122,13 +118,14 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
 
   async function handleDelete(docId: string) {
     setDeletingId(docId)
+    setDeleteConfirmId(null)
     try {
       const res = await fetch(`/api/documents/${docId}`, { method: 'DELETE' })
       if (res.ok) {
         setDocs(prev => prev.filter(d => d.id !== docId))
       }
     } catch {
-      // Silently fail — document stays in list
+      // Document stays in list
     } finally {
       setDeletingId(null)
     }
@@ -158,7 +155,7 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
       setDocs(prev => [data.document, ...prev])
       track('file_uploaded', { document_type: data.document?.document_type, is_urgent: data.document?.is_urgent })
     } catch {
-      setUploadError('Erreur de connexion. Réessayez.')
+      setUploadError('Erreur de connexion. Reessayez.')
     } finally {
       setUploading(false)
       if (inputRef.current) inputRef.current.value = ''
@@ -182,7 +179,7 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
           <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <AlertCircle size={18} className="text-red-600" />
-              <h2 className="font-bold text-red-800">
+              <h2 className="font-bold text-red-800 text-sm">
                 {urgentDocs.length} document{urgentDocs.length > 1 ? 's' : ''} urgent{urgentDocs.length > 1 ? 's' : ''}
               </h2>
             </div>
@@ -191,7 +188,7 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
                 <Link
                   key={doc.id}
                   href={`/assistant?doc=${doc.id}`}
-                  className="block bg-white rounded-xl p-3 border border-red-100 hover:border-red-300 transition-colors"
+                  className="block bg-white rounded-xl p-3 border border-red-100 hover:border-red-300 hover:shadow-sm transition-all min-h-[44px]"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-slate-800">{doc.file_name}</span>
@@ -211,14 +208,14 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <Clock size={18} className="text-amber-600" />
-              <h2 className="font-bold text-amber-800">À traiter</h2>
+              <h2 className="font-bold text-amber-800 text-sm">A traiter</h2>
             </div>
             <div className="space-y-2">
               {actionDocs.map(doc => (
                 <Link
                   key={doc.id}
                   href={`/assistant?doc=${doc.id}`}
-                  className="block bg-white rounded-xl p-3 border border-amber-100 hover:border-amber-300 transition-colors"
+                  className="block bg-white rounded-xl p-3 border border-amber-100 hover:border-amber-300 hover:shadow-sm transition-all min-h-[44px]"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-slate-800">{doc.file_name}</span>
@@ -234,8 +231,8 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
         )}
 
         {/* Zone d'upload */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-bold text-slate-900 mb-4">Envoyer un document</h2>
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <h2 className="section-heading mb-4">Envoyer un document</h2>
 
           <input
             ref={inputRef}
@@ -243,36 +240,39 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
             accept=".pdf,.jpg,.jpeg,.png"
             className="hidden"
             onChange={onFileChange}
-            aria-label="Téléverser un document"
+            aria-label="Televerser un document"
           />
 
           <button
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
-            className="w-full border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/30 rounded-xl p-8 transition-all text-center group disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full border-2 border-dashed border-slate-200 hover:border-brand-400 hover:bg-brand-50/30 rounded-xl p-8 transition-all text-center group disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99]"
           >
             {uploading ? (
               <div className="flex flex-col items-center gap-3">
-                <div className="w-10 h-10 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm font-medium text-blue-600">Analyse en cours...</p>
-                <p className="text-xs text-slate-400">Claude lit votre document</p>
+                <div className="w-10 h-10 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
+                <p className="text-sm font-medium text-brand-600">Analyse en cours...</p>
+                <p className="text-xs text-slate-500">Claude lit votre document</p>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-3">
-                <div className="w-12 h-12 bg-blue-50 group-hover:bg-blue-100 rounded-xl flex items-center justify-center transition-colors">
-                  <Upload size={22} className="text-blue-600" />
+                <div className="w-12 h-12 bg-brand-50 group-hover:bg-brand-100 rounded-xl flex items-center justify-center transition-colors">
+                  <Upload size={22} className="text-brand-600" />
                 </div>
                 <div>
                   <p className="font-semibold text-slate-700">Fiche de paie, courrier, contrat...</p>
-                  <p className="text-sm text-slate-400 mt-1">PDF, JPG, PNG · Max 10 Mo</p>
+                  <p className="text-sm text-slate-500 mt-1">PDF, JPG, PNG</p>
                 </div>
               </div>
             )}
           </button>
 
           {uploadError && (
-            <div className="mt-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
-              {uploadError}
+            <div className="mt-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 flex items-center justify-between">
+              <span>{uploadError}</span>
+              <button onClick={() => setUploadError('')} className="min-w-[44px] min-h-[44px] flex items-center justify-center text-red-400 hover:text-red-600" aria-label="Fermer">
+                <X size={16} />
+              </button>
             </div>
           )}
         </div>
@@ -280,24 +280,24 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
         {/* Recherche + liste */}
         <div>
           <div className="flex items-center justify-between mb-3 gap-3">
-            <h2 className="font-bold text-slate-900 shrink-0">
-              Tous vos documents
-              {docs.length > 0 && <span className="text-slate-400 font-normal ml-2">({filteredDocs.length}{search ? `/${docs.length}` : ''})</span>}
+            <h2 className="page-title shrink-0">
+              Vos documents
+              {docs.length > 0 && <span className="text-slate-400 font-normal text-sm ml-2">({filteredDocs.length})</span>}
             </h2>
             {docs.length > 0 && (
               <div className="relative flex-1 max-w-xs">
-                <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
                   type="text"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Rechercher..."
                   aria-label="Rechercher un document"
-                  className="w-full bg-white border border-slate-200 rounded-xl pl-8 pr-8 py-2 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-9 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-300"
                 />
                 {search && (
-                  <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" aria-label="Effacer la recherche">
-                    <X size={13} />
+                  <button onClick={() => setSearch('')} className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-lg" aria-label="Effacer la recherche">
+                    <X size={14} />
                   </button>
                 )}
               </div>
@@ -315,14 +315,14 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
                   <button
                     key={tab.key}
                     onClick={() => setActiveCategory(tab.key)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-colors min-h-[36px] ${
                       isActive
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600'
+                        ? 'bg-brand-600 text-white shadow-sm'
+                        : 'bg-white border border-slate-200 text-slate-600 hover:border-brand-300 hover:text-brand-600'
                     }`}
                   >
                     {tab.label}
-                    <span className={`text-[10px] ${isActive ? 'text-blue-200' : 'text-slate-400'}`}>{count}</span>
+                    <span className={`text-[10px] ${isActive ? 'text-brand-200' : 'text-slate-400'}`}>{count}</span>
                   </button>
                 )
               })}
@@ -330,52 +330,52 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
           )}
 
           {filteredDocs.length === 0 && docs.length > 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
-              <Search size={24} className="text-slate-300 mx-auto mb-2" />
-              <p className="text-sm text-slate-400">Aucun document ne correspond à &quot;{search}&quot;</p>
+            <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center shadow-sm">
+              <Search size={24} className="text-slate-400 mx-auto mb-2" />
+              <p className="text-sm text-slate-500">Aucun document ne correspond a &quot;{search}&quot;</p>
             </div>
           ) : docs.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-              <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <FileText size={28} className="text-slate-300" />
+            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
+              <div className="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <FileText size={28} className="text-brand-300" />
               </div>
-              <p className="font-semibold text-slate-600 mb-1">Aucun document pour l'instant</p>
-              <p className="text-sm text-slate-400">Envoyez votre première fiche de paie ou courrier ci-dessus</p>
+              <p className="font-semibold text-slate-700 mb-1">Aucun document pour l&apos;instant</p>
+              <p className="text-sm text-slate-500">Envoyez votre premier document ci-dessus pour commencer</p>
             </div>
           ) : (
             <div className="space-y-3">
               {filteredDocs.map(doc => (
                 <div
                   key={doc.id}
-                  className="bg-white rounded-2xl border border-slate-200 p-4 hover:border-blue-200 transition-colors"
+                  className="card-interactive"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${DOC_COLORS[doc.document_type] || DOC_COLORS.other}`}>
+                      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                        <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full border ${DOC_COLORS[doc.document_type] || DOC_COLORS.other}`}>
                           {DOC_LABELS[doc.document_type] || DOC_LABELS.other}
                         </span>
                         {doc.is_urgent && (
-                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
-                            🔴 Urgent
+                          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-200">
+                            Urgent
                           </span>
                         )}
                         {doc.action_required && !doc.is_urgent && (
-                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
-                            ⚠️ Action requise
+                          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                            Action requise
                           </span>
                         )}
                         {!doc.action_required && !doc.is_urgent && (
-                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200">
-                            <CheckCircle size={10} className="inline mr-1" />Traité
+                          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200">
+                            <CheckCircle size={10} className="inline mr-1" />Traite
                           </span>
                         )}
                       </div>
 
                       <p className="font-medium text-slate-800 text-sm truncate">{doc.file_name}</p>
-                      {doc.period && <p className="text-xs text-slate-400 mt-0.5">{doc.period}</p>}
+                      {doc.period && <p className="text-xs text-slate-500 mt-0.5">{doc.period}</p>}
                       {doc.summary_fr && (
-                        <p className="text-xs text-slate-500 mt-2 line-clamp-2">{doc.summary_fr}</p>
+                        <p className="text-xs text-slate-600 mt-2 line-clamp-2">{doc.summary_fr}</p>
                       )}
                       {(() => {
                         const rec = getExpertRecommendation(doc.document_type, doc.is_urgent, doc.action_required, doc.action_description, doc.summary_fr)
@@ -383,50 +383,67 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
                         return (
                           <Link
                             href={getExpertUrl(rec.specialties[0])}
-                            className="flex items-center gap-1.5 mt-2 text-xs text-purple-600 hover:text-purple-700 font-medium"
+                            className="flex items-center gap-1.5 mt-2 text-xs text-purple-700 hover:text-purple-800 font-medium min-h-[28px]"
                           >
-                            <UserCheck size={11} />
+                            <UserCheck size={12} />
                             Consulter un expert
                           </Link>
                         )
                       })()}
-                      <p className="text-xs text-slate-300 mt-2">{formatDate(doc.created_at)}</p>
+                      <p className="text-xs text-slate-400 mt-2">{formatDate(doc.created_at)}</p>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-1 shrink-0">
                       <Link
                         href={`/assistant?doc=${doc.id}`}
-                        className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-medium px-3 py-1.5 rounded-xl transition-colors"
+                        className="flex items-center gap-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-medium px-3 py-2 rounded-xl transition-colors min-h-[36px]"
                         aria-label="Poser une question sur ce document"
                       >
-                        <MessageSquare size={13} />
+                        <MessageSquare size={14} />
                         <span className="hidden sm:block">Demander</span>
                       </Link>
                       <a
                         href={`/api/documents/${doc.id}/export`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
+                        className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-colors"
                         title="Exporter l'analyse"
                         aria-label="Exporter l'analyse"
                       >
-                        <Download size={14} />
+                        <Download size={16} />
                       </a>
                       <button
-                        onClick={() => {
-                          if (window.confirm('Supprimer ce document ?')) {
-                            handleDelete(doc.id)
-                          }
-                        }}
+                        onClick={() => setDeleteConfirmId(doc.id)}
                         disabled={deletingId === doc.id}
-                        className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+                        className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
                         title="Supprimer"
                         aria-label="Supprimer le document"
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
+
+                  {/* Delete confirmation inline */}
+                  {deleteConfirmId === doc.id && (
+                    <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+                      <p className="text-xs text-slate-600">Supprimer ce document ?</p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setDeleteConfirmId(null)}
+                          className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors min-h-[32px]"
+                        >
+                          Annuler
+                        </button>
+                        <button
+                          onClick={() => handleDelete(doc.id)}
+                          className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors min-h-[32px]"
+                        >
+                          Supprimer
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

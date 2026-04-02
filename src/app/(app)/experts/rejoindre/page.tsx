@@ -66,7 +66,7 @@ export default function RejoindreExpertsPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
           { Icon: Users, title: 'Communaute ciblee', desc: 'Clients francophones' },
           { Icon: TrendingUp, title: 'Leads qualifies', desc: 'Via l\'analyse de documents' },

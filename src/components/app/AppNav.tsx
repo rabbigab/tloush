@@ -27,10 +27,10 @@ export default function AppNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
                   isActive
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                    ? 'border-brand-600 text-brand-600'
+                    : 'border-transparent text-slate-600 hover:text-slate-800 hover:border-slate-300'
                 }`}
               >
                 <item.icon size={16} />
@@ -42,20 +42,20 @@ export default function AppNav() {
       </nav>
 
       {/* Mobile: bottom tab bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 safe-area-bottom">
-        <div className="flex justify-around py-1.5 px-2">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 z-50 pb-[env(safe-area-inset-bottom)]">
+        <div className="flex justify-around px-1">
           {NAV_ITEMS.map(item => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-colors ${
-                  isActive ? 'text-blue-600' : 'text-slate-400'
+                className={`flex flex-col items-center justify-center gap-0.5 min-h-[56px] min-w-[44px] px-2 rounded-lg transition-colors ${
+                  isActive ? 'text-brand-600' : 'text-slate-500'
                 }`}
               >
-                <item.icon size={20} />
-                <span className="text-[10px] font-medium">{item.label}</span>
+                <item.icon size={22} />
+                <span className="text-[10px] font-medium leading-tight">{item.label}</span>
               </Link>
             )
           })}

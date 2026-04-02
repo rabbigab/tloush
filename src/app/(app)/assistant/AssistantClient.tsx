@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Send, FileText, Loader2 } from 'lucide-react'
+import { Send, FileText, Loader2, User, Bot } from 'lucide-react'
 import Link from 'next/link'
 import { track } from '@/lib/analytics'
 
@@ -25,17 +25,17 @@ const SUGGESTED_QUESTIONS = [
   'Est-ce que ce document est important ?',
   'Que dois-je faire maintenant ?',
   'Est-ce qu\'il y a une anomalie ?',
-  'Pouvez-vous m\'expliquer ce document en détail ?',
-  'Quel est le délai pour répondre ?',
+  'Expliquez-moi ce document en detail',
+  'Quel est le delai pour repondre ?',
 ]
 
 const DOC_LABELS: Record<string, string> = {
-  payslip: '💰 Fiche de paie',
-  official_letter: '📨 Courrier officiel',
-  contract: '📋 Contrat',
-  tax: '🧾 Fiscal',
-  other: '📄 Document',
-  unknown: '📄 Document'
+  payslip: 'Fiche de paie',
+  official_letter: 'Courrier officiel',
+  contract: 'Contrat',
+  tax: 'Fiscal',
+  other: 'Document',
+  unknown: 'Document'
 }
 
 export default function AssistantClient({
@@ -60,17 +60,16 @@ export default function AssistantClient({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Message d'accueil
   useEffect(() => {
     if (activeDoc) {
       setMessages([{
         role: 'assistant',
-        content: `Bonjour ! J'ai chargé votre document **${activeDoc.file_name}**${activeDoc.period ? ` (${activeDoc.period})` : ''}.\n\n${activeDoc.summary_fr || ''}\n\nQue voulez-vous savoir sur ce document ?`
+        content: `Bonjour ! J'ai charge votre document **${activeDoc.file_name}**${activeDoc.period ? ` (${activeDoc.period})` : ''}.\n\n${activeDoc.summary_fr || ''}\n\nQue voulez-vous savoir sur ce document ?`
       }])
     } else {
       setMessages([{
         role: 'assistant',
-        content: 'Bonjour ! Je suis votre assistant Tloush. Je peux répondre à vos questions sur vos documents administratifs israéliens ou sur l\'administration en Israël en général.\n\nSélectionnez un document ci-dessous ou posez-moi directement votre question.'
+        content: 'Bonjour ! Je suis votre assistant Tloush. Je peux repondre a vos questions sur vos documents administratifs israeliens ou sur l\'administration en Israel en general.\n\nSelectionnez un document ci-dessous ou posez-moi directement votre question.'
       }])
     }
   }, [activeDoc])
@@ -103,7 +102,7 @@ export default function AssistantClient({
 
       if (!res.ok) {
         const errorMsg = res.status === 429
-          ? 'Vous avez atteint la limite de messages (30/heure). Réessayez dans quelques minutes.'
+          ? 'Vous avez atteint la limite de messages (30/heure). Reessayez dans quelques minutes.'
           : data.error || 'Une erreur est survenue.'
         throw new Error(errorMsg)
       }
@@ -111,13 +110,14 @@ export default function AssistantClient({
       setMessages(prev => [...prev, { role: 'assistant', content: data.message }])
       if (data.conversationId) setConversationId(data.conversationId)
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Désolé, une erreur est survenue. Réessayez dans quelques instants.'
+      const errorMessage = err instanceof Error ? err.message : 'Desole, une erreur est survenue. Reessayez dans quelques instants.'
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: `⚠️ ${errorMessage}`
+        content: `${errorMessage}`
       }])
     } finally {
       setLoading(false)
+      inputRef.current?.focus()
     }
   }
 
@@ -135,7 +135,6 @@ export default function AssistantClient({
   }
 
   function renderMessage(content: string) {
-    // Rendu simple avec support markdown basique
     return content
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\n/g, '<br/>')
@@ -147,23 +146,23 @@ export default function AssistantClient({
 
         {/* Sidebar documents */}
         <div className="w-64 shrink-0 hidden md:block">
-          <div className="bg-white rounded-2xl border border-slate-200 p-3 sticky top-20">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3 px-1">Vos documents</p>
+          <div className="bg-white rounded-2xl border border-slate-200 p-3 sticky top-20 shadow-sm">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3 px-1">Vos documents</p>
             <div className="space-y-1">
               <button
                 onClick={() => { setActiveDoc(null); setConversationId(null); router.push('/assistant') }}
-                className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${!activeDoc ? 'bg-blue-50 text-blue-700 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}
+                className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-colors min-h-[40px] ${!activeDoc ? 'bg-brand-50 text-brand-700 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}
               >
-                Question générale
+                Question generale
               </button>
               {allDocuments.map(doc => (
                 <button
                   key={doc.id}
                   onClick={() => selectDocument(doc)}
-                  className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${activeDoc?.id === doc.id ? 'bg-blue-50 text-blue-700 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}
+                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-colors min-h-[40px] ${activeDoc?.id === doc.id ? 'bg-brand-50 text-brand-700 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}
                 >
                   <div className="flex items-start gap-2">
-                    <FileText size={13} className="mt-0.5 shrink-0" />
+                    <FileText size={14} className="mt-0.5 shrink-0" />
                     <div className="min-w-0">
                       <p className="truncate text-xs">{doc.file_name}</p>
                       {doc.period && <p className="text-xs text-slate-400">{doc.period}</p>}
@@ -176,15 +175,15 @@ export default function AssistantClient({
         </div>
 
         {/* Zone de chat */}
-        <div className="flex-1 flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="flex-1 flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
 
           {/* Document actif */}
           {activeDoc && (
-            <div className="px-4 py-3 bg-blue-50 border-b border-blue-100 flex items-center gap-2">
-              <FileText size={15} className="text-blue-600 shrink-0" />
+            <div className="px-4 py-3 bg-brand-50 border-b border-brand-100 flex items-center gap-2">
+              <FileText size={15} className="text-brand-600 shrink-0" />
               <div className="min-w-0">
-                <span className="text-sm font-medium text-blue-800 truncate block">{activeDoc.file_name}</span>
-                <span className="text-xs text-blue-500">{DOC_LABELS[activeDoc.document_type] || 'Document'}{activeDoc.period ? ` · ${activeDoc.period}` : ''}</span>
+                <span className="text-sm font-medium text-brand-800 truncate block">{activeDoc.file_name}</span>
+                <span className="text-xs text-brand-600">{DOC_LABELS[activeDoc.document_type] || 'Document'}{activeDoc.period ? ` · ${activeDoc.period}` : ''}</span>
               </div>
             </div>
           )}
@@ -192,37 +191,50 @@ export default function AssistantClient({
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div key={i} className={`flex gap-2.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                {msg.role === 'assistant' && (
+                  <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center shrink-0 mt-1">
+                    <Bot size={14} className="text-brand-600" />
+                  </div>
+                )}
                 <div
-                  className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                  className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                     msg.role === 'user'
-                      ? 'bg-blue-600 text-white rounded-br-sm'
-                      : 'bg-slate-100 text-slate-800 rounded-bl-sm'
+                      ? 'bg-brand-600 text-white'
+                      : 'bg-slate-50 text-slate-800 border border-slate-200'
                   }`}
                   dangerouslySetInnerHTML={{ __html: renderMessage(msg.content) }}
                 />
+                {msg.role === 'user' && (
+                  <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center shrink-0 mt-1">
+                    <User size={14} className="text-slate-600" />
+                  </div>
+                )}
               </div>
             ))}
 
             {loading && (
-              <div className="flex justify-start">
-                <div className="bg-slate-100 rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-2">
-                  <Loader2 size={14} className="animate-spin text-slate-400" />
-                  <span className="text-sm text-slate-400">Tloush réfléchit...</span>
+              <div className="flex gap-2.5 justify-start">
+                <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center shrink-0 mt-1">
+                  <Bot size={14} className="text-brand-600" />
+                </div>
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 flex items-center gap-2">
+                  <Loader2 size={14} className="animate-spin text-brand-500" />
+                  <span className="text-sm text-slate-600">Tloush reflechit...</span>
                 </div>
               </div>
             )}
 
-            {/* Questions suggérées */}
+            {/* Questions suggerees */}
             {messages.length <= 1 && !loading && (
               <div className="pt-2">
-                <p className="text-xs text-slate-400 mb-2">Questions fréquentes :</p>
+                <p className="text-xs text-slate-500 mb-2 font-medium">Questions frequentes :</p>
                 <div className="flex flex-wrap gap-2">
                   {SUGGESTED_QUESTIONS.map((q, i) => (
                     <button
                       key={i}
                       onClick={() => sendMessage(q)}
-                      className="text-xs bg-slate-50 hover:bg-blue-50 hover:text-blue-700 border border-slate-200 hover:border-blue-200 rounded-xl px-3 py-1.5 text-slate-600 transition-colors"
+                      className="text-xs bg-white hover:bg-brand-50 hover:text-brand-700 border border-slate-200 hover:border-brand-200 rounded-xl px-3 py-2 text-slate-600 transition-colors min-h-[36px]"
                     >
                       {q}
                     </button>
@@ -235,7 +247,7 @@ export default function AssistantClient({
           </div>
 
           {/* Input */}
-          <div className="border-t border-slate-100 p-3">
+          <div className="border-t border-slate-200 p-3">
             <div className="flex gap-2 items-end">
               <textarea
                 ref={inputRef}
@@ -245,7 +257,7 @@ export default function AssistantClient({
                 placeholder="Posez votre question..."
                 aria-label="Votre message"
                 rows={1}
-                className="flex-1 resize-none rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent max-h-32"
+                className="flex-1 resize-none rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent max-h-32"
                 style={{ height: 'auto' }}
                 onInput={e => {
                   const t = e.target as HTMLTextAreaElement
@@ -256,14 +268,18 @@ export default function AssistantClient({
               <button
                 onClick={() => sendMessage(input)}
                 disabled={!input.trim() || loading}
-                className="w-10 h-10 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 rounded-xl flex items-center justify-center transition-colors shrink-0"
+                className="w-11 h-11 bg-brand-600 hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl flex items-center justify-center transition-colors shrink-0 active:scale-95"
                 aria-label="Envoyer le message"
               >
-                <Send size={16} className={input.trim() && !loading ? 'text-white' : 'text-slate-400'} />
+                {loading ? (
+                  <Loader2 size={16} className="text-white animate-spin" />
+                ) : (
+                  <Send size={16} className="text-white" />
+                )}
               </button>
             </div>
-            <p className="text-xs text-slate-300 text-center mt-2">Entrée pour envoyer · Maj+Entrée pour sauter une ligne</p>
-            <p className="text-[10px] text-slate-300 text-center mt-1">Tloush n'est ni un avocat ni un comptable. Pour un avis professionnel, consultez un expert.</p>
+            <p className="text-xs text-slate-400 text-center mt-2">Entree pour envoyer · Maj+Entree pour sauter une ligne</p>
+            <p className="text-xs text-slate-400 text-center mt-1">Tloush n&apos;est ni un avocat ni un comptable. Consultez un expert pour un avis professionnel.</p>
           </div>
         </div>
       </div>
