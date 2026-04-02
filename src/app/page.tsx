@@ -42,13 +42,13 @@ export default function HomePage() {
                 Prêt à comprendre vos documents ?
               </h2>
               <p className="text-brand-100 mb-8 max-w-md mx-auto text-base">
-                Commencez gratuitement. Aucune inscription requise.
+                Créez votre compte en 30 secondes. C'est gratuit.
               </p>
               <Link
-                href="/analyze"
+                href="/auth/register"
                 className="inline-flex items-center justify-center gap-2 bg-white text-brand-700 font-bold px-8 py-3.5 rounded-xl hover:bg-brand-50 transition-colors shadow-lg"
               >
-                Commencer gratuitement
+                Créer mon compte gratuit
                 <ArrowRight size={18} />
               </Link>
             </div>

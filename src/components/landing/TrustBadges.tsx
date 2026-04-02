@@ -7,13 +7,13 @@ const BADGES = [
   {
     icon: ShieldCheck,
     title: "Vos données sont en sécurité",
-    desc: "Aucune conservation. Aucun partage. Analyse sécurisée.",
+    desc: "Stockage chiffré. Suppression à tout moment. Conforme RGPD.",
     color: "text-success",
     bg: "bg-success/10",
   },
   {
     icon: Scale,
-    title: "Législation israélienne 2025",
+    title: "Législation israélienne 2026",
     desc: "Basé sur les lois et régulations à jour.",
     color: "text-brand-600",
     bg: "bg-brand-50",

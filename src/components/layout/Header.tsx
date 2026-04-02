@@ -49,8 +49,8 @@ export default function Header() {
               Connexion
             </Link>
           )}
-          <Link href="/analyze" className="btn-primary text-sm py-2 px-4">
-            Analyser ma fiche
+          <Link href="/inbox" className="btn-primary text-sm py-2 px-4">
+            Analyser un document
           </Link>
         </nav>
       </div>

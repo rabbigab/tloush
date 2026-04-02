@@ -27,17 +27,17 @@ export default function Hero() {
 
           {/* Titre principal */}
           <h1 className="text-5xl sm:text-6xl font-extrabold text-neutral-900 leading-tight mb-6">
-            Votre fiche de paie en hébreu,{" "}
-            <span className="text-brand-600">enfin claire</span>
+            Vos documents israéliens,{" "}
+            <span className="text-brand-600">enfin clairs</span>
           </h1>
 
           {/* Sous-titre descriptif */}
           <p className="text-xl text-neutral-600 leading-relaxed mb-8 max-w-2xl mx-auto">
-            Uploadez votre tloush. En 30 secondes, comprenez chaque ligne, détectez les erreurs, et sachez exactement quoi demander à votre employeur.
+            Fiche de paie, courrier officiel, avis d'imposition, contrat... Uploadez votre document en hébreu et recevez une explication complète en français en 30 secondes.
           </p>
 
           {/* Trust badges inline */}
-          <div className="flex flex-wrap justify-center gap-3 mb-8 text-sm text-neutral-600">
+          <div className="flex flex-wrap justify-center gap-3 mb-10 text-sm text-neutral-600">
             <span className="flex items-center gap-1">
               <span className="font-semibold">100% en français</span>
             </span>
@@ -47,14 +47,9 @@ export default function Hero() {
             </span>
             <span>•</span>
             <span className="flex items-center gap-1">
-              <span className="font-semibold">Données non conservées</span>
+              <span className="font-semibold">Données sécurisées</span>
             </span>
           </div>
-
-          {/* Social proof */}
-          <p className="text-sm text-brand-600 font-semibold mb-8">
-            ✨ Déjà 500+ analyses effectuées
-          </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
@@ -63,10 +58,10 @@ export default function Hero() {
               whileTap={{ scale: 0.95 }}
             >
               <Link
-                href="/analyze"
+                href="/auth/register"
                 className="inline-flex items-center justify-center gap-2 bg-brand-600 text-white font-bold px-8 py-4 rounded-xl hover:bg-brand-700 transition-colors shadow-lg text-base"
               >
-                Analyser ma fiche gratuitement
+                Créer mon compte gratuit
                 <ArrowRight size={18} />
               </Link>
             </motion.div>
@@ -75,10 +70,10 @@ export default function Hero() {
               whileTap={{ scale: 0.95 }}
             >
               <Link
-                href="/analyze?demo=true"
+                href="/auth/login"
                 className="inline-flex items-center justify-center gap-2 text-brand-600 font-semibold px-8 py-4 rounded-xl border-2 border-brand-200 hover:border-brand-400 hover:bg-brand-50 transition-all text-base"
               >
-                Voir un exemple de rapport
+                J'ai déjà un compte
               </Link>
             </motion.div>
           </div>
