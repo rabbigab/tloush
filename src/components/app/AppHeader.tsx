@@ -21,11 +21,8 @@ export default function AppHeader({ userEmail }: { userEmail: string }) {
   return (
     <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 shadow-lg shadow-blue-500/10 dark:shadow-none">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-        <Link href="/inbox" className="flex items-center gap-3 group">
-          <Image src="/icon.png" alt="Tloush" width={38} height={38} className="rounded-xl group-hover:scale-105 transition-transform" />
-          <span className="text-xl font-extrabold text-white tracking-tight">
-            Tloush
-          </span>
+        <Link href="/inbox" className="flex items-center group">
+          <Image src="/logo.png" alt="Tloush" width={160} height={44} className="h-10 w-auto brightness-0 invert group-hover:scale-105 transition-transform" priority />
         </Link>
 
         <div className="flex items-center gap-1">
