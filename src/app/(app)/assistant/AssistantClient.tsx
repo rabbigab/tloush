@@ -135,8 +135,31 @@ export default function AssistantClient({
   }
 
   function renderMessage(content: string) {
-    return content
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Escape HTML first to prevent XSS
+    const escaped = content
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+
+    return escaped
+      // Code blocks (```)
+      .replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre class="bg-slate-900 text-slate-100 rounded-xl p-3 my-2 text-xs overflow-x-auto"><code>$2</code></pre>')
+      // Inline code
+      .replace(/`([^`]+)`/g, '<code class="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded text-xs font-mono">$1</code>')
+      // Bold
+      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+      // Italic
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      // Headers (## and ###)
+      .replace(/^### (.+)$/gm, '<h4 class="font-semibold text-sm mt-3 mb-1">$1</h4>')
+      .replace(/^## (.+)$/gm, '<h3 class="font-bold text-base mt-3 mb-1">$1</h3>')
+      // Unordered lists
+      .replace(/^- (.+)$/gm, '<li class="ml-4 list-disc">$1</li>')
+      .replace(/(<li.*<\/li>\n?)+/g, (match) => `<ul class="my-1 space-y-0.5">${match}</ul>`)
+      // Ordered lists
+      .replace(/^\d+\. (.+)$/gm, '<li class="ml-4 list-decimal">$1</li>')
+      .replace(/(<li class="ml-4 list-decimal">.*<\/li>\n?)+/g, (match) => `<ol class="my-1 space-y-0.5">${match}</ol>`)
+      // Line breaks
       .replace(/\n/g, '<br/>')
   }
 

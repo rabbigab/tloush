@@ -10,12 +10,31 @@ export const metadata: Metadata = {
   },
   description:
     "Uploadez vos documents administratifs israéliens en hébreu. Recevez une analyse complète en français en 30 secondes avec alertes et assistant IA.",
-  keywords: ["documents israéliens", "fiche de paie", "israël", "tloush", "hébreu", "français", "analyse", "olim"],
+  keywords: ["documents israéliens", "fiche de paie", "israël", "tloush", "hébreu", "français", "analyse", "olim", "bituah leumi", "impôts israël"],
   metadataBase: new URL("https://tloush.vercel.app"),
   openGraph: {
+    title: "Tloush — Comprenez vos documents israéliens en français",
+    description: "Uploadez vos documents en hébreu et recevez une analyse complète en français en 30 secondes. 100% gratuit.",
+    url: "https://tloush.vercel.app",
     siteName: "Tloush",
     locale: "fr_FR",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tloush — Comprenez vos documents israéliens en français",
+    description: "Uploadez vos documents en hébreu et recevez une analyse complète en français en 30 secondes. 100% gratuit.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 };
 
