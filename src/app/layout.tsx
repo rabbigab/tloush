@@ -1,11 +1,22 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
+import { PosthogProvider } from "@/components/providers/PosthogProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Tloush — Analysez votre fiche de paie israélienne",
+  title: {
+    default: "Tloush — Comprenez vos documents israéliens en français",
+    template: "%s | Tloush",
+  },
   description:
-    "Comprenez enfin votre fiche de paie israélienne en français. Détectez les anomalies, vérifiez vos droits et préparez vos questions.",
-  keywords: ["fiche de paie", "israël", "tloush", "salaire", "hébreu", "français", "analyse"],
+    "Uploadez vos documents administratifs israéliens en hébreu. Recevez une analyse complète en français en 30 secondes avec alertes et assistant IA.",
+  keywords: ["documents israéliens", "fiche de paie", "israël", "tloush", "hébreu", "français", "analyse", "olim"],
+  metadataBase: new URL("https://tloush.vercel.app"),
+  openGraph: {
+    siteName: "Tloush",
+    locale: "fr_FR",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -15,7 +26,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body>{children}</body>
+      <body>
+        <PosthogProvider>
+          {children}
+        </PosthogProvider>
+        <Analytics />
+      </body>
     </html>
   );
 }

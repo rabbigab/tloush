@@ -6,6 +6,7 @@ import { Upload, FileText, AlertCircle, CheckCircle, Clock, LogOut, MessageSquar
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { getExpertRecommendation, getExpertUrl } from '@/lib/expertMatcher'
+import { track } from '@/lib/analytics'
 
 interface Document {
   id: string
@@ -102,6 +103,7 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
       }
 
       setDocs(prev => [data.document, ...prev])
+      track('file_uploaded', { document_type: data.document?.document_type, is_urgent: data.document?.is_urgent })
     } catch {
       setUploadError('Erreur de connexion. Réessayez.')
     } finally {

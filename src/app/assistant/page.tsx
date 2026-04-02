@@ -2,6 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import AssistantClient from './AssistantClient'
 
+export const metadata = {
+  title: 'Assistant IA',
+  description: 'Posez vos questions en français sur vos documents israéliens. Assistant IA contextuel.',
+}
+
 interface Props {
   searchParams: Promise<{ doc?: string }>
 }

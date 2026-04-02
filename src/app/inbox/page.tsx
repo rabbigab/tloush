@@ -2,6 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import InboxClient from './InboxClient'
 
+export const metadata = {
+  title: 'Mon inbox',
+  description: 'Vos documents israéliens analysés en français avec alertes visuelles.',
+}
+
 export default async function InboxPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

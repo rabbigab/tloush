@@ -95,14 +95,20 @@ export default function AssistantClient({
 
       const data = await res.json()
 
-      if (!res.ok) throw new Error(data.error)
+      if (!res.ok) {
+        const errorMsg = res.status === 429
+          ? 'Vous avez atteint la limite de messages (30/heure). Réessayez dans quelques minutes.'
+          : data.error || 'Une erreur est survenue.'
+        throw new Error(errorMsg)
+      }
 
       setMessages(prev => [...prev, { role: 'assistant', content: data.message }])
       if (data.conversationId) setConversationId(data.conversationId)
-    } catch {
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Désolé, une erreur est survenue. Réessayez dans quelques instants.'
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Désolé, une erreur est survenue. Réessayez dans quelques instants.'
+        content: `⚠️ ${errorMessage}`
       }])
     } finally {
       setLoading(false)
