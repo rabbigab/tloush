@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Send, FileText, ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { track } from '@/lib/analytics'
 
 interface Document {
   id: string
@@ -78,9 +79,14 @@ export default function AssistantClient({
     if (!text.trim() || loading) return
 
     const userMessage = text.trim()
+    const isFirstMessage = messages.filter(m => m.role === 'user').length === 0
     setInput('')
     setMessages(prev => [...prev, { role: 'user', content: userMessage }])
     setLoading(true)
+
+    if (isFirstMessage) {
+      track('page_viewed', { page: 'assistant', has_document: !!activeDoc })
+    }
 
     try {
       const res = await fetch('/api/assistant/chat', {

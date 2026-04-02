@@ -2,6 +2,7 @@
 
 import * as Sentry from '@sentry/nextjs'
 import { useEffect } from 'react'
+import { track } from '@/lib/analytics'
 
 export default function GlobalError({
   error,
@@ -12,6 +13,7 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     Sentry.captureException(error)
+    track('error_boundary_hit', { error: error.message, digest: error.digest })
   }, [error])
 
   return (

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ArrowLeft, User, FileText, Calendar, LogOut, Trash2, AlertTriangle, Mail, Bell } from 'lucide-react'
 import Link from 'next/link'
+import { track } from '@/lib/analytics'
 
 export default function ProfileClient({
   email,
@@ -36,6 +37,7 @@ export default function ProfileClient({
   async function toggleDigest() {
     const newVal = !digestEnabled
     setDigestEnabled(newVal)
+    track(newVal ? 'consent_accepted' : 'consent_declined', { preference: 'email_digest' })
     await fetch('/api/preferences', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },

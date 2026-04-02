@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, BarChart3, Loader2 } from 'lucide-react'
+import { track } from '@/lib/analytics'
 
 interface Payslip {
   id: string
@@ -77,6 +78,7 @@ export default function CompareClient({ payslips }: { payslips: Payslip[] }) {
         return
       }
       setResult(data)
+      track('report_generated', { type: 'comparison', status: data.comparison?.overall_status })
     } catch {
       setError('Erreur de connexion. Réessayez.')
     } finally {

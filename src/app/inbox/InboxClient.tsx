@@ -99,6 +99,7 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
 
       if (!res.ok) {
         setUploadError(data.error || 'Erreur lors de l\'analyse')
+        track('extraction_failed', { error: data.error })
         return
       }
 
@@ -213,6 +214,7 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
             accept=".pdf,.jpg,.jpeg,.png"
             className="hidden"
             onChange={onFileChange}
+            aria-label="Téléverser un document"
           />
 
           <button
@@ -261,10 +263,11 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Rechercher..."
+                  aria-label="Rechercher un document"
                   className="w-full bg-white border border-slate-200 rounded-xl pl-8 pr-8 py-2 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-300"
                 />
                 {search && (
-                  <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" aria-label="Effacer la recherche">
                     <X size={13} />
                   </button>
                 )}
@@ -350,6 +353,7 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
                         rel="noopener noreferrer"
                         className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
                         title="Exporter l'analyse"
+                        aria-label="Exporter l'analyse"
                       >
                         <Download size={14} />
                       </a>
@@ -362,6 +366,7 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
                         disabled={deletingId === doc.id}
                         className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
                         title="Supprimer"
+                        aria-label="Supprimer le document"
                       >
                         <Trash2 size={14} />
                       </button>
