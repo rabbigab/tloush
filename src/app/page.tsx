@@ -4,6 +4,7 @@ import Hero from "@/components/landing/Hero";
 import Features from "@/components/landing/Features";
 import HowItWorks from "@/components/landing/HowItWorks";
 import TrustBadges from "@/components/landing/TrustBadges";
+import FAQ from "@/components/landing/FAQ";
 import DisclaimerBlock from "@/components/shared/DisclaimerBlock";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -32,7 +33,10 @@ export default function HomePage() {
         {/* Section 4: Trust & Credibility */}
         <TrustBadges />
 
-        {/* Section 5: Final CTA */}
+        {/* Section 5: FAQ */}
+        <FAQ />
+
+        {/* Section 6: Final CTA */}
         <section className="max-w-5xl mx-auto px-4 sm:px-6 py-16">
           <div className="bg-gradient-to-br from-brand-600 to-brand-800 rounded-3xl p-8 sm:p-12 text-center text-white relative overflow-hidden">
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
