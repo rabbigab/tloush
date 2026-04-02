@@ -1,14 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { Ratelimit } from '@upstash/ratelimit'
+import { Redis } from '@upstash/redis'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+// Rate limiting: 30 messages per hour per user
+const ratelimit = process.env.UPSTASH_REDIS_REST_URL
+  ? new Ratelimit({
+      redis: Redis.fromEnv(),
+      limiter: Ratelimit.slidingWindow(30, '1 h'),
+      prefix: 'ratelimit:chat',
+    })
+  : null
 
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+
+    // Rate limiting
+    if (ratelimit) {
+      const { success } = await ratelimit.limit(user.id)
+      if (!success) {
+        return NextResponse.json(
+          { error: 'Limite atteinte : 30 messages par heure. Réessayez plus tard.' },
+          { status: 429 }
+        )
+      }
+    }
 
     const { message, documentId, conversationId } = await req.json()
     if (!message) return NextResponse.json({ error: 'Message manquant' }, { status: 400 })

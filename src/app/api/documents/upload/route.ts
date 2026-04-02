@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { Ratelimit } from '@upstash/ratelimit'
+import { Redis } from '@upstash/redis'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+// Rate limiting: 5 uploads per hour per user (free tier)
+const ratelimit = process.env.UPSTASH_REDIS_REST_URL
+  ? new Ratelimit({
+      redis: Redis.fromEnv(),
+      limiter: Ratelimit.slidingWindow(5, '1 h'),
+      prefix: 'ratelimit:upload',
+    })
+  : null
 
 const SYSTEM_PROMPT = `Tu es un expert en documents administratifs israéliens pour francophones.
 Ton rôle est d'analyser un document (fiche de paie, courrier officiel, contrat, etc.) et de retourner un JSON structuré en FRANÇAIS.
@@ -34,6 +45,23 @@ export async function POST(req: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+    }
+
+    // Rate limiting
+    if (ratelimit) {
+      const { success, remaining, reset } = await ratelimit.limit(user.id)
+      if (!success) {
+        return NextResponse.json(
+          { error: 'Limite atteinte : 5 documents par heure. Réessayez plus tard.' },
+          {
+            status: 429,
+            headers: {
+              'X-RateLimit-Remaining': remaining.toString(),
+              'X-RateLimit-Reset': reset.toString(),
+            },
+          }
+        )
+      }
     }
 
     const formData = await req.formData()
