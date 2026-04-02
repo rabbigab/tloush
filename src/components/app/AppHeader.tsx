@@ -20,9 +20,9 @@ export default function AppHeader({ userEmail }: { userEmail: string }) {
 
   return (
     <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 shadow-lg shadow-blue-500/10 dark:shadow-none">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <Link href="/inbox" className="flex items-center group">
-          <Image src="/logo.png" alt="Tloush" width={160} height={44} className="h-10 w-auto brightness-0 invert group-hover:scale-105 transition-transform" priority />
+          <Image src="/logo.png" alt="Tloush" width={697} height={249} className="h-10 sm:h-12 w-auto brightness-0 invert group-hover:scale-105 transition-transform" priority unoptimized />
         </Link>
 
         <div className="flex items-center gap-1">
