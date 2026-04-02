@@ -12,7 +12,7 @@ const FEATURES = [
     description:
       "Uploadez vos documents en hébreu — fiches de paie, courriers, contrats, avis d'imposition. Recevez une analyse complète en français avec alertes visuelles pour les urgences.",
     cta: "Accéder à mon inbox",
-    href: "/inbox",
+    href: "/auth/register",
     color: "from-blue-50 to-blue-100",
     accentColor: "text-blue-600",
   },
@@ -23,7 +23,7 @@ const FEATURES = [
     description:
       "Posez vos questions en français sur n'importe quel document. L'assistant connaît le contenu de vos documents et vous répond avec des conseils concrets.",
     cta: "Parler à l'assistant",
-    href: "/assistant",
+    href: "/auth/register",
     color: "from-amber-50 to-amber-100",
     accentColor: "text-amber-600",
   },
@@ -34,7 +34,7 @@ const FEATURES = [
     description:
       "Vue d'ensemble de tous vos documents, alertes urgentes, actions en attente. Plus un résumé hebdomadaire par email pour ne rien oublier.",
     cta: "Voir mon dashboard",
-    href: "/dashboard",
+    href: "/auth/register",
     color: "from-green-50 to-green-100",
     accentColor: "text-green-600",
   },
