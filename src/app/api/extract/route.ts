@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { createClient } from "@/lib/supabase/server";
+import { validateFile } from "@/lib/fileValidation";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+const ratelimit = process.env.UPSTASH_REDIS_REST_URL
+  ? new Ratelimit({
+      redis: Redis.fromEnv(),
+      limiter: Ratelimit.slidingWindow(10, "1 h"),
+      prefix: "ratelimit:extract",
+    })
+  : null;
 
 const SYSTEM_PROMPT = `Tu es un expert en fiches de paie israéliennes (תלוש שכר / tloush maskoret).
 Ton rôle est d'extraire toutes les informations d'une fiche de paie israélienne et de les retourner en JSON structuré.
@@ -66,12 +78,31 @@ Règles importantes :
 
 export async function POST(req: NextRequest) {
   try {
+    // Auth check
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    }
+
+    // Rate limiting
+    if (ratelimit) {
+      const { success } = await ratelimit.limit(user.id);
+      if (!success) {
+        return NextResponse.json({ error: "Limite atteinte. Réessayez plus tard." }, { status: 429 });
+      }
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 
     if (!file) {
       return NextResponse.json({ error: "Aucun fichier reçu" }, { status: 400 });
     }
+
+    // File validation
+    const validationError = validateFile(file);
+    if (validationError) return validationError;
 
     const arrayBuffer = await file.arrayBuffer();
     const base64Data = Buffer.from(arrayBuffer).toString("base64");

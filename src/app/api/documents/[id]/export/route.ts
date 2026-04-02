@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { escapeHtml } from '@/lib/fileValidation'
 
 /**
  * Generates an HTML-based printable export of a document analysis.
@@ -50,7 +51,7 @@ export async function GET(
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Tloush — Analyse de ${doc.file_name}</title>
+  <title>Tloush — Analyse de ${escapeHtml(doc.file_name)}</title>
   <style>
     @media print { body { margin: 0; } .no-print { display: none !important; } }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -89,11 +90,11 @@ export async function GET(
     <div class="section-title">Informations</div>
     <div class="info-grid">
       <span class="info-label">Fichier</span>
-      <span class="info-value">${doc.file_name}</span>
+      <span class="info-value">${escapeHtml(doc.file_name)}</span>
       <span class="info-label">Type</span>
-      <span class="info-value">${typeLabels[doc.document_type] || doc.document_type}</span>
+      <span class="info-value">${escapeHtml(typeLabels[doc.document_type] || doc.document_type)}</span>
       <span class="info-label">Période</span>
-      <span class="info-value">${doc.period || 'Non spécifiée'}</span>
+      <span class="info-value">${escapeHtml(doc.period || 'Non spécifiée')}</span>
       <span class="info-label">Analysé le</span>
       <span class="info-value">${analyzedDate}</span>
       <span class="info-label">Statut</span>
@@ -103,24 +104,24 @@ export async function GET(
           ? '<span class="badge badge-action">Action requise</span>'
           : '<span class="badge badge-ok">OK</span>'
       }</span>
-      ${keyInfo?.emitter ? `<span class="info-label">Émetteur</span><span class="info-value">${keyInfo.emitter}</span>` : ''}
-      ${keyInfo?.amount ? `<span class="info-label">Montant</span><span class="info-value">${keyInfo.amount}</span>` : ''}
-      ${keyInfo?.deadline ? `<span class="info-label">Date limite</span><span class="info-value" style="color:#dc2626;font-weight:700">${keyInfo.deadline}</span>` : ''}
+      ${keyInfo?.emitter ? `<span class="info-label">Émetteur</span><span class="info-value">${escapeHtml(keyInfo.emitter)}</span>` : ''}
+      ${keyInfo?.amount ? `<span class="info-label">Montant</span><span class="info-value">${escapeHtml(keyInfo.amount)}</span>` : ''}
+      ${keyInfo?.deadline ? `<span class="info-label">Date limite</span><span class="info-value" style="color:#dc2626;font-weight:700">${escapeHtml(keyInfo.deadline)}</span>` : ''}
     </div>
   </div>
 
   <div class="section">
     <div class="section-title">Résumé</div>
     <div class="summary-box">
-      <p style="font-size:15px">${doc.summary_fr || 'Aucun résumé disponible'}</p>
-      ${doc.action_description ? `<p style="margin-top:12px;font-size:14px;color:#d97706;font-weight:600">Action requise : ${doc.action_description}</p>` : ''}
+      <p style="font-size:15px">${escapeHtml(doc.summary_fr || 'Aucun résumé disponible')}</p>
+      ${doc.action_description ? `<p style="margin-top:12px;font-size:14px;color:#d97706;font-weight:600">Action requise : ${escapeHtml(doc.action_description)}</p>` : ''}
     </div>
   </div>
 
   ${fullAnalysis ? `
   <div class="section">
     <div class="section-title">Analyse détaillée</div>
-    <div class="analysis">${fullAnalysis}</div>
+    <div class="analysis">${escapeHtml(fullAnalysis)}</div>
   </div>` : ''}
 
   <div class="footer">

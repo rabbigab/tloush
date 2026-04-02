@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
+import { validateFile } from '@/lib/fileValidation'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -93,6 +94,10 @@ export async function POST(req: NextRequest) {
     if (!file) {
       return NextResponse.json({ error: 'Aucun fichier reçu' }, { status: 400 })
     }
+
+    // File validation
+    const validationError = validateFile(file)
+    if (validationError) return validationError
 
     // 1. Upload vers Supabase Storage
     const fileExt = file.name.split('.').pop()
