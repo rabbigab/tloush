@@ -61,15 +61,15 @@ export default function DashboardClient({ documents, userEmail }: { documents: D
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-slate-500 hidden sm:block">{userEmail}</span>
-            <Link href="/inbox" className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1">
+            <Link href="/inbox" className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1" aria-label="Boîte de réception">
               <Inbox size={14} />
               <span className="hidden sm:block">Inbox</span>
             </Link>
-            <Link href="/compare" className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1">
+            <Link href="/compare" className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1" aria-label="Comparer les fiches de paie">
               <BarChart3 size={14} />
               <span className="hidden sm:block">Comparer</span>
             </Link>
-            <Link href="/profile" className="text-slate-400 hover:text-slate-600">
+            <Link href="/profile" className="text-slate-400 hover:text-slate-600" aria-label="Profil">
               <UserCircle size={18} />
             </Link>
           </div>
