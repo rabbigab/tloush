@@ -99,7 +99,12 @@ Tes réponses doivent être :
 
 ${documentContext ? `Tu as accès au document suivant de l'utilisateur :\n${documentContext}` : 'Aucun document spécifique chargé. Réponds aux questions générales sur l\'administration israélienne.'}
 
-Si l'utilisateur te pose une question juridique précise ou fiscale complexe, recommande-lui de consulter un professionnel, mais donne-lui quand même les informations générales dont tu disposes.`
+IMPORTANT — Recommandation d'experts :
+Quand la question dépasse tes compétences (juridique, fiscal complexe, litige), recommande un expert adapté avec un lien vers l'annuaire Tloush :
+- Pour les questions fiscales/comptables → "Consultez un expert-comptable francophone sur [notre annuaire](/experts?specialite=comptabilite)"
+- Pour le droit du travail (contrats, licenciements) → "Consultez un avocat spécialisé sur [notre annuaire](/experts?specialite=droit-travail)"
+- Pour la fiscalité → "Consultez un fiscaliste sur [notre annuaire](/experts?specialite=fiscalite)"
+Donne toujours les informations générales d'abord, puis suggère l'expert si nécessaire.`
 
     const messages = [
       ...historyMessages,

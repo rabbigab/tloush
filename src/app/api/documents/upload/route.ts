@@ -135,7 +135,51 @@ export async function POST(req: NextRequest) {
       analysisResult = { summary_fr: 'Document analysé', document_type: 'other' }
     }
 
-    // 3. Sauvegarder en base
+    // 3. Auto-compare with previous payslip if applicable
+    if (analysisResult.document_type === 'payslip') {
+      const { data: previousPayslip } = await supabase
+        .from('documents')
+        .select('period, analysis_data, summary_fr')
+        .eq('user_id', user.id)
+        .eq('document_type', 'payslip')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (previousPayslip) {
+        try {
+          const compareResponse = await anthropic.messages.create({
+            model: 'claude-sonnet-4-5',
+            max_tokens: 512,
+            system: 'Tu compares deux fiches de paie et retournes UNIQUEMENT un JSON. Sois bref et précis.',
+            messages: [{
+              role: 'user',
+              content: `Compare brièvement ces 2 fiches de paie. Retourne UNIQUEMENT ce JSON :
+{"has_significant_change": true/false, "change_summary": "Résumé en 1 phrase des changements vs mois précédent, ou null si stable", "change_percent": number ou null}
+
+FICHE PRÉCÉDENTE (${previousPayslip.period || '?'}) : ${JSON.stringify(previousPayslip.analysis_data)}
+FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResult)}`
+            }]
+          })
+          const compareRaw = compareResponse.content[0].type === 'text' ? compareResponse.content[0].text : ''
+          const compareCleaned = compareRaw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
+          const compareResult = JSON.parse(compareCleaned)
+
+          if (compareResult.has_significant_change && compareResult.change_summary) {
+            analysisResult.comparison_note = compareResult.change_summary
+            analysisResult.comparison_change_percent = compareResult.change_percent
+            // Append comparison note to summary
+            const currentSummary = (analysisResult.summary_fr as string) || ''
+            analysisResult.summary_fr = `${currentSummary} [vs ${previousPayslip.period || 'mois précédent'} : ${compareResult.change_summary}]`
+          }
+        } catch (compareErr) {
+          console.error('[Auto-compare] Error:', compareErr)
+          // Non-blocking: continue without comparison
+        }
+      }
+    }
+
+    // 4. Sauvegarder en base
     const fileType = mimeType === 'application/pdf' ? 'pdf' : 'image'
     const { data: document, error: dbError } = await supabase
       .from('documents')

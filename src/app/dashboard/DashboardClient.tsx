@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { FileText, AlertCircle, CheckCircle, Clock, LayoutDashboard, Inbox, MessageSquare, UserCircle } from 'lucide-react'
+import { FileText, AlertCircle, CheckCircle, Clock, LayoutDashboard, Inbox, MessageSquare, UserCircle, BarChart3 } from 'lucide-react'
 
 interface Doc {
   id: string
@@ -64,6 +64,10 @@ export default function DashboardClient({ documents, userEmail }: { documents: D
             <Link href="/inbox" className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1">
               <Inbox size={14} />
               <span className="hidden sm:block">Inbox</span>
+            </Link>
+            <Link href="/compare" className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1">
+              <BarChart3 size={14} />
+              <span className="hidden sm:block">Comparer</span>
             </Link>
             <Link href="/profile" className="text-slate-400 hover:text-slate-600">
               <UserCircle size={18} />

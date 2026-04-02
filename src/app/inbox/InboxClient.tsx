@@ -2,9 +2,10 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Upload, FileText, AlertCircle, CheckCircle, Clock, LogOut, MessageSquare, ChevronRight, Trash2, UserCircle, Search, LayoutDashboard, X, Download } from 'lucide-react'
+import { Upload, FileText, AlertCircle, CheckCircle, Clock, LogOut, MessageSquare, ChevronRight, Trash2, UserCircle, Search, LayoutDashboard, X, Download, UserCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { getExpertRecommendation, getExpertUrl } from '@/lib/expertMatcher'
 
 interface Document {
   id: string
@@ -317,6 +318,19 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
                       {doc.summary_fr && (
                         <p className="text-xs text-slate-500 mt-2 line-clamp-2">{doc.summary_fr}</p>
                       )}
+                      {(() => {
+                        const rec = getExpertRecommendation(doc.document_type, doc.is_urgent, doc.action_required, doc.action_description, doc.summary_fr)
+                        if (!rec) return null
+                        return (
+                          <Link
+                            href={getExpertUrl(rec.specialties[0])}
+                            className="flex items-center gap-1.5 mt-2 text-xs text-purple-600 hover:text-purple-700 font-medium"
+                          >
+                            <UserCheck size={11} />
+                            Consulter un expert
+                          </Link>
+                        )
+                      })()}
                       <p className="text-xs text-slate-300 mt-2">{formatDate(doc.created_at)}</p>
                     </div>
 

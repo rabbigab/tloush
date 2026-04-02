@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 // Routes protégées (nécessitent un compte)
-const PROTECTED_ROUTES = ['/inbox', '/assistant', '/profile', '/dashboard']
+const PROTECTED_ROUTES = ['/inbox', '/assistant', '/profile', '/dashboard', '/compare']
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })

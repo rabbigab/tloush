@@ -88,6 +88,33 @@ epics:
         status: backlog
         priority: low
 
+  - id: E7
+    title: "Comparaison de Fiches de Paie"
+    status: complete
+    stories:
+      - id: "7.1"
+        title: "Comparaison Mois par Mois"
+        status: complete
+        priority: high
+      - id: "7.2"
+        title: "Détection Automatique d'Anomalies"
+        status: complete
+        priority: high
+
+  - id: E8
+    title: "Annuaire d'Experts v3"
+    status: complete
+    stories:
+      - id: "8.1"
+        title: "Annuaire d'Experts Dynamique"
+        status: complete
+        priority: medium
+        note: "Base v1 conservée, enrichie avec recommandation contextuelle"
+      - id: "8.2"
+        title: "Recommandation d'Expert Contextuelle"
+        status: complete
+        priority: medium
+
 sprint_plan:
   sprint_1:
     name: "Base Account"
@@ -106,6 +133,14 @@ sprint_plan:
     stories: ["4.1", "4.2", "4.3"]
     status: deferred
     note: "Post-lancement, après retours utilisateurs"
+  sprint_5:
+    name: "Comparaison Fiches de Paie"
+    stories: ["7.1", "7.2"]
+    status: complete
+  sprint_6:
+    name: "Annuaire d'Experts v3"
+    stories: ["8.1", "8.2"]
+    status: complete
 
 phase2_technical:
   rate_limiting: complete       # Upstash Redis: 5 uploads/h, 30 chats/h

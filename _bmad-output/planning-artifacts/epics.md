@@ -297,26 +297,90 @@ status: 'complete'
 
 ---
 
-## Ordre d'Implémentation Recommandé (Sprint Planning)
+## Epic 7 : Comparaison de Fiches de Paie (Phase 3)
 
-Pour la Phase 2, voici l'ordre optimal :
+**Objectif :** Permettre aux utilisateurs de comparer leurs fiches de paie mois par mois et détecter automatiquement les anomalies.
+
+**Priorité :** Haute (Phase 3 — forte valeur ajoutée, rétention)
+
+### Story 7.1 — Comparaison Mois par Mois
+
+**En tant qu'** utilisateur ayant uploadé plusieurs fiches de paie,
+**je veux** comparer deux fiches côte à côte,
+**afin de** voir ce qui a changé (salaire, déductions, primes) d'un mois à l'autre.
+
+**Critères d'Acceptation :**
+- Étant donné que j'ai au moins 2 fiches de paie dans mon inbox, quand j'accède à `/compare`, alors je peux sélectionner deux fiches à comparer
+- Étant donné que je sélectionne deux fiches, quand la comparaison est générée, alors je vois les différences clés mises en évidence
+- Étant donné que des anomalies sont détectées, alors elles sont signalées en rouge avec une explication en français
+
+**Fichiers à créer :** `src/app/compare/page.tsx`, `src/app/compare/CompareClient.tsx`, `src/app/api/documents/compare/route.ts`
+
+---
+
+### Story 7.2 — Détection Automatique d'Anomalies
+
+**En tant qu'** utilisateur qui uploade une fiche de paie,
+**je veux** que le système détecte automatiquement si quelque chose a changé par rapport au mois précédent,
+**afin d'** être alerté sans avoir à comparer manuellement.
+
+**Critères d'Acceptation :**
+- Étant donné que j'uploade une fiche de paie et qu'une fiche du mois précédent existe, alors le résumé mentionne les changements détectés
+- Étant donné qu'un changement significatif est détecté (>5% du net), alors c'est signalé comme "attention requise"
+
+---
+
+## Epic 8 : Annuaire d'Experts v3 (Phase 3)
+
+**Objectif :** Connecter les utilisateurs avec des professionnels francophones qualifiés en Israël, avec recommandation contextuelle basée sur les documents analysés.
+
+**Priorité :** Moyenne (Phase 3 — monétisation future via commissions)
+
+### Story 8.1 — Annuaire d'Experts Dynamique
+
+**En tant qu'** utilisateur,
+**je veux** parcourir un annuaire de comptables et avocats francophones,
+**afin de** trouver un professionnel adapté à ma situation.
+
+**Critères d'Acceptation :**
+- Étant donné que j'accède à `/experts`, alors je vois la liste des experts filtrables par spécialité et ville
+- Étant donné que je clique sur un expert, alors je vois son profil détaillé et un formulaire de contact
+- Étant donné que je soumets le formulaire, alors l'expert reçoit ma demande avec le contexte de mon document
+
+**Fichiers à modifier :** `src/app/experts/page.tsx`, `src/app/experts/[slug]/page.tsx`, `src/components/experts/ContactExpertForm.tsx`
+
+---
+
+### Story 8.2 — Recommandation d'Expert Contextuelle
+
+**En tant qu'** utilisateur qui consulte un document complexe,
+**je veux** qu'on me recommande un type d'expert adapté,
+**afin de** trouver rapidement l'aide professionnelle dont j'ai besoin.
+
+**Critères d'Acceptation :**
+- Étant donné que j'ai un document fiscal, quand l'assistant me recommande un professionnel, alors il me dirige vers un comptable spécialisé en fiscalité
+- Étant donné que j'ai un contrat de travail litigieux, alors l'assistant me recommande un avocat en droit du travail
+
+---
+
+## Ordre d'Implémentation (Sprint Planning)
 
 ```
-Sprint 1 — Base Account
-  → Story 2.1 (Profil)
-  → Story 2.2 (Suppression document)
-  → Story 2.3 (Suppression compte)
+Phase 2 (✅ COMPLÈTE)
+  Sprint 1 — Base Account → Stories 2.1, 2.2, 2.3 ✅
+  Sprint 2 — Dashboard & Recherche → Stories 5.1, 5.2 ✅
+  Sprint 3 — Engagement → Stories 3.1, 3.2 ✅
+  Sprint 4 — Monetisation → Stories 4.1, 4.2, 4.3 (deferred)
 
-Sprint 2 — Monetisation
-  → Story 4.1 (Stripe)
-  → Story 4.2 (Freemium)
-  → Story 4.3 (Page pricing)
+Phase 3 (EN COURS)
+  Sprint 5 — Comparaison Fiches de Paie
+    → Story 7.1 (Comparaison mois par mois)
+    → Story 7.2 (Détection automatique d'anomalies)
 
-Sprint 3 — Engagement
-  → Story 3.1 (Digest email)
-  → Story 3.2 (Préférences)
+  Sprint 6 — Annuaire d'Experts v3
+    → Story 8.1 (Annuaire dynamique)
+    → Story 8.2 (Recommandation contextuelle)
 
-Sprint 4 — Discovery
-  → Story 5.1 (Dashboard)
-  → Story 5.2 (Recherche)
+  Sprint 7 — WhatsApp (quand Twilio disponible)
+    → Story 6.1 (Upload via WhatsApp)
 ```
