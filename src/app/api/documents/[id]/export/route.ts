@@ -125,7 +125,7 @@ export async function GET(
   </div>` : ''}
 
   <div class="footer">
-    <p>Document généré par Tloush — tloush.vercel.app</p>
+    <p>Document généré par Tloush — tloush.com</p>
     <p style="margin-top:4px">Ce document est une analyse automatique et ne constitue pas un avis juridique ou comptable.</p>
   </div>
 </body>
