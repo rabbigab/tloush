@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { ArrowLeft, User, FileText, Calendar, LogOut, Trash2, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, User, FileText, Calendar, LogOut, Trash2, AlertTriangle, Mail, Bell } from 'lucide-react'
 import Link from 'next/link'
 
 export default function ProfileClient({
@@ -18,7 +18,28 @@ export default function ProfileClient({
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteInput, setDeleteInput] = useState('')
+  const [digestEnabled, setDigestEnabled] = useState(true)
+  const [digestLoading, setDigestLoading] = useState(true)
   const router = useRouter()
+
+  useEffect(() => {
+    fetch('/api/preferences')
+      .then(r => r.json())
+      .then(data => {
+        setDigestEnabled(data.email_digest_enabled ?? true)
+      })
+      .finally(() => setDigestLoading(false))
+  }, [])
+
+  async function toggleDigest() {
+    const newVal = !digestEnabled
+    setDigestEnabled(newVal)
+    await fetch('/api/preferences', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email_digest_enabled: newVal })
+    })
+  }
 
   async function handleLogout() {
     const supabase = createClient()
@@ -88,6 +109,30 @@ export default function ProfileClient({
               </span>
               <span className="text-sm font-semibold text-blue-600">{documentCount}</span>
             </div>
+          </div>
+        </div>
+
+        {/* Notifications */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+          <h2 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <Bell size={18} className="text-blue-600" />
+            Notifications
+          </h2>
+          <div className="flex items-center justify-between py-2">
+            <div className="flex items-center gap-3">
+              <Mail size={16} className="text-slate-400" />
+              <div>
+                <p className="text-sm font-medium text-slate-800">Résumé hebdomadaire</p>
+                <p className="text-xs text-slate-500">Recevez un email chaque lundi avec le résumé de vos documents</p>
+              </div>
+            </div>
+            <button
+              onClick={toggleDigest}
+              disabled={digestLoading}
+              className={`relative w-11 h-6 rounded-full transition-colors ${digestEnabled ? 'bg-blue-600' : 'bg-slate-300'} ${digestLoading ? 'opacity-50' : ''}`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${digestEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+            </button>
           </div>
         </div>
 
