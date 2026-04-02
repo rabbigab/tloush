@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Upload, FileText, AlertCircle, CheckCircle, Clock, LogOut, MessageSquare, ChevronRight, Trash2, UserCircle, Search, LayoutDashboard, X } from 'lucide-react'
+import { Upload, FileText, AlertCircle, CheckCircle, Clock, LogOut, MessageSquare, ChevronRight, Trash2, UserCircle, Search, LayoutDashboard, X, Download } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
@@ -328,6 +328,15 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
                         <MessageSquare size={13} />
                         <span className="hidden sm:block">Demander</span>
                       </Link>
+                      <a
+                        href={`/api/documents/${doc.id}/export`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
+                        title="Exporter l'analyse"
+                      >
+                        <Download size={14} />
+                      </a>
                       <button
                         onClick={() => {
                           if (window.confirm('Supprimer ce document ?')) {

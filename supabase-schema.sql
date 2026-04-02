@@ -83,6 +83,24 @@ CREATE POLICY "users_own_storage" ON storage.objects
   );
 
 -- =============================================
+-- Table des préférences utilisateur
+-- =============================================
+
+CREATE TABLE user_preferences (
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  email_digest_enabled BOOLEAN DEFAULT true,
+  digest_day INTEGER DEFAULT 1,          -- 0=dimanche, 1=lundi, ...6=samedi
+  urgent_alerts_enabled BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "users_own_preferences" ON user_preferences
+  FOR ALL USING (auth.uid() = user_id);
+
+-- =============================================
 -- Index pour les performances
 -- =============================================
 

@@ -8,7 +8,7 @@ export async function GET() {
 
   const { data } = await supabase
     .from('user_preferences')
-    .select('email_digest_enabled, digest_day')
+    .select('email_digest_enabled, digest_day, urgent_alerts_enabled')
     .eq('user_id', user.id)
     .single()
 
@@ -16,8 +16,8 @@ export async function GET() {
     // Create default preferences
     const { data: newPrefs } = await supabase
       .from('user_preferences')
-      .insert({ user_id: user.id, email_digest_enabled: true, digest_day: 1 })
-      .select('email_digest_enabled, digest_day')
+      .insert({ user_id: user.id, email_digest_enabled: true, digest_day: 1, urgent_alerts_enabled: true })
+      .select('email_digest_enabled, digest_day, urgent_alerts_enabled')
       .single()
     return NextResponse.json(newPrefs)
   }
@@ -38,6 +38,9 @@ export async function PATCH(req: NextRequest) {
   }
   if (typeof body.digest_day === 'number' && body.digest_day >= 0 && body.digest_day <= 6) {
     updates.digest_day = body.digest_day
+  }
+  if (typeof body.urgent_alerts_enabled === 'boolean') {
+    updates.urgent_alerts_enabled = body.urgent_alerts_enabled
   }
 
   // Upsert: create if not exists

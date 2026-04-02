@@ -162,6 +162,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Erreur lors de la sauvegarde' }, { status: 500 })
     }
 
+    // Send urgent alert email (fire-and-forget, don't block response)
+    if (document && Boolean(analysisResult.is_urgent) && process.env.CRON_SECRET) {
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : 'http://localhost:3000'
+      fetch(`${baseUrl}/api/alerts/urgent`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+        },
+        body: JSON.stringify({ userId: user.id, documentId: document.id }),
+      }).catch(err => console.error('[Urgent Alert] Fire-and-forget error:', err))
+    }
+
     return NextResponse.json({ document })
   } catch (err) {
     console.error('[/api/documents/upload]', err)

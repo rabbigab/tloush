@@ -107,13 +107,26 @@ sprint_plan:
     status: deferred
     note: "Post-lancement, après retours utilisateurs"
 
+phase2_technical:
+  rate_limiting: complete       # Upstash Redis: 5 uploads/h, 30 chats/h
+  tests: complete               # Vitest + 9 tests unitaires
+  monitoring: complete           # Sentry client/server/edge
+  urgent_alerts: complete        # Email immédiat pour documents urgents
+  pdf_export: complete           # Export HTML imprimable de l'analyse
+
 launch_readiness:
   landing_page_v3: complete
   auth_flow: complete
   core_features: complete
   gdpr_compliance: complete
   email_digest: complete
+  urgent_email_alerts: complete
+  pdf_export: complete
+  rate_limiting: complete
+  tests: complete
+  monitoring: complete
   remaining:
-    - "Configurer les variables d'env sur Vercel (RESEND_API_KEY, CRON_SECRET)"
+    - "Configurer les variables d'env sur Vercel (RESEND_API_KEY, CRON_SECRET, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, NEXT_PUBLIC_SENTRY_DSN, SENTRY_AUTH_TOKEN)"
     - "Tester l'envoi email Resend en production"
     - "Vérifier le domaine d'envoi Resend"
+    - "Créer le projet Sentry et récupérer le DSN"

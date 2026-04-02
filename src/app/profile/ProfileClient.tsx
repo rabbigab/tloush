@@ -19,7 +19,8 @@ export default function ProfileClient({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteInput, setDeleteInput] = useState('')
   const [digestEnabled, setDigestEnabled] = useState(true)
-  const [digestLoading, setDigestLoading] = useState(true)
+  const [urgentAlertsEnabled, setUrgentAlertsEnabled] = useState(true)
+  const [prefsLoading, setPrefsLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
@@ -27,8 +28,9 @@ export default function ProfileClient({
       .then(r => r.json())
       .then(data => {
         setDigestEnabled(data.email_digest_enabled ?? true)
+        setUrgentAlertsEnabled(data.urgent_alerts_enabled ?? true)
       })
-      .finally(() => setDigestLoading(false))
+      .finally(() => setPrefsLoading(false))
   }, [])
 
   async function toggleDigest() {
@@ -38,6 +40,16 @@ export default function ProfileClient({
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email_digest_enabled: newVal })
+    })
+  }
+
+  async function toggleUrgentAlerts() {
+    const newVal = !urgentAlertsEnabled
+    setUrgentAlertsEnabled(newVal)
+    await fetch('/api/preferences', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ urgent_alerts_enabled: newVal })
     })
   }
 
@@ -118,7 +130,7 @@ export default function ProfileClient({
             <Bell size={18} className="text-blue-600" />
             Notifications
           </h2>
-          <div className="flex items-center justify-between py-2">
+          <div className="flex items-center justify-between py-2 border-b border-slate-100">
             <div className="flex items-center gap-3">
               <Mail size={16} className="text-slate-400" />
               <div>
@@ -128,10 +140,26 @@ export default function ProfileClient({
             </div>
             <button
               onClick={toggleDigest}
-              disabled={digestLoading}
-              className={`relative w-11 h-6 rounded-full transition-colors ${digestEnabled ? 'bg-blue-600' : 'bg-slate-300'} ${digestLoading ? 'opacity-50' : ''}`}
+              disabled={prefsLoading}
+              className={`relative w-11 h-6 rounded-full transition-colors ${digestEnabled ? 'bg-blue-600' : 'bg-slate-300'} ${prefsLoading ? 'opacity-50' : ''}`}
             >
               <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${digestEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+            </button>
+          </div>
+          <div className="flex items-center justify-between py-2">
+            <div className="flex items-center gap-3">
+              <AlertTriangle size={16} className="text-slate-400" />
+              <div>
+                <p className="text-sm font-medium text-slate-800">Alertes urgentes</p>
+                <p className="text-xs text-slate-500">Recevez un email immédiat quand un document urgent est détecté</p>
+              </div>
+            </div>
+            <button
+              onClick={toggleUrgentAlerts}
+              disabled={prefsLoading}
+              className={`relative w-11 h-6 rounded-full transition-colors ${urgentAlertsEnabled ? 'bg-red-500' : 'bg-slate-300'} ${prefsLoading ? 'opacity-50' : ''}`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${urgentAlertsEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
             </button>
           </div>
         </div>
