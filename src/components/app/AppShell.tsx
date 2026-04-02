@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import AppHeader from './AppHeader'
 import AppNav from './AppNav'
 import { createClient } from '@/lib/supabase/client'
+import { identifyUser } from '@/lib/analytics'
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [userEmail, setUserEmail] = useState('')
@@ -16,6 +17,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
         setUserEmail(data.user.email || '')
+        identifyUser(data.user.id, { email: data.user.email })
       }
     })
   }, [])
