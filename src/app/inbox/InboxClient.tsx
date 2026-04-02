@@ -130,15 +130,15 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
           <Link href="/" className="text-xl font-extrabold text-blue-600">Tloush</Link>
           <div className="flex items-center gap-3">
             <span className="text-sm text-slate-500 hidden sm:block">{userEmail}</span>
-            <Link href="/dashboard" className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
+            <Link href="/dashboard" className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700" aria-label="Tableau de bord">
               <LayoutDashboard size={15} />
               <span className="hidden sm:block">Dashboard</span>
             </Link>
-            <Link href="/profile" className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
+            <Link href="/profile" className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700" aria-label="Profil">
               <UserCircle size={15} />
               <span className="hidden sm:block">Profil</span>
             </Link>
-            <button onClick={handleLogout} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
+            <button onClick={handleLogout} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700" aria-label="Se déconnecter">
               <LogOut size={15} />
               <span className="hidden sm:block">Déconnexion</span>
             </button>
@@ -343,6 +343,7 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
                       <Link
                         href={`/assistant?doc=${doc.id}`}
                         className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-medium px-3 py-1.5 rounded-xl transition-colors"
+                        aria-label="Poser une question sur ce document"
                       >
                         <MessageSquare size={13} />
                         <span className="hidden sm:block">Demander</span>
