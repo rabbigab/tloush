@@ -22,7 +22,7 @@ export function getExpertRecommendation(
   const text = `${summary} ${action}`
 
   // Tax documents → accountant / tax specialist
-  if (documentType === 'tax') {
+  if (documentType === 'tax' || documentType === 'tax_notice') {
     return {
       specialties: ['fiscalite', 'comptabilite'],
       reason: 'Un expert-comptable peut vous aider à comprendre ce document fiscal et optimiser votre situation.',
@@ -30,12 +30,39 @@ export function getExpertRecommendation(
     }
   }
 
-  // Contracts → labor law
-  if (documentType === 'contract') {
+  // Bituah Leumi → accountant
+  if (documentType === 'bituah_leumi') {
+    return {
+      specialties: ['comptabilite', 'fiscalite'],
+      reason: 'Un comptable spécialisé peut vous aider avec ce document du Bituah Leumi.',
+      urgency: isUrgent ? 'high' : 'medium',
+    }
+  }
+
+  // Pension → accountant
+  if (documentType === 'pension') {
+    return {
+      specialties: ['comptabilite'],
+      reason: 'Un expert-comptable peut analyser votre relevé de retraite et vérifier vos cotisations.',
+      urgency: isUrgent ? 'high' : 'low',
+    }
+  }
+
+  // Work contracts → labor law
+  if (documentType === 'contract' || documentType === 'work_contract') {
     return {
       specialties: ['droit-travail'],
       reason: 'Un avocat en droit du travail peut vérifier les clauses de votre contrat et protéger vos intérêts.',
       urgency: isUrgent ? 'high' : 'medium',
+    }
+  }
+
+  // Health insurance → general
+  if (documentType === 'health_insurance' && (isUrgent || actionRequired)) {
+    return {
+      specialties: ['comptabilite'],
+      reason: 'Un professionnel peut vous aider à comprendre votre couverture santé.',
+      urgency: isUrgent ? 'high' : 'low',
     }
   }
 

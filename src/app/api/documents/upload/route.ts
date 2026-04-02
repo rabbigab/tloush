@@ -22,7 +22,8 @@ IMPORTANT : Retourne UNIQUEMENT le JSON, sans texte avant ou après.`
 const USER_PROMPT = `Analyse ce document israélien et retourne UNIQUEMENT ce JSON :
 
 {
-  "document_type": "payslip" | "official_letter" | "contract" | "tax" | "other",
+  "document_type": "payslip" | "bituah_leumi" | "tax_notice" | "work_contract" | "pension" | "health_insurance" | "rental" | "bank" | "official_letter" | "contract" | "other",
+  "category": "travail" | "securite_sociale" | "fiscal" | "retraite" | "logement" | "bancaire" | "autre",
   "summary_fr": "Résumé en 2-3 phrases en français de ce document",
   "is_urgent": true/false,
   "action_required": true/false,
@@ -36,7 +37,29 @@ const USER_PROMPT = `Analyse ce document israélien et retourne UNIQUEMENT ce JS
   "analysis_data": {
     "full_analysis": "Analyse détaillée complète en français"
   }
-}`
+}
+
+Guide pour document_type :
+- "payslip" = fiche de paie / tloush maskoret
+- "bituah_leumi" = tout document du Bituah Leumi (sécurité sociale)
+- "tax_notice" = avis d'imposition, formulaire fiscal, mas hachnasa
+- "work_contract" = contrat de travail, avenant, lettre d'embauche
+- "pension" = relevé de retraite, keren pensia, kupat gemel
+- "health_insurance" = kupat holim, assurance santé, mutuelle
+- "rental" = contrat de bail, quittance de loyer
+- "bank" = relevé bancaire, prêt, document de banque
+- "official_letter" = courrier officiel d'une administration
+- "contract" = autre contrat non classé ci-dessus
+- "other" = tout document ne correspondant à aucune catégorie
+
+Guide pour category :
+- "travail" = payslip, work_contract
+- "securite_sociale" = bituah_leumi, health_insurance
+- "fiscal" = tax_notice
+- "retraite" = pension
+- "logement" = rental
+- "bancaire" = bank
+- "autre" = official_letter, contract, other`
 
 export async function POST(req: NextRequest) {
   try {

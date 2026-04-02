@@ -16,6 +16,13 @@ interface Doc {
 
 const TYPE_LABELS: Record<string, string> = {
   payslip: 'Fiche de paie',
+  bituah_leumi: 'Bituah Leumi',
+  tax_notice: 'Avis d\'impôt',
+  work_contract: 'Contrat de travail',
+  pension: 'Retraite',
+  health_insurance: 'Assurance santé',
+  rental: 'Logement',
+  bank: 'Bancaire',
   official_letter: 'Courrier officiel',
   contract: 'Contrat',
   tax: 'Document fiscal',
@@ -24,6 +31,13 @@ const TYPE_LABELS: Record<string, string> = {
 
 const TYPE_COLORS: Record<string, string> = {
   payslip: 'bg-blue-100 text-blue-700',
+  bituah_leumi: 'bg-teal-100 text-teal-700',
+  tax_notice: 'bg-yellow-100 text-yellow-700',
+  work_contract: 'bg-indigo-100 text-indigo-700',
+  pension: 'bg-emerald-100 text-emerald-700',
+  health_insurance: 'bg-cyan-100 text-cyan-700',
+  rental: 'bg-amber-100 text-amber-700',
+  bank: 'bg-violet-100 text-violet-700',
   official_letter: 'bg-purple-100 text-purple-700',
   contract: 'bg-emerald-100 text-emerald-700',
   tax: 'bg-orange-100 text-orange-700',

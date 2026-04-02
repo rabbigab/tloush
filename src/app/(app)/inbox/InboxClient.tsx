@@ -23,6 +23,13 @@ interface Document {
 
 const DOC_LABELS: Record<string, string> = {
   payslip: '💰 Fiche de paie',
+  bituah_leumi: '🏥 Bituah Leumi',
+  tax_notice: '🧾 Avis d\'impôt',
+  work_contract: '📋 Contrat de travail',
+  pension: '🏦 Retraite',
+  health_insurance: '🩺 Assurance santé',
+  rental: '🏠 Logement',
+  bank: '🏦 Bancaire',
   official_letter: '📨 Courrier officiel',
   contract: '📋 Contrat',
   tax: '🧾 Fiscal',
@@ -32,6 +39,13 @@ const DOC_LABELS: Record<string, string> = {
 
 const DOC_COLORS: Record<string, string> = {
   payslip: 'bg-blue-50 text-blue-700 border-blue-200',
+  bituah_leumi: 'bg-teal-50 text-teal-700 border-teal-200',
+  tax_notice: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+  work_contract: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  pension: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  health_insurance: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+  rental: 'bg-amber-50 text-amber-700 border-amber-200',
+  bank: 'bg-violet-50 text-violet-700 border-violet-200',
   official_letter: 'bg-orange-50 text-orange-700 border-orange-200',
   contract: 'bg-purple-50 text-purple-700 border-purple-200',
   tax: 'bg-yellow-50 text-yellow-700 border-yellow-200',
@@ -39,26 +53,72 @@ const DOC_COLORS: Record<string, string> = {
   unknown: 'bg-slate-50 text-slate-700 border-slate-200'
 }
 
+// Category mapping for filter tabs
+const CATEGORY_MAP: Record<string, string> = {
+  payslip: 'travail',
+  work_contract: 'travail',
+  bituah_leumi: 'securite_sociale',
+  health_insurance: 'securite_sociale',
+  tax_notice: 'fiscal',
+  tax: 'fiscal',
+  pension: 'retraite',
+  rental: 'logement',
+  bank: 'bancaire',
+  official_letter: 'autre',
+  contract: 'autre',
+  other: 'autre',
+  unknown: 'autre',
+}
+
+const CATEGORY_TABS = [
+  { key: 'all', label: 'Tous' },
+  { key: 'travail', label: 'Travail' },
+  { key: 'securite_sociale', label: 'Sécu sociale' },
+  { key: 'fiscal', label: 'Fiscal' },
+  { key: 'retraite', label: 'Retraite' },
+  { key: 'logement', label: 'Logement' },
+  { key: 'bancaire', label: 'Bancaire' },
+  { key: 'autre', label: 'Autre' },
+]
+
 export default function InboxClient({ documents, userEmail }: { documents: Document[]; userEmail: string }) {
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const [docs, setDocs] = useState<Document[]>(documents)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
+  const [activeCategory, setActiveCategory] = useState('all')
   const inputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 
+  // Apply category filter, then text search
+  const categoryDocs = activeCategory === 'all'
+    ? docs
+    : docs.filter(d => {
+        return CATEGORY_MAP[d.document_type] === activeCategory
+      })
+
   const filteredDocs = search.trim()
-    ? docs.filter(d =>
+    ? categoryDocs.filter(d =>
         d.file_name.toLowerCase().includes(search.toLowerCase()) ||
         (d.summary_fr || '').toLowerCase().includes(search.toLowerCase()) ||
         (d.period || '').toLowerCase().includes(search.toLowerCase()) ||
         (DOC_LABELS[d.document_type] || '').toLowerCase().includes(search.toLowerCase())
       )
-    : docs
+    : categoryDocs
 
   const urgentDocs = docs.filter(d => d.is_urgent)
   const actionDocs = docs.filter(d => d.action_required && !d.is_urgent)
+
+  // Count docs per category for tab badges
+  const categoryCounts = CATEGORY_TABS.reduce((acc, tab) => {
+    if (tab.key === 'all') {
+      acc[tab.key] = docs.length
+    } else {
+      acc[tab.key] = docs.filter(d => CATEGORY_MAP[d.document_type] === tab.key).length
+    }
+    return acc
+  }, {} as Record<string, number>)
 
   async function handleDelete(docId: string) {
     setDeletingId(docId)
@@ -243,6 +303,31 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
               </div>
             )}
           </div>
+
+          {/* Category filter tabs */}
+          {docs.length > 3 && (
+            <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-hide">
+              {CATEGORY_TABS.map(tab => {
+                const count = categoryCounts[tab.key] || 0
+                if (tab.key !== 'all' && count === 0) return null
+                const isActive = activeCategory === tab.key
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveCategory(tab.key)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                      isActive
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600'
+                    }`}
+                  >
+                    {tab.label}
+                    <span className={`text-[10px] ${isActive ? 'text-blue-200' : 'text-slate-400'}`}>{count}</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
 
           {filteredDocs.length === 0 && docs.length > 0 ? (
             <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
