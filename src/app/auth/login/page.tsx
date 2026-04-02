@@ -2,15 +2,16 @@
 
 import { useState, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { Loader2 } from 'lucide-react'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
+  const [redirecting, setRedirecting] = useState(false)
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/inbox'
 
@@ -28,8 +29,24 @@ function LoginForm() {
       return
     }
 
-    router.push(redirect)
-    router.refresh()
+    // Full page navigation — avoids slow router.refresh() and ensures
+    // middleware + server components pick up the new auth cookies immediately
+    setRedirecting(true)
+    window.location.href = redirect
+  }
+
+  if (redirecting) {
+    return (
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
+        <div className="flex flex-col items-center justify-center py-8">
+          <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mb-4">
+            <Loader2 size={24} className="text-blue-600 dark:text-blue-400 animate-spin" />
+          </div>
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Connexion reussie !</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Chargement de votre espace...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -82,9 +99,16 @@ function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors active:scale-[0.99]"
+          className="w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors active:scale-[0.99] flex items-center justify-center gap-2"
         >
-          {loading ? 'Connexion...' : 'Se connecter'}
+          {loading ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Connexion en cours...
+            </>
+          ) : (
+            'Se connecter'
+          )}
         </button>
       </form>
 
