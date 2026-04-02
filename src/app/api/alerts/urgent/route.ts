@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
     </div>
 
     <div style="text-align:center;margin:24px 0">
-      <a href="https://tloush.vercel.app/inbox" style="display:inline-block;background:#dc2626;color:white;text-decoration:none;padding:12px 32px;border-radius:12px;font-weight:600;font-size:14px">
+      <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://tloush.vercel.app'}/inbox" style="display:inline-block;background:#dc2626;color:white;text-decoration:none;padding:12px 32px;border-radius:12px;font-weight:600;font-size:14px">
         Voir le document dans mon inbox
       </a>
     </div>
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
     <div style="text-align:center;margin-top:32px;padding-top:16px;border-top:1px solid #e2e8f0">
       <p style="font-size:11px;color:#94a3b8;margin:0">
         Vous recevez cet email car les alertes urgentes sont activées sur Tloush.<br>
-        <a href="https://tloush.vercel.app/profile" style="color:#2563eb">Gérer mes préférences</a>
+        <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://tloush.vercel.app'}/profile" style="color:#2563eb">Gérer mes préférences</a>
       </p>
     </div>
   </div>
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
 
   try {
     await resend.emails.send({
-      from: 'Tloush <alertes@tloush.vercel.app>',
+      from: `Tloush <${process.env.EMAIL_FROM || 'onboarding@resend.dev'}>`,
       to: user.email,
       subject: `Tloush — Document urgent : ${doc.file_name}`,
       html

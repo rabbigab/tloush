@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
     </div>
 
     <div style="text-align:center;margin:24px 0">
-      <a href="https://tloush.vercel.app/inbox" style="display:inline-block;background:#2563eb;color:white;text-decoration:none;padding:12px 32px;border-radius:12px;font-weight:600;font-size:14px">
+      <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://tloush.vercel.app'}/inbox" style="display:inline-block;background:#2563eb;color:white;text-decoration:none;padding:12px 32px;border-radius:12px;font-weight:600;font-size:14px">
         Voir mes documents
       </a>
     </div>
@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
     <div style="text-align:center;margin-top:32px;padding-top:16px;border-top:1px solid #e2e8f0">
       <p style="font-size:11px;color:#94a3b8;margin:0">
         Vous recevez cet email car vous avez activé le résumé hebdomadaire sur Tloush.<br>
-        <a href="https://tloush.vercel.app/profile" style="color:#2563eb">Gérer mes préférences</a>
+        <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://tloush.vercel.app'}/profile" style="color:#2563eb">Gérer mes préférences</a>
       </p>
     </div>
   </div>
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
 
     try {
       await resend.emails.send({
-        from: 'Tloush <digest@tloush.vercel.app>',
+        from: `Tloush <${process.env.EMAIL_FROM || 'onboarding@resend.dev'}>`,
         to: user.email,
         subject: `Tloush — ${docs.length} document${docs.length > 1 ? 's' : ''} cette semaine${urgentCount > 0 ? ` (${urgentCount} urgent${urgentCount > 1 ? 's' : ''})` : ''}`,
         html
