@@ -1,0 +1,353 @@
+'use client'
+
+import { useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { Upload, FileText, AlertCircle, CheckCircle, Clock, LogOut, MessageSquare, ChevronRight, Trash2, UserCircle, Search, LayoutDashboard, X } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
+
+interface Document {
+  id: string
+  file_name: string
+  file_type: string
+  document_type: string
+  status: string
+  is_urgent: boolean
+  summary_fr: string | null
+  action_required: boolean
+  action_description: string | null
+  period: string | null
+  created_at: string
+}
+
+const DOC_LABELS: Record<string, string> = {
+  payslip: '💰 Fiche de paie',
+  official_letter: '📨 Courrier officiel',
+  contract: '📋 Contrat',
+  tax: '🧾 Fiscal',
+  other: '📄 Document',
+  unknown: '📄 Document'
+}
+
+const DOC_COLORS: Record<string, string> = {
+  payslip: 'bg-blue-50 text-blue-700 border-blue-200',
+  official_letter: 'bg-orange-50 text-orange-700 border-orange-200',
+  contract: 'bg-purple-50 text-purple-700 border-purple-200',
+  tax: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+  other: 'bg-slate-50 text-slate-700 border-slate-200',
+  unknown: 'bg-slate-50 text-slate-700 border-slate-200'
+}
+
+export default function InboxClient({ documents, userEmail }: { documents: Document[]; userEmail: string }) {
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const [docs, setDocs] = useState<Document[]>(documents)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+  const router = useRouter()
+
+  const filteredDocs = search.trim()
+    ? docs.filter(d =>
+        d.file_name.toLowerCase().includes(search.toLowerCase()) ||
+        (d.summary_fr || '').toLowerCase().includes(search.toLowerCase()) ||
+        (d.period || '').toLowerCase().includes(search.toLowerCase()) ||
+        (DOC_LABELS[d.document_type] || '').toLowerCase().includes(search.toLowerCase())
+      )
+    : docs
+
+  const urgentDocs = docs.filter(d => d.is_urgent)
+  const actionDocs = docs.filter(d => d.action_required && !d.is_urgent)
+
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/')
+    router.refresh()
+  }
+
+  async function handleDelete(docId: string) {
+    setDeletingId(docId)
+    try {
+      const res = await fetch(`/api/documents/${docId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setDocs(prev => prev.filter(d => d.id !== docId))
+      }
+    } catch {
+      // Silently fail — document stays in list
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  async function handleUpload(file: File) {
+    setUploading(true)
+    setUploadError('')
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const res = await fetch('/api/documents/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setUploadError(data.error || 'Erreur lors de l\'analyse')
+        return
+      }
+
+      setDocs(prev => [data.document, ...prev])
+    } catch {
+      setUploadError('Erreur de connexion. Réessayez.')
+    } finally {
+      setUploading(false)
+      if (inputRef.current) inputRef.current.value = ''
+    }
+  }
+
+  function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) handleUpload(file)
+  }
+
+  function formatDate(iso: string) {
+    return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      {/* Header */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link href="/" className="text-xl font-extrabold text-blue-600">Tloush</Link>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-slate-500 hidden sm:block">{userEmail}</span>
+            <Link href="/dashboard" className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
+              <LayoutDashboard size={15} />
+              <span className="hidden sm:block">Dashboard</span>
+            </Link>
+            <Link href="/profile" className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
+              <UserCircle size={15} />
+              <span className="hidden sm:block">Profil</span>
+            </Link>
+            <button onClick={handleLogout} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
+              <LogOut size={15} />
+              <span className="hidden sm:block">Déconnexion</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+
+        {/* Alertes urgentes */}
+        {urgentDocs.length > 0 && (
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <AlertCircle size={18} className="text-red-600" />
+              <h2 className="font-bold text-red-800">
+                {urgentDocs.length} document{urgentDocs.length > 1 ? 's' : ''} urgent{urgentDocs.length > 1 ? 's' : ''}
+              </h2>
+            </div>
+            <div className="space-y-2">
+              {urgentDocs.map(doc => (
+                <Link
+                  key={doc.id}
+                  href={`/assistant?doc=${doc.id}`}
+                  className="block bg-white rounded-xl p-3 border border-red-100 hover:border-red-300 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-slate-800">{doc.file_name}</span>
+                    <ChevronRight size={14} className="text-red-400" />
+                  </div>
+                  {doc.action_description && (
+                    <p className="text-xs text-red-600 mt-1">{doc.action_description}</p>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Actions requises */}
+        {actionDocs.length > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Clock size={18} className="text-amber-600" />
+              <h2 className="font-bold text-amber-800">À traiter</h2>
+            </div>
+            <div className="space-y-2">
+              {actionDocs.map(doc => (
+                <Link
+                  key={doc.id}
+                  href={`/assistant?doc=${doc.id}`}
+                  className="block bg-white rounded-xl p-3 border border-amber-100 hover:border-amber-300 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-slate-800">{doc.file_name}</span>
+                    <ChevronRight size={14} className="text-amber-400" />
+                  </div>
+                  {doc.action_description && (
+                    <p className="text-xs text-amber-700 mt-1">{doc.action_description}</p>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Zone d'upload */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+          <h2 className="font-bold text-slate-900 mb-4">Envoyer un document</h2>
+
+          <input
+            ref={inputRef}
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            className="hidden"
+            onChange={onFileChange}
+          />
+
+          <button
+            onClick={() => inputRef.current?.click()}
+            disabled={uploading}
+            className="w-full border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/30 rounded-xl p-8 transition-all text-center group disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {uploading ? (
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-10 h-10 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                <p className="text-sm font-medium text-blue-600">Analyse en cours...</p>
+                <p className="text-xs text-slate-400">Claude lit votre document</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-12 h-12 bg-blue-50 group-hover:bg-blue-100 rounded-xl flex items-center justify-center transition-colors">
+                  <Upload size={22} className="text-blue-600" />
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-700">Fiche de paie, courrier, contrat...</p>
+                  <p className="text-sm text-slate-400 mt-1">PDF, JPG, PNG · Max 10 Mo</p>
+                </div>
+              </div>
+            )}
+          </button>
+
+          {uploadError && (
+            <div className="mt-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+              {uploadError}
+            </div>
+          )}
+        </div>
+
+        {/* Recherche + liste */}
+        <div>
+          <div className="flex items-center justify-between mb-3 gap-3">
+            <h2 className="font-bold text-slate-900 shrink-0">
+              Tous vos documents
+              {docs.length > 0 && <span className="text-slate-400 font-normal ml-2">({filteredDocs.length}{search ? `/${docs.length}` : ''})</span>}
+            </h2>
+            {docs.length > 0 && (
+              <div className="relative flex-1 max-w-xs">
+                <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Rechercher..."
+                  className="w-full bg-white border border-slate-200 rounded-xl pl-8 pr-8 py-2 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                />
+                {search && (
+                  <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                    <X size={13} />
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {filteredDocs.length === 0 && docs.length > 0 ? (
+            <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+              <Search size={24} className="text-slate-300 mx-auto mb-2" />
+              <p className="text-sm text-slate-400">Aucun document ne correspond à &quot;{search}&quot;</p>
+            </div>
+          ) : docs.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+              <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <FileText size={28} className="text-slate-300" />
+              </div>
+              <p className="font-semibold text-slate-600 mb-1">Aucun document pour l'instant</p>
+              <p className="text-sm text-slate-400">Envoyez votre première fiche de paie ou courrier ci-dessus</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredDocs.map(doc => (
+                <div
+                  key={doc.id}
+                  className="bg-white rounded-2xl border border-slate-200 p-4 hover:border-blue-200 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${DOC_COLORS[doc.document_type] || DOC_COLORS.other}`}>
+                          {DOC_LABELS[doc.document_type] || DOC_LABELS.other}
+                        </span>
+                        {doc.is_urgent && (
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
+                            🔴 Urgent
+                          </span>
+                        )}
+                        {doc.action_required && !doc.is_urgent && (
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
+                            ⚠️ Action requise
+                          </span>
+                        )}
+                        {!doc.action_required && !doc.is_urgent && (
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200">
+                            <CheckCircle size={10} className="inline mr-1" />Traité
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="font-medium text-slate-800 text-sm truncate">{doc.file_name}</p>
+                      {doc.period && <p className="text-xs text-slate-400 mt-0.5">{doc.period}</p>}
+                      {doc.summary_fr && (
+                        <p className="text-xs text-slate-500 mt-2 line-clamp-2">{doc.summary_fr}</p>
+                      )}
+                      <p className="text-xs text-slate-300 mt-2">{formatDate(doc.created_at)}</p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Link
+                        href={`/assistant?doc=${doc.id}`}
+                        className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-medium px-3 py-1.5 rounded-xl transition-colors"
+                      >
+                        <MessageSquare size={13} />
+                        <span className="hidden sm:block">Demander</span>
+                      </Link>
+                      <button
+                        onClick={() => {
+                          if (window.confirm('Supprimer ce document ?')) {
+                            handleDelete(doc.id)
+                          }
+                        }}
+                        disabled={deletingId === doc.id}
+                        className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+                        title="Supprimer"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
