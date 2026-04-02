@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { FileText, AlertCircle, CheckCircle, Clock, LayoutDashboard, Inbox, MessageSquare, UserCircle, BarChart3 } from 'lucide-react'
+import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare } from 'lucide-react'
 
 interface Doc {
   id: string
@@ -30,7 +30,7 @@ const TYPE_COLORS: Record<string, string> = {
   other: 'bg-slate-100 text-slate-600',
 }
 
-export default function DashboardClient({ documents, userEmail }: { documents: Doc[]; userEmail: string }) {
+export default function DashboardClient({ documents }: { documents: Doc[] }) {
   const urgent = documents.filter(d => d.is_urgent)
   const actionRequired = documents.filter(d => d.action_required && !d.is_urgent)
   const recent = documents.slice(0, 5)
@@ -47,36 +47,7 @@ export default function DashboardClient({ documents, userEmail }: { documents: D
   const recentCount = documents.filter(d => new Date(d.created_at) > thirtyDaysAgo).length
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-xl font-extrabold text-blue-600">Tloush</span>
-            <span className="text-slate-300">|</span>
-            <span className="text-sm text-slate-500 font-medium flex items-center gap-1.5">
-              <LayoutDashboard size={14} />
-              Tableau de bord
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-slate-500 hidden sm:block">{userEmail}</span>
-            <Link href="/inbox" className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1" aria-label="Boîte de réception">
-              <Inbox size={14} />
-              <span className="hidden sm:block">Inbox</span>
-            </Link>
-            <Link href="/compare" className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1" aria-label="Comparer les fiches de paie">
-              <BarChart3 size={14} />
-              <span className="hidden sm:block">Comparer</span>
-            </Link>
-            <Link href="/profile" className="text-slate-400 hover:text-slate-600" aria-label="Profil">
-              <UserCircle size={18} />
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-4xl mx-auto px-4 py-6 space-y-6 w-full">
 
         {/* Alertes actives */}
         {(urgent.length > 0 || actionRequired.length > 0) && (
@@ -236,7 +207,6 @@ export default function DashboardClient({ documents, userEmail }: { documents: D
           </div>
         )}
 
-      </div>
     </div>
   )
 }

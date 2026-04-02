@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Send, FileText, ArrowLeft, Loader2 } from 'lucide-react'
+import { Send, FileText, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { track } from '@/lib/analytics'
 
@@ -142,19 +142,7 @@ export default function AssistantClient({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link href="/inbox" className="text-slate-400 hover:text-slate-600" aria-label="Retour à la boîte de réception">
-            <ArrowLeft size={20} />
-          </Link>
-          <span className="text-xl font-extrabold text-blue-600">Tloush</span>
-          <span className="text-slate-300">|</span>
-          <span className="text-sm text-slate-500 font-medium">Assistant</span>
-        </div>
-      </header>
-
+    <div className="flex-1 flex flex-col">
       <div className="flex-1 max-w-5xl mx-auto w-full px-4 py-4 flex gap-4">
 
         {/* Sidebar documents */}

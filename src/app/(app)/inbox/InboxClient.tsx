@@ -2,8 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Upload, FileText, AlertCircle, CheckCircle, Clock, LogOut, MessageSquare, ChevronRight, Trash2, UserCircle, Search, LayoutDashboard, X, Download, UserCheck } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { Upload, FileText, AlertCircle, CheckCircle, Clock, MessageSquare, ChevronRight, Trash2, Search, X, Download, UserCheck } from 'lucide-react'
 import Link from 'next/link'
 import { getExpertRecommendation, getExpertUrl } from '@/lib/expertMatcher'
 import { track } from '@/lib/analytics'
@@ -61,13 +60,6 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
   const urgentDocs = docs.filter(d => d.is_urgent)
   const actionDocs = docs.filter(d => d.action_required && !d.is_urgent)
 
-  async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/')
-    router.refresh()
-  }
-
   async function handleDelete(docId: string) {
     setDeletingId(docId)
     try {
@@ -123,30 +115,7 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="text-xl font-extrabold text-blue-600">Tloush</Link>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-slate-500 hidden sm:block">{userEmail}</span>
-            <Link href="/dashboard" className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700" aria-label="Tableau de bord">
-              <LayoutDashboard size={15} />
-              <span className="hidden sm:block">Dashboard</span>
-            </Link>
-            <Link href="/profile" className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700" aria-label="Profil">
-              <UserCircle size={15} />
-              <span className="hidden sm:block">Profil</span>
-            </Link>
-            <button onClick={handleLogout} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700" aria-label="Se déconnecter">
-              <LogOut size={15} />
-              <span className="hidden sm:block">Déconnexion</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-3xl mx-auto px-4 py-6 space-y-6 w-full">
 
         {/* Alertes urgentes */}
         {urgentDocs.length > 0 && (
@@ -378,7 +347,6 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
             </div>
           )}
         </div>
-      </div>
     </div>
   )
 }
