@@ -18,26 +18,28 @@ export default function AppNav() {
 
   return (
     <>
-      {/* Desktop: horizontal nav under header */}
-      <nav className="hidden md:block bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-700">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex gap-1">
-          {NAV_ITEMS.map(item => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
-                  isActive
-                    ? 'border-brand-600 text-brand-600'
-                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'
-                }`}
-              >
-                <item.icon size={16} />
-                {item.label}
-              </Link>
-            )
-          })}
+      {/* Desktop: pill-style nav */}
+      <nav className="hidden md:block bg-slate-50 dark:bg-slate-950 py-2">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-1.5 shadow-sm">
+            {NAV_ITEMS.map(item => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${
+                    isActive
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  <item.icon size={16} />
+                  {item.label}
+                </Link>
+              )
+            })}
+          </div>
         </div>
       </nav>
 
@@ -50,12 +52,16 @@ export default function AppNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center justify-center gap-0.5 min-h-[56px] min-w-[44px] px-2 rounded-lg transition-colors ${
-                  isActive ? 'text-brand-600' : 'text-slate-500 dark:text-slate-400'
+                className={`flex flex-col items-center justify-center gap-0.5 min-h-[56px] min-w-[44px] px-2 rounded-lg transition-all duration-200 ${
+                  isActive
+                    ? 'text-blue-600 dark:text-blue-400'
+                    : 'text-slate-400 dark:text-slate-500'
                 }`}
               >
-                <item.icon size={22} />
-                <span className="text-[10px] font-medium leading-tight">{item.label}</span>
+                <div className={`p-1 rounded-lg transition-all duration-200 ${isActive ? 'bg-blue-50 dark:bg-blue-950/50' : ''}`}>
+                  <item.icon size={22} />
+                </div>
+                <span className={`text-[10px] font-semibold leading-tight ${isActive ? '' : 'font-medium'}`}>{item.label}</span>
               </Link>
             )
           })}

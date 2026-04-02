@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare } from 'lucide-react'
+import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap } from 'lucide-react'
 
 interface Doc {
   id: string
@@ -29,25 +29,25 @@ const TYPE_LABELS: Record<string, string> = {
   other: 'Autre',
 }
 
-const TYPE_COLORS: Record<string, string> = {
-  payslip: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  bituah_leumi: 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
-  tax_notice: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-  work_contract: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
-  pension: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
-  health_insurance: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
-  rental: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-  bank: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300',
-  official_letter: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  contract: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
-  tax: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-  other: 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300',
+const TYPE_ICONS: Record<string, string> = {
+  payslip: '💰',
+  bituah_leumi: '🏛️',
+  tax_notice: '🧾',
+  work_contract: '📋',
+  pension: '🏦',
+  health_insurance: '🏥',
+  rental: '🏠',
+  bank: '💳',
+  official_letter: '📬',
+  contract: '📄',
+  tax: '📊',
+  other: '📎',
 }
 
 export default function DashboardClient({ documents }: { documents: Doc[] }) {
   const urgent = documents.filter(d => d.is_urgent)
   const actionRequired = documents.filter(d => d.action_required && !d.is_urgent)
-  const recent = documents.slice(0, 5)
+  const recent = documents.slice(0, 6)
 
   const byType: Record<string, number> = {}
   for (const doc of documents) {
@@ -58,170 +58,226 @@ export default function DashboardClient({ documents }: { documents: Doc[] }) {
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
   const recentCount = documents.filter(d => new Date(d.created_at) > thirtyDaysAgo).length
 
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon apres-midi' : 'Bonsoir'
+
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 space-y-6 w-full">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6 w-full">
 
-        {/* Alertes actives */}
-        {(urgent.length > 0 || actionRequired.length > 0) && (
-          <div className="space-y-3">
-            {urgent.map(doc => (
-              <Link
-                key={doc.id}
-                href={`/assistant?doc=${doc.id}`}
-                className="flex items-start gap-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-2xl p-4 hover:bg-red-100 dark:hover:bg-red-950/60 hover:shadow-sm transition-all min-h-[44px]"
-              >
-                <AlertCircle size={18} className="text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-red-800 dark:text-red-300">
-                    Urgent — {TYPE_LABELS[doc.document_type] || doc.document_type}
-                    {doc.period && <span className="font-normal text-red-600 dark:text-red-400"> · {doc.period}</span>}
-                  </p>
-                  {doc.action_description && (
-                    <p className="text-xs text-red-600 dark:text-red-400 mt-0.5 truncate">{doc.action_description}</p>
-                  )}
-                </div>
-                <span className="text-xs text-red-500 dark:text-red-400 shrink-0 font-medium">Voir →</span>
-              </Link>
-            ))}
-            {actionRequired.map(doc => (
-              <Link
-                key={doc.id}
-                href={`/assistant?doc=${doc.id}`}
-                className="flex items-start gap-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 hover:bg-amber-100 dark:hover:bg-amber-950/60 hover:shadow-sm transition-all min-h-[44px]"
-              >
-                <Clock size={18} className="text-amber-500 dark:text-amber-400 shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
-                    Action requise — {TYPE_LABELS[doc.document_type] || doc.document_type}
-                    {doc.period && <span className="font-normal text-amber-600 dark:text-amber-400"> · {doc.period}</span>}
-                  </p>
-                  {doc.action_description && (
-                    <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5 truncate">{doc.action_description}</p>
-                  )}
-                </div>
-                <span className="text-xs text-amber-500 dark:text-amber-400 shrink-0 font-medium">Voir →</span>
-              </Link>
-            ))}
-          </div>
-        )}
+      {/* Hero greeting */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 dark:from-blue-900 dark:via-blue-950 dark:to-indigo-950 rounded-3xl p-6 sm:p-8 text-white">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4" />
+        <div className="relative">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1">{greeting} !</h1>
+          <p className="text-blue-100 dark:text-blue-300 text-sm sm:text-base">
+            {documents.length === 0
+              ? 'Uploadez votre premier document pour commencer.'
+              : `Vous avez ${documents.length} document${documents.length > 1 ? 's' : ''} dans votre espace.`}
+          </p>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 text-center shadow-sm">
-            <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{documents.length}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Documents total</p>
-          </div>
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 text-center shadow-sm">
-            <p className="text-2xl font-bold text-red-600 dark:text-red-400">{urgent.length}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Urgents</p>
-          </div>
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 text-center shadow-sm">
-            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{actionRequired.length}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Actions en attente</p>
-          </div>
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 text-center shadow-sm">
-            <p className="text-2xl font-bold text-brand-600">{recentCount}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Ce mois-ci</p>
+          {/* Inline stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
+            <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-4 text-center border border-white/10">
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <FileText size={16} className="text-blue-200" />
+                <p className="text-2xl sm:text-3xl font-bold">{documents.length}</p>
+              </div>
+              <p className="text-xs text-blue-200 font-medium">Documents</p>
+            </div>
+            <div className={`backdrop-blur-sm rounded-2xl p-4 text-center border ${urgent.length > 0 ? 'bg-red-500/20 border-red-400/30' : 'bg-white/15 border-white/10'}`}>
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <AlertCircle size={16} className={urgent.length > 0 ? 'text-red-300' : 'text-blue-200'} />
+                <p className="text-2xl sm:text-3xl font-bold">{urgent.length}</p>
+              </div>
+              <p className={`text-xs font-medium ${urgent.length > 0 ? 'text-red-200' : 'text-blue-200'}`}>Urgents</p>
+            </div>
+            <div className={`backdrop-blur-sm rounded-2xl p-4 text-center border ${actionRequired.length > 0 ? 'bg-amber-500/20 border-amber-400/30' : 'bg-white/15 border-white/10'}`}>
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <Clock size={16} className={actionRequired.length > 0 ? 'text-amber-300' : 'text-blue-200'} />
+                <p className="text-2xl sm:text-3xl font-bold">{actionRequired.length}</p>
+              </div>
+              <p className={`text-xs font-medium ${actionRequired.length > 0 ? 'text-amber-200' : 'text-blue-200'}`}>Actions</p>
+            </div>
+            <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-4 text-center border border-white/10">
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <TrendingUp size={16} className="text-blue-200" />
+                <p className="text-2xl sm:text-3xl font-bold">{recentCount}</p>
+              </div>
+              <p className="text-xs text-blue-200 font-medium">Ce mois-ci</p>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div className="grid sm:grid-cols-2 gap-4">
-          {/* Repartition par type */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
-            <h2 className="section-heading mb-4">Par type de document</h2>
-            {Object.keys(byType).length === 0 ? (
-              <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Aucun document analyse</p>
-            ) : (
-              <div className="space-y-2.5">
-                {Object.entries(byType)
-                  .sort(([, a], [, b]) => b - a)
-                  .map(([type, count]) => (
-                    <div key={type} className="flex items-center justify-between">
-                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${TYPE_COLORS[type] || 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'}`}>
-                        {TYPE_LABELS[type] || type}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-brand-400 rounded-full transition-all"
-                            role="progressbar"
-                            aria-valuenow={count}
-                            aria-valuemin={0}
-                            aria-valuemax={documents.length}
-                            style={{ width: `${(count / documents.length) * 100}%` }}
-                          />
-                        </div>
-                        <span className="text-xs text-slate-600 dark:text-slate-400 w-4 text-right font-medium">{count}</span>
+      {/* Alertes actives */}
+      {(urgent.length > 0 || actionRequired.length > 0) && (
+        <div className="space-y-3">
+          {urgent.map(doc => (
+            <Link
+              key={doc.id}
+              href={`/assistant?doc=${doc.id}`}
+              className="flex items-start gap-3 bg-gradient-to-r from-red-50 to-red-50/50 dark:from-red-950/40 dark:to-red-950/20 border border-red-200 dark:border-red-800 rounded-2xl p-4 hover:shadow-md hover:shadow-red-500/10 hover:border-red-300 dark:hover:border-red-700 transition-all group min-h-[44px]"
+            >
+              <div className="w-10 h-10 bg-red-100 dark:bg-red-900/50 rounded-xl flex items-center justify-center shrink-0">
+                <AlertCircle size={20} className="text-red-500 dark:text-red-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-red-800 dark:text-red-300">
+                  Urgent — {TYPE_LABELS[doc.document_type] || doc.document_type}
+                  {doc.period && <span className="font-normal text-red-600 dark:text-red-400"> · {doc.period}</span>}
+                </p>
+                {doc.action_description && (
+                  <p className="text-xs text-red-600 dark:text-red-400 mt-0.5 truncate">{doc.action_description}</p>
+                )}
+              </div>
+              <ArrowRight size={16} className="text-red-300 dark:text-red-600 group-hover:text-red-500 dark:group-hover:text-red-400 shrink-0 mt-1 transition-colors group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          ))}
+          {actionRequired.map(doc => (
+            <Link
+              key={doc.id}
+              href={`/assistant?doc=${doc.id}`}
+              className="flex items-start gap-3 bg-gradient-to-r from-amber-50 to-amber-50/50 dark:from-amber-950/40 dark:to-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 hover:shadow-md hover:shadow-amber-500/10 hover:border-amber-300 dark:hover:border-amber-700 transition-all group min-h-[44px]"
+            >
+              <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/50 rounded-xl flex items-center justify-center shrink-0">
+                <Clock size={20} className="text-amber-500 dark:text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                  Action requise — {TYPE_LABELS[doc.document_type] || doc.document_type}
+                  {doc.period && <span className="font-normal text-amber-600 dark:text-amber-400"> · {doc.period}</span>}
+                </p>
+                {doc.action_description && (
+                  <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5 truncate">{doc.action_description}</p>
+                )}
+              </div>
+              <ArrowRight size={16} className="text-amber-300 dark:text-amber-600 group-hover:text-amber-500 dark:group-hover:text-amber-400 shrink-0 mt-1 transition-colors" />
+            </Link>
+          ))}
+        </div>
+      )}
+
+      <div className="grid lg:grid-cols-3 gap-5">
+        {/* Repartition par type - prend 1 col */}
+        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-8 h-8 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+              <Shield size={16} className="text-blue-600 dark:text-blue-400" />
+            </div>
+            <h2 className="font-bold text-slate-800 dark:text-slate-200">Par type</h2>
+          </div>
+          {Object.keys(byType).length === 0 ? (
+            <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Aucun document</p>
+          ) : (
+            <div className="space-y-3">
+              {Object.entries(byType)
+                .sort(([, a], [, b]) => b - a)
+                .map(([type, count]) => {
+                  const pct = Math.round((count / documents.length) * 100)
+                  return (
+                    <div key={type}>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-sm text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5">
+                          <span>{TYPE_ICONS[type] || '📄'}</span>
+                          {TYPE_LABELS[type] || type}
+                        </span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">{count} ({pct}%)</span>
+                      </div>
+                      <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-500"
+                          role="progressbar"
+                          aria-valuenow={count}
+                          aria-valuemin={0}
+                          aria-valuemax={documents.length}
+                          style={{ width: `${pct}%` }}
+                        />
                       </div>
                     </div>
-                  ))}
-              </div>
-            )}
-          </div>
-
-          {/* Documents recents */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="section-heading">Documents recents</h2>
-              <Link href="/inbox" className="text-xs text-brand-600 hover:underline font-medium">Voir tout</Link>
+                  )
+                })}
             </div>
-            {recent.length === 0 ? (
-              <div className="text-center py-6">
-                <FileText size={28} className="text-slate-400 mx-auto mb-2" />
-                <p className="text-sm text-slate-500 dark:text-slate-400">Aucun document</p>
-                <Link href="/inbox" className="text-xs text-brand-600 mt-2 inline-block hover:underline font-medium">
-                  Uploader mon premier document →
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {recent.map(doc => (
-                  <Link
-                    key={doc.id}
-                    href={`/assistant?doc=${doc.id}`}
-                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors group min-h-[44px]"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0">
-                      {doc.is_urgent
-                        ? <AlertCircle size={14} className="text-red-500 dark:text-red-400" />
-                        : doc.action_required
-                          ? <Clock size={14} className="text-amber-500 dark:text-amber-400" />
-                          : <CheckCircle size={14} className="text-emerald-500 dark:text-emerald-400" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">
-                        {TYPE_LABELS[doc.document_type] || doc.document_type}
-                        {doc.period && <span className="text-slate-400 dark:text-slate-500 font-normal"> · {doc.period}</span>}
-                      </p>
-                      {doc.summary_fr && (
-                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{doc.summary_fr}</p>
-                      )}
-                    </div>
-                    <MessageSquare size={12} className="text-slate-300 dark:text-slate-600 group-hover:text-brand-500 shrink-0 transition-colors" />
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
         </div>
 
-        {/* CTA si pas de documents */}
-        {documents.length === 0 && (
-          <div className="bg-brand-50 dark:bg-brand-950/30 border border-brand-100 dark:border-brand-900 rounded-2xl p-8 text-center">
-            <FileText size={36} className="text-brand-300 mx-auto mb-3" />
-            <h3 className="font-bold text-brand-900 dark:text-brand-200 mb-1">Commencez par uploader un document</h3>
-            <p className="text-sm text-brand-600 dark:text-brand-400 mb-4">
-              Fiche de paie, courrier officiel, contrat... Tloush vous l&apos;explique en francais.
-            </p>
-            <Link
-              href="/inbox"
-              className="inline-flex items-center gap-2 bg-brand-600 text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-brand-700 transition-colors active:scale-95"
-            >
-              <Inbox size={15} />
-              Aller a l&apos;inbox
+        {/* Documents recents - prend 2 cols */}
+        <div className="lg:col-span-2 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+                <Zap size={16} className="text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <h2 className="font-bold text-slate-800 dark:text-slate-200">Documents recents</h2>
+            </div>
+            <Link href="/inbox" className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1">
+              Voir tout <ArrowRight size={12} />
             </Link>
           </div>
-        )}
+          {recent.length === 0 ? (
+            <div className="text-center py-10">
+              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <FileText size={28} className="text-slate-300 dark:text-slate-500" />
+              </div>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">Aucun document encore</p>
+              <Link href="/inbox" className="inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors">
+                <Inbox size={15} />
+                Uploader un document
+              </Link>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-3">
+              {recent.map(doc => (
+                <Link
+                  key={doc.id}
+                  href={`/assistant?doc=${doc.id}`}
+                  className="flex items-start gap-3 p-3.5 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-all group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-700 flex items-center justify-center shrink-0 text-lg">
+                    {TYPE_ICONS[doc.document_type] || '📄'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      {doc.is_urgent && <span className="w-2 h-2 bg-red-500 rounded-full shrink-0" />}
+                      {!doc.is_urgent && doc.action_required && <span className="w-2 h-2 bg-amber-500 rounded-full shrink-0" />}
+                      {!doc.is_urgent && !doc.action_required && <span className="w-2 h-2 bg-emerald-500 rounded-full shrink-0" />}
+                      <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
+                        {TYPE_LABELS[doc.document_type] || doc.document_type}
+                      </p>
+                    </div>
+                    {doc.period && (
+                      <p className="text-xs text-slate-400 dark:text-slate-500 mb-0.5">{doc.period}</p>
+                    )}
+                    {doc.summary_fr && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{doc.summary_fr}</p>
+                    )}
+                  </div>
+                  <MessageSquare size={14} className="text-slate-200 dark:text-slate-600 group-hover:text-blue-400 shrink-0 mt-1 transition-colors" />
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* CTA si pas de documents */}
+      {documents.length === 0 && (
+        <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-100 dark:border-blue-900 rounded-3xl p-8 sm:p-10 text-center">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-blue-100/50 dark:bg-blue-900/20 rounded-full -translate-y-1/2 translate-x-1/3" />
+          <FileText size={40} className="text-blue-300 dark:text-blue-700 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">Commencez par uploader un document</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-5 max-w-md mx-auto">
+            Fiche de paie, courrier officiel, contrat... Tloush vous l&apos;explique en francais en quelques secondes.
+          </p>
+          <Link
+            href="/inbox"
+            className="inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/25 active:scale-95"
+          >
+            <Inbox size={16} />
+            Aller a l&apos;inbox
+          </Link>
+        </div>
+      )}
 
     </div>
   )

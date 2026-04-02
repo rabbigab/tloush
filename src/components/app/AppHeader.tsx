@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { LogOut, Moon, Sun } from 'lucide-react'
+import { LogOut, Moon, Sun, Sparkles } from 'lucide-react'
 import { useTheme } from '@/components/providers/ThemeProvider'
 
 export default function AppHeader({ userEmail }: { userEmail: string }) {
@@ -18,24 +18,29 @@ export default function AppHeader({ userEmail }: { userEmail: string }) {
   }
 
   return (
-    <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50">
+    <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 shadow-lg shadow-blue-500/10 dark:shadow-none">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-        <Link href="/inbox" className="text-xl font-extrabold text-brand-600 hover:opacity-80 transition-opacity">
-          Tloush
+        <Link href="/inbox" className="flex items-center gap-2 group">
+          <div className="w-8 h-8 bg-white/20 dark:bg-blue-500/20 rounded-xl flex items-center justify-center group-hover:bg-white/30 dark:group-hover:bg-blue-500/30 transition-colors">
+            <Sparkles size={16} className="text-white dark:text-blue-400" />
+          </div>
+          <span className="text-lg font-extrabold text-white tracking-tight">
+            Tloush
+          </span>
         </Link>
 
         <div className="flex items-center gap-1">
-          <span className="text-sm text-slate-500 dark:text-slate-400 hidden sm:block mr-2">{userEmail}</span>
+          <span className="text-sm text-blue-100 dark:text-slate-400 hidden sm:block mr-2 font-medium">{userEmail}</span>
           <button
             onClick={toggle}
-            className="flex items-center justify-center min-h-[44px] min-w-[44px] text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            className="flex items-center justify-center min-h-[44px] min-w-[44px] text-blue-100 dark:text-slate-400 hover:text-white dark:hover:text-slate-200 hover:bg-white/10 dark:hover:bg-slate-800 rounded-xl transition-colors"
             aria-label={theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </button>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-1.5 min-h-[44px] px-3 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 min-h-[44px] px-3 text-sm text-blue-100 dark:text-slate-400 hover:text-white dark:hover:text-slate-200 hover:bg-white/10 dark:hover:bg-slate-800 rounded-xl transition-colors"
             aria-label="Se deconnecter"
           >
             <LogOut size={16} />
