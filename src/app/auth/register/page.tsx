@@ -154,7 +154,8 @@ export default function RegisterPage() {
         </div>
 
         <p className="text-center text-xs text-slate-400 mt-4">
-          🔒 Vos données sont sécurisées et chiffrées
+          En créant un compte, vous acceptez notre{' '}
+          <Link href="/privacy" className="underline hover:text-slate-500">politique de confidentialité</Link>.
         </p>
       </div>
     </div>

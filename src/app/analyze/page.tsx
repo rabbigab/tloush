@@ -163,6 +163,14 @@ function AnalyzeContent() {
       <Header />
       <div className="flex-1 max-w-2xl mx-auto w-full px-4 sm:px-6 py-8">
 
+        <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-6 text-sm text-blue-700">
+          <Sparkles size={15} className="shrink-0" />
+          <span>
+            <strong>Nouveau :</strong> Créez un compte gratuit pour accéder à l'inbox, l'assistant IA et le suivi de vos documents.{' '}
+            <a href="/auth/register" className="underline font-semibold hover:text-blue-800">Créer mon compte</a>
+          </span>
+        </div>
+
         {isDemo && (
           <div className="flex items-center gap-2 bg-brand-50 border border-brand-100 rounded-xl px-4 py-3 mb-6 text-sm text-brand-700">
             <Sparkles size={15} className="shrink-0" />

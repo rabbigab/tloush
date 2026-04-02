@@ -261,6 +261,7 @@ export default function AssistantClient({
               </button>
             </div>
             <p className="text-xs text-slate-300 text-center mt-2">Entrée pour envoyer · Maj+Entrée pour sauter une ligne</p>
+            <p className="text-[10px] text-slate-300 text-center mt-1">Tloush n'est ni un avocat ni un comptable. Pour un avis professionnel, consultez un expert.</p>
           </div>
         </div>
       </div>

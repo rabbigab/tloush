@@ -103,6 +103,9 @@ export default function LoginPage() {
         <Suspense fallback={<div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 h-64" />}>
           <LoginForm />
         </Suspense>
+        <p className="text-center text-xs text-slate-400 mt-4">
+          <Link href="/privacy" className="underline hover:text-slate-500">Politique de confidentialité</Link>
+        </p>
       </div>
     </div>
   )
