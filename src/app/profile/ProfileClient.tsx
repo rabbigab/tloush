@@ -3,19 +3,25 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { ArrowLeft, User, FileText, Calendar, LogOut, Trash2, AlertTriangle, Mail, Bell } from 'lucide-react'
+import { ArrowLeft, User, FileText, Calendar, LogOut, Trash2, AlertTriangle, Mail, Bell, Pencil, Check, X } from 'lucide-react'
 import Link from 'next/link'
 import { track } from '@/lib/analytics'
 
 export default function ProfileClient({
   email,
+  displayName: initialDisplayName,
   createdAt,
   documentCount
 }: {
   email: string
+  displayName: string
   createdAt: string
   documentCount: number
 }) {
+  const [displayName, setDisplayName] = useState(initialDisplayName)
+  const [editingName, setEditingName] = useState(false)
+  const [nameInput, setNameInput] = useState(initialDisplayName)
+  const [nameSaving, setNameSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteInput, setDeleteInput] = useState('')
@@ -53,6 +59,23 @@ export default function ProfileClient({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ urgent_alerts_enabled: newVal })
     })
+  }
+
+  async function saveDisplayName() {
+    setNameSaving(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.updateUser({
+        data: { display_name: nameInput.trim() }
+      })
+      if (!error) {
+        setDisplayName(nameInput.trim())
+        setEditingName(false)
+        track('profile_updated', { field: 'display_name' })
+      }
+    } finally {
+      setNameSaving(false)
+    }
   }
 
   async function handleLogout() {
@@ -108,6 +131,34 @@ export default function ProfileClient({
             <div className="flex items-center justify-between py-2 border-b border-slate-100">
               <span className="text-sm text-slate-500">Email</span>
               <span className="text-sm font-medium text-slate-800">{email}</span>
+            </div>
+            <div className="flex items-center justify-between py-2 border-b border-slate-100">
+              <span className="text-sm text-slate-500">Nom d&apos;affichage</span>
+              {editingName ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={nameInput}
+                    onChange={e => setNameInput(e.target.value)}
+                    className="border border-slate-200 rounded-lg px-2 py-1 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    autoFocus
+                    onKeyDown={e => { if (e.key === 'Enter') saveDisplayName(); if (e.key === 'Escape') { setEditingName(false); setNameInput(displayName) } }}
+                  />
+                  <button onClick={saveDisplayName} disabled={nameSaving} className="text-green-600 hover:text-green-700">
+                    <Check size={16} />
+                  </button>
+                  <button onClick={() => { setEditingName(false); setNameInput(displayName) }} className="text-slate-400 hover:text-slate-600">
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-slate-800">{displayName || 'Non défini'}</span>
+                  <button onClick={() => setEditingName(true)} className="text-slate-400 hover:text-blue-600">
+                    <Pencil size={14} />
+                  </button>
+                </div>
+              )}
             </div>
             <div className="flex items-center justify-between py-2 border-b border-slate-100">
               <span className="text-sm text-slate-500 flex items-center gap-1">

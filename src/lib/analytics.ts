@@ -15,7 +15,8 @@ type TloushEvent =
   | "report_section_viewed"
   | "anomaly_detected"
   | "page_viewed"
-  | "error_boundary_hit";
+  | "error_boundary_hit"
+  | "profile_updated";
 
 export function track(event: TloushEvent, properties?: Record<string, unknown>) {
   try {

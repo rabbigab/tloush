@@ -21,6 +21,7 @@ export default async function ProfilePage() {
   return (
     <ProfileClient
       email={user.email || ''}
+      displayName={user.user_metadata?.display_name || ''}
       createdAt={user.created_at}
       documentCount={documentCount || 0}
     />
