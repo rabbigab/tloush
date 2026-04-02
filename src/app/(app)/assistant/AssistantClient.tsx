@@ -145,7 +145,7 @@ export default function AssistantClient({
       // Code blocks (```)
       .replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre class="bg-slate-900 text-slate-100 rounded-xl p-3 my-2 text-xs overflow-x-auto"><code>$2</code></pre>')
       // Inline code
-      .replace(/`([^`]+)`/g, '<code class="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded text-xs font-mono">$1</code>')
+      .replace(/`([^`]+)`/g, '<code class="bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 px-1.5 py-0.5 rounded text-xs font-mono">$1</code>')
       // Bold
       .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
       // Italic
@@ -169,12 +169,12 @@ export default function AssistantClient({
 
         {/* Sidebar documents */}
         <div className="w-64 shrink-0 hidden md:block">
-          <div className="bg-white rounded-2xl border border-slate-200 p-3 sticky top-20 shadow-sm">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3 px-1">Vos documents</p>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-3 sticky top-20 shadow-sm">
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3 px-1">Vos documents</p>
             <div className="space-y-1">
               <button
                 onClick={() => { setActiveDoc(null); setConversationId(null); router.push('/assistant') }}
-                className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-colors min-h-[40px] ${!activeDoc ? 'bg-brand-50 text-brand-700 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}
+                className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-colors min-h-[40px] ${!activeDoc ? 'bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-300 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
               >
                 Question generale
               </button>
@@ -182,13 +182,13 @@ export default function AssistantClient({
                 <button
                   key={doc.id}
                   onClick={() => selectDocument(doc)}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-colors min-h-[40px] ${activeDoc?.id === doc.id ? 'bg-brand-50 text-brand-700 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}
+                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-colors min-h-[40px] ${activeDoc?.id === doc.id ? 'bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-300 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
                 >
                   <div className="flex items-start gap-2">
                     <FileText size={14} className="mt-0.5 shrink-0" />
                     <div className="min-w-0">
                       <p className="truncate text-xs">{doc.file_name}</p>
-                      {doc.period && <p className="text-xs text-slate-400">{doc.period}</p>}
+                      {doc.period && <p className="text-xs text-slate-400 dark:text-slate-500">{doc.period}</p>}
                     </div>
                   </div>
                 </button>
@@ -198,15 +198,15 @@ export default function AssistantClient({
         </div>
 
         {/* Zone de chat */}
-        <div className="flex-1 flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className="flex-1 flex flex-col bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
 
           {/* Document actif */}
           {activeDoc && (
-            <div className="px-4 py-3 bg-brand-50 border-b border-brand-100 flex items-center gap-2">
+            <div className="px-4 py-3 bg-brand-50 dark:bg-brand-950/30 border-b border-brand-100 dark:border-brand-900 flex items-center gap-2">
               <FileText size={15} className="text-brand-600 shrink-0" />
               <div className="min-w-0">
-                <span className="text-sm font-medium text-brand-800 truncate block">{activeDoc.file_name}</span>
-                <span className="text-xs text-brand-600">{DOC_LABELS[activeDoc.document_type] || 'Document'}{activeDoc.period ? ` · ${activeDoc.period}` : ''}</span>
+                <span className="text-sm font-medium text-brand-800 dark:text-brand-200 truncate block">{activeDoc.file_name}</span>
+                <span className="text-xs text-brand-600 dark:text-brand-400">{DOC_LABELS[activeDoc.document_type] || 'Document'}{activeDoc.period ? ` · ${activeDoc.period}` : ''}</span>
               </div>
             </div>
           )}
@@ -216,21 +216,21 @@ export default function AssistantClient({
             {messages.map((msg, i) => (
               <div key={i} className={`flex gap-2.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {msg.role === 'assistant' && (
-                  <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center shrink-0 mt-1">
-                    <Bot size={14} className="text-brand-600" />
+                  <div className="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-900/40 flex items-center justify-center shrink-0 mt-1">
+                    <Bot size={14} className="text-brand-600 dark:text-brand-400" />
                   </div>
                 )}
                 <div
                   className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                     msg.role === 'user'
                       ? 'bg-brand-600 text-white'
-                      : 'bg-slate-50 text-slate-800 border border-slate-200'
+                      : 'bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-600'
                   }`}
                   dangerouslySetInnerHTML={{ __html: renderMessage(msg.content) }}
                 />
                 {msg.role === 'user' && (
-                  <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center shrink-0 mt-1">
-                    <User size={14} className="text-slate-600" />
+                  <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center shrink-0 mt-1">
+                    <User size={14} className="text-slate-600 dark:text-slate-300" />
                   </div>
                 )}
               </div>
@@ -238,12 +238,12 @@ export default function AssistantClient({
 
             {loading && (
               <div className="flex gap-2.5 justify-start">
-                <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center shrink-0 mt-1">
-                  <Bot size={14} className="text-brand-600" />
+                <div className="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-900/40 flex items-center justify-center shrink-0 mt-1">
+                  <Bot size={14} className="text-brand-600 dark:text-brand-400" />
                 </div>
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 flex items-center gap-2">
+                <div className="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl px-4 py-3 flex items-center gap-2">
                   <Loader2 size={14} className="animate-spin text-brand-500" />
-                  <span className="text-sm text-slate-600">Tloush reflechit...</span>
+                  <span className="text-sm text-slate-600 dark:text-slate-300">Tloush reflechit...</span>
                 </div>
               </div>
             )}
@@ -251,13 +251,13 @@ export default function AssistantClient({
             {/* Questions suggerees */}
             {messages.length <= 1 && !loading && (
               <div className="pt-2">
-                <p className="text-xs text-slate-500 mb-2 font-medium">Questions frequentes :</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">Questions frequentes :</p>
                 <div className="flex flex-wrap gap-2">
                   {SUGGESTED_QUESTIONS.map((q, i) => (
                     <button
                       key={i}
                       onClick={() => sendMessage(q)}
-                      className="text-xs bg-white hover:bg-brand-50 hover:text-brand-700 border border-slate-200 hover:border-brand-200 rounded-xl px-3 py-2 text-slate-600 transition-colors min-h-[36px]"
+                      className="text-xs bg-white dark:bg-slate-700 hover:bg-brand-50 dark:hover:bg-brand-950/30 hover:text-brand-700 dark:hover:text-brand-300 border border-slate-200 dark:border-slate-600 hover:border-brand-200 dark:hover:border-brand-700 rounded-xl px-3 py-2 text-slate-600 dark:text-slate-300 transition-colors min-h-[36px]"
                     >
                       {q}
                     </button>
@@ -270,7 +270,7 @@ export default function AssistantClient({
           </div>
 
           {/* Input */}
-          <div className="border-t border-slate-200 p-3">
+          <div className="border-t border-slate-200 dark:border-slate-700 p-3">
             <div className="flex gap-2 items-end">
               <textarea
                 ref={inputRef}
@@ -280,7 +280,7 @@ export default function AssistantClient({
                 placeholder="Posez votre question..."
                 aria-label="Votre message"
                 rows={1}
-                className="flex-1 resize-none rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent max-h-32"
+                className="flex-1 resize-none rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent max-h-32"
                 style={{ height: 'auto' }}
                 onInput={e => {
                   const t = e.target as HTMLTextAreaElement
@@ -301,8 +301,8 @@ export default function AssistantClient({
                 )}
               </button>
             </div>
-            <p className="text-xs text-slate-400 text-center mt-2">Entree pour envoyer · Maj+Entree pour sauter une ligne</p>
-            <p className="text-xs text-slate-400 text-center mt-1">Tloush n&apos;est ni un avocat ni un comptable. Consultez un expert pour un avis professionnel.</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 text-center mt-2">Entree pour envoyer · Maj+Entree pour sauter une ligne</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 text-center mt-1">Tloush n&apos;est ni un avocat ni un comptable. Consultez un expert pour un avis professionnel.</p>
           </div>
         </div>
       </div>

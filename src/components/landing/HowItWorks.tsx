@@ -37,10 +37,10 @@ export default function HowItWorks() {
         transition={{ duration: 0.6 }}
         className="text-center mb-12"
       >
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 mb-3">
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 dark:text-slate-100 mb-3">
           Comment ça marche ?
         </h2>
-        <p className="text-neutral-600 max-w-xl mx-auto text-base">
+        <p className="text-neutral-600 dark:text-slate-400 max-w-xl mx-auto text-base">
           3 étapes simples pour comprendre vos documents en français
         </p>
       </motion.div>
@@ -71,10 +71,10 @@ export default function HowItWorks() {
 
               {/* Content */}
               <div>
-                <h3 className="font-bold text-neutral-800 mb-1 text-base">
+                <h3 className="font-bold text-neutral-800 dark:text-slate-200 mb-1 text-base">
                   {step.title}
                 </h3>
-                <p className="text-sm text-neutral-500 leading-relaxed">
+                <p className="text-sm text-neutral-500 dark:text-slate-400 leading-relaxed">
                   {step.desc}
                 </p>
               </div>

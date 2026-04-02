@@ -20,9 +20,9 @@ export default function DisclaimerBlock({ compact = false, text }: DisclaimerBlo
     );
   }
   return (
-    <div className="flex items-start gap-3 bg-neutral-50 border border-neutral-200 rounded-xl p-4">
-      <AlertCircle size={18} className="text-neutral-400 mt-0.5 shrink-0" />
-      <p className="text-xs text-neutral-500 leading-relaxed">{text ?? DEFAULT_TEXT}</p>
+    <div className="flex items-start gap-3 bg-neutral-50 dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-xl p-4">
+      <AlertCircle size={18} className="text-neutral-400 dark:text-slate-500 mt-0.5 shrink-0" />
+      <p className="text-xs text-neutral-500 dark:text-slate-400 leading-relaxed">{text ?? DEFAULT_TEXT}</p>
     </div>
   );
 }

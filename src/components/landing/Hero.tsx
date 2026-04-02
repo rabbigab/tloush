@@ -8,9 +8,9 @@ export default function Hero() {
   return (
     <section className="relative overflow-hidden">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-brand-50 via-white to-white -z-10" />
-      <div className="absolute -top-40 -right-40 w-96 h-96 bg-brand-100 rounded-full blur-3xl opacity-40 -z-10" />
-      <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-brand-200 rounded-full blur-3xl opacity-30 -z-10" />
+      <div className="absolute inset-0 bg-gradient-to-br from-brand-50 via-white to-white dark:from-slate-900 dark:via-slate-950 dark:to-slate-950 -z-10" />
+      <div className="absolute -top-40 -right-40 w-96 h-96 bg-brand-100 dark:bg-brand-900/30 rounded-full blur-3xl opacity-40 -z-10" />
+      <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-brand-200 dark:bg-brand-800/20 rounded-full blur-3xl opacity-30 -z-10" />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
         <motion.div
@@ -20,24 +20,24 @@ export default function Hero() {
           className="text-center max-w-3xl mx-auto"
         >
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-brand-50 border border-brand-100 text-brand-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
+          <div className="inline-flex items-center gap-2 bg-brand-50 dark:bg-brand-950/30 border border-brand-100 dark:border-brand-800 text-brand-700 dark:text-brand-300 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
             <span className="w-1.5 h-1.5 bg-brand-500 rounded-full animate-pulse" />
             Outil gratuit pour la communauté francophone d'Israël
           </div>
 
           {/* Titre principal */}
-          <h1 className="text-5xl sm:text-6xl font-extrabold text-neutral-900 leading-tight mb-6">
+          <h1 className="text-5xl sm:text-6xl font-extrabold text-neutral-900 dark:text-slate-100 leading-tight mb-6">
             Vos documents israéliens,{" "}
             <span className="text-brand-600">enfin clairs</span>
           </h1>
 
           {/* Sous-titre descriptif */}
-          <p className="text-xl text-neutral-600 leading-relaxed mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-neutral-600 dark:text-slate-400 leading-relaxed mb-8 max-w-2xl mx-auto">
             Fiche de paie, courrier officiel, avis d'imposition, contrat... Uploadez votre document en hébreu et recevez une explication complète en français en 30 secondes.
           </p>
 
           {/* Trust badges inline */}
-          <div className="flex flex-wrap justify-center gap-3 mb-10 text-sm text-neutral-600">
+          <div className="flex flex-wrap justify-center gap-3 mb-10 text-sm text-neutral-600 dark:text-slate-400">
             <span className="flex items-center gap-1">
               <span className="font-semibold">100% en français</span>
             </span>
@@ -71,7 +71,7 @@ export default function Hero() {
             >
               <Link
                 href="/auth/login"
-                className="inline-flex items-center justify-center gap-2 text-brand-600 font-semibold px-8 py-4 rounded-xl border-2 border-brand-200 hover:border-brand-400 hover:bg-brand-50 transition-all text-base"
+                className="inline-flex items-center justify-center gap-2 text-brand-600 dark:text-brand-400 font-semibold px-8 py-4 rounded-xl border-2 border-brand-200 dark:border-brand-700 hover:border-brand-400 hover:bg-brand-50 dark:hover:bg-brand-950/30 transition-all text-base"
               >
                 J'ai déjà un compte
               </Link>

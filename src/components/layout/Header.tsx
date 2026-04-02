@@ -1,11 +1,13 @@
 "use client";
 import Link from "next/link";
-import { ShieldCheck, LayoutDashboard } from "lucide-react";
+import { ShieldCheck, LayoutDashboard, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 export default function Header() {
   const [loggedIn, setLoggedIn] = useState(false);
+  const { theme, toggle } = useTheme();
 
   useEffect(() => {
     const supabase = createClient();
@@ -15,37 +17,42 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-neutral-100 shadow-sm">
+    <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-neutral-100 dark:border-slate-700 shadow-sm">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
           <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center shadow-sm group-hover:bg-brand-700 transition-colors">
             <span className="text-white font-bold text-sm">T</span>
           </div>
           <div className="flex flex-col leading-none">
-            <span className="font-bold text-neutral-900 text-base tracking-tight">Tloush</span>
-            <span className="text-[10px] text-neutral-400 hidden sm:block">Analyse de fiche de paie</span>
+            <span className="font-bold text-neutral-900 dark:text-slate-100 text-base tracking-tight">Tloush</span>
+            <span className="text-[10px] text-neutral-400 dark:text-slate-500 hidden sm:block">Analyse de fiche de paie</span>
           </div>
         </Link>
-        {/* Nav */}
         <nav className="flex items-center gap-1 sm:gap-2">
           <Link
             href="/privacy"
-            className="flex items-center gap-1.5 text-xs sm:text-sm text-neutral-500 hover:text-brand-600 transition-colors px-2 py-1.5 rounded-lg hover:bg-brand-50"
+            className="flex items-center gap-1.5 text-xs sm:text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors px-2 py-1.5 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-950/30"
           >
             <ShieldCheck size={14} />
-            <span className="hidden sm:inline">Confidentialité</span>
+            <span className="hidden sm:inline">Confidentialit&eacute;</span>
           </Link>
+          <button
+            onClick={toggle}
+            className="flex items-center justify-center w-9 h-9 text-neutral-500 dark:text-slate-400 hover:text-neutral-700 dark:hover:text-slate-200 hover:bg-neutral-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            aria-label={theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
           {loggedIn ? (
             <Link
               href="/inbox"
-              className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-50 transition-colors"
+              className="flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700 px-3 py-2 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-950/30 transition-colors"
             >
               <LayoutDashboard size={15} />
               <span>Mon espace</span>
             </Link>
           ) : (
-            <Link href="/auth/login" className="text-sm font-medium text-neutral-600 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-blue-50 transition-colors">
+            <Link href="/auth/login" className="text-sm font-medium text-neutral-600 dark:text-slate-300 hover:text-brand-600 px-3 py-2 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-950/30 transition-colors">
               Connexion
             </Link>
           )}

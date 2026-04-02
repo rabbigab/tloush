@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { PosthogProvider } from "@/components/providers/PosthogProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -44,11 +45,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr">
+    <html lang="fr" suppressHydrationWarning>
       <body>
-        <PosthogProvider>
-          {children}
-        </PosthogProvider>
+        <ThemeProvider>
+          <PosthogProvider>
+            {children}
+          </PosthogProvider>
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>

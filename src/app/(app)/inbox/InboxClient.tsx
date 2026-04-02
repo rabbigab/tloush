@@ -38,19 +38,19 @@ const DOC_LABELS: Record<string, string> = {
 }
 
 const DOC_COLORS: Record<string, string> = {
-  payslip: 'bg-blue-100 text-blue-800 border-blue-200',
-  bituah_leumi: 'bg-teal-100 text-teal-800 border-teal-200',
-  tax_notice: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  work_contract: 'bg-indigo-100 text-indigo-800 border-indigo-200',
-  pension: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-  health_insurance: 'bg-cyan-100 text-cyan-800 border-cyan-200',
-  rental: 'bg-amber-100 text-amber-800 border-amber-200',
-  bank: 'bg-violet-100 text-violet-800 border-violet-200',
-  official_letter: 'bg-orange-100 text-orange-800 border-orange-200',
-  contract: 'bg-purple-100 text-purple-800 border-purple-200',
-  tax: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  other: 'bg-slate-100 text-slate-700 border-slate-200',
-  unknown: 'bg-slate-100 text-slate-700 border-slate-200'
+  payslip: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800',
+  bituah_leumi: 'bg-teal-100 text-teal-800 border-teal-200 dark:bg-teal-900/30 dark:text-teal-300 dark:border-teal-800',
+  tax_notice: 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800',
+  work_contract: 'bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800',
+  pension: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800',
+  health_insurance: 'bg-cyan-100 text-cyan-800 border-cyan-200 dark:bg-cyan-900/30 dark:text-cyan-300 dark:border-cyan-800',
+  rental: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800',
+  bank: 'bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-900/30 dark:text-violet-300 dark:border-violet-800',
+  official_letter: 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800',
+  contract: 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800',
+  tax: 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800',
+  other: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600',
+  unknown: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
 }
 
 const CATEGORY_MAP: Record<string, string> = {
@@ -176,10 +176,10 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
 
         {/* Alertes urgentes */}
         {urgentDocs.length > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
+          <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
-              <AlertCircle size={18} className="text-red-600" />
-              <h2 className="font-bold text-red-800 text-sm">
+              <AlertCircle size={18} className="text-red-600 dark:text-red-400" />
+              <h2 className="font-bold text-red-800 dark:text-red-300 text-sm">
                 {urgentDocs.length} document{urgentDocs.length > 1 ? 's' : ''} urgent{urgentDocs.length > 1 ? 's' : ''}
               </h2>
             </div>
@@ -188,14 +188,14 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
                 <Link
                   key={doc.id}
                   href={`/assistant?doc=${doc.id}`}
-                  className="block bg-white rounded-xl p-3 border border-red-100 hover:border-red-300 hover:shadow-sm transition-all min-h-[44px]"
+                  className="block bg-white dark:bg-slate-800 rounded-xl p-3 border border-red-100 dark:border-red-900 hover:border-red-300 dark:hover:border-red-700 hover:shadow-sm transition-all min-h-[44px]"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-slate-800">{doc.file_name}</span>
+                    <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{doc.file_name}</span>
                     <ChevronRight size={14} className="text-red-400" />
                   </div>
                   {doc.action_description && (
-                    <p className="text-xs text-red-600 mt-1">{doc.action_description}</p>
+                    <p className="text-xs text-red-600 dark:text-red-400 mt-1">{doc.action_description}</p>
                   )}
                 </Link>
               ))}
@@ -205,24 +205,24 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
 
         {/* Actions requises */}
         {actionDocs.length > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+          <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Clock size={18} className="text-amber-600" />
-              <h2 className="font-bold text-amber-800 text-sm">A traiter</h2>
+              <Clock size={18} className="text-amber-600 dark:text-amber-400" />
+              <h2 className="font-bold text-amber-800 dark:text-amber-300 text-sm">A traiter</h2>
             </div>
             <div className="space-y-2">
               {actionDocs.map(doc => (
                 <Link
                   key={doc.id}
                   href={`/assistant?doc=${doc.id}`}
-                  className="block bg-white rounded-xl p-3 border border-amber-100 hover:border-amber-300 hover:shadow-sm transition-all min-h-[44px]"
+                  className="block bg-white dark:bg-slate-800 rounded-xl p-3 border border-amber-100 dark:border-amber-900 hover:border-amber-300 dark:hover:border-amber-700 hover:shadow-sm transition-all min-h-[44px]"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-slate-800">{doc.file_name}</span>
+                    <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{doc.file_name}</span>
                     <ChevronRight size={14} className="text-amber-400" />
                   </div>
                   {doc.action_description && (
-                    <p className="text-xs text-amber-700 mt-1">{doc.action_description}</p>
+                    <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">{doc.action_description}</p>
                   )}
                 </Link>
               ))}
@@ -231,7 +231,7 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
         )}
 
         {/* Zone d'upload */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
           <h2 className="section-heading mb-4">Envoyer un document</h2>
 
           <input
@@ -246,29 +246,29 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
           <button
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
-            className="w-full border-2 border-dashed border-slate-200 hover:border-brand-400 hover:bg-brand-50/30 rounded-xl p-8 transition-all text-center group disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99]"
+            className="w-full border-2 border-dashed border-slate-200 dark:border-slate-600 hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-50/30 dark:hover:bg-brand-950/20 rounded-xl p-8 transition-all text-center group disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99]"
           >
             {uploading ? (
               <div className="flex flex-col items-center gap-3">
                 <div className="w-10 h-10 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
                 <p className="text-sm font-medium text-brand-600">Analyse en cours...</p>
-                <p className="text-xs text-slate-500">Claude lit votre document</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Claude lit votre document</p>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-3">
-                <div className="w-12 h-12 bg-brand-50 group-hover:bg-brand-100 rounded-xl flex items-center justify-center transition-colors">
+                <div className="w-12 h-12 bg-brand-50 dark:bg-brand-950/30 group-hover:bg-brand-100 dark:group-hover:bg-brand-900/30 rounded-xl flex items-center justify-center transition-colors">
                   <Upload size={22} className="text-brand-600" />
                 </div>
                 <div>
-                  <p className="font-semibold text-slate-700">Fiche de paie, courrier, contrat...</p>
-                  <p className="text-sm text-slate-500 mt-1">PDF, JPG, PNG</p>
+                  <p className="font-semibold text-slate-700 dark:text-slate-200">Fiche de paie, courrier, contrat...</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">PDF, JPG, PNG</p>
                 </div>
               </div>
             )}
           </button>
 
           {uploadError && (
-            <div className="mt-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 flex items-center justify-between">
+            <div className="mt-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3 text-sm text-red-700 dark:text-red-300 flex items-center justify-between">
               <span>{uploadError}</span>
               <button onClick={() => setUploadError('')} className="min-w-[44px] min-h-[44px] flex items-center justify-center text-red-400 hover:text-red-600" aria-label="Fermer">
                 <X size={16} />
@@ -282,21 +282,21 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
           <div className="flex items-center justify-between mb-3 gap-3">
             <h2 className="page-title shrink-0">
               Vos documents
-              {docs.length > 0 && <span className="text-slate-400 font-normal text-sm ml-2">({filteredDocs.length})</span>}
+              {docs.length > 0 && <span className="text-slate-400 dark:text-slate-500 font-normal text-sm ml-2">({filteredDocs.length})</span>}
             </h2>
             {docs.length > 0 && (
               <div className="relative flex-1 max-w-xs">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
                 <input
                   type="text"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Rechercher..."
                   aria-label="Rechercher un document"
-                  className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-9 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-300"
+                  className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl pl-9 pr-9 py-2.5 text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-300"
                 />
                 {search && (
-                  <button onClick={() => setSearch('')} className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-lg" aria-label="Effacer la recherche">
+                  <button onClick={() => setSearch('')} className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg" aria-label="Effacer la recherche">
                     <X size={14} />
                   </button>
                 )}
@@ -318,11 +318,11 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-colors min-h-[36px] ${
                       isActive
                         ? 'bg-brand-600 text-white shadow-sm'
-                        : 'bg-white border border-slate-200 text-slate-600 hover:border-brand-300 hover:text-brand-600'
+                        : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-brand-300 dark:hover:border-brand-500 hover:text-brand-600'
                     }`}
                   >
                     {tab.label}
-                    <span className={`text-[10px] ${isActive ? 'text-brand-200' : 'text-slate-400'}`}>{count}</span>
+                    <span className={`text-[10px] ${isActive ? 'text-brand-200' : 'text-slate-400 dark:text-slate-500'}`}>{count}</span>
                   </button>
                 )
               })}
@@ -330,17 +330,17 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
           )}
 
           {filteredDocs.length === 0 && docs.length > 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center shadow-sm">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8 text-center shadow-sm">
               <Search size={24} className="text-slate-400 mx-auto mb-2" />
-              <p className="text-sm text-slate-500">Aucun document ne correspond a &quot;{search}&quot;</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Aucun document ne correspond a &quot;{search}&quot;</p>
             </div>
           ) : docs.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
-              <div className="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-12 text-center shadow-sm">
+              <div className="w-16 h-16 bg-brand-50 dark:bg-brand-950/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <FileText size={28} className="text-brand-300" />
               </div>
-              <p className="font-semibold text-slate-700 mb-1">Aucun document pour l&apos;instant</p>
-              <p className="text-sm text-slate-500">Envoyez votre premier document ci-dessus pour commencer</p>
+              <p className="font-semibold text-slate-700 dark:text-slate-200 mb-1">Aucun document pour l&apos;instant</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Envoyez votre premier document ci-dessus pour commencer</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -356,26 +356,26 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
                           {DOC_LABELS[doc.document_type] || DOC_LABELS.other}
                         </span>
                         {doc.is_urgent && (
-                          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-200">
+                          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800">
                             Urgent
                           </span>
                         )}
                         {doc.action_required && !doc.is_urgent && (
-                          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800">
                             Action requise
                           </span>
                         )}
                         {!doc.action_required && !doc.is_urgent && (
-                          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200">
+                          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800">
                             <CheckCircle size={10} className="inline mr-1" />Traite
                           </span>
                         )}
                       </div>
 
-                      <p className="font-medium text-slate-800 text-sm truncate">{doc.file_name}</p>
-                      {doc.period && <p className="text-xs text-slate-500 mt-0.5">{doc.period}</p>}
+                      <p className="font-medium text-slate-800 dark:text-slate-200 text-sm truncate">{doc.file_name}</p>
+                      {doc.period && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{doc.period}</p>}
                       {doc.summary_fr && (
-                        <p className="text-xs text-slate-600 mt-2 line-clamp-2">{doc.summary_fr}</p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 line-clamp-2">{doc.summary_fr}</p>
                       )}
                       {(() => {
                         const rec = getExpertRecommendation(doc.document_type, doc.is_urgent, doc.action_required, doc.action_description, doc.summary_fr)
@@ -383,20 +383,20 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
                         return (
                           <Link
                             href={getExpertUrl(rec.specialties[0])}
-                            className="flex items-center gap-1.5 mt-2 text-xs text-purple-700 hover:text-purple-800 font-medium min-h-[28px]"
+                            className="flex items-center gap-1.5 mt-2 text-xs text-purple-700 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 font-medium min-h-[28px]"
                           >
                             <UserCheck size={12} />
                             Consulter un expert
                           </Link>
                         )
                       })()}
-                      <p className="text-xs text-slate-400 mt-2">{formatDate(doc.created_at)}</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">{formatDate(doc.created_at)}</p>
                     </div>
 
                     <div className="flex items-center gap-1 shrink-0">
                       <Link
                         href={`/assistant?doc=${doc.id}`}
-                        className="flex items-center gap-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-medium px-3 py-2 rounded-xl transition-colors min-h-[36px]"
+                        className="flex items-center gap-1.5 bg-brand-50 dark:bg-brand-950/30 hover:bg-brand-100 dark:hover:bg-brand-900/30 text-brand-700 dark:text-brand-300 text-xs font-medium px-3 py-2 rounded-xl transition-colors min-h-[36px]"
                         aria-label="Poser une question sur ce document"
                       >
                         <MessageSquare size={14} />
@@ -406,7 +406,7 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
                         href={`/api/documents/${doc.id}/export`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+                        className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 dark:text-slate-500 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/30 transition-colors"
                         title="Exporter l'analyse"
                         aria-label="Exporter l'analyse"
                       >
@@ -415,7 +415,7 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
                       <button
                         onClick={() => setDeleteConfirmId(doc.id)}
                         disabled={deletingId === doc.id}
-                        className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+                        className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-50"
                         title="Supprimer"
                         aria-label="Supprimer le document"
                       >
@@ -426,12 +426,12 @@ export default function InboxClient({ documents, userEmail }: { documents: Docum
 
                   {/* Delete confirmation inline */}
                   {deleteConfirmId === doc.id && (
-                    <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
-                      <p className="text-xs text-slate-600">Supprimer ce document ?</p>
+                    <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between gap-3">
+                      <p className="text-xs text-slate-600 dark:text-slate-400">Supprimer ce document ?</p>
                       <div className="flex gap-2">
                         <button
                           onClick={() => setDeleteConfirmId(null)}
-                          className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors min-h-[32px]"
+                          className="px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors min-h-[32px]"
                         >
                           Annuler
                         </button>

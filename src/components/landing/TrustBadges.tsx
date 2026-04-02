@@ -29,7 +29,7 @@ const BADGES = [
 
 export default function TrustBadges() {
   return (
-    <section className="bg-white border-t border-neutral-100 py-12">
+    <section className="bg-white dark:bg-slate-900 border-t border-neutral-100 dark:border-slate-700 py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {BADGES.map((badge, idx) => {
@@ -47,10 +47,10 @@ export default function TrustBadges() {
                   <Icon size={22} className={badge.color} />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-neutral-800 text-sm mb-1">
+                  <h3 className="font-semibold text-neutral-800 dark:text-slate-200 text-sm mb-1">
                     {badge.title}
                   </h3>
-                  <p className="text-xs text-neutral-500 leading-relaxed">
+                  <p className="text-xs text-neutral-500 dark:text-slate-400 leading-relaxed">
                     {badge.desc}
                   </p>
                 </div>

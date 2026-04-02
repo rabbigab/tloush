@@ -50,10 +50,10 @@ export default function Features() {
         transition={{ duration: 0.6 }}
         className="text-center mb-12"
       >
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 mb-3">
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 dark:text-slate-100 mb-3">
           Tout ce dont vous avez besoin
         </h2>
-        <p className="text-neutral-600 max-w-xl mx-auto text-base">
+        <p className="text-neutral-600 dark:text-slate-400 max-w-xl mx-auto text-base">
           Des outils complets pour comprendre, analyser et optimiser votre situation en Israël
         </p>
       </motion.div>
@@ -78,13 +78,13 @@ export default function Features() {
 
                   {/* Title */}
                   <div>
-                    <h3 className="text-lg font-bold text-neutral-800 group-hover:text-brand-600 transition-colors">
+                    <h3 className="text-lg font-bold text-neutral-800 dark:text-slate-200 group-hover:text-brand-600 transition-colors">
                       {feature.title}
                     </h3>
                   </div>
 
                   {/* Description */}
-                  <p className="text-sm text-neutral-600 leading-relaxed flex-grow">
+                  <p className="text-sm text-neutral-600 dark:text-slate-400 leading-relaxed flex-grow">
                     {feature.description}
                   </p>
 

@@ -54,14 +54,14 @@ export default function ResetPasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center px-4">
         <div className="w-full max-w-md text-center">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-            <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle size={28} className="text-green-600" />
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
+            <div className="w-16 h-16 bg-green-50 dark:bg-green-950/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle size={28} className="text-green-600 dark:text-green-400" />
             </div>
-            <h2 className="text-xl font-bold text-slate-900 mb-2">Mot de passe modifie</h2>
-            <p className="text-sm text-slate-500">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">Mot de passe modifie</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               Votre mot de passe a ete mis a jour. Redirection en cours...
             </p>
           </div>
@@ -71,24 +71,24 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
             <h1 className="text-3xl font-extrabold text-brand-600">Tloush</h1>
-            <p className="text-slate-500 text-sm mt-1">Votre assistant administratif en Israel</p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Votre assistant administratif en Israel</p>
           </Link>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-          <h2 className="text-xl font-bold text-slate-900 mb-2">Nouveau mot de passe</h2>
-          <p className="text-sm text-slate-500 mb-6">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">Nouveau mot de passe</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
             Choisissez un nouveau mot de passe pour votre compte.
           </p>
 
           <form onSubmit={handleReset} className="space-y-4">
             <div>
-              <label htmlFor="new-password" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="new-password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Nouveau mot de passe
               </label>
               <input
@@ -98,18 +98,18 @@ export default function ResetPasswordPage() {
                 onChange={e => setPassword(e.target.value)}
                 required
                 placeholder="Minimum 8 caracteres"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-slate-900 placeholder-slate-400"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
                 autoFocus
               />
               {passwordLength > 0 && (
-                <p className={`text-xs mt-1.5 ${passwordStrong ? 'text-green-600' : 'text-amber-600'}`}>
+                <p className={`text-xs mt-1.5 ${passwordStrong ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}>
                   {passwordStrong ? '✓ Mot de passe valide' : `${passwordLength}/8 caracteres minimum`}
                 </p>
               )}
             </div>
 
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="confirm-password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Confirmer le mot de passe
               </label>
               <input
@@ -119,18 +119,18 @@ export default function ResetPasswordPage() {
                 onChange={e => setConfirm(e.target.value)}
                 required
                 placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-slate-900 placeholder-slate-400"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
               />
               {confirm.length > 0 && !passwordsMatch && (
-                <p className="text-xs mt-1.5 text-red-600">Les mots de passe ne correspondent pas</p>
+                <p className="text-xs mt-1.5 text-red-600 dark:text-red-400">Les mots de passe ne correspondent pas</p>
               )}
               {passwordsMatch && (
-                <p className="text-xs mt-1.5 text-green-600">✓ Les mots de passe correspondent</p>
+                <p className="text-xs mt-1.5 text-green-600 dark:text-green-400">✓ Les mots de passe correspondent</p>
               )}
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm">
+              <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3 text-red-700 dark:text-red-300 text-sm">
                 {error}
               </div>
             )}
