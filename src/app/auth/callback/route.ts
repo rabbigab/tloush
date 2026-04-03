@@ -8,6 +8,16 @@ export async function GET(request: Request) {
   const token_hash = searchParams.get('token_hash')
   const type = searchParams.get('type') as EmailOtpType | null
   const next = searchParams.get('next') ?? '/inbox'
+  const error_param = searchParams.get('error')
+  const error_description = searchParams.get('error_description')
+
+  // If Supabase/Google returns an error directly in the URL
+  if (error_param) {
+    console.error('[auth/callback] OAuth error:', error_param, error_description)
+    return NextResponse.redirect(
+      `${origin}/auth/login?error=${encodeURIComponent(error_description || error_param)}`
+    )
+  }
 
   const supabase = await createClient()
 
@@ -17,6 +27,7 @@ export async function GET(request: Request) {
     if (!error) {
       return NextResponse.redirect(`${origin}${next}`)
     }
+    console.error('[auth/callback] Code exchange error:', error.message)
   }
 
   // Email confirmation flow (token_hash)
@@ -25,6 +36,12 @@ export async function GET(request: Request) {
     if (!error) {
       return NextResponse.redirect(`${origin}${next}`)
     }
+    console.error('[auth/callback] OTP verification error:', error.message)
+  }
+
+  // No code and no token_hash — something went wrong
+  if (!code && !token_hash) {
+    console.error('[auth/callback] No code or token_hash in callback URL:', request.url)
   }
 
   return NextResponse.redirect(`${origin}/auth/login?error=confirmation`)

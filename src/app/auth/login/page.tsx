@@ -16,6 +16,16 @@ function LoginForm() {
   const [redirecting, setRedirecting] = useState(false)
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/inbox'
+  const urlError = searchParams.get('error')
+
+  // Show error from callback redirect (e.g. Google OAuth failure)
+  useState(() => {
+    if (urlError && urlError !== 'confirmation') {
+      setError(decodeURIComponent(urlError))
+    } else if (urlError === 'confirmation') {
+      setError('Erreur de confirmation. Veuillez réessayer.')
+    }
+  })
 
   async function handleGoogleLogin() {
     setGoogleLoading(true)

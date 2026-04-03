@@ -4,7 +4,21 @@ import { NextResponse, type NextRequest } from 'next/server'
 // Routes protégées (nécessitent un compte)
 const PROTECTED_ROUTES = ['/inbox', '/assistant', '/profile', '/dashboard', '/compare']
 
+// Routes publiques qui n'ont pas besoin du middleware auth
+const PUBLIC_ROUTES = ['/', '/auth', '/pricing', '/droits-olim', '/droits', '/privacy', '/calculateurs', '/modeles', '/scanner', '/results', '/experts', '/api/stripe/webhook']
+
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // Skip auth check for public routes — saves ~200-500ms per request
+  const isPublic = PUBLIC_ROUTES.some(route => pathname === route || pathname.startsWith(route + '/'))
+  const isProtected = PROTECTED_ROUTES.some(route => pathname.startsWith(route))
+
+  // For public non-protected routes, skip Supabase entirely
+  if (isPublic && !isProtected) {
+    return NextResponse.next()
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -27,10 +41,6 @@ export async function middleware(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-
-  const isProtected = PROTECTED_ROUTES.some(route =>
-    request.nextUrl.pathname.startsWith(route)
-  )
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone()
