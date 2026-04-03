@@ -7,27 +7,27 @@ import { ChevronDown } from "lucide-react";
 const FAQS = [
   {
     q: "C'est vraiment gratuit ?",
-    a: "Oui, Tloush est 100% gratuit. Vous pouvez analyser jusqu'a 5 documents par heure sans aucune carte bancaire.",
+    a: "Oui, Tloush est 100% gratuit. Vous pouvez analyser jusqu'à 5 documents par heure sans aucune carte bancaire.",
   },
   {
     q: "Quels types de documents puis-je analyser ?",
-    a: "Fiches de paie, avis d'imposition, courriers du Bituah Leumi, contrats de travail, releves de retraite, assurance sante, courriers officiels, et plus encore. Tout document administratif israelien en hebreu.",
+    a: "Fiches de paie, avis d'imposition, courriers du Bituah Leumi, contrats de travail, relevés de retraite, assurance santé, courriers officiels, et plus encore. Tout document administratif israélien en hébreu.",
   },
   {
-    q: "Mes donnees sont-elles en securite ?",
-    a: "Oui. Vos documents sont stockes de facon chiffree et ne sont jamais partages. Vous pouvez supprimer votre compte et toutes vos donnees a tout moment depuis votre profil.",
+    q: "Mes données sont-elles en sécurité ?",
+    a: "Oui. Vos documents sont stockés de façon chiffrée et ne sont jamais partagés. Vous pouvez supprimer votre compte et toutes vos données à tout moment depuis votre profil.",
   },
   {
     q: "Tloush remplace-t-il un comptable ou un avocat ?",
-    a: "Non. Tloush est un outil d'aide a la comprehension. Pour des decisions importantes (litige, optimisation fiscale, erreur de paie), nous vous recommandons de consulter un professionnel. Notre annuaire d'experts francophones peut vous aider.",
+    a: "Non. Tloush est un outil d'aide à la compréhension. Pour des décisions importantes (litige, optimisation fiscale, erreur de paie), nous vous recommandons de consulter un professionnel. Notre annuaire d'experts francophones peut vous aider.",
   },
   {
     q: "Comment fonctionne l'analyse ?",
-    a: "Vous uploadez une photo ou un PDF de votre document. Notre IA (Claude) lit le document en hebreu, identifie le type, extrait les informations cles et vous fournit un resume complet en francais en moins de 30 secondes.",
+    a: "Vous uploadez une photo ou un PDF de votre document. Notre IA (Claude) lit le document en hébreu, identifie le type, extrait les informations clés et vous fournit un résumé complet en français en moins de 30 secondes.",
   },
   {
     q: "Je peux utiliser Tloush sur mobile ?",
-    a: "Oui, Tloush est concu pour fonctionner parfaitement sur telephone. Vous pouvez meme prendre une photo de votre document directement depuis votre mobile.",
+    a: "Oui, Tloush est conçu pour fonctionner parfaitement sur téléphone. Vous pouvez même prendre une photo de votre document directement depuis votre mobile.",
   },
 ];
 
@@ -44,7 +44,7 @@ export default function FAQ() {
         className="text-center mb-10"
       >
         <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 dark:text-slate-100 mb-3">
-          Questions frequentes
+          Questions fréquentes
         </h2>
         <p className="text-neutral-600 dark:text-slate-400 max-w-xl mx-auto text-base">
           Tout ce que vous devez savoir avant de commencer

@@ -88,8 +88,13 @@ export default function InboxClient({ documents, userEmail }: { documents: AppDo
       const data = await res.json()
 
       if (!res.ok) {
-        setUploadError(data.error || 'Erreur lors de l\'analyse')
-        track('extraction_failed', { error: data.error })
+        const userMsg = res.status === 429
+          ? 'Limite atteinte : 5 documents par heure. Réessayez plus tard.'
+          : res.status === 401
+          ? 'Session expirée. Veuillez vous reconnecter.'
+          : 'Une erreur est survenue lors de l\'analyse. Réessayez ou contactez le support.'
+        setUploadError(userMsg)
+        track('extraction_failed', { error: data.error, status: res.status })
         return
       }
 

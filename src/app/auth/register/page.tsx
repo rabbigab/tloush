@@ -107,7 +107,7 @@ export default function RegisterPage() {
         </div>
 
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6">Creer un compte</h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6">Créer un compte</h2>
 
           <button
             type="button"
@@ -163,12 +163,12 @@ export default function RegisterPage() {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
-                placeholder="Minimum 8 caracteres"
+                placeholder="Minimum 8 caractères"
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
               />
               {passwordLength > 0 && (
                 <p className={`text-xs mt-1.5 ${passwordStrong ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                  {passwordStrong ? '✓ Mot de passe valide' : `${passwordLength}/8 caracteres minimum`}
+                  {passwordStrong ? '✓ Mot de passe valide' : `${passwordLength}/8 caractères minimum`}
                 </p>
               )}
             </div>
@@ -210,7 +210,7 @@ export default function RegisterPage() {
           </form>
 
           <div className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
-            Deja un compte ?{' '}
+            Déjà un compte ?{' '}
             <Link href="/auth/login" className="text-brand-600 hover:underline font-medium">
               Se connecter
             </Link>
@@ -219,7 +219,7 @@ export default function RegisterPage() {
 
         <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-4">
           En creant un compte, vous acceptez notre{' '}
-          <Link href="/privacy" className="underline hover:text-slate-500 dark:hover:text-slate-300">politique de confidentialite</Link>.
+          <Link href="/privacy" className="underline hover:text-slate-500 dark:hover:text-slate-300">politique de confidentialité</Link>.
         </p>
       </div>
     </div>

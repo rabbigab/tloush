@@ -74,8 +74,13 @@ function ScannerContent() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Erreur lors de l'analyse");
+        const status = response.status;
+        const msg = status === 429
+          ? "Limite atteinte : 10 analyses par heure. Réessayez plus tard."
+          : status === 401
+          ? "Session expirée. Veuillez vous reconnecter."
+          : "Une erreur est survenue lors de l'analyse. Réessayez ou contactez le support.";
+        throw new Error(msg);
       }
 
       const result: ScanApiResponse = await response.json();

@@ -18,7 +18,7 @@ const SUGGESTED_QUESTIONS = [
   'Que dois-je faire maintenant ?',
   'Est-ce qu\'il y a une anomalie ?',
   'Expliquez-moi ce document en detail',
-  'Quel est le delai pour repondre ?',
+  'Quel est le délai pour répondre ?',
 ]
 
 
@@ -53,7 +53,7 @@ export default function AssistantClient({
     } else {
       setMessages([{
         role: 'assistant',
-        content: 'Bonjour ! Je suis votre assistant Tloush. Je peux repondre a vos questions sur vos documents administratifs israeliens ou sur l\'administration en Israel en general.\n\nSelectionnez un document ci-dessous ou posez-moi directement votre question.'
+        content: 'Bonjour ! Je suis votre assistant Tloush. Je peux répondre à vos questions sur vos documents administratifs israéliens ou sur l\'administration en Israël en général.\n\nSélectionnez un document ci-dessous ou posez-moi directement votre question.'
       }])
     }
   }, [activeDoc])
@@ -86,15 +86,15 @@ export default function AssistantClient({
 
       if (!res.ok) {
         const errorMsg = res.status === 429
-          ? 'Vous avez atteint la limite de messages (30/heure). Reessayez dans quelques minutes.'
-          : data.error || 'Une erreur est survenue.'
+          ? 'Vous avez atteint la limite de messages (30/heure). Réessayez dans quelques minutes.'
+          : 'Une erreur est survenue. Réessayez dans quelques instants.'
         throw new Error(errorMsg)
       }
 
       setMessages(prev => [...prev, { role: 'assistant', content: data.message }])
       if (data.conversationId) setConversationId(data.conversationId)
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Desole, une erreur est survenue. Reessayez dans quelques instants.'
+      const errorMessage = err instanceof Error ? err.message : 'Désolé, une erreur est survenue. Réessayez dans quelques instants.'
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: `${errorMessage}`
@@ -235,7 +235,7 @@ export default function AssistantClient({
             {/* Questions suggerees */}
             {messages.length <= 1 && !loading && (
               <div className="pt-2">
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">Questions frequentes :</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">Questions fréquentes :</p>
                 <div className="flex flex-wrap gap-2">
                   {SUGGESTED_QUESTIONS.map((q, i) => (
                     <button
@@ -285,7 +285,7 @@ export default function AssistantClient({
                 )}
               </button>
             </div>
-            <p className="text-xs text-slate-400 dark:text-slate-500 text-center mt-2">Entree pour envoyer · Maj+Entree pour sauter une ligne</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 text-center mt-2">Entrée pour envoyer · Maj+Entrée pour sauter une ligne</p>
             <p className="text-xs text-slate-400 dark:text-slate-500 text-center mt-1">Tloush n&apos;est ni un avocat ni un comptable. Consultez un expert pour un avis professionnel.</p>
           </div>
         </div>

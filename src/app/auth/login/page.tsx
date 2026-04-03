@@ -35,9 +35,18 @@ function LoginForm() {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true)
     setError('')
 
+    if (!email.trim()) {
+      setError('Veuillez saisir votre email.')
+      return
+    }
+    if (!password) {
+      setError('Veuillez saisir votre mot de passe.')
+      return
+    }
+
+    setLoading(true)
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
@@ -60,7 +69,7 @@ function LoginForm() {
           <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mb-4">
             <Loader2 size={24} className="text-blue-600 dark:text-blue-400 animate-spin" />
           </div>
-          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Connexion reussie !</p>
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Connexion réussie !</p>
           <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Chargement de votre espace...</p>
         </div>
       </div>
@@ -182,7 +191,7 @@ export default function LoginPage() {
           <LoginForm />
         </Suspense>
         <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-4">
-          <Link href="/privacy" className="underline hover:text-slate-500 dark:hover:text-slate-300">Politique de confidentialite</Link>
+          <Link href="/privacy" className="underline hover:text-slate-500 dark:hover:text-slate-300">Politique de confidentialité</Link>
         </p>
       </div>
     </div>
