@@ -140,7 +140,7 @@ export default function ProfileClient({
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{displayName || 'Non defini'}</span>
+                  <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{displayName || 'Non défini'}</span>
                   <button onClick={() => setEditingName(true)} className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/30 rounded-lg transition-colors" aria-label="Modifier le nom">
                     <Pencil size={14} />
                   </button>
@@ -157,7 +157,7 @@ export default function ProfileClient({
             <div className="flex items-center justify-between py-2">
               <span className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1">
                 <FileText size={13} />
-                Documents analyses
+                Documents analysés
               </span>
               <span className="text-sm font-semibold text-brand-600">{documentCount}</span>
             </div>
@@ -182,8 +182,8 @@ export default function ProfileClient({
                 <div className="flex items-center gap-3">
                   <Mail size={16} className="text-slate-500 dark:text-slate-400" />
                   <div>
-                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200">Resume hebdomadaire</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Recevez un email chaque lundi avec le resume de vos documents</p>
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200">Résumé hebdomadaire</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Recevez un email chaque lundi avec le résumé de vos documents de la semaine</p>
                   </div>
                 </div>
                 <button
@@ -201,7 +201,7 @@ export default function ProfileClient({
                   <AlertTriangle size={16} className="text-slate-500 dark:text-slate-400" />
                   <div>
                     <p className="text-sm font-medium text-slate-800 dark:text-slate-200">Alertes urgentes</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Recevez un email immediat quand un document urgent est detecte</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Recevez un email immédiat quand un document urgent est détecté</p>
                   </div>
                 </div>
                 <button
@@ -227,7 +227,7 @@ export default function ProfileClient({
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm transition-colors min-h-[44px]"
             >
               <LogOut size={16} />
-              Se deconnecter
+              Se déconnecter
             </button>
 
             <button
@@ -246,9 +246,9 @@ export default function ProfileClient({
             <div className="flex items-start gap-3 mb-4">
               <AlertTriangle size={18} className="text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
               <div>
-                <p className="font-semibold text-red-800 dark:text-red-300 text-sm">Suppression definitive du compte</p>
+                <p className="font-semibold text-red-800 dark:text-red-300 text-sm">Suppression définitive du compte</p>
                 <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                  Cette action est irreversible. Tous vos documents ({documentCount}), conversations et donnees seront definitivement supprimes.
+                  Cette action est irréversible. Tous vos documents ({documentCount}), conversations et donnees seront definitivement supprimes.
                 </p>
               </div>
             </div>
@@ -275,7 +275,7 @@ export default function ProfileClient({
                 disabled={deleteInput !== 'SUPPRIMER' || deleting}
                 className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 text-white text-sm hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px]"
               >
-                {deleting ? 'Suppression...' : 'Supprimer definitivement'}
+                {deleting ? 'Suppression...' : 'Supprimer définitivement'}
               </button>
             </div>
           </div>

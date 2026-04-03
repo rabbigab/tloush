@@ -41,19 +41,37 @@ export async function POST(req: NextRequest) {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
   let sentCount = 0
 
+  // Batch: fetch all user emails in parallel (avoid N+1)
+  const userIds = prefs.map(p => p.user_id)
+  const userEmails = new Map<string, string>()
+  await Promise.all(
+    userIds.map(async (id) => {
+      const { data: { user } } = await supabase.auth.admin.getUserById(id)
+      if (user?.email) userEmails.set(id, user.email)
+    })
+  )
+
+  // Batch: fetch all documents for all users at once (avoid N+1)
+  const { data: allDocs } = await supabase
+    .from('documents')
+    .select('id, user_id, document_type, summary_fr, is_urgent, action_required, action_description, created_at')
+    .in('user_id', userIds)
+    .gte('created_at', sevenDaysAgo)
+    .order('created_at', { ascending: false })
+
+  // Group documents by user
+  const docsByUser = new Map<string, typeof allDocs>()
+  for (const doc of allDocs || []) {
+    const existing = docsByUser.get(doc.user_id) || []
+    existing.push(doc)
+    docsByUser.set(doc.user_id, existing)
+  }
+
   for (const pref of prefs) {
-    // Get user email
-    const { data: { user } } = await supabase.auth.admin.getUserById(pref.user_id)
-    if (!user?.email) continue
+    const userEmail = userEmails.get(pref.user_id)
+    if (!userEmail) continue
 
-    // Get documents from last 7 days
-    const { data: docs } = await supabase
-      .from('documents')
-      .select('id, document_type, summary_fr, is_urgent, action_required, action_description, created_at')
-      .eq('user_id', pref.user_id)
-      .gte('created_at', sevenDaysAgo)
-      .order('created_at', { ascending: false })
-
+    const docs = docsByUser.get(pref.user_id)
     if (!docs || docs.length === 0) continue
 
     const urgentCount = docs.filter(d => d.is_urgent).length
@@ -130,13 +148,13 @@ export async function POST(req: NextRequest) {
     try {
       await resend.emails.send({
         from: `Tloush <${process.env.EMAIL_FROM || 'onboarding@resend.dev'}>`,
-        to: user.email,
+        to: userEmail,
         subject: `Tloush — ${docs.length} document${docs.length > 1 ? 's' : ''} cette semaine${urgentCount > 0 ? ` (${urgentCount} urgent${urgentCount > 1 ? 's' : ''})` : ''}`,
         html
       })
       sentCount++
     } catch (err) {
-      console.error(`[Digest] Erreur envoi à ${user.email}:`, err)
+      console.error(`[Digest] Erreur envoi à ${userEmail}:`, err)
     }
   }
 

@@ -1,25 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
+import { createRateLimit } from '@/lib/rateLimit'
+import { requireAuth } from '@/lib/apiAuth'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
-// Rate limiting: 30 messages per hour per user
-const ratelimit = process.env.UPSTASH_REDIS_REST_URL
-  ? new Ratelimit({
-      redis: Redis.fromEnv(),
-      limiter: Ratelimit.slidingWindow(30, '1 h'),
-      prefix: 'ratelimit:chat',
-    })
-  : null
+const ratelimit = createRateLimit('chat', 30, '1 h')
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+    const auth = await requireAuth()
+    if (auth instanceof NextResponse) return auth
+    const { user, supabase } = auth
 
     // Rate limiting
     if (ratelimit) {
@@ -33,7 +24,12 @@ export async function POST(req: NextRequest) {
     }
 
     const { message, documentId, conversationId } = await req.json()
-    if (!message) return NextResponse.json({ error: 'Message manquant' }, { status: 400 })
+    if (!message || typeof message !== 'string' || !message.trim()) {
+      return NextResponse.json({ error: 'Message manquant' }, { status: 400 })
+    }
+    if (message.length > 10000) {
+      return NextResponse.json({ error: 'Message trop long (max 10 000 caractères)' }, { status: 400 })
+    }
 
     // Charger le document si fourni
     let documentContext = ''

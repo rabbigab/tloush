@@ -136,10 +136,9 @@ function AnalyzeContent() {
       const doc = await simulateOcrExtraction(file);
       setExtractedDoc(doc);
       setLocalStep("review");
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Erreur inconnue";
+    } catch {
       setExtractionError(
-        `Une erreur est survenue lors de la lecture du document. ${msg}. Reessayez avec un fichier PDF de meilleure qualite.`
+        "Une erreur est survenue lors de l'analyse. Vérifiez que votre fichier est lisible et réessayez. Si le problème persiste, contactez le support."
       );
       setLocalStep("upload");
     }

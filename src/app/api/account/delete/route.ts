@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { requireAuth } from '@/lib/apiAuth'
 
 export async function DELETE(req: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+    const auth = await requireAuth()
+    if (auth instanceof NextResponse) return auth
+    const { user, supabase } = auth
 
     // 1. Supprimer tous les fichiers du Storage
     const { data: files } = await supabase.storage

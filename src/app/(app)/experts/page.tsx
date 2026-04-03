@@ -7,28 +7,28 @@ const CATEGORIES = [
   {
     id: 'comptable',
     label: 'Comptable / Expert-comptable',
-    description: 'Fiches de paie, Bituah Leumi, impots, retraite, cotisations sociales',
+    description: 'Fiches de paie, Bituah Leumi, impôts, retraite, cotisations sociales',
     icon: Calculator,
     color: 'bg-blue-50 border-blue-200 hover:border-blue-400',
     iconColor: 'text-blue-600',
     examples: [
       'Comprendre votre fiche de paie',
-      'Optimiser votre declaration fiscale',
-      'Verifier vos cotisations Bituah Leumi',
+      'Optimiser votre déclaration fiscale',
+      'Vérifier vos cotisations Bituah Leumi',
       'Analyser votre releve de retraite',
     ],
   },
   {
     id: 'avocat',
     label: 'Avocat',
-    description: 'Droit du travail, contrats, litiges, licenciement, droits des salaries',
+    description: 'Droit du travail, contrats, litiges, licenciement, droits des salariés',
     icon: Scale,
     color: 'bg-purple-50 border-purple-200 hover:border-purple-400',
     iconColor: 'text-purple-600',
     examples: [
-      'Verifier un contrat de travail',
+      'Vérifier un contrat de travail',
       'Contestation de licenciement',
-      'Negocier vos conditions',
+      'Négocier vos conditions',
       'Comprendre vos droits en tant que salarie',
     ],
   },
@@ -41,7 +41,7 @@ export default function ExpertsPage() {
       <div className="text-center">
         <h1 className="text-xl font-bold text-slate-900 mb-1">Trouver un expert francophone</h1>
         <p className="text-sm text-slate-500">
-          Des professionnels qui parlent francais et connaissent le systeme israelien.
+          Des professionnels qui parlent français et connaissent le système israélien.
         </p>
       </div>
 
@@ -51,7 +51,7 @@ export default function ExpertsPage() {
         <div>
           <p className="text-sm font-semibold text-amber-800">Annuaire en construction</p>
           <p className="text-xs text-amber-700 mt-0.5">
-            Nous selectionnons des professionnels francophones verifies. Les premiers profils arrivent bientot.
+            Nous sélectionnons des professionnels francophones vérifiés. Les premiers profils arrivent bientôt.
           </p>
         </div>
       </div>
@@ -92,9 +92,9 @@ export default function ExpertsPage() {
 
       {/* CTA for professionals */}
       <div className="bg-gradient-to-r from-brand-600 to-brand-700 rounded-2xl p-6 text-white text-center shadow-md">
-        <h2 className="font-bold text-lg mb-1">Vous etes professionnel francophone ?</h2>
+        <h2 className="font-bold text-lg mb-1">Vous êtes professionnel francophone ?</h2>
         <p className="text-brand-100 text-sm mb-4">
-          Rejoignez Tloush et connectez-vous avec des clients francophones en Israel qui ont besoin de votre expertise.
+          Rejoignez Tloush et connectez-vous avec des clients francophones en Israël qui ont besoin de votre expertise.
         </p>
         <Link
           href="/experts/rejoindre"

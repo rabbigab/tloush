@@ -14,7 +14,7 @@ export default async function DashboardPage() {
 
   const { data: documents } = await supabase
     .from('documents')
-    .select('id, document_type, is_urgent, action_required, action_description, summary_fr, period, created_at')
+    .select('*')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 

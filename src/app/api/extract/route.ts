@@ -1,19 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { createClient } from "@/lib/supabase/server";
 import { validateFile } from "@/lib/fileValidation";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+import { createRateLimit } from "@/lib/rateLimit";
+import { requireAuth } from "@/lib/apiAuth";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-const ratelimit = process.env.UPSTASH_REDIS_REST_URL
-  ? new Ratelimit({
-      redis: Redis.fromEnv(),
-      limiter: Ratelimit.slidingWindow(10, "1 h"),
-      prefix: "ratelimit:extract",
-    })
-  : null;
+const ratelimit = createRateLimit("extract", 10, "1 h");
 
 const SYSTEM_PROMPT = `Tu es un expert en fiches de paie israéliennes (תלוש שכר / tloush maskoret).
 Ton rôle est d'extraire toutes les informations d'une fiche de paie israélienne et de les retourner en JSON structuré.
@@ -79,11 +71,9 @@ Règles importantes :
 export async function POST(req: NextRequest) {
   try {
     // Auth check
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
-    }
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+    const { user } = auth;
 
     // Rate limiting
     if (ratelimit) {
@@ -147,19 +137,18 @@ export async function POST(req: NextRequest) {
       ];
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const message = await (client.messages.create as any)({
+    // Cast needed: 'document' content block not yet in SDK types (v0.24)
+    const message = await (client.messages.create as Function)({
       model: "claude-sonnet-4-5",
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
-      betas: mimeType === "application/pdf" ? ["pdfs-2024-09-25"] : undefined,
       messages: [
         {
           role: "user",
           content: contentBlocks,
         },
       ],
-    });
+    }) as Anthropic.Message;
 
     const rawText =
       message.content[0].type === "text" ? message.content[0].text : "";

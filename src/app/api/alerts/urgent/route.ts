@@ -19,7 +19,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'RESEND_API_KEY non configurée' }, { status: 500 })
   }
 
-  const { userId, documentId } = await req.json()
+  let userId: string, documentId: string
+  try {
+    const body = await req.json()
+    userId = body.userId
+    documentId = body.documentId
+  } catch {
+    return NextResponse.json({ error: 'Corps de requête invalide' }, { status: 400 })
+  }
+
   if (!userId || !documentId) {
     return NextResponse.json({ error: 'userId et documentId requis' }, { status: 400 })
   }

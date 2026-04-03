@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, CheckCircle2, Loader2, Users, TrendingUp, Shield } from 'lucide-react'
 
-const SPECIALTIES = ['Comptabilite', 'Droit du travail']
+const SPECIALTIES = ['Comptabilité', 'Droit du travail']
 
 export default function RejoindreExpertsPage() {
   const [form, setForm] = useState({
@@ -62,15 +62,15 @@ export default function RejoindreExpertsPage() {
       <div className="text-center">
         <h1 className="text-xl font-bold text-slate-900 mb-1">Rejoignez l&apos;annuaire Tloush</h1>
         <p className="text-sm text-slate-500">
-          Connectez-vous avec des salaries francophones en Israel qui cherchent votre expertise.
+          Connectez-vous avec des salariés francophones en Israël qui cherchent votre expertise.
         </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
-          { Icon: Users, title: 'Communaute ciblee', desc: 'Clients francophones' },
-          { Icon: TrendingUp, title: 'Leads qualifies', desc: 'Via l\'analyse de documents' },
-          { Icon: Shield, title: 'Profil verifie', desc: 'Badge de confiance' },
+          { Icon: Users, title: 'Communauté ciblée', desc: 'Clients francophones' },
+          { Icon: TrendingUp, title: 'Leads qualifiés', desc: 'Via l\'analyse de documents' },
+          { Icon: Shield, title: 'Profil vérifié', desc: 'Badge de confiance' },
         ].map(({ Icon, title, desc }) => (
           <div key={title} className="bg-white rounded-xl border border-slate-200 p-3 text-center">
             <Icon size={20} className="text-blue-600 mx-auto mb-1.5" />

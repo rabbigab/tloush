@@ -74,13 +74,15 @@ export default function CompareClient({ payslips }: { payslips: Payslip[] }) {
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error || 'Erreur lors de la comparaison')
+        setError(res.status === 429
+          ? 'Limite atteinte. Réessayez plus tard.'
+          : 'Une erreur est survenue lors de la comparaison. Réessayez.')
         return
       }
       setResult(data)
       track('report_generated', { type: 'comparison', status: data.comparison?.overall_status })
     } catch {
-      setError('Erreur de connexion. Reessayez.')
+      setError('Erreur de connexion. Réessayez.')
     } finally {
       setLoading(false)
     }
@@ -109,7 +111,7 @@ export default function CompareClient({ payslips }: { payslips: Payslip[] }) {
                 Uploadez au moins 2 fiches de paie dans votre inbox pour utiliser la comparaison.
               </p>
               <Link href="/inbox" className="inline-flex items-center gap-1.5 mt-4 text-sm text-brand-600 font-medium hover:text-brand-700 min-h-[44px]">
-                Aller a l&apos;inbox
+                Aller à l&apos;inbox
                 <ArrowRight size={14} />
               </Link>
             </div>

@@ -161,6 +161,22 @@ export interface FinalReport {
   disclaimer: string;
 }
 
+/** Document as stored in DB and used across app views (inbox, dashboard, assistant). */
+export interface AppDocument {
+  id: string
+  file_name: string
+  file_type: string
+  document_type: string
+  status: string
+  is_urgent: boolean
+  summary_fr: string | null
+  action_required: boolean
+  action_description: string | null
+  period: string | null
+  analysis_data?: Record<string, unknown>
+  created_at: string
+}
+
 export type AppStep = "landing" | "upload" | "extraction" | "questionnaire" | "results";
 
 export interface AppState {
