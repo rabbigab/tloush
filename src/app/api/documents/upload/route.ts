@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { validateFile } from '@/lib/fileValidation'
 import { createRateLimit } from '@/lib/rateLimit'
 import { requireAuth } from '@/lib/apiAuth'
+import { canUseFeature, incrementUsage } from '@/lib/subscription'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const ratelimit = createRateLimit('upload', 5, '1 h')
@@ -74,6 +75,12 @@ export async function POST(req: NextRequest) {
           }
         )
       }
+    }
+
+    // Check subscription & quota
+    const access = await canUseFeature(supabase, user.id, 'document_analysis')
+    if (!access.allowed) {
+      return NextResponse.json({ error: access.reason, code: 'QUOTA_EXCEEDED' }, { status: 403 })
     }
 
     const formData = await req.formData()
@@ -235,6 +242,9 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
         body: JSON.stringify({ userId: user.id, documentId: document.id }),
       }).catch(err => console.error('[Urgent Alert] Fire-and-forget error:', err))
     }
+
+    // Increment usage counter after successful analysis
+    await incrementUsage(supabase, user.id, 'documents_analyzed')
 
     return NextResponse.json({ document })
   } catch (err) {

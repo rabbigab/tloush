@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { validateFile } from "@/lib/fileValidation";
 import { createRateLimit } from "@/lib/rateLimit";
 import { requireAuth } from "@/lib/apiAuth";
+import { canUseFeature, incrementUsage } from "@/lib/subscription";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const ratelimit = createRateLimit("extract", 10, "1 h");
@@ -73,7 +74,13 @@ export async function POST(req: NextRequest) {
     // Auth check
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
-    const { user } = auth;
+    const { user, supabase } = auth;
+
+    // Check subscription & quota
+    const access = await canUseFeature(supabase, user.id, 'document_analysis');
+    if (!access.allowed) {
+      return NextResponse.json({ error: access.reason, code: 'QUOTA_EXCEEDED' }, { status: 403 });
+    }
 
     // Rate limiting
     if (ratelimit) {
@@ -172,6 +179,9 @@ export async function POST(req: NextRequest) {
         { status: 422 }
       );
     }
+
+    // Increment usage counter
+    await incrementUsage(supabase, user.id, 'documents_analyzed');
 
     return NextResponse.json(parsed);
   } catch (err: unknown) {
