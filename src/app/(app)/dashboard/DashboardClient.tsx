@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap } from 'lucide-react'
+import { DOC_LABELS, DOC_ICONS } from '@/lib/docTypes'
 
 interface Doc {
   id: string
@@ -14,35 +15,6 @@ interface Doc {
   created_at: string
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  payslip: 'Fiche de paie',
-  bituah_leumi: 'Bituah Leumi',
-  tax_notice: 'Avis d\'impot',
-  work_contract: 'Contrat de travail',
-  pension: 'Retraite',
-  health_insurance: 'Assurance sante',
-  rental: 'Logement',
-  bank: 'Bancaire',
-  official_letter: 'Courrier officiel',
-  contract: 'Contrat',
-  tax: 'Document fiscal',
-  other: 'Autre',
-}
-
-const TYPE_ICONS: Record<string, string> = {
-  payslip: '💰',
-  bituah_leumi: '🏛️',
-  tax_notice: '🧾',
-  work_contract: '📋',
-  pension: '🏦',
-  health_insurance: '🏥',
-  rental: '🏠',
-  bank: '💳',
-  official_letter: '📬',
-  contract: '📄',
-  tax: '📊',
-  other: '📎',
-}
 
 export default function DashboardClient({ documents }: { documents: Doc[] }) {
   const urgent = documents.filter(d => d.is_urgent)
@@ -124,7 +96,7 @@ export default function DashboardClient({ documents }: { documents: Doc[] }) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-red-800 dark:text-red-300">
-                  Urgent — {TYPE_LABELS[doc.document_type] || doc.document_type}
+                  Urgent — {DOC_LABELS[doc.document_type] || doc.document_type}
                   {doc.period && <span className="font-normal text-red-600 dark:text-red-400"> · {doc.period}</span>}
                 </p>
                 {doc.action_description && (
@@ -145,7 +117,7 @@ export default function DashboardClient({ documents }: { documents: Doc[] }) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
-                  Action requise — {TYPE_LABELS[doc.document_type] || doc.document_type}
+                  Action requise — {DOC_LABELS[doc.document_type] || doc.document_type}
                   {doc.period && <span className="font-normal text-amber-600 dark:text-amber-400"> · {doc.period}</span>}
                 </p>
                 {doc.action_description && (
@@ -179,8 +151,8 @@ export default function DashboardClient({ documents }: { documents: Doc[] }) {
                     <div key={type}>
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-sm text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5">
-                          <span>{TYPE_ICONS[type] || '📄'}</span>
-                          {TYPE_LABELS[type] || type}
+                          <span>{DOC_ICONS[type] || '📄'}</span>
+                          {DOC_LABELS[type] || type}
                         </span>
                         <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">{count} ({pct}%)</span>
                       </div>
@@ -234,7 +206,7 @@ export default function DashboardClient({ documents }: { documents: Doc[] }) {
                   className="flex items-start gap-3 p-3.5 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-all group"
                 >
                   <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-700 flex items-center justify-center shrink-0 text-lg">
-                    {TYPE_ICONS[doc.document_type] || '📄'}
+                    {DOC_ICONS[doc.document_type] || '📄'}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-0.5">
@@ -242,7 +214,7 @@ export default function DashboardClient({ documents }: { documents: Doc[] }) {
                       {!doc.is_urgent && doc.action_required && <span className="w-2 h-2 bg-amber-500 rounded-full shrink-0" />}
                       {!doc.is_urgent && !doc.action_required && <span className="w-2 h-2 bg-emerald-500 rounded-full shrink-0" />}
                       <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
-                        {TYPE_LABELS[doc.document_type] || doc.document_type}
+                        {DOC_LABELS[doc.document_type] || doc.document_type}
                       </p>
                     </div>
                     {doc.period && (

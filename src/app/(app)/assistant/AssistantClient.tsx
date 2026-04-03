@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Send, FileText, Loader2, User, Bot } from 'lucide-react'
 import Link from 'next/link'
 import { track } from '@/lib/analytics'
+import { DOC_LABELS } from '@/lib/docTypes'
 
 interface Document {
   id: string
@@ -29,14 +30,6 @@ const SUGGESTED_QUESTIONS = [
   'Quel est le delai pour repondre ?',
 ]
 
-const DOC_LABELS: Record<string, string> = {
-  payslip: 'Fiche de paie',
-  official_letter: 'Courrier officiel',
-  contract: 'Contrat',
-  tax: 'Fiscal',
-  other: 'Document',
-  unknown: 'Document'
-}
 
 export default function AssistantClient({
   currentDocument,

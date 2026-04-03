@@ -41,19 +41,37 @@ export async function POST(req: NextRequest) {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
   let sentCount = 0
 
+  // Batch: fetch all user emails in parallel (avoid N+1)
+  const userIds = prefs.map(p => p.user_id)
+  const userEmails = new Map<string, string>()
+  await Promise.all(
+    userIds.map(async (id) => {
+      const { data: { user } } = await supabase.auth.admin.getUserById(id)
+      if (user?.email) userEmails.set(id, user.email)
+    })
+  )
+
+  // Batch: fetch all documents for all users at once (avoid N+1)
+  const { data: allDocs } = await supabase
+    .from('documents')
+    .select('id, user_id, document_type, summary_fr, is_urgent, action_required, action_description, created_at')
+    .in('user_id', userIds)
+    .gte('created_at', sevenDaysAgo)
+    .order('created_at', { ascending: false })
+
+  // Group documents by user
+  const docsByUser = new Map<string, typeof allDocs>()
+  for (const doc of allDocs || []) {
+    const existing = docsByUser.get(doc.user_id) || []
+    existing.push(doc)
+    docsByUser.set(doc.user_id, existing)
+  }
+
   for (const pref of prefs) {
-    // Get user email
-    const { data: { user } } = await supabase.auth.admin.getUserById(pref.user_id)
-    if (!user?.email) continue
+    const userEmail = userEmails.get(pref.user_id)
+    if (!userEmail) continue
 
-    // Get documents from last 7 days
-    const { data: docs } = await supabase
-      .from('documents')
-      .select('id, document_type, summary_fr, is_urgent, action_required, action_description, created_at')
-      .eq('user_id', pref.user_id)
-      .gte('created_at', sevenDaysAgo)
-      .order('created_at', { ascending: false })
-
+    const docs = docsByUser.get(pref.user_id)
     if (!docs || docs.length === 0) continue
 
     const urgentCount = docs.filter(d => d.is_urgent).length
@@ -112,7 +130,7 @@ export async function POST(req: NextRequest) {
     </div>
 
     <div style="text-align:center;margin:24px 0">
-      <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://tloush.vercel.app'}/inbox" style="display:inline-block;background:#2563eb;color:white;text-decoration:none;padding:12px 32px;border-radius:12px;font-weight:600;font-size:14px">
+      <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://tloush.com'}/inbox" style="display:inline-block;background:#2563eb;color:white;text-decoration:none;padding:12px 32px;border-radius:12px;font-weight:600;font-size:14px">
         Voir mes documents
       </a>
     </div>
@@ -120,7 +138,7 @@ export async function POST(req: NextRequest) {
     <div style="text-align:center;margin-top:32px;padding-top:16px;border-top:1px solid #e2e8f0">
       <p style="font-size:11px;color:#94a3b8;margin:0">
         Vous recevez cet email car vous avez activé le résumé hebdomadaire sur Tloush.<br>
-        <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://tloush.vercel.app'}/profile" style="color:#2563eb">Gérer mes préférences</a>
+        <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://tloush.com'}/profile" style="color:#2563eb">Gérer mes préférences</a>
       </p>
     </div>
   </div>
@@ -130,13 +148,13 @@ export async function POST(req: NextRequest) {
     try {
       await resend.emails.send({
         from: `Tloush <${process.env.EMAIL_FROM || 'onboarding@resend.dev'}>`,
-        to: user.email,
+        to: userEmail,
         subject: `Tloush — ${docs.length} document${docs.length > 1 ? 's' : ''} cette semaine${urgentCount > 0 ? ` (${urgentCount} urgent${urgentCount > 1 ? 's' : ''})` : ''}`,
         html
       })
       sentCount++
     } catch (err) {
-      console.error(`[Digest] Erreur envoi à ${user.email}:`, err)
+      console.error(`[Digest] Erreur envoi à ${userEmail}:`, err)
     }
   }
 

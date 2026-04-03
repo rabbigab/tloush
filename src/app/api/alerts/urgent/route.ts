@@ -19,7 +19,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'RESEND_API_KEY non configurée' }, { status: 500 })
   }
 
-  const { userId, documentId } = await req.json()
+  let userId: string, documentId: string
+  try {
+    const body = await req.json()
+    userId = body.userId
+    documentId = body.documentId
+  } catch {
+    return NextResponse.json({ error: 'Corps de requête invalide' }, { status: 400 })
+  }
+
   if (!userId || !documentId) {
     return NextResponse.json({ error: 'userId et documentId requis' }, { status: 400 })
   }
@@ -103,7 +111,7 @@ export async function POST(req: NextRequest) {
     </div>
 
     <div style="text-align:center;margin:24px 0">
-      <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://tloush.vercel.app'}/inbox" style="display:inline-block;background:#dc2626;color:white;text-decoration:none;padding:12px 32px;border-radius:12px;font-weight:600;font-size:14px">
+      <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://tloush.com'}/inbox" style="display:inline-block;background:#dc2626;color:white;text-decoration:none;padding:12px 32px;border-radius:12px;font-weight:600;font-size:14px">
         Voir le document dans mon inbox
       </a>
     </div>
@@ -111,7 +119,7 @@ export async function POST(req: NextRequest) {
     <div style="text-align:center;margin-top:32px;padding-top:16px;border-top:1px solid #e2e8f0">
       <p style="font-size:11px;color:#94a3b8;margin:0">
         Vous recevez cet email car les alertes urgentes sont activées sur Tloush.<br>
-        <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://tloush.vercel.app'}/profile" style="color:#2563eb">Gérer mes préférences</a>
+        <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://tloush.com'}/profile" style="color:#2563eb">Gérer mes préférences</a>
       </p>
     </div>
   </div>

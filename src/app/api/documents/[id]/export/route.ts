@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { escapeHtml } from '@/lib/fileValidation'
+import { DOC_LABELS } from '@/lib/docTypes'
 
 /**
  * Generates an HTML-based printable export of a document analysis.
@@ -39,13 +40,6 @@ export async function GET(
     ? new Date(doc.analyzed_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
     : 'Non disponible'
 
-  const typeLabels: Record<string, string> = {
-    payslip: 'Fiche de paie',
-    official_letter: 'Courrier officiel',
-    contract: 'Contrat',
-    tax: 'Document fiscal',
-    other: 'Autre document',
-  }
 
   const html = `<!DOCTYPE html>
 <html lang="fr">
@@ -92,7 +86,7 @@ export async function GET(
       <span class="info-label">Fichier</span>
       <span class="info-value">${escapeHtml(doc.file_name)}</span>
       <span class="info-label">Type</span>
-      <span class="info-value">${escapeHtml(typeLabels[doc.document_type] || doc.document_type)}</span>
+      <span class="info-value">${escapeHtml(DOC_LABELS[doc.document_type] || doc.document_type)}</span>
       <span class="info-label">Période</span>
       <span class="info-value">${escapeHtml(doc.period || 'Non spécifiée')}</span>
       <span class="info-label">Analysé le</span>
@@ -125,7 +119,7 @@ export async function GET(
   </div>` : ''}
 
   <div class="footer">
-    <p>Document généré par Tloush — tloush.vercel.app</p>
+    <p>Document généré par Tloush — tloush.com</p>
     <p style="margin-top:4px">Ce document est une analyse automatique et ne constitue pas un avis juridique ou comptable.</p>
   </div>
 </body>

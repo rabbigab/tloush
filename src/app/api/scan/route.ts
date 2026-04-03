@@ -2,19 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { validateFile } from "@/lib/fileValidation";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+import { createRateLimit } from "@/lib/rateLimit";
 import type { DocumentType, DocumentAnalysis } from "@/types/scanner";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-const ratelimit = process.env.UPSTASH_REDIS_REST_URL
-  ? new Ratelimit({
-      redis: Redis.fromEnv(),
-      limiter: Ratelimit.slidingWindow(10, "1 h"),
-      prefix: "ratelimit:scan",
-    })
-  : null;
+const ratelimit = createRateLimit("scan", 10, "1 h");
 
 // System prompts for each document type
 const SYSTEM_PROMPTS: Record<DocumentType, string> = {
