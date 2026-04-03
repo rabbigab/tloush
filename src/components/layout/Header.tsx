@@ -21,7 +21,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-neutral-100 dark:border-slate-700 shadow-sm">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
         <Link href="/" className="flex items-center group">
-          <Image src="/logo.png" alt="Tloush" width={697} height={249} className="h-12 sm:h-14 w-auto group-hover:scale-105 transition-transform" priority unoptimized />
+          <Image src="/logo.png" alt="Tloush" width={697} height={249} className="h-16 sm:h-20 w-auto group-hover:scale-105 transition-transform" priority unoptimized />
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2">
           <Link

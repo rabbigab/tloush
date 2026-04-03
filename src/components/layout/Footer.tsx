@@ -16,7 +16,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <Image src="/icon.png" alt="Tloush" width={28} height={28} className="rounded-lg" />
+              <Image src="/icon.png" alt="Tloush" width={40} height={40} className="rounded-lg" />
               <span className="font-bold text-neutral-800 dark:text-slate-200">Tloush</span>
             </div>
             <p className="text-xs text-neutral-400 dark:text-slate-500 leading-relaxed">Comprendre sa fiche de paie isra&eacute;lienne, en fran&ccedil;ais, simplement.</p>
