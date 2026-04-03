@@ -1,7 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
-import { Calculator, Scale, Clock, ArrowRight } from 'lucide-react'
+import { Calculator, Scale, Clock, ArrowRight, Bell, Check, Loader2 } from 'lucide-react'
 
 const CATEGORIES = [
   {
@@ -15,7 +16,7 @@ const CATEGORIES = [
       'Comprendre votre fiche de paie',
       'Optimiser votre déclaration fiscale',
       'Vérifier vos cotisations Bituah Leumi',
-      'Analyser votre releve de retraite',
+      'Analyser votre relevé de retraite',
     ],
   },
   {
@@ -29,10 +30,67 @@ const CATEGORIES = [
       'Vérifier un contrat de travail',
       'Contestation de licenciement',
       'Négocier vos conditions',
-      'Comprendre vos droits en tant que salarie',
+      'Comprendre vos droits en tant que salarié',
     ],
   },
 ]
+
+function WaitlistBanner() {
+  const [email, setEmail] = useState('')
+  const [status, setStatus] = useState<'idle' | 'loading' | 'done'>('idle')
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!email) return
+    setStatus('loading')
+    // Simulate — in production, send to an API or Supabase table
+    await new Promise(r => setTimeout(r, 800))
+    setStatus('done')
+  }
+
+  return (
+    <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl p-5 shadow-sm">
+      <div className="flex items-start gap-3">
+        <Clock size={18} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">Annuaire en construction</p>
+          <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+            Nous sélectionnons des professionnels francophones vérifiés. Les premiers profils arrivent bientôt.
+          </p>
+        </div>
+      </div>
+
+      {status === 'done' ? (
+        <div className="mt-4 flex items-center gap-2 text-sm text-green-700 dark:text-green-400 font-medium">
+          <Check size={16} />
+          Vous serez prévenu par email dès que l&apos;annuaire sera disponible !
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="mt-4 flex gap-2">
+          <div className="relative flex-1">
+            <Bell size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400" />
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              placeholder="votre@email.com"
+              className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-amber-200 dark:border-amber-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={status === 'loading'}
+            className="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-1.5"
+          >
+            {status === 'loading' ? <Loader2 size={14} className="animate-spin" /> : <Bell size={14} />}
+            Prévenez-moi
+          </button>
+        </form>
+      )}
+    </div>
+  )
+}
 
 export default function ExpertsPage() {
   return (
@@ -45,16 +103,8 @@ export default function ExpertsPage() {
         </p>
       </div>
 
-      {/* Coming soon banner */}
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
-        <Clock size={18} className="text-amber-600 shrink-0 mt-0.5" />
-        <div>
-          <p className="text-sm font-semibold text-amber-800">Annuaire en construction</p>
-          <p className="text-xs text-amber-700 mt-0.5">
-            Nous sélectionnons des professionnels francophones vérifiés. Les premiers profils arrivent bientôt.
-          </p>
-        </div>
-      </div>
+      {/* Coming soon banner + waitlist */}
+      <WaitlistBanner />
 
       {/* Category cards */}
       <div className="space-y-4">
@@ -100,7 +150,7 @@ export default function ExpertsPage() {
           href="/experts/rejoindre"
           className="inline-flex items-center gap-2 bg-white text-brand-700 font-bold text-sm px-6 py-3 rounded-xl hover:bg-brand-50 shadow-sm transition-all hover:shadow-md active:scale-95"
         >
-          Devenir expert reference
+          Devenir expert référencé
           <ArrowRight size={15} />
         </Link>
       </div>

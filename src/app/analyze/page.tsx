@@ -184,10 +184,10 @@ function AnalyzeContent() {
         {localStep === "upload" && (
           <div className="space-y-6 animate-fade-in-up">
             <div>
-              <h2 className="section-title">Telechargez votre fiche de paie</h2>
+              <h2 className="section-title">Importez votre fiche de paie</h2>
               <p className="section-subtitle">
-                Glissez-deposez votre tloush (bulletin de salaire) ou selectionnez-le.
-                Formats acceptes : PDF, JPG, PNG.
+                Glissez-déposez votre tloush (bulletin de salaire) ou sélectionnez-le.
+                Formats acceptés : PDF, JPG, PNG.
               </p>
             </div>
             <UploadZone onFileAccepted={handleFileAccepted} />

@@ -20,7 +20,7 @@ export default function DashboardClient({ documents }: { documents: AppDocument[
   const recentCount = documents.filter(d => new Date(d.created_at) > thirtyDaysAgo).length
 
   const hour = new Date().getHours()
-  const greeting = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon apres-midi' : 'Bonsoir'
+  const greeting = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir'
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6 w-full">
@@ -228,14 +228,14 @@ export default function DashboardClient({ documents }: { documents: AppDocument[
           <FileText size={40} className="text-blue-300 dark:text-blue-700 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">Commencez par uploader un document</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-5 max-w-md mx-auto">
-            Fiche de paie, courrier officiel, contrat... Tloush vous l&apos;explique en francais en quelques secondes.
+            Fiche de paie, courrier officiel, contrat... Tloush vous l&apos;explique en français en quelques secondes.
           </p>
           <Link
             href="/inbox"
             className="inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/25 active:scale-95"
           >
             <Inbox size={16} />
-            Aller a l&apos;inbox
+            Aller à l&apos;inbox
           </Link>
         </div>
       )}

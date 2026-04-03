@@ -248,7 +248,7 @@ export default function ProfileClient({
               <div>
                 <p className="font-semibold text-red-800 dark:text-red-300 text-sm">Suppression définitive du compte</p>
                 <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                  Cette action est irréversible. Tous vos documents ({documentCount}), conversations et donnees seront definitivement supprimes.
+                  Cette action est irréversible. Tous vos documents ({documentCount}), conversations et données seront définitivement supprimés.
                 </p>
               </div>
             </div>

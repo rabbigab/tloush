@@ -83,7 +83,7 @@ export default function RejoindreExpertsPage() {
       {status === 'success' ? (
         <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
           <CheckCircle2 size={48} className="text-emerald-500 mx-auto mb-4" />
-          <h2 className="font-bold text-xl text-slate-800 mb-2">Demande recue !</h2>
+          <h2 className="font-bold text-xl text-slate-800 mb-2">Demande reçue !</h2>
           <p className="text-sm text-slate-500">
             Nous examinerons votre profil et vous contacterons sous 48h pour finaliser votre inscription.
           </p>
@@ -101,7 +101,7 @@ export default function RejoindreExpertsPage() {
                   value={form.name}
                   onChange={handleChange}
                   required
-                  placeholder="Me / Dr. / Prenom Nom"
+                  placeholder="Me / Dr. / Prénom Nom"
                   className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
@@ -132,7 +132,7 @@ export default function RejoindreExpertsPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">Specialite principale *</label>
+                <label className="block text-xs font-medium text-slate-600 mb-1">Spécialité principale *</label>
                 <select
                   name="specialty"
                   value={form.specialty}
@@ -162,7 +162,7 @@ export default function RejoindreExpertsPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">Telephone</label>
+                <label className="block text-xs font-medium text-slate-600 mb-1">Téléphone</label>
                 <input
                   type="tel"
                   name="phone"
@@ -187,21 +187,21 @@ export default function RejoindreExpertsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Presentez-vous brievement *</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Présentez-vous brièvement *</label>
               <textarea
                 name="message"
                 value={form.message}
                 onChange={handleChange}
                 required
                 rows={3}
-                placeholder="Votre experience, vos specialites, pourquoi vous souhaitez rejoindre Tloush..."
+                placeholder="Votre expérience, vos spécialités, pourquoi vous souhaitez rejoindre Tloush..."
                 className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 resize-none"
               />
             </div>
 
             {status === 'error' && (
               <p className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-lg">
-                Une erreur est survenue. Veuillez reessayer.
+                Une erreur est survenue. Veuillez réessayer.
               </p>
             )}
 

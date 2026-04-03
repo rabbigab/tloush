@@ -109,7 +109,7 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        <Section id="summary" emoji="📋" title="Resume de l'analyse">
+        <Section id="summary" emoji="📋" title="Résumé de l'analyse">
           <AnalysisSummaryCard summary={summary} generatedAt={generatedAt} />
         </Section>
 
@@ -167,7 +167,7 @@ export default function ResultsPage() {
         )}
 
         {employerQuestions.length > 0 && (
-          <Section id="questions" emoji="💬" title="Questions a poser a votre employeur" subtitle="Redigees en francais, pretes a envoyer par email.">
+          <Section id="questions" emoji="💬" title="Questions à poser à votre employeur" subtitle="Rédigées en français, prêtes à envoyer par email.">
             <EmployerQuestionsCard questions={employerQuestions} />
           </Section>
         )}

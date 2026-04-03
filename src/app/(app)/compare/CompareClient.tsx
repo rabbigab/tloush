@@ -101,7 +101,7 @@ export default function CompareClient({ payslips }: { payslips: Payslip[] }) {
             <BarChart3 size={18} className="text-brand-600" />
             Comparer deux fiches de paie
           </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">Selectionnez deux fiches pour voir les differences et anomalies</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">Sélectionnez deux fiches pour voir les différences et anomalies</p>
 
           {payslips.length < 2 ? (
             <div className="bg-slate-50 dark:bg-slate-700 rounded-xl p-6 text-center">
@@ -118,7 +118,7 @@ export default function CompareClient({ payslips }: { payslips: Payslip[] }) {
           ) : (
             <>
               <fieldset>
-                <legend className="sr-only">Selectionnez deux fiches a comparer</legend>
+                <legend className="sr-only">Sélectionnez deux fiches à comparer</legend>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div>
                     <label htmlFor="doc1" className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5">Fiche ancienne</label>
@@ -128,7 +128,7 @@ export default function CompareClient({ payslips }: { payslips: Payslip[] }) {
                       onChange={e => setDoc1(e.target.value)}
                       className="w-full border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-400 bg-white dark:bg-slate-700"
                     >
-                      <option value="">Selectionner...</option>
+                      <option value="">Sélectionner...</option>
                       {payslips.map(p => (
                         <option key={p.id} value={p.id} disabled={p.id === doc2}>
                           {p.period || p.file_name} — {formatDate(p.created_at)}
@@ -144,7 +144,7 @@ export default function CompareClient({ payslips }: { payslips: Payslip[] }) {
                       onChange={e => setDoc2(e.target.value)}
                       className="w-full border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-400 bg-white dark:bg-slate-700"
                     >
-                      <option value="">Selectionner...</option>
+                      <option value="">Sélectionner...</option>
                       {payslips.map(p => (
                         <option key={p.id} value={p.id} disabled={p.id === doc1}>
                           {p.period || p.file_name} — {formatDate(p.created_at)}

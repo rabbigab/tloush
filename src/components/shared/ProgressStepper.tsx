@@ -15,7 +15,7 @@ interface ProgressStepperProps {
 }
 
 export const ANALYZE_STEPS: Step[] = [
-  { id: 1, label: "Téléversement", shortLabel: "Upload" },
+  { id: 1, label: "Import", shortLabel: "Import" },
   { id: 2, label: "Vérification", shortLabel: "Vérif." },
   { id: 3, label: "Questionnaire", shortLabel: "Questions" },
   { id: 4, label: "Rapport", shortLabel: "Rapport" },

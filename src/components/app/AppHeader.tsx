@@ -37,10 +37,10 @@ export default function AppHeader({ userEmail }: { userEmail: string }) {
           <button
             onClick={handleLogout}
             className="flex items-center gap-1.5 min-h-[44px] px-3 text-sm text-blue-100 dark:text-slate-400 hover:text-white dark:hover:text-slate-200 hover:bg-white/10 dark:hover:bg-slate-800 rounded-xl transition-colors"
-            aria-label="Se deconnecter"
+            aria-label="Se déconnecter"
           >
             <LogOut size={16} />
-            <span className="hidden sm:block">Deconnexion</span>
+            <span className="hidden sm:block">Déconnexion</span>
           </button>
         </div>
       </div>

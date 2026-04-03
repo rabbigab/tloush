@@ -89,7 +89,7 @@ export const HEBREW_LABEL_MAP: Record<string, LabelMapping> = {
   "מס הכנסא":                   { key: "incomeTax",        frenchLabel: "Impot sur le revenu",         frenchExplanation: "Precompte mensuel de l'impot sur le revenu." },
   "נקודות זיכוי": { key: "otherBenefit", frenchLabel: "Points de credit fiscal", frenchExplanation: "Credits d'impot auxquels vous avez droit, reduisant votre imposition." },
   "ניכויים":                    { key: "otherDeduction",   frenchLabel: "Deductions diverses",         frenchExplanation: "Autres retenues non detaillees separement." },
-  "קרן הסתדרות": { key: "unionFee",         frenchLabel: "Cotisation syndicale (Histadrut)", frenchExplanation: "Cotisation au syndicat general des travailleurs israeliens." },
+  "קרן הסתדרות": { key: "unionFee",         frenchLabel: "Cotisation syndicale (Histadrut)", frenchExplanation: "Cotisation au syndicat général des travailleurs israéliens." },
 
   // ---------- Recapitulatifs ----------
   "סךה זכויות":  { key: "grossSalary",    frenchLabel: "Total gains",       frenchExplanation: "Somme de toutes les composantes positives (salaire + primes + avantages)." },
