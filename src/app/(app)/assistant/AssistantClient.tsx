@@ -19,6 +19,7 @@ const SUGGESTED_QUESTIONS = [
   'Est-ce qu\'il y a une anomalie ?',
   'Expliquez-moi ce document en detail',
   'Quel est le délai pour répondre ?',
+  'Traduire un message en hébreu',
 ]
 
 

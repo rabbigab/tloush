@@ -2,13 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Inbox, LayoutDashboard, MessageSquare, BarChart3, Users, User } from 'lucide-react'
+import { Inbox, LayoutDashboard, MessageSquare, BarChart3, Scale, Users, User } from 'lucide-react'
 
 const NAV_ITEMS = [
   { label: 'Inbox', href: '/inbox', icon: Inbox },
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Assistant', href: '/assistant', icon: MessageSquare },
   { label: 'Comparer', href: '/compare', icon: BarChart3 },
+  { label: 'Droits', href: '/droits-olim', icon: Scale },
   { label: 'Experts', href: '/experts', icon: Users },
   { label: 'Profil', href: '/profile', icon: User },
 ]
