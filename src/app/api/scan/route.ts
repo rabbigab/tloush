@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { validateFile } from "@/lib/fileValidation";
 import { createRateLimit } from "@/lib/rateLimit";
 import { requireAuth } from "@/lib/apiAuth";
+import { canUseFeature, incrementUsage } from "@/lib/subscription";
 import type { DocumentType, DocumentAnalysis } from "@/types/scanner";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -208,6 +209,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Check subscription & quota
+    const access = await canUseFeature(supabase, user.id, 'document_analysis');
+    if (!access.allowed) {
+      return NextResponse.json({ error: access.reason, code: 'QUOTA_EXCEEDED' }, { status: 403 });
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const documentType = formData.get("documentType") as DocumentType | null;
@@ -311,6 +318,9 @@ export async function POST(req: NextRequest) {
     // Calculate confidence score (0-100)
     // Higher confidence if all critical fields are present
     const confidenceScore = calculateConfidenceScore(data, documentType);
+
+    // Increment usage counter
+    await incrementUsage(supabase, user.id, 'documents_analyzed');
 
     return NextResponse.json({
       documentType,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createRateLimit } from '@/lib/rateLimit'
 import { requireAuth } from '@/lib/apiAuth'
+import { canUseFeature, incrementUsage } from '@/lib/subscription'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const ratelimit = createRateLimit('chat', 30, '1 h')
@@ -21,6 +22,12 @@ export async function POST(req: NextRequest) {
           { status: 429 }
         )
       }
+    }
+
+    // Check subscription & quota
+    const access = await canUseFeature(supabase, user.id, 'assistant_chat')
+    if (!access.allowed) {
+      return NextResponse.json({ error: access.reason, code: 'QUOTA_EXCEEDED' }, { status: 403 })
     }
 
     const { message, documentId, conversationId } = await req.json()
@@ -123,6 +130,9 @@ Donne toujours les informations générales d'abord, puis suggère l'expert si n
     })
 
     const assistantMessage = response.content[0].type === 'text' ? response.content[0].text : ''
+
+    // Increment usage counter
+    await incrementUsage(supabase, user.id, 'assistant_messages')
 
     // Sauvegarder les messages
     if (activeConversationId) {
