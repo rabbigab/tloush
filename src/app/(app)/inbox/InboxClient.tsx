@@ -7,20 +7,7 @@ import Link from 'next/link'
 import { getExpertRecommendation, getExpertUrl } from '@/lib/expertMatcher'
 import { track } from '@/lib/analytics'
 import { DOC_LABELS, DOC_COLORS, DOC_CATEGORIES } from '@/lib/docTypes'
-
-interface Document {
-  id: string
-  file_name: string
-  file_type: string
-  document_type: string
-  status: string
-  is_urgent: boolean
-  summary_fr: string | null
-  action_required: boolean
-  action_description: string | null
-  period: string | null
-  created_at: string
-}
+import type { AppDocument } from '@/types'
 
 
 const CATEGORY_TABS = [
@@ -34,10 +21,10 @@ const CATEGORY_TABS = [
   { key: 'autre', label: 'Autre' },
 ]
 
-export default function InboxClient({ documents, userEmail }: { documents: Document[]; userEmail: string }) {
+export default function InboxClient({ documents, userEmail }: { documents: AppDocument[]; userEmail: string }) {
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
-  const [docs, setDocs] = useState<Document[]>(documents)
+  const [docs, setDocs] = useState<AppDocument[]>(documents)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [search, setSearch] = useState('')

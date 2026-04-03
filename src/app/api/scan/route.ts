@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { createClient } from "@/lib/supabase/server";
 import { validateFile } from "@/lib/fileValidation";
 import { createRateLimit } from "@/lib/rateLimit";
+import { requireAuth } from "@/lib/apiAuth";
 import type { DocumentType, DocumentAnalysis } from "@/types/scanner";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -196,11 +196,9 @@ const USER_PROMPTS: Record<DocumentType, string> = {
 export async function POST(req: NextRequest) {
   try {
     // Auth check
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
-    }
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+    const { user, supabase } = auth;
 
     // Rate limiting
     if (ratelimit) {
@@ -273,8 +271,8 @@ export async function POST(req: NextRequest) {
 
     const startTime = Date.now();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const message = await (client.messages.create as any)({
+    // Cast needed: 'document' content block + betas not in SDK types (v0.24)
+    const message = await (client.messages.create as Function)({
       model: "claude-sonnet-4-5",
       max_tokens: 4096,
       system: SYSTEM_PROMPTS[documentType],
@@ -285,7 +283,7 @@ export async function POST(req: NextRequest) {
           content: contentBlocks,
         },
       ],
-    });
+    }) as Anthropic.Message;
 
     const processingTime = Date.now() - startTime;
 

@@ -33,7 +33,7 @@ export default async function AssistantPage({ searchParams }: Props) {
 
   const { data: allDocs } = await supabase
     .from('documents')
-    .select('id, file_name, document_type, period, created_at')
+    .select('*')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(20)

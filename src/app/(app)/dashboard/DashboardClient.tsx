@@ -3,20 +3,9 @@
 import Link from 'next/link'
 import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap } from 'lucide-react'
 import { DOC_LABELS, DOC_ICONS } from '@/lib/docTypes'
+import type { AppDocument } from '@/types'
 
-interface Doc {
-  id: string
-  document_type: string
-  is_urgent: boolean
-  action_required: boolean
-  action_description: string | null
-  summary_fr: string | null
-  period: string | null
-  created_at: string
-}
-
-
-export default function DashboardClient({ documents }: { documents: Doc[] }) {
+export default function DashboardClient({ documents }: { documents: AppDocument[] }) {
   const urgent = documents.filter(d => d.is_urgent)
   const actionRequired = documents.filter(d => d.action_required && !d.is_urgent)
   const recent = documents.slice(0, 6)

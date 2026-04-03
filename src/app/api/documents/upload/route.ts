@@ -1,20 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
 import { validateFile } from '@/lib/fileValidation'
+import { createRateLimit } from '@/lib/rateLimit'
+import { requireAuth } from '@/lib/apiAuth'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
-// Rate limiting: 5 uploads per hour per user (free tier)
-const ratelimit = process.env.UPSTASH_REDIS_REST_URL
-  ? new Ratelimit({
-      redis: Redis.fromEnv(),
-      limiter: Ratelimit.slidingWindow(5, '1 h'),
-      prefix: 'ratelimit:upload',
-    })
-  : null
+const ratelimit = createRateLimit('upload', 5, '1 h')
 
 const SYSTEM_PROMPT = `Tu es un expert en documents administratifs israéliens pour francophones.
 Ton rôle est d'analyser un document (fiche de paie, courrier officiel, contrat, etc.) et de retourner un JSON structuré en FRANÇAIS.
@@ -64,12 +55,9 @@ Guide pour category :
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
-    }
+    const auth = await requireAuth()
+    if (auth instanceof NextResponse) return auth
+    const { user, supabase } = auth
 
     // Rate limiting
     if (ratelimit) {
@@ -144,14 +132,14 @@ export async function POST(req: NextRequest) {
       ]
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const message = await (anthropic.messages.create as any)({
+    // Cast needed: 'document' content block + betas not in SDK types (v0.24)
+    const message = await (anthropic.messages.create as Function)({
       model: 'claude-sonnet-4-5',
       max_tokens: 2048,
       system: SYSTEM_PROMPT,
       betas: mimeType === 'application/pdf' ? ['pdfs-2024-09-25'] : undefined,
       messages: [{ role: 'user', content: contentBlocks }]
-    })
+    }) as Anthropic.Message
 
     const rawText = message.content[0].type === 'text' ? message.content[0].text : ''
     const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()

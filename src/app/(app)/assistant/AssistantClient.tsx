@@ -6,16 +6,7 @@ import { Send, FileText, Loader2, User, Bot } from 'lucide-react'
 import Link from 'next/link'
 import { track } from '@/lib/analytics'
 import { DOC_LABELS } from '@/lib/docTypes'
-
-interface Document {
-  id: string
-  file_name: string
-  document_type: string
-  period?: string
-  summary_fr?: string
-  analysis_data?: Record<string, unknown>
-  created_at: string
-}
+import type { AppDocument } from '@/types'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -36,15 +27,15 @@ export default function AssistantClient({
   allDocuments,
   userEmail
 }: {
-  currentDocument: Document | null
-  allDocuments: Document[]
+  currentDocument: AppDocument | null
+  allDocuments: AppDocument[]
   userEmail: string
 }) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [conversationId, setConversationId] = useState<string | null>(null)
-  const [activeDoc, setActiveDoc] = useState<Document | null>(currentDocument)
+  const [activeDoc, setActiveDoc] = useState<AppDocument | null>(currentDocument)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const router = useRouter()
@@ -121,7 +112,7 @@ export default function AssistantClient({
     }
   }
 
-  function selectDocument(doc: Document) {
+  function selectDocument(doc: AppDocument) {
     setActiveDoc(doc)
     setConversationId(null)
     router.push(`/assistant?doc=${doc.id}`)
