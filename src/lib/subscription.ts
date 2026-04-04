@@ -1,4 +1,4 @@
-import { SupabaseClient, User } from '@supabase/supabase-js'
+import { SupabaseClient } from '@supabase/supabase-js'
 import { PLANS, type PlanId, type PlanConfig } from '@/lib/stripe'
 
 export interface SubscriptionInfo {
@@ -9,6 +9,8 @@ export interface SubscriptionInfo {
   trialDaysLeft: number
   stripeCustomerId: string | null
   stripeSubscriptionId: string | null
+  isFamilyMember?: boolean
+  familyOwnerId?: string
 }
 
 export interface UsageInfo {
@@ -21,27 +23,106 @@ export interface UsageInfo {
 }
 
 // ---------------------------------------------------------------------------
-// Get subscription info for a user
+// Check if user is an active family member (not owner)
+// Returns the owner's user_id if yes, null otherwise
+// ---------------------------------------------------------------------------
+
+async function getFamilyOwnerId(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<string | null> {
+  try {
+    const { data } = await supabase
+      .from('family_members')
+      .select('owner_id')
+      .eq('member_id', userId)
+      .eq('status', 'active')
+      .single()
+
+    return data?.owner_id || null
+  } catch {
+    return null
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Get all active family member IDs for an owner (including the owner)
+// ---------------------------------------------------------------------------
+
+export async function getFamilyMemberIds(
+  supabase: SupabaseClient,
+  ownerId: string
+): Promise<string[]> {
+  try {
+    const { data } = await supabase
+      .from('family_members')
+      .select('member_id')
+      .eq('owner_id', ownerId)
+      .eq('status', 'active')
+
+    const memberIds = (data || [])
+      .map(m => m.member_id)
+      .filter(Boolean) as string[]
+
+    return [ownerId, ...memberIds]
+  } catch {
+    return [ownerId]
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Get subscription info for a user (checks family membership)
 // ---------------------------------------------------------------------------
 
 export async function getSubscription(
   supabase: SupabaseClient,
   userId: string
 ): Promise<SubscriptionInfo> {
-  const { data: sub } = await supabase
+  // First check if this user is a family member
+  const familyOwnerId = await getFamilyOwnerId(supabase, userId)
+
+  // If family member, get the owner's subscription instead
+  const targetUserId = familyOwnerId || userId
+
+  const { data: sub, error } = await supabase
     .from('subscriptions')
     .select('*')
-    .eq('user_id', userId)
+    .eq('user_id', targetUserId)
     .single()
 
-  if (!sub) {
-    // No subscription found — treat as expired free
+  // If table doesn't exist or query fails, allow access (graceful degradation)
+  if (error && error.code !== 'PGRST116') {
+    console.warn('[subscription] Query error, allowing access:', error.message)
     return {
       planId: 'free',
       plan: PLANS.free,
-      status: 'expired',
-      isTrialActive: false,
-      trialDaysLeft: 0,
+      status: 'active',
+      isTrialActive: true,
+      trialDaysLeft: 60,
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+    }
+  }
+
+  if (!sub) {
+    // No subscription row — create one automatically
+    const trialEnd = new Date()
+    trialEnd.setDate(trialEnd.getDate() + 60)
+
+    await supabase.from('subscriptions').insert({
+      user_id: targetUserId,
+      plan_id: 'free',
+      status: 'active',
+      trial_start: new Date().toISOString(),
+      trial_end: trialEnd.toISOString(),
+    }).single()
+
+    return {
+      planId: 'free',
+      plan: PLANS.free,
+      status: 'active',
+      isTrialActive: true,
+      trialDaysLeft: 60,
       stripeCustomerId: null,
       stripeSubscriptionId: null,
     }
@@ -76,11 +157,12 @@ export async function getSubscription(
     trialDaysLeft,
     stripeCustomerId: sub.stripe_customer_id,
     stripeSubscriptionId: sub.stripe_subscription_id,
+    ...(familyOwnerId ? { isFamilyMember: true, familyOwnerId } : {}),
   }
 }
 
 // ---------------------------------------------------------------------------
-// Get current month usage for a user
+// Get current month usage for a user (aggregates family usage if applicable)
 // ---------------------------------------------------------------------------
 
 export async function getUsage(
@@ -88,19 +170,48 @@ export async function getUsage(
   userId: string
 ): Promise<UsageInfo> {
   const period = getCurrentPeriod()
-
-  const { data: usage } = await supabase
-    .from('usage_tracking')
-    .select('documents_analyzed, assistant_messages')
-    .eq('user_id', userId)
-    .eq('period', period)
-    .single()
-
   const sub = await getSubscription(supabase, userId)
   const limits = sub.plan.limits
 
-  const documentsAnalyzed = usage?.documents_analyzed || 0
-  const assistantMessages = usage?.assistant_messages || 0
+  // For family plans, aggregate usage across all members
+  let documentsAnalyzed = 0
+  let assistantMessages = 0
+
+  if (sub.planId === 'family') {
+    const ownerId = sub.familyOwnerId || userId
+    const memberIds = await getFamilyMemberIds(supabase, ownerId)
+
+    try {
+      const { data: usages } = await supabase
+        .from('usage_tracking')
+        .select('documents_analyzed, assistant_messages')
+        .in('user_id', memberIds)
+        .eq('period', period)
+
+      if (usages) {
+        for (const u of usages) {
+          documentsAnalyzed += u.documents_analyzed || 0
+          assistantMessages += u.assistant_messages || 0
+        }
+      }
+    } catch {
+      console.warn('[usage] Failed to aggregate family usage')
+    }
+  } else {
+    const { data: usage, error } = await supabase
+      .from('usage_tracking')
+      .select('documents_analyzed, assistant_messages')
+      .eq('user_id', userId)
+      .eq('period', period)
+      .single()
+
+    if (error && error.code !== 'PGRST116') {
+      console.warn('[usage] Query error, returning zero usage:', error.message)
+    }
+
+    documentsAnalyzed = usage?.documents_analyzed || 0
+    assistantMessages = usage?.assistant_messages || 0
+  }
 
   return {
     documentsAnalyzed,
@@ -123,30 +234,35 @@ export async function incrementUsage(
 ): Promise<void> {
   const period = getCurrentPeriod()
 
-  // Upsert: create if not exists, increment if exists
-  const { data: existing } = await supabase
-    .from('usage_tracking')
-    .select('id, documents_analyzed, assistant_messages')
-    .eq('user_id', userId)
-    .eq('period', period)
-    .single()
+  try {
+    // Upsert: create if not exists, increment if exists
+    const { data: existing } = await supabase
+      .from('usage_tracking')
+      .select('id, documents_analyzed, assistant_messages')
+      .eq('user_id', userId)
+      .eq('period', period)
+      .single()
 
-  if (existing) {
-    await supabase
-      .from('usage_tracking')
-      .update({
-        [type]: (existing[type] || 0) + 1,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', existing.id)
-  } else {
-    await supabase
-      .from('usage_tracking')
-      .insert({
-        user_id: userId,
-        period,
-        [type]: 1,
-      })
+    if (existing) {
+      await supabase
+        .from('usage_tracking')
+        .update({
+          [type]: (existing[type] || 0) + 1,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id)
+    } else {
+      await supabase
+        .from('usage_tracking')
+        .insert({
+          user_id: userId,
+          period,
+          [type]: 1,
+        })
+    }
+  } catch (err) {
+    // If table doesn't exist, just log and continue
+    console.warn('[usage] Failed to increment usage, skipping:', err)
   }
 }
 

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { User, FileText, Calendar, LogOut, Trash2, AlertTriangle, Mail, Bell, Pencil, Check, X } from 'lucide-react'
 import Link from 'next/link'
 import { track } from '@/lib/analytics'
+import FamilySection from '@/components/app/FamilySection'
 
 export default function ProfileClient({
   email,
@@ -163,6 +164,9 @@ export default function ProfileClient({
             </div>
           </div>
         </div>
+
+        {/* Famille */}
+        <FamilySection userEmail={email} />
 
         {/* Notifications */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
