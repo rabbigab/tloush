@@ -10,7 +10,7 @@ export default function Footer() {
           <AlertCircle size={18} className="text-neutral-400 dark:text-slate-500 mt-0.5 shrink-0" />
           <p className="text-xs text-neutral-500 dark:text-slate-400 leading-relaxed">
             <strong className="text-neutral-600 dark:text-slate-300">Analyse indicative uniquement.</strong>{" "}
-            Tloush est un outil d&apos;aide &agrave; la compr&eacute;hension, pas un cabinet juridique ni un expert-comptable.
+            Tloush est un outil d&apos;aide à la compréhension, pas un cabinet juridique ni un expert-comptable.
           </p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 mb-8">
@@ -19,27 +19,27 @@ export default function Footer() {
               <Image src="/icon.png" alt="Tloush" width={28} height={28} className="rounded-lg" />
               <span className="font-bold text-neutral-800 dark:text-slate-200">Tloush</span>
             </div>
-            <p className="text-xs text-neutral-400 dark:text-slate-500 leading-relaxed">Comprendre sa fiche de paie isra&eacute;lienne, en fran&ccedil;ais, simplement.</p>
+            <p className="text-xs text-neutral-400 dark:text-slate-500 leading-relaxed">Comprendre sa fiche de paie israélienne, en français, simplement.</p>
           </div>
           <div>
             <h3 className="text-xs font-semibold text-neutral-700 dark:text-slate-300 uppercase tracking-wider mb-3">Application</h3>
             <ul className="space-y-2">
               <li><Link href="/analyze" className="text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors">Analyser ma fiche</Link></li>
-              <li><Link href="/#how-it-works" className="text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors">Comment &ccedil;a marche</Link></li>
+              <li><Link href="/#how-it-works" className="text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors">Comment ça marche</Link></li>
             </ul>
           </div>
           <div>
-            <h3 className="text-xs font-semibold text-neutral-700 dark:text-slate-300 uppercase tracking-wider mb-3">L&eacute;gal</h3>
+            <h3 className="text-xs font-semibold text-neutral-700 dark:text-slate-300 uppercase tracking-wider mb-3">Légal</h3>
             <ul className="space-y-2">
-              <li><Link href="/privacy" className="text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors">Confidentialit&eacute;</Link></li>
+              <li><Link href="/privacy" className="text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors">Confidentialité</Link></li>
             </ul>
           </div>
         </div>
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6 border-t border-neutral-100 dark:border-slate-700">
-          <p className="text-xs text-neutral-400 dark:text-slate-500">&copy; {new Date().getFullYear()} Tloush — Outil d&apos;aide &agrave; la compr&eacute;hension des fiches de paie isra&eacute;liennes</p>
+          <p className="text-xs text-neutral-400 dark:text-slate-500">&copy; {new Date().getFullYear()} Tloush — Outil d&apos;aide à la compréhension des fiches de paie israéliennes</p>
           <div className="flex items-center gap-1.5 text-xs text-neutral-400 dark:text-slate-500">
             <ShieldCheck size={13} className="text-success" />
-            <span>Vos donn&eacute;es restent confidentielles</span>
+            <span>Vos données restent confidentielles</span>
           </div>
         </div>
       </div>

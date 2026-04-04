@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -16,6 +16,39 @@ function LoginForm() {
   const [redirecting, setRedirecting] = useState(false)
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/inbox'
+  const urlError = searchParams.get('error')
+
+  // Show error from callback redirect (e.g. Google OAuth failure)
+  useEffect(() => {
+    if (urlError && urlError !== 'confirmation') {
+      setError(decodeURIComponent(urlError))
+    } else if (urlError === 'confirmation') {
+      setError('Erreur de confirmation. Veuillez réessayer.')
+    }
+  }, [urlError])
+
+  // Detect if user is already authenticated (e.g. returning from Google OAuth)
+  useEffect(() => {
+    const supabase = createClient()
+
+    // Check current session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setRedirecting(true)
+        window.location.href = redirect
+      }
+    })
+
+    // Listen for auth state changes (catches OAuth redirects)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        setRedirecting(true)
+        window.location.href = redirect
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [redirect])
 
   async function handleGoogleLogin() {
     setGoogleLoading(true)
@@ -141,7 +174,7 @@ function LoginForm() {
 
         <div className="flex justify-end">
           <Link href="/auth/forgot-password" className="text-xs text-brand-600 hover:underline font-medium">
-            Mot de passe oublie ?
+            Mot de passe oublié ?
           </Link>
         </div>
 
@@ -170,7 +203,7 @@ function LoginForm() {
       <div className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
         Pas encore de compte ?{' '}
         <Link href="/auth/register" className="text-brand-600 hover:underline font-medium">
-          Creer un compte
+          Créer un compte
         </Link>
       </div>
     </div>
@@ -183,8 +216,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex flex-col items-center gap-3">
-            <Image src="/logo.png" alt="Tloush" width={697} height={249} className="h-16 sm:h-20 w-auto" unoptimized priority />
-            <p className="text-slate-500 dark:text-slate-400 text-sm">Votre assistant administratif en Israel</p>
+            <Image src="/logo.png" alt="Tloush" width={1024} height={1024} className="h-20 sm:h-24 w-auto" priority />
+            <p className="text-slate-500 dark:text-slate-400 text-sm">Votre assistant administratif en Israël</p>
           </Link>
         </div>
         <Suspense fallback={<div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 h-64 animate-pulse" />}>

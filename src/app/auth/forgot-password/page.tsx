@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
     })
 
     if (error) {
-      setError('Une erreur est survenue. Verifiez votre email et reessayez.')
+      setError('Une erreur est survenue. Vérifiez votre email et réessayez.')
       setLoading(false)
       return
     }
@@ -37,8 +37,8 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex flex-col items-center gap-3">
-            <Image src="/logo.png" alt="Tloush" width={697} height={249} className="h-16 sm:h-20 w-auto" unoptimized priority />
-            <p className="text-slate-500 dark:text-slate-400 text-sm">Votre assistant administratif en Israel</p>
+            <Image src="/logo.png" alt="Tloush" width={1024} height={1024} className="h-20 sm:h-24 w-auto" priority />
+            <p className="text-slate-500 dark:text-slate-400 text-sm">Votre assistant administratif en Israël</p>
           </Link>
         </div>
 
@@ -48,19 +48,19 @@ export default function ForgotPasswordPage() {
               <div className="w-16 h-16 bg-brand-50 dark:bg-brand-950/30 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Mail size={28} className="text-brand-600" />
               </div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">Email envoye</h2>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">Email envoyé</h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">
-                Si un compte existe avec <strong className="text-slate-700 dark:text-slate-200">{email}</strong>, vous recevrez un lien pour reinitialiser votre mot de passe.
+                Si un compte existe avec <strong className="text-slate-700 dark:text-slate-200">{email}</strong>, vous recevrez un lien pour réinitialiser votre mot de passe.
               </p>
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-3">
-                Verifiez aussi vos spams si vous ne voyez pas l&apos;email.
+                Vérifiez aussi vos spams si vous ne voyez pas l&apos;email.
               </p>
               <Link
                 href="/auth/login"
                 className="mt-6 inline-flex items-center gap-2 text-brand-600 hover:underline text-sm font-medium"
               >
                 <ArrowLeft size={14} />
-                Retour a la connexion
+                Retour à la connexion
               </Link>
             </div>
           ) : (
@@ -73,9 +73,9 @@ export default function ForgotPasswordPage() {
                 Retour
               </Link>
 
-              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">Mot de passe oublie ?</h2>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">Mot de passe oublié ?</h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
-                Entrez votre adresse email et nous vous enverrons un lien pour reinitialiser votre mot de passe.
+                Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-4">

@@ -47,7 +47,7 @@ export default function RegisterPage() {
     }
 
     if (password.length < 8) {
-      setError('Le mot de passe doit contenir au moins 8 caracteres')
+      setError('Le mot de passe doit contenir au moins 8 caractères')
       setLoading(false)
       return
     }
@@ -79,16 +79,16 @@ export default function RegisterPage() {
             <div className="w-16 h-16 bg-brand-50 dark:bg-brand-950/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-3xl">📬</span>
             </div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">Verifiez votre email</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">Vérifiez votre email</h2>
             <p className="text-slate-500 dark:text-slate-400 text-sm">
-              Nous avons envoye un lien de confirmation a <strong className="text-slate-700 dark:text-slate-200">{email}</strong>.
+              Nous avons envoyé un lien de confirmation à <strong className="text-slate-700 dark:text-slate-200">{email}</strong>.
               Cliquez sur le lien pour activer votre compte.
             </p>
             <Link
               href="/auth/login"
               className="mt-6 inline-block text-brand-600 hover:underline text-sm font-medium"
             >
-              Retour a la connexion
+              Retour à la connexion
             </Link>
           </div>
         </div>
@@ -101,8 +101,8 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex flex-col items-center gap-3">
-            <Image src="/logo.png" alt="Tloush" width={697} height={249} className="h-16 sm:h-20 w-auto" unoptimized priority />
-            <p className="text-slate-500 dark:text-slate-400 text-sm">Votre assistant administratif en Israel</p>
+            <Image src="/logo.png" alt="Tloush" width={1024} height={1024} className="h-20 sm:h-24 w-auto" priority />
+            <p className="text-slate-500 dark:text-slate-400 text-sm">Votre assistant administratif en Israël</p>
           </Link>
         </div>
 
@@ -205,7 +205,7 @@ export default function RegisterPage() {
               disabled={loading}
               className="w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors active:scale-[0.99]"
             >
-              {loading ? 'Creation...' : 'Creer mon compte'}
+              {loading ? 'Création...' : 'Créer mon compte'}
             </button>
           </form>
 
@@ -218,7 +218,7 @@ export default function RegisterPage() {
         </div>
 
         <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-4">
-          En creant un compte, vous acceptez notre{' '}
+          En créant un compte, vous acceptez notre{' '}
           <Link href="/privacy" className="underline hover:text-slate-500 dark:hover:text-slate-300">politique de confidentialité</Link>.
         </p>
       </div>

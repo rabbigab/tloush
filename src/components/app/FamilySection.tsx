@@ -64,7 +64,7 @@ export default function FamilySection({ userEmail }: { userEmail: string }) {
           setIsMember(true)
         }
       })
-      .catch(() => {})
+      .catch((err) => console.error('[FamilySection] Failed to check subscription:', err))
   }, [fetchData])
 
   async function handleInvite(e: React.FormEvent) {

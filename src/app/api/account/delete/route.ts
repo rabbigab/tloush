@@ -22,6 +22,10 @@ export async function DELETE(req: NextRequest) {
     await supabase.from('documents').delete().eq('user_id', user.id)
     await supabase.from('conversations').delete().eq('user_id', user.id)
 
+    // 3. Nettoyer family_members (invitations envoyées + memberships)
+    await supabase.from('family_members').delete().eq('owner_id', user.id)
+    await supabase.from('family_members').update({ member_id: null, status: 'removed' }).eq('member_id', user.id)
+
     // 3. Supprimer l'utilisateur Auth (nécessite le service role)
     const adminClient = createAdminClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,

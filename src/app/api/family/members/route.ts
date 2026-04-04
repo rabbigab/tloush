@@ -64,6 +64,11 @@ export async function POST(req: NextRequest) {
 
     const normalizedEmail = email.toLowerCase().trim()
 
+    // Validate email format
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return NextResponse.json({ error: 'Email invalide' }, { status: 400 })
+    }
+
     // Can't invite yourself
     if (normalizedEmail === user.email?.toLowerCase()) {
       return NextResponse.json(

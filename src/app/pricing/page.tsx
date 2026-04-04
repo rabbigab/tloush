@@ -102,16 +102,16 @@ export default function PricingPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col bg-slate-50">
+    <main className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
       <Header />
 
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-16">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-slate-100 mb-4">
             Choisissez votre plan
           </h1>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
             Simplifiez votre vie administrative en Israël. Essayez gratuitement pendant 2 mois, sans engagement.
           </p>
         </div>
@@ -121,10 +121,10 @@ export default function PricingPage() {
           {PLANS.map((plan) => (
             <div
               key={plan.id}
-              className={`relative bg-white rounded-2xl border-2 p-6 lg:p-8 flex flex-col ${
+              className={`relative bg-white dark:bg-slate-800 rounded-2xl border-2 p-6 lg:p-8 flex flex-col ${
                 plan.popular
                   ? 'border-blue-600 shadow-xl shadow-blue-500/10 scale-[1.02]'
-                  : 'border-slate-200 shadow-sm'
+                  : 'border-slate-200 dark:border-slate-700 shadow-sm'
               }`}
             >
               {/* Popular badge */}
@@ -139,14 +139,14 @@ export default function PricingPage() {
 
               {/* Plan header */}
               <div className="mb-6">
-                <h2 className="text-xl font-bold text-slate-900 mb-1">{plan.name}</h2>
-                <p className="text-sm text-slate-500 mb-4">{plan.description}</p>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-1">{plan.name}</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{plan.description}</p>
                 <div className="flex items-baseline gap-1">
                   {plan.price === 0 ? (
-                    <span className="text-4xl font-bold text-slate-900">Gratuit</span>
+                    <span className="text-4xl font-bold text-slate-900 dark:text-slate-100">Gratuit</span>
                   ) : (
                     <>
-                      <span className="text-4xl font-bold text-slate-900">{plan.price}₪</span>
+                      <span className="text-4xl font-bold text-slate-900 dark:text-slate-100">{plan.price}₪</span>
                       <span className="text-slate-500">{plan.period}</span>
                     </>
                   )}
@@ -165,7 +165,7 @@ export default function PricingPage() {
                     ) : (
                       <X size={18} className="text-slate-300 mt-0.5 shrink-0" />
                     )}
-                    <span className={`text-sm ${feature.included ? 'text-slate-700' : 'text-slate-400'}`}>
+                    <span className={`text-sm ${feature.included ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'}`}>
                       {feature.text}
                     </span>
                   </li>
@@ -176,7 +176,7 @@ export default function PricingPage() {
               <button
                 onClick={() => handleSubscribe(plan.id)}
                 disabled={loading === plan.id}
-                className={`w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-50 ${plan.ctaStyle}`}
+                className={`w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${plan.ctaStyle}`}
               >
                 {loading === plan.id ? (
                   <Loader2 size={18} className="animate-spin mx-auto" />
@@ -190,7 +190,7 @@ export default function PricingPage() {
 
         {/* FAQ / Trust */}
         <div className="max-w-2xl mx-auto">
-          <h3 className="text-xl font-bold text-slate-900 text-center mb-8">
+          <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 text-center mb-8">
             Questions fréquentes
           </h3>
           <div className="space-y-4">
@@ -212,11 +212,11 @@ export default function PricingPage() {
                 a: 'Nous acceptons les cartes de crédit Visa, Mastercard et American Express via notre partenaire de paiement sécurisé Stripe.',
               },
             ].map((faq, i) => (
-              <details key={i} className="bg-white rounded-xl border border-slate-200 overflow-hidden group">
-                <summary className="px-6 py-4 cursor-pointer font-medium text-slate-900 hover:bg-slate-50 transition-colors">
+              <details key={i} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden group">
+                <summary className="px-6 py-4 cursor-pointer font-medium text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                   {faq.q}
                 </summary>
-                <p className="px-6 pb-4 text-sm text-slate-600 leading-relaxed">
+                <p className="px-6 pb-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                   {faq.a}
                 </p>
               </details>
