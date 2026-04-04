@@ -7,11 +7,15 @@ import { ChevronDown } from "lucide-react";
 const FAQS = [
   {
     q: "C'est vraiment gratuit ?",
-    a: "Oui, Tloush est 100% gratuit. Vous pouvez analyser jusqu'à 5 documents par heure sans aucune carte bancaire.",
+    a: "Oui, vous pouvez analyser jusqu'à 5 documents par mois gratuitement pendant 2 mois. Ensuite, choisissez le plan qui vous convient à partir de 39₪/mois.",
   },
   {
     q: "Quels types de documents puis-je analyser ?",
-    a: "Fiches de paie, avis d'imposition, courriers du Bituah Leumi, contrats de travail, relevés de retraite, assurance santé, courriers officiels, et plus encore. Tout document administratif israélien en hébreu.",
+    a: "Fiches de paie, avis d'imposition, courriers du Bituah Leumi, contrats de travail ou de location, factures (arnona, électricité, internet...), relevés de retraite, assurance santé, et tout document administratif israélien en hébreu.",
+  },
+  {
+    q: "Est-ce que Tloush est juste un traducteur ?",
+    a: "Non. Tloush va bien au-delà de la traduction : il analyse le contenu, repère les anomalies potentielles, détecte les échéances importantes et vous recommande les actions à mener. C'est un véritable copilote administratif.",
   },
   {
     q: "Mes données sont-elles en sécurité ?",
@@ -19,15 +23,11 @@ const FAQS = [
   },
   {
     q: "Tloush remplace-t-il un comptable ou un avocat ?",
-    a: "Non. Tloush est un outil d'aide à la compréhension. Pour des décisions importantes (litige, optimisation fiscale, erreur de paie), nous vous recommandons de consulter un professionnel. Notre annuaire d'experts francophones peut vous aider.",
+    a: "Non. Tloush est un outil d'aide à la compréhension et à la vérification. Pour des décisions importantes, nous vous orientons vers le bon professionnel via notre annuaire d'experts francophones.",
   },
   {
-    q: "Comment fonctionne l'analyse ?",
-    a: "Vous uploadez une photo ou un PDF de votre document. Notre IA (Claude) lit le document en hébreu, identifie le type, extrait les informations clés et vous fournit un résumé complet en français en moins de 30 secondes.",
-  },
-  {
-    q: "Je peux utiliser Tloush sur mobile ?",
-    a: "Oui, Tloush est conçu pour fonctionner parfaitement sur téléphone. Vous pouvez même prendre une photo de votre document directement depuis votre mobile.",
+    q: "C'est quoi le plan Famille ?",
+    a: "Le plan Famille permet de partager un abonnement avec jusqu'à 5 membres de votre famille. Chacun a son propre espace et ses propres documents, le quota est partagé. Idéal pour les couples ou les familles avec des enfants adultes.",
   },
 ];
 
@@ -46,9 +46,6 @@ export default function FAQ() {
         <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 dark:text-slate-100 mb-3">
           Questions fréquentes
         </h2>
-        <p className="text-neutral-600 dark:text-slate-400 max-w-xl mx-auto text-base">
-          Tout ce que vous devez savoir avant de commencer
-        </p>
       </motion.div>
 
       <div className="space-y-3">

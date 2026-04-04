@@ -9,28 +9,64 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const ratelimit = createRateLimit('upload', 5, '1 h')
 
 const SYSTEM_PROMPT = `Tu es un expert en documents administratifs israéliens pour francophones.
-Ton rôle est d'analyser un document (fiche de paie, courrier officiel, contrat, etc.) et de retourner un JSON structuré en FRANÇAIS.
+Ton rôle est d'analyser un document (fiche de paie, courrier officiel, contrat, facture, etc.) et de retourner un JSON structuré en FRANÇAIS.
+Tu dois non seulement expliquer le document, mais aussi détecter les anomalies potentielles, les points à vérifier et recommander des actions concrètes.
 IMPORTANT : Retourne UNIQUEMENT le JSON, sans texte avant ou après.`
 
 const USER_PROMPT = `Analyse ce document israélien et retourne UNIQUEMENT ce JSON :
 
 {
-  "document_type": "payslip" | "bituah_leumi" | "tax_notice" | "work_contract" | "pension" | "health_insurance" | "rental" | "bank" | "official_letter" | "contract" | "other",
-  "category": "travail" | "securite_sociale" | "fiscal" | "retraite" | "logement" | "bancaire" | "autre",
+  "document_type": "payslip" | "bituah_leumi" | "tax_notice" | "work_contract" | "pension" | "health_insurance" | "rental" | "bank" | "official_letter" | "contract" | "invoice" | "receipt" | "utility_bill" | "insurance" | "other",
+  "category": "travail" | "securite_sociale" | "fiscal" | "retraite" | "logement" | "bancaire" | "finance" | "autre",
   "summary_fr": "Résumé en 2-3 phrases en français de ce document",
   "is_urgent": true/false,
   "action_required": true/false,
-  "action_description": "Ce que l'utilisateur doit faire, ou null",
+  "action_description": "Ce que l'utilisateur doit faire en priorité, ou null",
   "period": "Période concernée ex: 'Avril 2025' ou null",
   "key_info": {
     "emitter": "Qui envoie ce document",
     "amount": "Montant principal si applicable ou null",
-    "deadline": "Date limite si applicable ou null"
+    "deadline": "Date limite si applicable (format JJ/MM/AAAA) ou null"
+  },
+  "attention_points": [
+    {
+      "level": "ok" | "info" | "warning" | "critical",
+      "title": "Titre court du point",
+      "description": "Explication en 1-2 phrases"
+    }
+  ],
+  "recommended_actions": [
+    {
+      "priority": "immediate" | "soon" | "when_possible",
+      "action": "Description de l'action à mener",
+      "deadline": "Date limite si applicable ou null"
+    }
+  ],
+  "should_consult_pro": {
+    "recommended": true/false,
+    "reason": "Pourquoi consulter un pro, ou null",
+    "pro_type": "comptable" | "avocat" | "conseiller_fiscal" | "agent_immobilier" | null
   },
   "analysis_data": {
     "full_analysis": "Analyse détaillée complète en français"
   }
 }
+
+GUIDE attention_points.level :
+- "ok" = tout est normal, rien à signaler
+- "info" = information utile à connaître
+- "warning" = point à vérifier, anomalie potentielle
+- "critical" = action urgente requise, risque important
+
+GUIDE recommended_actions.priority :
+- "immediate" = à faire dans les 48h
+- "soon" = à faire dans les 2 semaines
+- "when_possible" = pas urgent mais recommandé
+
+Pour les factures/tickets (invoice, receipt, utility_bill, insurance) :
+- Extraire le fournisseur, le montant TTC, la date de la facture
+- Indiquer si c'est une dépense récurrente probable (mensuelle, bimestrielle, etc.)
+- Ajouter un champ "recurring_info" dans analysis_data: {"is_recurring": true/false, "frequency": "monthly"|"bimonthly"|"quarterly"|"annual"|"one_time", "provider": "nom du fournisseur", "amount": nombre}
 
 Guide pour document_type :
 - "payslip" = fiche de paie / tloush maskoret
@@ -43,6 +79,10 @@ Guide pour document_type :
 - "bank" = relevé bancaire, prêt, document de banque
 - "official_letter" = courrier officiel d'une administration
 - "contract" = autre contrat non classé ci-dessus
+- "invoice" = facture (arnona, électricité, eau, internet, téléphone, etc.)
+- "receipt" = ticket de caisse, reçu
+- "utility_bill" = facture de service public
+- "insurance" = document d'assurance (habitation, voiture, etc.)
 - "other" = tout document ne correspondant à aucune catégorie
 
 Guide pour category :
@@ -52,6 +92,7 @@ Guide pour category :
 - "retraite" = pension
 - "logement" = rental
 - "bancaire" = bank
+- "finance" = invoice, receipt, utility_bill, insurance
 - "autre" = official_letter, contract, other`
 
 export async function POST(req: NextRequest) {
@@ -142,7 +183,7 @@ export async function POST(req: NextRequest) {
     // Cast needed: 'document' content block not yet in SDK types (v0.24)
     const message = await (anthropic.messages.create as Function)({
       model: 'claude-sonnet-4-5',
-      max_tokens: 2048,
+      max_tokens: 3000,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: contentBlocks }]
     }) as Anthropic.Message

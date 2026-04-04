@@ -15,6 +15,7 @@ const CATEGORY_TABS = [
   { key: 'travail', label: 'Travail' },
   { key: 'securite_sociale', label: 'Secu sociale' },
   { key: 'fiscal', label: 'Fiscal' },
+  { key: 'finance', label: 'Factures' },
   { key: 'retraite', label: 'Retraite' },
   { key: 'logement', label: 'Logement' },
   { key: 'bancaire', label: 'Bancaire' },

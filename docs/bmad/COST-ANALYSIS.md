@@ -187,7 +187,7 @@ Avec l'ajout du scan de factures/tickets de caisse :
 | Gratuit | 3 docs | 5 docs | Permet de tester 2-3 factures + 1-2 docs admin |
 | Solo | 30 docs | 50 docs | ~3 docs admin + ~12 factures + marge |
 | Famille | 100 docs | 150 docs | 5 personnes x ~30 docs |
-| Messages gratuit | 0 | 15 | Permet de decouvrir l'assistant |
+| Messages gratuit | 0 | 0 | Assistant reserve aux plans payants |
 | Messages Solo | 200 | illimite (fair use) | Ne pas compter les messages |
 | Messages Famille | 500 | illimite (fair use) | Ne pas compter les messages |
 

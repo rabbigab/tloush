@@ -1,6 +1,6 @@
 "use client";
 
-import { Upload, Zap, CheckCircle2 } from "lucide-react";
+import { Upload, Zap, Bell } from "lucide-react";
 import { motion } from "framer-motion";
 
 const STEPS = [
@@ -9,21 +9,21 @@ const STEPS = [
     emoji: "📤",
     number: "1",
     title: "Uploadez",
-    desc: "Déposez votre document en hébreu (PDF, photo)",
+    desc: "Déposez votre document en hébreu : fiche de paie, contrat, facture, courrier officiel (PDF ou photo)",
   },
   {
     icon: Zap,
-    emoji: "🤖",
+    emoji: "🔍",
     number: "2",
-    title: "On analyse",
-    desc: "Notre IA traduit, structure et vérifie chaque ligne",
+    title: "Tloush analyse",
+    desc: "Notre IA lit, traduit et vérifie votre document. Elle repère les anomalies et les points importants.",
   },
   {
-    icon: CheckCircle2,
+    icon: Bell,
     emoji: "✅",
     number: "3",
-    title: "Agissez",
-    desc: "Recevez un rapport clair avec les actions à mener",
+    title: "Comprenez et agissez",
+    desc: "Recevez un résumé clair, les points à vérifier et les actions à mener. Tloush vous rappelle les échéances.",
   },
 ];
 
@@ -41,7 +41,7 @@ export default function HowItWorks() {
           Comment ça marche ?
         </h2>
         <p className="text-neutral-600 dark:text-slate-400 max-w-xl mx-auto text-base">
-          3 étapes simples pour comprendre vos documents en français
+          3 étapes simples pour reprendre le contrôle de vos documents
         </p>
       </motion.div>
 
@@ -60,7 +60,7 @@ export default function HowItWorks() {
               <div className="hidden md:block absolute top-8 left-1/2 w-full h-0.5 bg-gradient-to-r from-brand-200 to-transparent -z-10 transform translate-x-1/2" />
             )}
 
-            <div className="card flex flex-col items-center text-center gap-4">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-neutral-100 dark:border-slate-700 p-6 flex flex-col items-center text-center gap-4">
               {/* Number badge */}
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-600 text-white font-bold text-lg">
                 {step.number}
@@ -71,7 +71,7 @@ export default function HowItWorks() {
 
               {/* Content */}
               <div>
-                <h3 className="font-bold text-neutral-800 dark:text-slate-200 mb-1 text-base">
+                <h3 className="font-bold text-neutral-800 dark:text-slate-200 mb-2 text-base">
                   {step.title}
                 </h3>
                 <p className="text-sm text-neutral-500 dark:text-slate-400 leading-relaxed">

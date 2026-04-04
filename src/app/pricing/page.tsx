@@ -4,42 +4,44 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
-import { Check, X, Loader2, Star } from 'lucide-react'
+import { Check, X, Loader2, Star, Shield, Bell, FolderOpen, BarChart3, Users, MessageSquare } from 'lucide-react'
 
 const PLANS = [
   {
     id: 'free',
-    name: 'Gratuit',
+    name: 'Découverte',
     price: 0,
     period: '2 mois',
-    description: 'Découvrez Tloush gratuitement',
+    tagline: 'Testez Tloush gratuitement',
     popular: false,
     features: [
-      { text: '3 analyses de documents/mois', included: true },
-      { text: 'Questionnaire droits des olim', included: true },
-      { text: 'Historique 7 jours', included: true },
-      { text: 'Assistant IA', included: false },
-      { text: 'Traduction messages hébreux', included: false },
-      { text: 'Support prioritaire', included: false },
+      { text: 'Analysez vos premiers documents', included: true },
+      { text: 'Résultat complet en français', included: true },
+      { text: 'Historique 30 jours', included: true },
+      { text: 'Assistant IA personnel', included: false },
+      { text: 'Suivi des dépenses', included: false },
+      { text: 'Rappels et échéances', included: false },
     ],
     cta: 'Commencer gratuitement',
-    ctaStyle: 'border-2 border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50',
+    ctaStyle: 'border-2 border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700',
   },
   {
     id: 'solo',
     name: 'Solo',
     price: 39,
     period: '/mois',
-    description: 'Pour gérer vos documents au quotidien',
+    tagline: 'Votre copilote administratif complet',
     popular: true,
     stripePriceEnv: 'solo',
     features: [
-      { text: '30 analyses de documents/mois', included: true },
-      { text: 'Questionnaire droits des olim', included: true },
-      { text: 'Historique 1 an', included: true },
-      { text: 'Assistant IA (200 msg/mois)', included: true },
-      { text: 'Traduction messages hébreux', included: true },
-      { text: 'Support prioritaire', included: true },
+      { text: 'Analyse complète de tous vos documents', included: true },
+      { text: 'Détection des anomalies et points à vérifier', included: true, highlight: true },
+      { text: 'Rappels automatiques avant les échéances', included: true, highlight: true },
+      { text: 'Suivi de vos dépenses récurrentes', included: true, highlight: true },
+      { text: 'Assistant personnel intelligent', included: true },
+      { text: 'Comparaison de documents dans le temps', included: true },
+      { text: 'Récapitulatif hebdomadaire par email', included: true },
+      { text: 'Historique complet et sécurisé', included: true },
     ],
     cta: 'Choisir Solo',
     ctaStyle: 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/25',
@@ -49,19 +51,42 @@ const PLANS = [
     name: 'Famille',
     price: 89,
     period: '/mois',
-    description: 'Pour toute la famille, jusqu\'à 5 membres',
+    tagline: 'Le copilote de toute la famille',
     popular: false,
     stripePriceEnv: 'family',
     features: [
-      { text: '100 analyses de documents/mois', included: true },
-      { text: 'Questionnaire droits des olim', included: true },
-      { text: 'Historique 1 an', included: true },
-      { text: 'Assistant IA (500 msg/mois)', included: true },
-      { text: 'Traduction messages hébreux', included: true },
-      { text: 'Jusqu\'à 5 membres', included: true },
+      { text: 'Tout le plan Solo, plus :', included: true },
+      { text: 'Jusqu\'à 5 membres de la famille', included: true, highlight: true },
+      { text: 'Chacun son espace personnel', included: true },
+      { text: 'Documents et dépenses de toute la famille', included: true, highlight: true },
+      { text: 'Suivi global : travail, logement, finances', included: true },
+      { text: 'Alertes et résumés pour toute la famille', included: true },
     ],
     cta: 'Choisir Famille',
-    ctaStyle: 'border-2 border-blue-200 text-blue-700 hover:border-blue-400 hover:bg-blue-50',
+    ctaStyle: 'border-2 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-400 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30',
+  },
+]
+
+const VALUE_PROPS = [
+  {
+    icon: Shield,
+    title: 'Vous ne passez plus à côté de vos droits',
+    desc: 'Tloush repère les anomalies et les points importants que vous auriez pu manquer.',
+  },
+  {
+    icon: Bell,
+    title: 'Vous ne ratez plus une échéance',
+    desc: 'Rappels automatiques avant chaque date limite importante.',
+  },
+  {
+    icon: BarChart3,
+    title: 'Vous savez où va votre argent',
+    desc: 'Scannez vos factures et suivez vos charges récurrentes simplement.',
+  },
+  {
+    icon: MessageSquare,
+    title: 'Vous avez les réponses à vos questions',
+    desc: 'Un assistant qui connaît vos documents et répond en français.',
   },
 ]
 
@@ -91,7 +116,6 @@ export default function PricingPage() {
       if (data.url) {
         window.location.href = data.url
       } else {
-        // Not logged in — redirect to register
         router.push('/auth/register?redirect=/pricing')
       }
     } catch {
@@ -109,11 +133,27 @@ export default function PricingPage() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-slate-100 mb-4">
-            Choisissez votre plan
+            Reprenez le contrôle de vos papiers
           </h1>
           <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            Simplifiez votre vie administrative en Israël. Essayez gratuitement pendant 2 mois, sans engagement.
+            Ne laissez plus vos documents en hébreu vous stresser. Tloush vous aide à comprendre, vérifier et agir.
           </p>
+        </div>
+
+        {/* Value Props */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
+          {VALUE_PROPS.map((vp) => {
+            const Icon = vp.icon
+            return (
+              <div key={vp.title} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4 text-center">
+                <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center mx-auto mb-3">
+                  <Icon size={20} className="text-blue-600 dark:text-blue-400" />
+                </div>
+                <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1">{vp.title}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{vp.desc}</p>
+              </div>
+            )
+          })}
         </div>
 
         {/* Plans Grid */}
@@ -140,19 +180,19 @@ export default function PricingPage() {
               {/* Plan header */}
               <div className="mb-6">
                 <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-1">{plan.name}</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{plan.description}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{plan.tagline}</p>
                 <div className="flex items-baseline gap-1">
                   {plan.price === 0 ? (
                     <span className="text-4xl font-bold text-slate-900 dark:text-slate-100">Gratuit</span>
                   ) : (
                     <>
                       <span className="text-4xl font-bold text-slate-900 dark:text-slate-100">{plan.price}₪</span>
-                      <span className="text-slate-500">{plan.period}</span>
+                      <span className="text-slate-500 dark:text-slate-400">{plan.period}</span>
                     </>
                   )}
                 </div>
                 {plan.price === 0 && (
-                  <p className="text-xs text-slate-400 mt-1">Pendant 2 mois</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Pendant 2 mois, sans engagement</p>
                 )}
               </div>
 
@@ -163,9 +203,15 @@ export default function PricingPage() {
                     {feature.included ? (
                       <Check size={18} className="text-green-500 mt-0.5 shrink-0" />
                     ) : (
-                      <X size={18} className="text-slate-300 mt-0.5 shrink-0" />
+                      <X size={18} className="text-slate-300 dark:text-slate-600 mt-0.5 shrink-0" />
                     )}
-                    <span className={`text-sm ${feature.included ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'}`}>
+                    <span className={`text-sm ${
+                      !feature.included
+                        ? 'text-slate-400 dark:text-slate-500'
+                        : (feature as { highlight?: boolean }).highlight
+                          ? 'text-slate-800 dark:text-slate-200 font-medium'
+                          : 'text-slate-700 dark:text-slate-300'
+                    }`}>
                       {feature.text}
                     </span>
                   </li>
@@ -201,15 +247,15 @@ export default function PricingPage() {
               },
               {
                 q: 'Que se passe-t-il après les 2 mois gratuits ?',
-                a: 'Votre accès sera suspendu. Vous pourrez choisir un plan payant pour continuer à utiliser Tloush. Vos documents analysés restent sauvegardés.',
+                a: 'Votre accès sera limité. Vous pourrez choisir un plan payant pour continuer à utiliser toutes les fonctionnalités de Tloush. Vos documents restent sauvegardés.',
               },
               {
                 q: 'Le plan Famille, comment ça marche ?',
-                a: 'Vous pouvez inviter jusqu\'à 4 autres membres de votre famille. Chacun a son propre espace et ses propres documents, mais le quota est partagé.',
+                a: 'Invitez jusqu\'à 4 membres de votre famille par email. Chacun a son propre espace et ses propres documents. Le quota de documents est partagé entre les membres.',
               },
               {
                 q: 'Quels moyens de paiement acceptez-vous ?',
-                a: 'Nous acceptons les cartes de crédit Visa, Mastercard et American Express via notre partenaire de paiement sécurisé Stripe.',
+                a: 'Nous acceptons les cartes Visa, Mastercard et American Express via notre partenaire de paiement sécurisé Stripe.',
               },
             ].map((faq, i) => (
               <details key={i} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden group">

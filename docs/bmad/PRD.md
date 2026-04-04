@@ -90,7 +90,7 @@ Tloush ne se limite pas a expliquer un document. Il :
 | | Gratuit | Solo 39 ILS | Famille 89 ILS |
 |---|---------|------------|----------------|
 | Documents/mois | 5 | 50 | 150 |
-| Messages assistant | 15 | illimite (fair use) | illimite (fair use) |
+| Messages assistant | - | illimite (fair use) | illimite (fair use) |
 | Historique | 30 jours | illimite | illimite |
 | Rappels echeances | - | oui | oui |
 | Suivi depenses | - | oui | oui |
@@ -129,7 +129,6 @@ Augmentations :
 #### Gratuit
 - Decouvrez Tloush
 - Analysez vos premiers documents
-- Assistant IA limite
 - Historique 30 jours
 
 #### Solo 39 ILS/mois
