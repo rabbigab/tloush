@@ -28,20 +28,47 @@ export async function getSubscription(
   supabase: SupabaseClient,
   userId: string
 ): Promise<SubscriptionInfo> {
-  const { data: sub } = await supabase
+  const { data: sub, error } = await supabase
     .from('subscriptions')
     .select('*')
     .eq('user_id', userId)
     .single()
 
-  if (!sub) {
-    // No subscription found — treat as expired free
+  // If table doesn't exist or query fails, allow access (graceful degradation)
+  if (error && error.code !== 'PGRST116') {
+    // PGRST116 = "no rows found" which is expected for new users
+    // Any other error (table doesn't exist, etc.) → allow access
+    console.warn('[subscription] Query error, allowing access:', error.message)
     return {
       planId: 'free',
       plan: PLANS.free,
-      status: 'expired',
-      isTrialActive: false,
-      trialDaysLeft: 0,
+      status: 'active',
+      isTrialActive: true,
+      trialDaysLeft: 60,
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+    }
+  }
+
+  if (!sub) {
+    // No subscription row — create one automatically
+    const trialEnd = new Date()
+    trialEnd.setDate(trialEnd.getDate() + 60)
+
+    await supabase.from('subscriptions').insert({
+      user_id: userId,
+      plan_id: 'free',
+      status: 'active',
+      trial_start: new Date().toISOString(),
+      trial_end: trialEnd.toISOString(),
+    }).single()
+
+    return {
+      planId: 'free',
+      plan: PLANS.free,
+      status: 'active',
+      isTrialActive: true,
+      trialDaysLeft: 60,
       stripeCustomerId: null,
       stripeSubscriptionId: null,
     }
@@ -89,12 +116,17 @@ export async function getUsage(
 ): Promise<UsageInfo> {
   const period = getCurrentPeriod()
 
-  const { data: usage } = await supabase
+  const { data: usage, error } = await supabase
     .from('usage_tracking')
     .select('documents_analyzed, assistant_messages')
     .eq('user_id', userId)
     .eq('period', period)
     .single()
+
+  // If table doesn't exist or query fails, return zero usage (allow access)
+  if (error && error.code !== 'PGRST116') {
+    console.warn('[usage] Query error, returning zero usage:', error.message)
+  }
 
   const sub = await getSubscription(supabase, userId)
   const limits = sub.plan.limits
@@ -123,30 +155,35 @@ export async function incrementUsage(
 ): Promise<void> {
   const period = getCurrentPeriod()
 
-  // Upsert: create if not exists, increment if exists
-  const { data: existing } = await supabase
-    .from('usage_tracking')
-    .select('id, documents_analyzed, assistant_messages')
-    .eq('user_id', userId)
-    .eq('period', period)
-    .single()
+  try {
+    // Upsert: create if not exists, increment if exists
+    const { data: existing } = await supabase
+      .from('usage_tracking')
+      .select('id, documents_analyzed, assistant_messages')
+      .eq('user_id', userId)
+      .eq('period', period)
+      .single()
 
-  if (existing) {
-    await supabase
-      .from('usage_tracking')
-      .update({
-        [type]: (existing[type] || 0) + 1,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', existing.id)
-  } else {
-    await supabase
-      .from('usage_tracking')
-      .insert({
-        user_id: userId,
-        period,
-        [type]: 1,
-      })
+    if (existing) {
+      await supabase
+        .from('usage_tracking')
+        .update({
+          [type]: (existing[type] || 0) + 1,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id)
+    } else {
+      await supabase
+        .from('usage_tracking')
+        .insert({
+          user_id: userId,
+          period,
+          [type]: 1,
+        })
+    }
+  } catch (err) {
+    // If table doesn't exist, just log and continue
+    console.warn('[usage] Failed to increment usage, skipping:', err)
   }
 }
 
