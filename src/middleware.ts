@@ -5,8 +5,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 const PROTECTED_ROUTES = ['/inbox', '/assistant', '/profile', '/dashboard', '/compare']
 
 // Routes publiques qui n'ont pas besoin du middleware auth
-// IMPORTANT: /auth/callback est exclu — il DOIT passer par le middleware Supabase pour gérer les cookies OAuth
-const PUBLIC_ROUTES = ['/', '/auth/login', '/auth/register', '/auth/forgot-password', '/auth/reset-password', '/pricing', '/droits-olim', '/droits', '/privacy', '/calculateurs', '/modeles', '/scanner', '/results', '/experts', '/api/stripe/webhook']
+const PUBLIC_ROUTES = ['/', '/auth', '/pricing', '/droits-olim', '/droits', '/privacy', '/calculateurs', '/modeles', '/scanner', '/results', '/experts', '/api/stripe/webhook']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
