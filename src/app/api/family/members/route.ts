@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/apiAuth'
 import { getSubscription } from '@/lib/subscription'
+import { Resend } from 'resend'
 
 // GET: List family members (for the owner)
 export async function GET() {
@@ -134,10 +135,84 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Send invitation email
+    await sendInvitationEmail(normalizedEmail, user.email || 'un membre Tloush')
+
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error('[/api/family/members POST]', err)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+  }
+}
+
+async function sendInvitationEmail(to: string, inviterEmail: string) {
+  const resendApiKey = process.env.RESEND_API_KEY
+  if (!resendApiKey) {
+    console.warn('[family] RESEND_API_KEY not set, skipping invitation email')
+    return
+  }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tloush.com'
+  const resend = new Resend(resendApiKey)
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;margin:0;padding:0">
+  <div style="max-width:600px;margin:0 auto;padding:32px 16px">
+    <div style="text-align:center;margin-bottom:24px">
+      <h1 style="color:#2563eb;font-size:24px;margin:0">Tloush</h1>
+    </div>
+
+    <div style="background:white;border-radius:16px;border:1px solid #e2e8f0;padding:24px;margin-bottom:16px">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:40px;margin-bottom:12px">&#128106;</div>
+        <h2 style="font-size:18px;color:#0f172a;margin:0 0 8px 0">Vous êtes invité(e) au plan Famille</h2>
+        <p style="font-size:14px;color:#64748b;margin:0">
+          <strong>${inviterEmail}</strong> vous invite à rejoindre son plan Famille sur Tloush.
+        </p>
+      </div>
+
+      <div style="background:#f0f9ff;border-radius:12px;padding:16px;margin-bottom:20px">
+        <p style="font-size:14px;color:#0369a1;margin:0 0 8px 0;font-weight:600">Ce que vous obtenez :</p>
+        <ul style="font-size:13px;color:#334155;margin:0;padding-left:20px;line-height:1.8">
+          <li>Analyses de documents administratifs israéliens</li>
+          <li>Assistant IA pour vos questions</li>
+          <li>Traduction de messages en hébreu</li>
+          <li>Historique d'un an</li>
+        </ul>
+      </div>
+
+      <div style="text-align:center">
+        <a href="${siteUrl}/auth/register" style="display:inline-block;background:#2563eb;color:white;text-decoration:none;padding:12px 32px;border-radius:12px;font-weight:600;font-size:14px">
+          Créer mon compte et rejoindre
+        </a>
+        <p style="font-size:12px;color:#94a3b8;margin:12px 0 0 0">
+          Déjà un compte ? <a href="${siteUrl}/auth/login" style="color:#2563eb">Connectez-vous</a> puis acceptez l'invitation depuis votre profil.
+        </p>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:24px;padding-top:16px;border-top:1px solid #e2e8f0">
+      <p style="font-size:11px;color:#94a3b8;margin:0">
+        Tloush aide les francophones en Israël à comprendre leurs documents administratifs.<br>
+        <a href="${siteUrl}" style="color:#2563eb">En savoir plus</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>`
+
+  try {
+    await resend.emails.send({
+      from: `Tloush <${process.env.EMAIL_FROM || 'onboarding@resend.dev'}>`,
+      to,
+      subject: `${inviterEmail} vous invite sur Tloush (Plan Famille)`,
+      html,
+    })
+  } catch (err) {
+    console.error('[family] Failed to send invitation email:', err)
   }
 }
 

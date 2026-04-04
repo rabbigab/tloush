@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Send, FileText, Loader2, User, Bot } from 'lucide-react'
+import { Send, FileText, Loader2, User, Bot, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { track } from '@/lib/analytics'
 import { DOC_LABELS } from '@/lib/docTypes'
@@ -37,6 +37,7 @@ export default function AssistantClient({
   const [loading, setLoading] = useState(false)
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [activeDoc, setActiveDoc] = useState<AppDocument | null>(currentDocument)
+  const [paywallReason, setPaywallReason] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const router = useRouter()
@@ -44,6 +45,25 @@ export default function AssistantClient({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  // Check subscription on mount
+  useEffect(() => {
+    fetch('/api/stripe/subscription')
+      .then(r => r.json())
+      .then(data => {
+        const sub = data.subscription
+        if (!sub) return
+        // Free plan: no assistant access
+        if (sub.planId === 'free') {
+          setPaywallReason('L\'assistant IA est disponible avec un plan payant. Passez au plan Solo ou Famille.')
+        }
+        // Quota exceeded
+        if (sub.planId !== 'free' && data.usage?.assistantRemaining <= 0) {
+          setPaywallReason(`Vous avez atteint la limite de ${data.usage.assistantLimit} messages ce mois-ci.`)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (activeDoc) {
@@ -86,6 +106,13 @@ export default function AssistantClient({
       const data = await res.json()
 
       if (!res.ok) {
+        if (res.status === 403 && data.code === 'QUOTA_EXCEEDED') {
+          setPaywallReason(data.error)
+          // Remove the user message we just added
+          setMessages(prev => prev.slice(0, -1))
+          setLoading(false)
+          return
+        }
         const errorMsg = res.status === 429
           ? 'Vous avez atteint la limite de messages (30/heure). Réessayez dans quelques minutes.'
           : 'Une erreur est survenue. Réessayez dans quelques instants.'
@@ -254,7 +281,31 @@ export default function AssistantClient({
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Paywall */}
+          {paywallReason && (
+            <div className="border-t border-slate-200 dark:border-slate-700 p-6 bg-gradient-to-b from-amber-50 to-white dark:from-amber-950/20 dark:to-slate-800">
+              <div className="text-center max-w-sm mx-auto">
+                <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/40 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <Lock size={20} className="text-amber-600 dark:text-amber-400" />
+                </div>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1">
+                  Fonctionnalité premium
+                </p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                  {paywallReason}
+                </p>
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2.5 px-6 rounded-xl text-sm transition-colors"
+                >
+                  Voir les plans
+                </Link>
+              </div>
+            </div>
+          )}
+
           {/* Input */}
+          {!paywallReason && (
           <div className="border-t border-slate-200 dark:border-slate-700 p-3">
             <div className="flex gap-2 items-end">
               <textarea
@@ -289,6 +340,7 @@ export default function AssistantClient({
             <p className="text-xs text-slate-400 dark:text-slate-500 text-center mt-2">Entrée pour envoyer · Maj+Entrée pour sauter une ligne</p>
             <p className="text-xs text-slate-400 dark:text-slate-500 text-center mt-1">Tloush n&apos;est ni un avocat ni un comptable. Consultez un expert pour un avis professionnel.</p>
           </div>
+          )}
         </div>
       </div>
     </div>
