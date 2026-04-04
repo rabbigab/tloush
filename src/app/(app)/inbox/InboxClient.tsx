@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Upload, FileText, AlertCircle, CheckCircle, Clock, MessageSquare, ChevronRight, Trash2, Search, X, Download, UserCheck } from 'lucide-react'
+import { Upload, FileText, AlertCircle, CheckCircle, Clock, MessageSquare, ChevronRight, Trash2, Search, X, Download, UserCheck, Eye } from 'lucide-react'
 import Link from 'next/link'
 import { getExpertRecommendation, getExpertUrl } from '@/lib/expertMatcher'
 import { track } from '@/lib/analytics'
@@ -341,6 +341,14 @@ export default function InboxClient({ documents, userEmail }: { documents: AppDo
                     </div>
 
                     <div className="flex items-center gap-1 shrink-0">
+                      <Link
+                        href={`/documents/${doc.id}`}
+                        className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-xs font-medium px-3 py-2 rounded-xl transition-colors min-h-[36px]"
+                        aria-label="Voir le détail du document"
+                      >
+                        <Eye size={14} />
+                        <span className="hidden sm:block">Voir</span>
+                      </Link>
                       <Link
                         href={`/assistant?doc=${doc.id}`}
                         className="flex items-center gap-1.5 bg-brand-50 dark:bg-brand-950/30 hover:bg-brand-100 dark:hover:bg-brand-900/30 text-brand-700 dark:text-brand-300 text-xs font-medium px-3 py-2 rounded-xl transition-colors min-h-[36px]"

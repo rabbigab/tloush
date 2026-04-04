@@ -1,14 +1,64 @@
 'use client'
 
 import Link from 'next/link'
-import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap } from 'lucide-react'
+import { useState } from 'react'
+import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap, CalendarClock, Check } from 'lucide-react'
 import { DOC_LABELS, DOC_ICONS } from '@/lib/docTypes'
 import type { AppDocument } from '@/types'
 
-export default function DashboardClient({ documents }: { documents: AppDocument[] }) {
+interface DashboardDocument extends AppDocument {
+  deadline?: string | null
+  action_completed_at?: string | null
+}
+
+export default function DashboardClient({ documents }: { documents: DashboardDocument[] }) {
+  const [completedActions, setCompletedActions] = useState<Set<string>>(
+    new Set(documents.filter(d => d.action_completed_at).map(d => d.id))
+  )
+
   const urgent = documents.filter(d => d.is_urgent)
-  const actionRequired = documents.filter(d => d.action_required && !d.is_urgent)
+  const actionRequired = documents.filter(d => d.action_required && !d.is_urgent && !completedActions.has(d.id))
   const recent = documents.slice(0, 6)
+
+  // Upcoming deadlines (next 14 days)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const in14Days = new Date(today)
+  in14Days.setDate(in14Days.getDate() + 14)
+
+  const upcomingDeadlines = documents
+    .filter(d => {
+      if (!d.deadline) return false
+      const dl = new Date(d.deadline + 'T00:00:00')
+      return dl >= today && dl <= in14Days
+    })
+    .sort((a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime())
+
+  function getDaysUntil(deadline: string): number {
+    const dl = new Date(deadline + 'T00:00:00')
+    return Math.round((dl.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  }
+
+  function getDeadlineBadge(days: number): { text: string; color: string } {
+    if (days === 0) return { text: "Aujourd'hui", color: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' }
+    if (days === 1) return { text: 'Demain', color: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' }
+    if (days <= 3) return { text: `${days} jours`, color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300' }
+    return { text: `${days} jours`, color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' }
+  }
+
+  async function markActionDone(docId: string) {
+    setCompletedActions(prev => { const next = new Set(Array.from(prev)); next.add(docId); return next })
+    try {
+      await fetch(`/api/documents/${docId}/action`, { method: 'POST' })
+    } catch {
+      // Revert on error
+      setCompletedActions(prev => {
+        const next = new Set(prev)
+        next.delete(docId)
+        return next
+      })
+    }
+  }
 
   const byType: Record<string, number> = {}
   for (const doc of documents) {
@@ -116,6 +166,87 @@ export default function DashboardClient({ documents }: { documents: AppDocument[
               <ArrowRight size={16} className="text-amber-300 dark:text-amber-600 group-hover:text-amber-500 dark:group-hover:text-amber-400 shrink-0 mt-1 transition-colors" />
             </Link>
           ))}
+        </div>
+      )}
+
+      {/* Échéances à venir */}
+      {upcomingDeadlines.length > 0 && (
+        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 bg-amber-50 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
+              <CalendarClock size={16} className="text-amber-600 dark:text-amber-400" />
+            </div>
+            <h2 className="font-bold text-slate-800 dark:text-slate-200">Échéances à venir</h2>
+          </div>
+          <div className="space-y-3">
+            {upcomingDeadlines.map(doc => {
+              const days = getDaysUntil(doc.deadline!)
+              const badge = getDeadlineBadge(days)
+              return (
+                <Link
+                  key={doc.id}
+                  href={`/assistant?doc=${doc.id}`}
+                  className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-amber-200 dark:hover:border-amber-800 hover:bg-amber-50/50 dark:hover:bg-amber-950/20 transition-all group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-700 flex items-center justify-center shrink-0 text-lg">
+                    {DOC_ICONS[doc.document_type] || '📄'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
+                      {DOC_LABELS[doc.document_type] || doc.document_type}
+                      {doc.period && <span className="font-normal text-slate-400"> · {doc.period}</span>}
+                    </p>
+                    {doc.action_description && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{doc.action_description}</p>
+                    )}
+                  </div>
+                  <span className={`shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full ${badge.color}`}>
+                    {badge.text}
+                  </span>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Actions en attente */}
+      {actionRequired.length > 0 && (
+        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+              <CheckCircle size={16} className="text-blue-600 dark:text-blue-400" />
+            </div>
+            <h2 className="font-bold text-slate-800 dark:text-slate-200">Actions en attente</h2>
+            <span className="text-xs text-slate-400 dark:text-slate-500 ml-auto">{actionRequired.length} restante{actionRequired.length > 1 ? 's' : ''}</span>
+          </div>
+          <div className="space-y-2">
+            {actionRequired.slice(0, 5).map(doc => (
+              <div
+                key={doc.id}
+                className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-700 group"
+              >
+                <button
+                  onClick={() => markActionDone(doc.id)}
+                  className="w-6 h-6 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center shrink-0 hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors"
+                  title="Marquer comme fait"
+                >
+                  <Check size={12} className="text-transparent group-hover:text-green-500 transition-colors" />
+                </button>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-slate-700 dark:text-slate-300 truncate">
+                    {doc.action_description || DOC_LABELS[doc.document_type]}
+                  </p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500">
+                    {DOC_LABELS[doc.document_type]} {doc.period && `· ${doc.period}`}
+                  </p>
+                </div>
+                <Link href={`/assistant?doc=${doc.id}`} className="text-blue-500 hover:text-blue-600 shrink-0">
+                  <ArrowRight size={14} />
+                </Link>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

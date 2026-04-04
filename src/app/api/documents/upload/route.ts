@@ -242,7 +242,22 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
       }
     }
 
-    // 4. Sauvegarder en base
+    // 4. Parse deadline into DATE format
+    let deadlineDate: string | null = null
+    const rawDeadline = (analysisResult.key_info as Record<string, unknown>)?.deadline as string | null
+    if (rawDeadline && rawDeadline !== 'null') {
+      // Try JJ/MM/AAAA
+      const ddmmyyyy = rawDeadline.match(/^(\d{2})[/.](\d{2})[/.](\d{4})$/)
+      if (ddmmyyyy) {
+        deadlineDate = `${ddmmyyyy[3]}-${ddmmyyyy[2]}-${ddmmyyyy[1]}`
+      } else {
+        // Try YYYY-MM-DD
+        const iso = rawDeadline.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+        if (iso) deadlineDate = rawDeadline
+      }
+    }
+
+    // 5. Sauvegarder en base
     const fileType = mimeType === 'application/pdf' ? 'pdf' : 'image'
     const { data: document, error: dbError } = await supabase
       .from('documents')
@@ -258,6 +273,7 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
         action_required: Boolean(analysisResult.action_required),
         action_description: (analysisResult.action_description as string) || null,
         period: (analysisResult.period as string) || null,
+        deadline: deadlineDate,
         analysis_data: analysisResult,
         analyzed_at: new Date().toISOString()
       })
