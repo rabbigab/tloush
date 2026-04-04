@@ -3,7 +3,6 @@ import { stripe } from '@/lib/stripe'
 import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
 
-// Use service role for webhook (no user context)
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -34,15 +33,12 @@ export async function POST(req: NextRequest) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
         const userId = session.metadata?.supabase_user_id
-        if (!userId || !session.subscription) break
+        const subscriptionId = session.subscription as string
 
-        const subId = typeof session.subscription === 'string' ? session.subscription : session.subscription.id
-        const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id
+        if (!userId || !subscriptionId) break
 
-        // Fetch the subscription to get the price and period
-        const stripeSub = await stripe.subscriptions.retrieve(subId)
-        const item = stripeSub.items.data[0]
-        const priceId = item?.price.id || ''
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+        const priceId = subscription.items.data[0]?.price.id
         const planId = getPlanIdFromPrice(priceId)
 
         await supabaseAdmin
@@ -50,44 +46,51 @@ export async function POST(req: NextRequest) {
           .update({
             plan_id: planId,
             status: 'active',
-            stripe_customer_id: customerId,
-            stripe_subscription_id: subId,
-            current_period_start: new Date(item.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(item.current_period_end * 1000).toISOString(),
+            stripe_customer_id: session.customer as string,
+            stripe_subscription_id: subscriptionId,
+            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
             updated_at: new Date().toISOString(),
           })
           .eq('user_id', userId)
 
+        console.log(`[stripe webhook] Subscription activated for user ${userId}: plan ${planId}`)
         break
       }
 
       case 'invoice.paid': {
         const invoice = event.data.object as Stripe.Invoice
-        const subRef = invoice.parent?.subscription_details?.subscription
-        if (!subRef) break
-        const subId = typeof subRef === 'string' ? subRef : subRef.id
+        const subscriptionId = invoice.subscription as string
+        if (!subscriptionId) break
 
-        const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+        const userId = subscription.metadata?.supabase_user_id
+          ?? (await getSupabaseUserByCustomer(invoice.customer as string))
 
-        const stripeSub = await stripe.subscriptions.retrieve(subId)
-        const item = stripeSub.items.data[0]
+        if (!userId) break
+
+        const priceId = subscription.items.data[0]?.price.id
+        const planId = getPlanIdFromPrice(priceId)
 
         await supabaseAdmin
           .from('subscriptions')
           .update({
+            plan_id: planId,
             status: 'active',
-            current_period_start: new Date(item.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(item.current_period_end * 1000).toISOString(),
+            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
             updated_at: new Date().toISOString(),
           })
-          .eq('stripe_customer_id', customerId)
+          .eq('user_id', userId)
 
+        console.log(`[stripe webhook] Invoice paid for user ${userId}: plan ${planId}`)
         break
       }
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice
-        const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id
+        const userId = await getSupabaseUserByCustomer(invoice.customer as string)
+        if (!userId) break
 
         await supabaseAdmin
           .from('subscriptions')
@@ -95,23 +98,21 @@ export async function POST(req: NextRequest) {
             status: 'past_due',
             updated_at: new Date().toISOString(),
           })
-          .eq('stripe_customer_id', customerId)
+          .eq('user_id', userId)
 
+        console.log(`[stripe webhook] Payment failed for user ${userId}`)
         break
       }
 
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription
-        const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer?.id
-        const item = subscription.items.data[0]
-        const priceId = item?.price.id || ''
+        const userId = await getSupabaseUserByCustomer(subscription.customer as string)
+        if (!userId) break
+
+        const priceId = subscription.items.data[0]?.price.id
         const planId = getPlanIdFromPrice(priceId)
 
-        const status = subscription.status === 'active'
-          ? 'active'
-          : subscription.status === 'past_due'
-            ? 'past_due'
-            : 'canceled'
+        const status = subscription.cancel_at_period_end ? 'active' : mapStripeStatus(subscription.status)
 
         await supabaseAdmin
           .from('subscriptions')
@@ -119,18 +120,20 @@ export async function POST(req: NextRequest) {
             plan_id: planId,
             status,
             cancel_at_period_end: subscription.cancel_at_period_end,
-            current_period_start: new Date(item.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(item.current_period_end * 1000).toISOString(),
+            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
             updated_at: new Date().toISOString(),
           })
-          .eq('stripe_customer_id', customerId)
+          .eq('user_id', userId)
 
+        console.log(`[stripe webhook] Subscription updated for user ${userId}: ${planId} / ${status}`)
         break
       }
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription
-        const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer?.id
+        const userId = await getSupabaseUserByCustomer(subscription.customer as string)
+        if (!userId) break
 
         await supabaseAdmin
           .from('subscriptions')
@@ -138,12 +141,17 @@ export async function POST(req: NextRequest) {
             plan_id: 'free',
             status: 'canceled',
             stripe_subscription_id: null,
+            cancel_at_period_end: false,
             updated_at: new Date().toISOString(),
           })
-          .eq('stripe_customer_id', customerId)
+          .eq('user_id', userId)
 
+        console.log(`[stripe webhook] Subscription canceled for user ${userId}, downgraded to free`)
         break
       }
+
+      default:
+        console.log(`[stripe webhook] Unhandled event type: ${event.type}`)
     }
 
     return NextResponse.json({ received: true })
@@ -158,3 +166,24 @@ function getPlanIdFromPrice(priceId: string): string {
   if (priceId === process.env.STRIPE_PRICE_FAMILY) return 'family'
   return 'free'
 }
+
+function mapStripeStatus(status: Stripe.Subscription.Status): string {
+  switch (status) {
+    case 'active': return 'active'
+    case 'past_due': return 'past_due'
+    case 'canceled': return 'canceled'
+    case 'unpaid': return 'past_due'
+    case 'trialing': return 'active'
+    default: return 'active'
+  }
+}
+
+async function getSupabaseUserByCustomer(customerId: string): Promise<string | null> {
+  if (!customerId) return null
+  const { data } = await supabaseAdmin
+    .from('subscriptions')
+    .select('user_id')
+    .eq('stripe_customer_id', customerId)
+    .single()
+  return data?.user_id ?? null
+            }
