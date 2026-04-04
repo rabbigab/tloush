@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -26,6 +26,29 @@ function LoginForm() {
       setError('Erreur de confirmation. Veuillez réessayer.')
     }
   })
+
+  // Detect if user is already authenticated (e.g. returning from Google OAuth)
+  useEffect(() => {
+    const supabase = createClient()
+
+    // Check current session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setRedirecting(true)
+        window.location.href = redirect
+      }
+    })
+
+    // Listen for auth state changes (catches OAuth redirects)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        setRedirecting(true)
+        window.location.href = redirect
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [redirect])
 
   async function handleGoogleLogin() {
     setGoogleLoading(true)

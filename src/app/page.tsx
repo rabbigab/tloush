@@ -6,6 +6,7 @@ import HowItWorks from "@/components/landing/HowItWorks";
 import TrustBadges from "@/components/landing/TrustBadges";
 import FAQ from "@/components/landing/FAQ";
 import DisclaimerBlock from "@/components/shared/DisclaimerBlock";
+import AuthRedirect from "@/components/auth/AuthRedirect";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
@@ -19,6 +20,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <main className="min-h-screen flex flex-col bg-white dark:bg-slate-950">
+      <AuthRedirect />
       <Header />
       <div className="flex-1">
         {/* Section 1: Hero */}
