@@ -1,9 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap, CalendarClock, Check, Wallet } from 'lucide-react'
 import { DOC_LABELS, DOC_ICONS } from '@/lib/docTypes'
+import { track } from '@/lib/analytics'
 import type { AppDocument } from '@/types'
 
 interface DashboardDocument extends AppDocument {
@@ -44,6 +46,13 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
   const [completedActions, setCompletedActions] = useState<Set<string>>(
     new Set(documents.filter(d => d.action_completed_at).map(d => d.id))
   )
+
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    if (searchParams?.get('subscription') === 'success') {
+      track('checkout_completed')
+    }
+  }, [searchParams])
 
   const urgent = documents.filter(d => d.is_urgent)
   const actionRequired = documents.filter(d => d.action_required && !d.is_urgent && !completedActions.has(d.id))

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { MessageCircle, X, Send, Loader2, Check } from 'lucide-react'
+import { track } from '@/lib/analytics'
 
 type Category = 'bug' | 'suggestion' | 'question' | 'other'
 
@@ -38,6 +39,7 @@ export default function FeedbackWidget() {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error || 'Erreur envoi')
       }
+      track('feedback_submitted', { category })
       setSuccess(true)
       setMessage('')
       setTimeout(() => {

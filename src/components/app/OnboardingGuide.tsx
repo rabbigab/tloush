@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { X, Upload, Wallet, Folder, Bell, ArrowRight, ArrowLeft } from 'lucide-react'
+import { track } from '@/lib/analytics'
 
 const STORAGE_KEY = 'tloush_onboarding_dismissed_v1'
 
@@ -45,7 +46,10 @@ export default function OnboardingGuide() {
     const dismissed = localStorage.getItem(STORAGE_KEY)
     if (!dismissed) {
       // Small delay so the guide feels intentional, not a jumpscare
-      const t = setTimeout(() => setVisible(true), 600)
+      const t = setTimeout(() => {
+        setVisible(true)
+        track('onboarding_started')
+      }, 600)
       return () => clearTimeout(t)
     }
   }, [])
@@ -54,6 +58,8 @@ export default function OnboardingGuide() {
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEY, new Date().toISOString())
     }
+    const completed = step === STEPS.length - 1
+    track(completed ? 'onboarding_completed' : 'onboarding_dismissed', { step: step + 1 })
     setVisible(false)
   }
 

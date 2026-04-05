@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Loader2 } from 'lucide-react'
+import { track } from '@/lib/analytics'
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('')
@@ -15,7 +16,10 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
 
+  useEffect(() => { track('signup_started', { method: 'email' }) }, [])
+
   async function handleGoogleLogin() {
+    track('signup_started', { method: 'google' })
     setGoogleLoading(true)
     setError('')
     const supabase = createClient()
@@ -62,11 +66,13 @@ export default function RegisterPage() {
     })
 
     if (error) {
+      track('signup_failed', { message: error.message })
       setError(error.message)
       setLoading(false)
       return
     }
 
+    track('signup_completed', { method: 'email' })
     setSuccess(true)
     setLoading(false)
   }

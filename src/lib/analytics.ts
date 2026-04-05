@@ -16,7 +16,37 @@ type TloushEvent =
   | "anomaly_detected"
   | "page_viewed"
   | "error_boundary_hit"
-  | "profile_updated";
+  | "profile_updated"
+  // Funnel: signup → paywall → checkout
+  | "signup_started"
+  | "signup_completed"
+  | "signup_failed"
+  | "login_completed"
+  | "pricing_viewed"
+  | "paywall_shown"
+  | "checkout_started"
+  | "checkout_completed"
+  | "checkout_canceled"
+  | "subscription_canceled"
+  // Product usage
+  | "document_uploaded"
+  | "document_analyzed"
+  | "document_viewed"
+  | "document_exported"
+  | "folder_created"
+  | "folder_renamed"
+  | "folder_deleted"
+  | "folder_merged"
+  | "expense_edited"
+  | "expenses_exported"
+  | "search_performed"
+  | "assistant_message_sent"
+  | "deadline_action_taken"
+  // Engagement
+  | "onboarding_started"
+  | "onboarding_completed"
+  | "onboarding_dismissed"
+  | "feedback_submitted";
 
 export function track(event: TloushEvent, properties?: Record<string, unknown>) {
   try {

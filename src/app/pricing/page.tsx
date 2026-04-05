@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import { track } from '@/lib/analytics'
 import { Check, X, Loader2, Star } from 'lucide-react'
 
 const PLANS = [
@@ -69,7 +70,10 @@ export default function PricingPage() {
   const router = useRouter()
   const [loading, setLoading] = useState<string | null>(null)
 
+  useEffect(() => { track('pricing_viewed') }, [])
+
   async function handleSubscribe(planId: string) {
+    track('checkout_started', { plan: planId })
     if (planId === 'free') {
       router.push('/auth/register')
       return
