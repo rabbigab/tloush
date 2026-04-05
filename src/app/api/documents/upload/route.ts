@@ -285,6 +285,91 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
       return NextResponse.json({ error: 'Erreur lors de la sauvegarde' }, { status: 500 })
     }
 
+    // Track recurring expense if detected
+    if (document) {
+      const recurringInfo = (analysisResult.analysis_data as Record<string, unknown>)?.recurring_info as
+        | { is_recurring?: boolean; frequency?: string; provider?: string; amount?: number }
+        | undefined
+      const providerName = recurringInfo?.provider || (analysisResult.key_info as Record<string, unknown>)?.emitter as string | undefined
+      if (recurringInfo?.is_recurring && providerName) {
+        try {
+          const amount = recurringInfo.amount ?? null
+          const frequency = recurringInfo.frequency || 'monthly'
+          const today = new Date().toISOString().split('T')[0]
+
+          // Check if similar recurring expense exists for this user
+          const { data: existing } = await supabase
+            .from('recurring_expenses')
+            .select('id, document_ids, amount')
+            .eq('user_id', user.id)
+            .ilike('provider_name', providerName)
+            .maybeSingle()
+
+          if (existing) {
+            const docIds = Array.isArray(existing.document_ids) ? existing.document_ids : []
+            if (!docIds.includes(document.id)) docIds.push(document.id)
+            await supabase
+              .from('recurring_expenses')
+              .update({
+                document_ids: docIds,
+                last_seen_date: today,
+                amount: amount ?? existing.amount,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', existing.id)
+          } else {
+            await supabase.from('recurring_expenses').insert({
+              user_id: user.id,
+              provider_name: providerName,
+              category: (analysisResult.category as string) || null,
+              amount,
+              frequency,
+              last_seen_date: today,
+              document_ids: [document.id],
+              status: 'active',
+            })
+          }
+        } catch (recurErr) {
+          console.error('[Recurring] Error tracking recurring expense:', recurErr)
+        }
+      }
+
+      // Auto-group into folder by emitter
+      const emitter = (analysisResult.key_info as Record<string, unknown>)?.emitter as string | undefined
+      if (emitter && emitter.trim().length > 0) {
+        try {
+          const { data: existingFolder } = await supabase
+            .from('folders')
+            .select('id')
+            .eq('user_id', user.id)
+            .ilike('name', emitter)
+            .maybeSingle()
+
+          let folderId = existingFolder?.id
+          if (!folderId) {
+            const { data: newFolder } = await supabase
+              .from('folders')
+              .insert({
+                user_id: user.id,
+                name: emitter,
+                category: (analysisResult.category as string) || null,
+                auto_generated: true,
+                status: 'active',
+              })
+              .select('id')
+              .single()
+            folderId = newFolder?.id
+          }
+
+          if (folderId) {
+            await supabase.from('documents').update({ folder_id: folderId }).eq('id', document.id)
+          }
+        } catch (folderErr) {
+          console.error('[Folder] Auto-group error:', folderErr)
+        }
+      }
+    }
+
     // Send urgent alert email (fire-and-forget, don't block response)
     if (document && Boolean(analysisResult.is_urgent) && process.env.CRON_SECRET) {
       const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
