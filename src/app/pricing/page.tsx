@@ -28,7 +28,7 @@ const PLANS = [
   {
     id: 'solo',
     name: 'Solo',
-    price: 39,
+    price: 49,
     period: '/mois',
     description: 'Pour gérer vos documents au quotidien',
     popular: true,
@@ -47,9 +47,9 @@ const PLANS = [
   {
     id: 'family',
     name: 'Famille',
-    price: 89,
+    price: 99,
     period: '/mois',
-    description: 'Pour toute la famille, jusqu\'à 5 membres',
+    description: "Pour toute la famille, jusqu'à 5 membres",
     popular: false,
     stripePriceEnv: 'family',
     features: [
@@ -58,7 +58,7 @@ const PLANS = [
       { text: 'Historique 1 an', included: true },
       { text: 'Assistant IA (500 msg/mois)', included: true },
       { text: 'Traduction messages hébreux', included: true },
-      { text: 'Jusqu\'à 5 membres', included: true },
+      { text: "Jusqu'à 5 membres", included: true },
     ],
     cta: 'Choisir Famille',
     ctaStyle: 'border-2 border-blue-200 text-blue-700 hover:border-blue-400 hover:bg-blue-50',
@@ -91,7 +91,6 @@ export default function PricingPage() {
       if (data.url) {
         window.location.href = data.url
       } else {
-        // Not logged in — redirect to register
         router.push('/auth/register?redirect=/pricing')
       }
     } catch {
@@ -106,7 +105,6 @@ export default function PricingPage() {
       <Header />
 
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-16">
-        {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
             Choisissez votre plan
@@ -116,7 +114,6 @@ export default function PricingPage() {
           </p>
         </div>
 
-        {/* Plans Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mb-16">
           {PLANS.map((plan) => (
             <div
@@ -127,7 +124,6 @@ export default function PricingPage() {
                   : 'border-slate-200 shadow-sm'
               }`}
             >
-              {/* Popular badge */}
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                   <span className="inline-flex items-center gap-1.5 bg-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg">
@@ -137,7 +133,6 @@ export default function PricingPage() {
                 </div>
               )}
 
-              {/* Plan header */}
               <div className="mb-6">
                 <h2 className="text-xl font-bold text-slate-900 mb-1">{plan.name}</h2>
                 <p className="text-sm text-slate-500 mb-4">{plan.description}</p>
@@ -156,7 +151,6 @@ export default function PricingPage() {
                 )}
               </div>
 
-              {/* Features */}
               <ul className="space-y-3 mb-8 flex-1">
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex items-start gap-3">
@@ -172,7 +166,6 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              {/* CTA */}
               <button
                 onClick={() => handleSubscribe(plan.id)}
                 disabled={loading === plan.id}
@@ -188,7 +181,6 @@ export default function PricingPage() {
           ))}
         </div>
 
-        {/* FAQ / Trust */}
         <div className="max-w-2xl mx-auto">
           <h3 className="text-xl font-bold text-slate-900 text-center mb-8">
             Questions fréquentes
@@ -197,15 +189,15 @@ export default function PricingPage() {
             {[
               {
                 q: 'Puis-je annuler à tout moment ?',
-                a: 'Oui, vous pouvez annuler votre abonnement à tout moment depuis votre profil. Vous continuerez à avoir accès jusqu\'à la fin de la période payée.',
+                a: "Oui, vous pouvez annuler votre abonnement à tout moment depuis votre profil. Vous continuerez à avoir accès jusqu'à la fin de la période payée.",
               },
               {
-                q: 'Que se passe-t-il après les 2 mois gratuits ?',
-                a: 'Votre accès sera suspendu. Vous pourrez choisir un plan payant pour continuer à utiliser Tloush. Vos documents analysés restent sauvegardés.',
+                q: "Que se passe-t-il après les 2 mois gratuits ?",
+                a: "Votre accès sera suspendu. Vous pourrez choisir un plan payant pour continuer à utiliser Tloush. Vos documents analysés restent sauvegardés.",
               },
               {
                 q: 'Le plan Famille, comment ça marche ?',
-                a: 'Vous pouvez inviter jusqu\'à 4 autres membres de votre famille. Chacun a son propre espace et ses propres documents, mais le quota est partagé.',
+                a: "Vous pouvez inviter jusqu'à 4 autres membres de votre famille. Chacun a son propre espace et ses propres documents, mais le quota est partagé.",
               },
               {
                 q: 'Quels moyens de paiement acceptez-vous ?',
@@ -228,4 +220,4 @@ export default function PricingPage() {
       <Footer />
     </main>
   )
-}
+      }
