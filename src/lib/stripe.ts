@@ -48,7 +48,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
   solo: {
     id: 'solo',
     name: 'Solo',
-    price: 39,
+    price: 49,
     stripePriceId: process.env.STRIPE_PRICE_SOLO || '',
     limits: {
       documentsPerMonth: 50,
@@ -70,7 +70,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
   family: {
     id: 'family',
     name: 'Famille',
-    price: 89,
+    price: 99,
     stripePriceId: process.env.STRIPE_PRICE_FAMILY || '',
     limits: {
       documentsPerMonth: 150,

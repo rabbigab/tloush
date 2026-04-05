@@ -87,7 +87,7 @@ Tloush ne se limite pas a expliquer un document. Il :
 
 ### 4.1 Quotas revises (avec scan factures)
 
-| | Gratuit | Solo 39 ILS | Famille 89 ILS |
+| | Gratuit | Solo 49 ILS | Famille 99 ILS |
 |---|---------|------------|----------------|
 | Documents/mois | 5 | 50 | 150 |
 | Messages assistant | - | illimite (fair use) | illimite (fair use) |
@@ -131,7 +131,7 @@ Augmentations :
 - Analysez vos premiers documents
 - Historique 30 jours
 
-#### Solo 39 ILS/mois
+#### Solo 49 ILS/mois
 - Analyse complete de tous vos documents
 - Suivi de vos depenses recurrentes
 - Rappels automatiques avant les echeances
@@ -141,7 +141,7 @@ Augmentations :
 - Historique complet et securise
 - Detection des anomalies et points a verifier
 
-#### Famille 89 ILS/mois
+#### Famille 99 ILS/mois
 - Tout Solo, plus :
 - Jusqu'a 5 membres
 - Tous les documents de la famille

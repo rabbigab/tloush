@@ -28,7 +28,7 @@ const PLANS = [
   {
     id: 'solo',
     name: 'Solo',
-    price: 39,
+    price: 49,
     period: '/mois',
     tagline: 'Votre copilote administratif complet',
     popular: true,
@@ -49,7 +49,7 @@ const PLANS = [
   {
     id: 'family',
     name: 'Famille',
-    price: 89,
+    price: 99,
     period: '/mois',
     tagline: 'Le copilote de toute la famille',
     popular: false,

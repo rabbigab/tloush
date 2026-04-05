@@ -69,8 +69,8 @@
 **Commission par plan :**
 | Plan | Prix | Commission Stripe | Net |
 |------|------|------------------|-----|
-| Solo 39 ILS | 39 ILS (~$10.50) | ~2.23 ILS | ~36.77 ILS |
-| Famille 89 ILS | 89 ILS (~$24) | ~3.68 ILS | ~85.32 ILS |
+| Solo 49 ILS | 49 ILS (~$13.20) | ~2.51 ILS | ~46.49 ILS |
+| Famille 99 ILS | 99 ILS (~$26.70) | ~3.97 ILS | ~95.03 ILS |
 
 ### 1.4 Resend (Email)
 
