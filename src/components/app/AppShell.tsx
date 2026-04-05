@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 import AppHeader from './AppHeader'
 import AppNav from './AppNav'
+import OnboardingGuide from './OnboardingGuide'
+import FeedbackWidget from './FeedbackWidget'
 import { createClient } from '@/lib/supabase/client'
 import { identifyUser } from '@/lib/analytics'
 
@@ -38,6 +40,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </motion.main>
       </AnimatePresence>
+      <OnboardingGuide />
+      <FeedbackWidget />
     </div>
   )
 }

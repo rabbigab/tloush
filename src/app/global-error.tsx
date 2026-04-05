@@ -18,20 +18,23 @@ export default function GlobalError({
 
   return (
     <html lang="fr">
-      <body>
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-950 px-4">
-          <div className="text-center max-w-md">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-4">
-              Une erreur est survenue
+      <body style={{ margin: 0, fontFamily: '-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', background: '#f8fafc' }}>
+          <div style={{ textAlign: 'center', maxWidth: '420px' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', fontSize: '32px' }}>
+              ⚠️
+            </div>
+            <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>
+              Erreur critique
             </h2>
-            <p className="text-gray-600 dark:text-slate-400 mb-6">
-              Nous sommes désolés, quelque chose s&apos;est mal passé. Notre équipe a été notifiée.
+            <p style={{ fontSize: '14px', color: '#64748b', margin: '0 0 24px', lineHeight: 1.6 }}>
+              L&apos;application a rencontré une erreur inattendue. Notre équipe a été notifiée et travaille à résoudre le problème.
             </p>
             <button
               onClick={reset}
-              className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+              style={{ background: '#2563eb', color: 'white', padding: '12px 24px', borderRadius: '12px', fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer' }}
             >
-              Réessayer
+              Recharger l&apos;application
             </button>
           </div>
         </div>
