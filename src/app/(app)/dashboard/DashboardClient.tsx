@@ -28,7 +28,9 @@ const EXPENSE_FREQ_MULTIPLIER: Record<string, number> = {
   one_time: 0,
 }
 
-export default function DashboardClient({ documents, expenses = [] }: { documents: DashboardDocument[]; expenses?: DashboardExpense[] }) {
+interface PayslipPoint { id: string; label: string; amount: number }
+
+export default function DashboardClient({ documents, expenses = [], payslipEvolution = [] }: { documents: DashboardDocument[]; expenses?: DashboardExpense[]; payslipEvolution?: PayslipPoint[] }) {
   const monthlyExpenses = expenses.reduce((sum, e) => {
     const mult = EXPENSE_FREQ_MULTIPLIER[e.frequency || 'monthly'] ?? 1
     return sum + (e.amount || 0) * mult
@@ -195,6 +197,57 @@ export default function DashboardClient({ documents, expenses = [] }: { document
           </div>
         </div>
       )}
+
+      {/* Évolution fiches de paie */}
+      {payslipEvolution.length >= 2 && (() => {
+        const maxAmount = Math.max(...payslipEvolution.map(p => p.amount))
+        const last = payslipEvolution[payslipEvolution.length - 1]
+        const prev = payslipEvolution[payslipEvolution.length - 2]
+        const diff = last.amount - prev.amount
+        const pct = prev.amount > 0 ? (diff / prev.amount) * 100 : 0
+        return (
+          <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+                  <TrendingUp size={16} className="text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <h2 className="font-bold text-slate-800 dark:text-slate-200">Évolution fiches de paie</h2>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-bold text-slate-900 dark:text-slate-100">{last.amount.toFixed(0)}₪</p>
+                {Math.abs(pct) >= 0.5 && (
+                  <p className={`text-xs font-semibold ${pct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {pct >= 0 ? '+' : ''}{pct.toFixed(1)}% vs précédent
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex items-end justify-between gap-1 h-28">
+              {payslipEvolution.map((p, i) => {
+                const height = maxAmount > 0 ? (p.amount / maxAmount) * 100 : 0
+                const isLast = i === payslipEvolution.length - 1
+                return (
+                  <div key={p.id} className="flex-1 flex flex-col items-center justify-end gap-1 min-w-0 group">
+                    <div
+                      className={`w-full rounded-t-md transition-all ${isLast ? 'bg-gradient-to-t from-emerald-500 to-emerald-400' : 'bg-gradient-to-t from-slate-300 to-slate-200 dark:from-slate-600 dark:to-slate-500'}`}
+                      style={{ height: `${Math.max(height, 4)}%` }}
+                      title={`${p.label} : ${p.amount.toFixed(0)}₪`}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+            <div className="flex items-center justify-between gap-1 mt-1">
+              {payslipEvolution.map(p => (
+                <span key={p.id} className="flex-1 text-center text-[10px] text-slate-400 dark:text-slate-500 truncate">
+                  {p.label}
+                </span>
+              ))}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Alertes actives */}
       {(urgent.length > 0 || actionRequired.length > 0) && (

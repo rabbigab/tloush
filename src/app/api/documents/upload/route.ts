@@ -4,6 +4,7 @@ import { validateFile } from '@/lib/fileValidation'
 import { createRateLimit } from '@/lib/rateLimit'
 import { requireAuth } from '@/lib/apiAuth'
 import { canUseFeature, incrementUsage } from '@/lib/subscription'
+import { parseDeadline, detectAmountAnomaly } from '@/lib/parsers'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const ratelimit = createRateLimit('upload', 5, '1 h')
@@ -243,19 +244,8 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
     }
 
     // 4. Parse deadline into DATE format
-    let deadlineDate: string | null = null
-    const rawDeadline = (analysisResult.key_info as Record<string, unknown>)?.deadline as string | null
-    if (rawDeadline && rawDeadline !== 'null') {
-      // Try JJ/MM/AAAA
-      const ddmmyyyy = rawDeadline.match(/^(\d{2})[/.](\d{2})[/.](\d{4})$/)
-      if (ddmmyyyy) {
-        deadlineDate = `${ddmmyyyy[3]}-${ddmmyyyy[2]}-${ddmmyyyy[1]}`
-      } else {
-        // Try YYYY-MM-DD
-        const iso = rawDeadline.match(/^(\d{4})-(\d{2})-(\d{2})$/)
-        if (iso) deadlineDate = rawDeadline
-      }
-    }
+    const rawDeadline = (analysisResult.key_info as Record<string, unknown>)?.deadline
+    const deadlineDate = parseDeadline(rawDeadline)
 
     // 5. Sauvegarder en base
     const fileType = mimeType === 'application/pdf' ? 'pdf' : 'image'
@@ -307,12 +297,11 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
 
           if (existing) {
             // Anomaly detection: compare new amount vs previous tracked amount
-            if (amount && existing.amount && existing.amount > 0) {
-              const diff = amount - existing.amount
-              const pct = Math.abs(diff / existing.amount) * 100
-              if (pct >= 20) {
-                const direction = diff > 0 ? 'augmenté' : 'diminué'
-                const level = pct >= 50 ? 'critical' : 'warning'
+            const anomaly = amount ? detectAmountAnomaly(amount, existing.amount || 0) : null
+            if (anomaly) {
+              const { pct, level, direction: dir } = anomaly
+              const direction = dir === 'up' ? 'augmenté' : 'diminué'
+              {
                 const anomalyPoint = {
                   level,
                   title: `Montant ${direction} de ${pct.toFixed(0)}%`,
@@ -327,6 +316,28 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
                   .from('documents')
                   .update({ analysis_data: analysisResult })
                   .eq('id', document.id)
+
+                // Fire-and-forget email notification for significant anomalies
+                if (pct >= 30 && process.env.CRON_SECRET) {
+                  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL
+                    ? `https://${process.env.VERCEL_URL}`
+                    : 'http://localhost:3000')
+                  fetch(`${baseUrl}/api/alerts/anomaly`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+                    },
+                    body: JSON.stringify({
+                      userId: user.id,
+                      documentId: document.id,
+                      provider: providerName,
+                      newAmount: amount,
+                      previousAmount: existing.amount,
+                      pct,
+                    }),
+                  }).catch(err => console.error('[Anomaly Alert] Fire-and-forget error:', err))
+                }
               }
             }
             const docIds = Array.isArray(existing.document_ids) ? existing.document_ids : []

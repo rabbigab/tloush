@@ -43,7 +43,9 @@ const CATEGORY_LABELS: Record<string, string> = {
   autre: 'Autre',
 }
 
-export default function ExpensesClient({ expenses: initialExpenses }: { expenses: RecurringExpense[] }) {
+interface MonthPoint { key: string; label: string; amount: number }
+
+export default function ExpensesClient({ expenses: initialExpenses, monthly = [] }: { expenses: RecurringExpense[]; monthly?: MonthPoint[] }) {
   const [expenses, setExpenses] = useState(initialExpenses)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -157,6 +159,49 @@ export default function ExpensesClient({ expenses: initialExpenses }: { expenses
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Sur 12 mois</p>
         </div>
       </div>
+
+      {/* Evolution chart */}
+      {monthly.length > 0 && monthly.some(m => m.amount > 0) && (
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+          <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Évolution sur 12 mois</h2>
+            <p className="text-xs text-slate-400 dark:text-slate-500">Basé sur les factures scannées</p>
+          </div>
+          {(() => {
+            const maxAmount = Math.max(...monthly.map(m => m.amount), 1)
+            return (
+              <div className="space-y-2">
+                <div className="flex items-end justify-between gap-1 h-40">
+                  {monthly.map(m => {
+                    const height = maxAmount > 0 ? (m.amount / maxAmount) * 100 : 0
+                    return (
+                      <div key={m.key} className="flex-1 flex flex-col items-center justify-end gap-1 min-w-0 group relative">
+                        <div
+                          className={`w-full rounded-t-md transition-all ${m.amount > 0 ? 'bg-gradient-to-t from-brand-500 to-brand-400 hover:from-brand-600 hover:to-brand-500' : 'bg-slate-100 dark:bg-slate-700'}`}
+                          style={{ height: `${Math.max(height, 2)}%` }}
+                          title={`${m.label} : ${m.amount.toFixed(0)}₪`}
+                        />
+                        {m.amount > 0 && (
+                          <span className="absolute -top-5 text-[10px] font-semibold text-slate-600 dark:text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                            {m.amount.toFixed(0)}₪
+                          </span>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+                <div className="flex items-center justify-between gap-1">
+                  {monthly.map(m => (
+                    <span key={m.key} className="flex-1 text-center text-[10px] text-slate-400 dark:text-slate-500 truncate">
+                      {m.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
+        </div>
+      )}
 
       {/* Empty state */}
       {expenses.length === 0 && (

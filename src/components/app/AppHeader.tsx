@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { LogOut, Moon, Sun } from 'lucide-react'
+import { LogOut, Moon, Sun, Search } from 'lucide-react'
 import { useTheme } from '@/components/providers/ThemeProvider'
 
 export default function AppHeader({ userEmail }: { userEmail: string }) {
@@ -29,6 +29,13 @@ export default function AppHeader({ userEmail }: { userEmail: string }) {
         </Link>
 
         <div className="flex items-center gap-1">
+          <Link
+            href="/search"
+            className="flex items-center justify-center min-h-[44px] min-w-[44px] text-blue-100 dark:text-slate-400 hover:text-white dark:hover:text-slate-200 hover:bg-white/10 dark:hover:bg-slate-800 rounded-xl transition-colors"
+            aria-label="Recherche"
+          >
+            <Search size={18} />
+          </Link>
           <span className="text-sm text-blue-100 dark:text-slate-400 hidden sm:block mr-2 font-medium">{userEmail}</span>
           <button
             onClick={toggle}
