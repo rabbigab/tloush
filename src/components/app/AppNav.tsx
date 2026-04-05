@@ -3,13 +3,14 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { Inbox, LayoutDashboard, MessageSquare, BarChart3, Scale, Users, User, MoreHorizontal, X } from 'lucide-react'
+import { Inbox, LayoutDashboard, MessageSquare, BarChart3, Scale, Users, User, MoreHorizontal, X, Wallet, Folder } from 'lucide-react'
 
 const NAV_ITEMS = [
   { label: 'Inbox', href: '/inbox', icon: Inbox },
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Dossiers', href: '/folders', icon: Folder },
+  { label: 'Dépenses', href: '/expenses', icon: Wallet },
   { label: 'Assistant', href: '/assistant', icon: MessageSquare },
-  { label: 'Comparer', href: '/compare', icon: BarChart3 },
   { label: 'Droits', href: '/droits-olim', icon: Scale },
   { label: 'Experts', href: '/experts', icon: Users },
   { label: 'Profil', href: '/profile', icon: User },
@@ -24,6 +25,8 @@ const MOBILE_MAIN = [
 ]
 
 const MOBILE_MORE = [
+  { label: 'Dossiers', href: '/folders', icon: Folder },
+  { label: 'Dépenses', href: '/expenses', icon: Wallet },
   { label: 'Comparer', href: '/compare', icon: BarChart3 },
   { label: 'Droits des olim', href: '/droits-olim', icon: Scale },
   { label: 'Experts', href: '/experts', icon: Users },
@@ -102,7 +105,7 @@ export default function AppNav() {
                 <div className={`p-1 rounded-lg transition-all duration-200 ${isActive ? 'bg-blue-50 dark:bg-blue-950/50' : ''}`}>
                   <item.icon size={22} />
                 </div>
-                <span className={`text-[10px] font-semibold leading-tight ${isActive ? '' : 'font-medium'}`}>{item.label}</span>
+                <span className={`text-xs font-semibold leading-tight ${isActive ? '' : 'font-medium'}`}>{item.label}</span>
               </Link>
             )
           })}
@@ -119,7 +122,7 @@ export default function AppNav() {
             <div className={`p-1 rounded-lg transition-all duration-200 ${moreOpen ? 'bg-blue-50 dark:bg-blue-950/50' : ''}`}>
               {moreOpen ? <X size={22} /> : <MoreHorizontal size={22} />}
             </div>
-            <span className="text-[10px] font-medium leading-tight">Plus</span>
+            <span className="text-xs font-medium leading-tight">Plus</span>
           </button>
         </div>
       </nav>

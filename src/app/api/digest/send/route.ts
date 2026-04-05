@@ -59,6 +59,26 @@ export async function POST(req: NextRequest) {
     .gte('created_at', sevenDaysAgo)
     .order('created_at', { ascending: false })
 
+  // Fetch upcoming deadlines (next 7 days) for all users
+  const todayStr = new Date().toISOString().split('T')[0]
+  const in7DaysStr = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const { data: deadlineDocs } = await supabase
+    .from('documents')
+    .select('id, user_id, document_type, file_name, summary_fr, action_description, deadline')
+    .in('user_id', userIds)
+    .gte('deadline', todayStr)
+    .lte('deadline', in7DaysStr)
+    .not('deadline', 'is', null)
+    .order('deadline', { ascending: true })
+
+  // Fetch pending actions for all users
+  const { data: pendingActionDocs } = await supabase
+    .from('documents')
+    .select('id, user_id, document_type, action_description')
+    .in('user_id', userIds)
+    .eq('action_required', true)
+    .is('action_completed_at', null)
+
   // Group documents by user
   const docsByUser = new Map<string, typeof allDocs>()
   for (const doc of allDocs || []) {
@@ -67,17 +87,55 @@ export async function POST(req: NextRequest) {
     docsByUser.set(doc.user_id, existing)
   }
 
+  const deadlinesByUser = new Map<string, typeof deadlineDocs>()
+  for (const doc of deadlineDocs || []) {
+    const existing = deadlinesByUser.get(doc.user_id) || []
+    existing.push(doc)
+    deadlinesByUser.set(doc.user_id, existing)
+  }
+
+  const actionsByUser = new Map<string, typeof pendingActionDocs>()
+  for (const doc of pendingActionDocs || []) {
+    const existing = actionsByUser.get(doc.user_id) || []
+    existing.push(doc)
+    actionsByUser.set(doc.user_id, existing)
+  }
+
   for (const pref of prefs) {
     const userEmail = userEmails.get(pref.user_id)
     if (!userEmail) continue
 
     const docs = docsByUser.get(pref.user_id)
-    if (!docs || docs.length === 0) continue
+    const deadlines = deadlinesByUser.get(pref.user_id) || []
+    const pendingActions = actionsByUser.get(pref.user_id) || []
 
-    const urgentCount = docs.filter(d => d.is_urgent).length
-    const actionCount = docs.filter(d => d.action_required).length
+    // Skip if nothing to report
+    if ((!docs || docs.length === 0) && deadlines.length === 0 && pendingActions.length === 0) continue
 
-    const docRows = docs.map(d => {
+    const urgentCount = (docs || []).filter(d => d.is_urgent).length
+    const actionCount = (docs || []).filter(d => d.action_required).length
+
+    // Build deadlines section
+    const deadlineRows = deadlines.map(d => {
+      const dl = new Date(d.deadline + 'T00:00:00')
+      const formatted = dl.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'long' })
+      const diffDays = Math.round((dl.getTime() - new Date().setHours(0,0,0,0)) / (1000 * 60 * 60 * 24))
+      const urgencyColor = diffDays <= 2 ? '#dc2626' : diffDays <= 5 ? '#ea580c' : '#d97706'
+      return `<tr>
+        <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;color:${urgencyColor};font-weight:600">${escapeHtml(formatted)}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;color:#334155">${escapeHtml(d.file_name || d.document_type)}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#64748b">${escapeHtml(d.action_description || d.summary_fr || '')}</td>
+      </tr>`
+    }).join('')
+
+    // Build pending actions section
+    const actionRows = pendingActions.slice(0, 5).map(d => {
+      return `<tr>
+        <td style="padding:6px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;color:#334155">${escapeHtml(d.action_description || d.document_type)}</td>
+      </tr>`
+    }).join('')
+
+    const docRows = (docs || []).map(d => {
       const summary = d.summary_fr || ''
       const truncated = summary.length > 80 ? summary.substring(0, 80) + '...' : summary
       return `
@@ -104,7 +162,7 @@ export async function POST(req: NextRequest) {
 
       <div style="display:flex;gap:12px;margin-bottom:20px">
         <div style="flex:1;background:#eff6ff;border-radius:12px;padding:16px;text-align:center">
-          <div style="font-size:28px;font-weight:700;color:#2563eb">${docs.length}</div>
+          <div style="font-size:28px;font-weight:700;color:#2563eb">${(docs || []).length}</div>
           <div style="font-size:12px;color:#64748b">Documents</div>
         </div>
         ${urgentCount > 0 ? `<div style="flex:1;background:#fef2f2;border-radius:12px;padding:16px;text-align:center">
@@ -117,6 +175,24 @@ export async function POST(req: NextRequest) {
         </div>` : ''}
       </div>
 
+      ${deadlines.length > 0 ? `
+      <div style="background:#fffbeb;border-radius:12px;padding:16px;margin-bottom:20px;border:1px solid #fde68a">
+        <h3 style="font-size:14px;color:#92400e;margin:0 0 12px;font-weight:700">&#9200; Échéances cette semaine</h3>
+        <table style="width:100%;border-collapse:collapse">
+          <tbody>${deadlineRows}</tbody>
+        </table>
+      </div>` : ''}
+
+      ${pendingActions.length > 0 ? `
+      <div style="background:#eff6ff;border-radius:12px;padding:16px;margin-bottom:20px;border:1px solid #bfdbfe">
+        <h3 style="font-size:14px;color:#1e40af;margin:0 0 12px;font-weight:700">&#9745; Actions en attente (${pendingActions.length})</h3>
+        <table style="width:100%;border-collapse:collapse">
+          <tbody>${actionRows}</tbody>
+        </table>
+      </div>` : ''}
+
+      ${(docs && docs.length > 0) ? `
+      <h3 style="font-size:14px;color:#334155;margin:0 0 12px;font-weight:700">Documents de la semaine</h3>
       <table style="width:100%;border-collapse:collapse">
         <thead>
           <tr style="background:#f1f5f9">
@@ -126,7 +202,7 @@ export async function POST(req: NextRequest) {
           </tr>
         </thead>
         <tbody>${docRows}</tbody>
-      </table>
+      </table>` : ''}
     </div>
 
     <div style="text-align:center;margin:24px 0">
@@ -149,7 +225,7 @@ export async function POST(req: NextRequest) {
       await resend.emails.send({
         from: `Tloush <${process.env.EMAIL_FROM || 'onboarding@resend.dev'}>`,
         to: userEmail,
-        subject: `Tloush — ${docs.length} document${docs.length > 1 ? 's' : ''} cette semaine${urgentCount > 0 ? ` (${urgentCount} urgent${urgentCount > 1 ? 's' : ''})` : ''}`,
+        subject: `Tloush — ${(docs || []).length} document${(docs || []).length > 1 ? 's' : ''} cette semaine${urgentCount > 0 ? ` (${urgentCount} urgent${urgentCount > 1 ? 's' : ''})` : ''}`,
         html
       })
       sentCount++

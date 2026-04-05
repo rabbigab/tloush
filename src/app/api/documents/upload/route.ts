@@ -4,33 +4,70 @@ import { validateFile } from '@/lib/fileValidation'
 import { createRateLimit } from '@/lib/rateLimit'
 import { requireAuth } from '@/lib/apiAuth'
 import { canUseFeature, incrementUsage } from '@/lib/subscription'
+import { parseDeadline, detectAmountAnomaly } from '@/lib/parsers'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const ratelimit = createRateLimit('upload', 5, '1 h')
 
 const SYSTEM_PROMPT = `Tu es un expert en documents administratifs israéliens pour francophones.
-Ton rôle est d'analyser un document (fiche de paie, courrier officiel, contrat, etc.) et de retourner un JSON structuré en FRANÇAIS.
+Ton rôle est d'analyser un document (fiche de paie, courrier officiel, contrat, facture, etc.) et de retourner un JSON structuré en FRANÇAIS.
+Tu dois non seulement expliquer le document, mais aussi détecter les anomalies potentielles, les points à vérifier et recommander des actions concrètes.
 IMPORTANT : Retourne UNIQUEMENT le JSON, sans texte avant ou après.`
 
 const USER_PROMPT = `Analyse ce document israélien et retourne UNIQUEMENT ce JSON :
 
 {
-  "document_type": "payslip" | "bituah_leumi" | "tax_notice" | "work_contract" | "pension" | "health_insurance" | "rental" | "bank" | "official_letter" | "contract" | "other",
-  "category": "travail" | "securite_sociale" | "fiscal" | "retraite" | "logement" | "bancaire" | "autre",
+  "document_type": "payslip" | "bituah_leumi" | "tax_notice" | "work_contract" | "pension" | "health_insurance" | "rental" | "bank" | "official_letter" | "contract" | "invoice" | "receipt" | "utility_bill" | "insurance" | "other",
+  "category": "travail" | "securite_sociale" | "fiscal" | "retraite" | "logement" | "bancaire" | "finance" | "autre",
   "summary_fr": "Résumé en 2-3 phrases en français de ce document",
   "is_urgent": true/false,
   "action_required": true/false,
-  "action_description": "Ce que l'utilisateur doit faire, ou null",
+  "action_description": "Ce que l'utilisateur doit faire en priorité, ou null",
   "period": "Période concernée ex: 'Avril 2025' ou null",
   "key_info": {
     "emitter": "Qui envoie ce document",
     "amount": "Montant principal si applicable ou null",
-    "deadline": "Date limite si applicable ou null"
+    "deadline": "Date limite si applicable (format JJ/MM/AAAA) ou null"
+  },
+  "attention_points": [
+    {
+      "level": "ok" | "info" | "warning" | "critical",
+      "title": "Titre court du point",
+      "description": "Explication en 1-2 phrases"
+    }
+  ],
+  "recommended_actions": [
+    {
+      "priority": "immediate" | "soon" | "when_possible",
+      "action": "Description de l'action à mener",
+      "deadline": "Date limite si applicable ou null"
+    }
+  ],
+  "should_consult_pro": {
+    "recommended": true/false,
+    "reason": "Pourquoi consulter un pro, ou null",
+    "pro_type": "comptable" | "avocat" | "conseiller_fiscal" | "agent_immobilier" | null
   },
   "analysis_data": {
     "full_analysis": "Analyse détaillée complète en français"
   }
 }
+
+GUIDE attention_points.level :
+- "ok" = tout est normal, rien à signaler
+- "info" = information utile à connaître
+- "warning" = point à vérifier, anomalie potentielle
+- "critical" = action urgente requise, risque important
+
+GUIDE recommended_actions.priority :
+- "immediate" = à faire dans les 48h
+- "soon" = à faire dans les 2 semaines
+- "when_possible" = pas urgent mais recommandé
+
+Pour les factures/tickets (invoice, receipt, utility_bill, insurance) :
+- Extraire le fournisseur, le montant TTC, la date de la facture
+- Indiquer si c'est une dépense récurrente probable (mensuelle, bimestrielle, etc.)
+- Ajouter un champ "recurring_info" dans analysis_data: {"is_recurring": true/false, "frequency": "monthly"|"bimonthly"|"quarterly"|"annual"|"one_time", "provider": "nom du fournisseur", "amount": nombre}
 
 Guide pour document_type :
 - "payslip" = fiche de paie / tloush maskoret
@@ -43,6 +80,10 @@ Guide pour document_type :
 - "bank" = relevé bancaire, prêt, document de banque
 - "official_letter" = courrier officiel d'une administration
 - "contract" = autre contrat non classé ci-dessus
+- "invoice" = facture (arnona, électricité, eau, internet, téléphone, etc.)
+- "receipt" = ticket de caisse, reçu
+- "utility_bill" = facture de service public
+- "insurance" = document d'assurance (habitation, voiture, etc.)
 - "other" = tout document ne correspondant à aucune catégorie
 
 Guide pour category :
@@ -52,6 +93,7 @@ Guide pour category :
 - "retraite" = pension
 - "logement" = rental
 - "bancaire" = bank
+- "finance" = invoice, receipt, utility_bill, insurance
 - "autre" = official_letter, contract, other`
 
 export async function POST(req: NextRequest) {
@@ -142,7 +184,7 @@ export async function POST(req: NextRequest) {
     // Cast needed: 'document' content block not yet in SDK types (v0.24)
     const message = await (anthropic.messages.create as Function)({
       model: 'claude-sonnet-4-5',
-      max_tokens: 2048,
+      max_tokens: 3000,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: contentBlocks }]
     }) as Anthropic.Message
@@ -201,7 +243,11 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
       }
     }
 
-    // 4. Sauvegarder en base
+    // 4. Parse deadline into DATE format
+    const rawDeadline = (analysisResult.key_info as Record<string, unknown>)?.deadline
+    const deadlineDate = parseDeadline(rawDeadline)
+
+    // 5. Sauvegarder en base
     const fileType = mimeType === 'application/pdf' ? 'pdf' : 'image'
     const { data: document, error: dbError } = await supabase
       .from('documents')
@@ -217,6 +263,7 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
         action_required: Boolean(analysisResult.action_required),
         action_description: (analysisResult.action_description as string) || null,
         period: (analysisResult.period as string) || null,
+        deadline: deadlineDate,
         analysis_data: analysisResult,
         analyzed_at: new Date().toISOString()
       })
@@ -226,6 +273,135 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
     if (dbError) {
       console.error('DB error:', dbError)
       return NextResponse.json({ error: 'Erreur lors de la sauvegarde' }, { status: 500 })
+    }
+
+    // Track recurring expense if detected
+    if (document) {
+      const recurringInfo = (analysisResult.analysis_data as Record<string, unknown>)?.recurring_info as
+        | { is_recurring?: boolean; frequency?: string; provider?: string; amount?: number }
+        | undefined
+      const providerName = recurringInfo?.provider || (analysisResult.key_info as Record<string, unknown>)?.emitter as string | undefined
+      if (recurringInfo?.is_recurring && providerName) {
+        try {
+          const amount = recurringInfo.amount ?? null
+          const frequency = recurringInfo.frequency || 'monthly'
+          const today = new Date().toISOString().split('T')[0]
+
+          // Check if similar recurring expense exists for this user
+          const { data: existing } = await supabase
+            .from('recurring_expenses')
+            .select('id, document_ids, amount')
+            .eq('user_id', user.id)
+            .ilike('provider_name', providerName)
+            .maybeSingle()
+
+          if (existing) {
+            // Anomaly detection: compare new amount vs previous tracked amount
+            const anomaly = amount ? detectAmountAnomaly(amount, existing.amount || 0) : null
+            if (anomaly) {
+              const { pct, level, direction: dir } = anomaly
+              const direction = dir === 'up' ? 'augmenté' : 'diminué'
+              {
+                const anomalyPoint = {
+                  level,
+                  title: `Montant ${direction} de ${pct.toFixed(0)}%`,
+                  description: `Cette facture ${providerName} est à ${amount}₪ contre ${existing.amount}₪ habituellement. Vérifiez que c'est normal.`,
+                }
+                const existingPoints = Array.isArray((analysisResult.attention_points as unknown[]))
+                  ? (analysisResult.attention_points as Array<Record<string, unknown>>)
+                  : []
+                analysisResult.attention_points = [anomalyPoint, ...existingPoints]
+                // Persist updated analysis
+                await supabase
+                  .from('documents')
+                  .update({ analysis_data: analysisResult })
+                  .eq('id', document.id)
+
+                // Fire-and-forget email notification for significant anomalies
+                if (pct >= 30 && process.env.CRON_SECRET) {
+                  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL
+                    ? `https://${process.env.VERCEL_URL}`
+                    : 'http://localhost:3000')
+                  fetch(`${baseUrl}/api/alerts/anomaly`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+                    },
+                    body: JSON.stringify({
+                      userId: user.id,
+                      documentId: document.id,
+                      provider: providerName,
+                      newAmount: amount,
+                      previousAmount: existing.amount,
+                      pct,
+                    }),
+                  }).catch(err => console.error('[Anomaly Alert] Fire-and-forget error:', err))
+                }
+              }
+            }
+            const docIds = Array.isArray(existing.document_ids) ? existing.document_ids : []
+            if (!docIds.includes(document.id)) docIds.push(document.id)
+            await supabase
+              .from('recurring_expenses')
+              .update({
+                document_ids: docIds,
+                last_seen_date: today,
+                amount: amount ?? existing.amount,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', existing.id)
+          } else {
+            await supabase.from('recurring_expenses').insert({
+              user_id: user.id,
+              provider_name: providerName,
+              category: (analysisResult.category as string) || null,
+              amount,
+              frequency,
+              last_seen_date: today,
+              document_ids: [document.id],
+              status: 'active',
+            })
+          }
+        } catch (recurErr) {
+          console.error('[Recurring] Error tracking recurring expense:', recurErr)
+        }
+      }
+
+      // Auto-group into folder by emitter
+      const emitter = (analysisResult.key_info as Record<string, unknown>)?.emitter as string | undefined
+      if (emitter && emitter.trim().length > 0) {
+        try {
+          const { data: existingFolder } = await supabase
+            .from('folders')
+            .select('id')
+            .eq('user_id', user.id)
+            .ilike('name', emitter)
+            .maybeSingle()
+
+          let folderId = existingFolder?.id
+          if (!folderId) {
+            const { data: newFolder } = await supabase
+              .from('folders')
+              .insert({
+                user_id: user.id,
+                name: emitter,
+                category: (analysisResult.category as string) || null,
+                auto_generated: true,
+                status: 'active',
+              })
+              .select('id')
+              .single()
+            folderId = newFolder?.id
+          }
+
+          if (folderId) {
+            await supabase.from('documents').update({ folder_id: folderId }).eq('id', document.id)
+          }
+        } catch (folderErr) {
+          console.error('[Folder] Auto-group error:', folderErr)
+        }
+      }
     }
 
     // Send urgent alert email (fire-and-forget, don't block response)

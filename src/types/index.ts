@@ -175,6 +175,9 @@ export interface AppDocument {
   period: string | null
   analysis_data?: Record<string, unknown>
   created_at: string
+  folder_id?: string | null
+  deadline?: string | null
+  action_completed_at?: string | null
 }
 
 export type AppStep = "landing" | "upload" | "extraction" | "questionnaire" | "results";

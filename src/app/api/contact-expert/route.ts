@@ -2,8 +2,30 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { escapeHtml } from '@/lib/fileValidation'
 
+// Simple in-memory rate limit: max 5 requests per IP per 15 minutes
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+const RATE_LIMIT = 5
+const RATE_WINDOW = 15 * 60 * 1000
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now()
+  const entry = rateLimitMap.get(ip)
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW })
+    return false
+  }
+  entry.count++
+  return entry.count > RATE_LIMIT
+}
+
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit by IP
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    if (isRateLimited(ip)) {
+      return NextResponse.json({ error: 'Trop de demandes. Réessayez dans quelques minutes.' }, { status: 429 })
+    }
+
     const resendApiKey = process.env.RESEND_API_KEY
     if (!resendApiKey) {
       return NextResponse.json({ error: 'Service email non configuré' }, { status: 500 })

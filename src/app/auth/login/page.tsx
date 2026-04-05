@@ -19,13 +19,13 @@ function LoginForm() {
   const urlError = searchParams.get('error')
 
   // Show error from callback redirect (e.g. Google OAuth failure)
-  useState(() => {
+  useEffect(() => {
     if (urlError && urlError !== 'confirmation') {
       setError(decodeURIComponent(urlError))
     } else if (urlError === 'confirmation') {
       setError('Erreur de confirmation. Veuillez réessayer.')
     }
-  })
+  }, [urlError])
 
   // Detect if user is already authenticated (e.g. returning from Google OAuth)
   useEffect(() => {
@@ -174,7 +174,7 @@ function LoginForm() {
 
         <div className="flex justify-end">
           <Link href="/auth/forgot-password" className="text-xs text-brand-600 hover:underline font-medium">
-            Mot de passe oublie ?
+            Mot de passe oublié ?
           </Link>
         </div>
 
@@ -203,7 +203,7 @@ function LoginForm() {
       <div className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
         Pas encore de compte ?{' '}
         <Link href="/auth/register" className="text-brand-600 hover:underline font-medium">
-          Creer un compte
+          Créer un compte
         </Link>
       </div>
     </div>

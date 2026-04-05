@@ -1,14 +1,93 @@
 'use client'
 
 import Link from 'next/link'
-import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap } from 'lucide-react'
+import { useState } from 'react'
+import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap, CalendarClock, Check, Wallet } from 'lucide-react'
 import { DOC_LABELS, DOC_ICONS } from '@/lib/docTypes'
 import type { AppDocument } from '@/types'
 
-export default function DashboardClient({ documents }: { documents: AppDocument[] }) {
+interface DashboardDocument extends AppDocument {
+  deadline?: string | null
+  action_completed_at?: string | null
+}
+
+interface DashboardExpense {
+  id: string
+  provider_name: string
+  category: string | null
+  amount: number | null
+  frequency: string | null
+  last_seen_date: string | null
+}
+
+const EXPENSE_FREQ_MULTIPLIER: Record<string, number> = {
+  monthly: 1,
+  bimonthly: 0.5,
+  quarterly: 1 / 3,
+  annual: 1 / 12,
+  one_time: 0,
+}
+
+interface PayslipPoint { id: string; label: string; amount: number }
+
+export default function DashboardClient({ documents, expenses = [], payslipEvolution = [] }: { documents: DashboardDocument[]; expenses?: DashboardExpense[]; payslipEvolution?: PayslipPoint[] }) {
+  const monthlyExpenses = expenses.reduce((sum, e) => {
+    const mult = EXPENSE_FREQ_MULTIPLIER[e.frequency || 'monthly'] ?? 1
+    return sum + (e.amount || 0) * mult
+  }, 0)
+  const topProviders = [...expenses]
+    .filter(e => e.amount)
+    .map(e => ({ ...e, monthlyAmount: (e.amount || 0) * (EXPENSE_FREQ_MULTIPLIER[e.frequency || 'monthly'] ?? 1) }))
+    .sort((a, b) => b.monthlyAmount - a.monthlyAmount)
+    .slice(0, 5)
+
+  const [completedActions, setCompletedActions] = useState<Set<string>>(
+    new Set(documents.filter(d => d.action_completed_at).map(d => d.id))
+  )
+
   const urgent = documents.filter(d => d.is_urgent)
-  const actionRequired = documents.filter(d => d.action_required && !d.is_urgent)
+  const actionRequired = documents.filter(d => d.action_required && !d.is_urgent && !completedActions.has(d.id))
   const recent = documents.slice(0, 6)
+
+  // Upcoming deadlines (next 14 days)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const in14Days = new Date(today)
+  in14Days.setDate(in14Days.getDate() + 14)
+
+  const upcomingDeadlines = documents
+    .filter(d => {
+      if (!d.deadline) return false
+      const dl = new Date(d.deadline + 'T00:00:00')
+      return dl >= today && dl <= in14Days
+    })
+    .sort((a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime())
+
+  function getDaysUntil(deadline: string): number {
+    const dl = new Date(deadline + 'T00:00:00')
+    return Math.round((dl.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  }
+
+  function getDeadlineBadge(days: number): { text: string; color: string } {
+    if (days === 0) return { text: "Aujourd'hui", color: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' }
+    if (days === 1) return { text: 'Demain', color: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' }
+    if (days <= 3) return { text: `${days} jours`, color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300' }
+    return { text: `${days} jours`, color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' }
+  }
+
+  async function markActionDone(docId: string) {
+    setCompletedActions(prev => { const next = new Set(Array.from(prev)); next.add(docId); return next })
+    try {
+      await fetch(`/api/documents/${docId}/action`, { method: 'POST' })
+    } catch {
+      // Revert on error
+      setCompletedActions(prev => {
+        const next = new Set(prev)
+        next.delete(docId)
+        return next
+      })
+    }
+  }
 
   const byType: Record<string, number> = {}
   for (const doc of documents) {
@@ -71,6 +150,105 @@ export default function DashboardClient({ documents }: { documents: AppDocument[
         </div>
       </div>
 
+      {/* Budget mensuel */}
+      {expenses.length > 0 && (
+        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-brand-50 dark:bg-brand-950/30 rounded-lg flex items-center justify-center">
+                <Wallet size={16} className="text-brand-600" />
+              </div>
+              <h2 className="font-bold text-slate-800 dark:text-slate-200">Budget mensuel</h2>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                  {monthlyExpenses.toFixed(0)}<span className="text-sm text-slate-500 ml-1">₪/mois</span>
+                </p>
+                <p className="text-xs text-slate-400 dark:text-slate-500">
+                  {(monthlyExpenses * 12).toFixed(0)}₪ /an · {expenses.length} suivis
+                </p>
+              </div>
+              <Link href="/expenses" className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1">
+                Détails <ArrowRight size={12} />
+              </Link>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {topProviders.map(p => {
+              const pct = monthlyExpenses > 0 ? (p.monthlyAmount / monthlyExpenses) * 100 : 0
+              return (
+                <div key={p.id}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate pr-2">{p.provider_name}</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold shrink-0">
+                      {p.monthlyAmount.toFixed(0)}₪
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-brand-500 to-indigo-500 rounded-full transition-all duration-500"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Évolution fiches de paie */}
+      {payslipEvolution.length >= 2 && (() => {
+        const maxAmount = Math.max(...payslipEvolution.map(p => p.amount))
+        const last = payslipEvolution[payslipEvolution.length - 1]
+        const prev = payslipEvolution[payslipEvolution.length - 2]
+        const diff = last.amount - prev.amount
+        const pct = prev.amount > 0 ? (diff / prev.amount) * 100 : 0
+        return (
+          <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+                  <TrendingUp size={16} className="text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <h2 className="font-bold text-slate-800 dark:text-slate-200">Évolution fiches de paie</h2>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-bold text-slate-900 dark:text-slate-100">{last.amount.toFixed(0)}₪</p>
+                {Math.abs(pct) >= 0.5 && (
+                  <p className={`text-xs font-semibold ${pct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {pct >= 0 ? '+' : ''}{pct.toFixed(1)}% vs précédent
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex items-end justify-between gap-1 h-28">
+              {payslipEvolution.map((p, i) => {
+                const height = maxAmount > 0 ? (p.amount / maxAmount) * 100 : 0
+                const isLast = i === payslipEvolution.length - 1
+                return (
+                  <div key={p.id} className="flex-1 flex flex-col items-center justify-end gap-1 min-w-0 group">
+                    <div
+                      className={`w-full rounded-t-md transition-all ${isLast ? 'bg-gradient-to-t from-emerald-500 to-emerald-400' : 'bg-gradient-to-t from-slate-300 to-slate-200 dark:from-slate-600 dark:to-slate-500'}`}
+                      style={{ height: `${Math.max(height, 4)}%` }}
+                      title={`${p.label} : ${p.amount.toFixed(0)}₪`}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+            <div className="flex items-center justify-between gap-1 mt-1">
+              {payslipEvolution.map(p => (
+                <span key={p.id} className="flex-1 text-center text-[10px] text-slate-400 dark:text-slate-500 truncate">
+                  {p.label}
+                </span>
+              ))}
+            </div>
+          </div>
+        )
+      })()}
+
       {/* Alertes actives */}
       {(urgent.length > 0 || actionRequired.length > 0) && (
         <div className="space-y-3">
@@ -116,6 +294,87 @@ export default function DashboardClient({ documents }: { documents: AppDocument[
               <ArrowRight size={16} className="text-amber-300 dark:text-amber-600 group-hover:text-amber-500 dark:group-hover:text-amber-400 shrink-0 mt-1 transition-colors" />
             </Link>
           ))}
+        </div>
+      )}
+
+      {/* Échéances à venir */}
+      {upcomingDeadlines.length > 0 && (
+        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 bg-amber-50 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
+              <CalendarClock size={16} className="text-amber-600 dark:text-amber-400" />
+            </div>
+            <h2 className="font-bold text-slate-800 dark:text-slate-200">Échéances à venir</h2>
+          </div>
+          <div className="space-y-3">
+            {upcomingDeadlines.map(doc => {
+              const days = getDaysUntil(doc.deadline!)
+              const badge = getDeadlineBadge(days)
+              return (
+                <Link
+                  key={doc.id}
+                  href={`/assistant?doc=${doc.id}`}
+                  className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-amber-200 dark:hover:border-amber-800 hover:bg-amber-50/50 dark:hover:bg-amber-950/20 transition-all group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-700 flex items-center justify-center shrink-0 text-lg">
+                    {DOC_ICONS[doc.document_type] || '📄'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
+                      {DOC_LABELS[doc.document_type] || doc.document_type}
+                      {doc.period && <span className="font-normal text-slate-400"> · {doc.period}</span>}
+                    </p>
+                    {doc.action_description && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{doc.action_description}</p>
+                    )}
+                  </div>
+                  <span className={`shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full ${badge.color}`}>
+                    {badge.text}
+                  </span>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Actions en attente */}
+      {actionRequired.length > 0 && (
+        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+              <CheckCircle size={16} className="text-blue-600 dark:text-blue-400" />
+            </div>
+            <h2 className="font-bold text-slate-800 dark:text-slate-200">Actions en attente</h2>
+            <span className="text-xs text-slate-400 dark:text-slate-500 ml-auto">{actionRequired.length} restante{actionRequired.length > 1 ? 's' : ''}</span>
+          </div>
+          <div className="space-y-2">
+            {actionRequired.slice(0, 5).map(doc => (
+              <div
+                key={doc.id}
+                className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-700 group"
+              >
+                <button
+                  onClick={() => markActionDone(doc.id)}
+                  className="w-6 h-6 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center shrink-0 hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors"
+                  title="Marquer comme fait"
+                >
+                  <Check size={12} className="text-transparent group-hover:text-green-500 transition-colors" />
+                </button>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-slate-700 dark:text-slate-300 truncate">
+                    {doc.action_description || DOC_LABELS[doc.document_type]}
+                  </p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500">
+                    {DOC_LABELS[doc.document_type]} {doc.period && `· ${doc.period}`}
+                  </p>
+                </div>
+                <Link href={`/assistant?doc=${doc.id}`} className="text-blue-500 hover:text-blue-600 shrink-0">
+                  <ArrowRight size={14} />
+                </Link>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
