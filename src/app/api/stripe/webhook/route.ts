@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId)
         const priceId = subscription.items.data[0]?.price.id
         const planId = getPlanIdFromPrice(priceId)
+        const item = subscription.items.data[0]
 
         await supabaseAdmin
           .from('subscriptions')
@@ -48,8 +49,8 @@ export async function POST(req: NextRequest) {
             status: 'active',
             stripe_customer_id: session.customer as string,
             stripe_subscription_id: subscriptionId,
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            current_period_start: new Date((item?.current_period_start ?? 0) * 1000).toISOString(),
+            current_period_end: new Date((item?.current_period_end ?? 0) * 1000).toISOString(),
             updated_at: new Date().toISOString(),
           })
           .eq('user_id', userId)
@@ -60,7 +61,8 @@ export async function POST(req: NextRequest) {
 
       case 'invoice.paid': {
         const invoice = event.data.object as Stripe.Invoice
-        const subscriptionId = invoice.subscription as string
+        const sub = invoice.parent?.subscription_details?.subscription
+        const subscriptionId = typeof sub === 'string' ? sub : sub?.id
         if (!subscriptionId) break
 
         const subscription = await stripe.subscriptions.retrieve(subscriptionId)
@@ -71,14 +73,15 @@ export async function POST(req: NextRequest) {
 
         const priceId = subscription.items.data[0]?.price.id
         const planId = getPlanIdFromPrice(priceId)
+        const item = subscription.items.data[0]
 
         await supabaseAdmin
           .from('subscriptions')
           .update({
             plan_id: planId,
             status: 'active',
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            current_period_start: new Date((item?.current_period_start ?? 0) * 1000).toISOString(),
+            current_period_end: new Date((item?.current_period_end ?? 0) * 1000).toISOString(),
             updated_at: new Date().toISOString(),
           })
           .eq('user_id', userId)
@@ -111,6 +114,7 @@ export async function POST(req: NextRequest) {
 
         const priceId = subscription.items.data[0]?.price.id
         const planId = getPlanIdFromPrice(priceId)
+        const item = subscription.items.data[0]
 
         const status = subscription.cancel_at_period_end ? 'active' : mapStripeStatus(subscription.status)
 
@@ -120,8 +124,8 @@ export async function POST(req: NextRequest) {
             plan_id: planId,
             status,
             cancel_at_period_end: subscription.cancel_at_period_end,
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            current_period_start: new Date((item?.current_period_start ?? 0) * 1000).toISOString(),
+            current_period_end: new Date((item?.current_period_end ?? 0) * 1000).toISOString(),
             updated_at: new Date().toISOString(),
           })
           .eq('user_id', userId)
@@ -186,4 +190,4 @@ async function getSupabaseUserByCustomer(customerId: string): Promise<string | n
     .eq('stripe_customer_id', customerId)
     .single()
   return data?.user_id ?? null
-            }
+      }
