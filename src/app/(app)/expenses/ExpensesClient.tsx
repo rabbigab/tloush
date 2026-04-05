@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Wallet, TrendingUp, Trash2, FileText, Calendar } from 'lucide-react'
+import { Wallet, TrendingUp, Trash2, FileText, Calendar, Download, Pencil, Check, X } from 'lucide-react'
 
 interface RecurringExpense {
   id: string
@@ -46,6 +46,36 @@ const CATEGORY_LABELS: Record<string, string> = {
 export default function ExpensesClient({ expenses: initialExpenses }: { expenses: RecurringExpense[] }) {
   const [expenses, setExpenses] = useState(initialExpenses)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editAmount, setEditAmount] = useState('')
+  const [editFrequency, setEditFrequency] = useState('monthly')
+
+  function startEdit(exp: RecurringExpense) {
+    setEditingId(exp.id)
+    setEditAmount(exp.amount ? String(exp.amount) : '')
+    setEditFrequency(exp.frequency || 'monthly')
+  }
+
+  async function saveEdit(id: string) {
+    const amount = parseFloat(editAmount)
+    try {
+      const res = await fetch(`/api/recurring-expenses/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: isNaN(amount) ? null : amount,
+          frequency: editFrequency,
+        }),
+      })
+      if (res.ok) {
+        const { expense } = await res.json()
+        setExpenses(prev => prev.map(e => e.id === id ? { ...e, ...expense } : e))
+        setEditingId(null)
+      }
+    } catch {
+      // keep edit mode open
+    }
+  }
 
   const monthlyTotal = expenses.reduce((sum, e) => {
     const mult = FREQ_MONTHLY_MULTIPLIER[e.frequency || 'monthly'] ?? 1
@@ -82,11 +112,21 @@ export default function ExpensesClient({ expenses: initialExpenses }: { expenses
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-      <div>
-        <h1 className="page-title mb-1">Mes dépenses</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Dépenses récurrentes détectées automatiquement depuis vos factures scannées.
-        </p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="page-title mb-1">Mes dépenses</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Dépenses récurrentes détectées automatiquement depuis vos factures scannées.
+          </p>
+        </div>
+        {expenses.length > 0 && (
+          <a
+            href="/api/recurring-expenses/export"
+            className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-brand-300 text-slate-700 dark:text-slate-200 text-xs font-medium px-3 py-2 rounded-xl transition-colors min-h-[36px]"
+          >
+            <Download size={14} /> Exporter CSV
+          </a>
+        )}
       </div>
 
       {/* Totals */}
@@ -156,36 +196,83 @@ export default function ExpensesClient({ expenses: initialExpenses }: { expenses
             </div>
             <div className="divide-y divide-slate-100 dark:divide-slate-700">
               {items.map(exp => (
-                <div key={exp.id} className="px-6 py-4 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-slate-800 dark:text-slate-200 text-sm truncate">{exp.provider_name}</p>
-                    <div className="flex items-center gap-3 mt-1 flex-wrap">
-                      <span className="text-xs text-slate-500 dark:text-slate-400 inline-flex items-center gap-1">
-                        <Calendar size={11} /> {FREQ_LABELS[exp.frequency || 'monthly'] || exp.frequency}
-                      </span>
-                      <span className="text-xs text-slate-400 dark:text-slate-500">
-                        Dernière : {formatDate(exp.last_seen_date)}
-                      </span>
-                      {Array.isArray(exp.document_ids) && exp.document_ids.length > 0 && (
-                        <span className="text-xs text-slate-400 dark:text-slate-500">
-                          {exp.document_ids.length} document{exp.document_ids.length > 1 ? 's' : ''}
-                        </span>
-                      )}
+                <div key={exp.id} className="px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                  {editingId === exp.id ? (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-medium text-slate-800 dark:text-slate-200 text-sm flex-1 min-w-[140px] truncate">{exp.provider_name}</p>
+                      <input
+                        type="number"
+                        value={editAmount}
+                        onChange={e => setEditAmount(e.target.value)}
+                        placeholder="Montant"
+                        className="w-24 px-2 py-1.5 text-sm bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-300"
+                      />
+                      <select
+                        value={editFrequency}
+                        onChange={e => setEditFrequency(e.target.value)}
+                        className="px-2 py-1.5 text-sm bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-300"
+                      >
+                        <option value="monthly">Mensuel</option>
+                        <option value="bimonthly">Bimestriel</option>
+                        <option value="quarterly">Trimestriel</option>
+                        <option value="annual">Annuel</option>
+                        <option value="one_time">Ponctuel</option>
+                      </select>
+                      <button
+                        onClick={() => saveEdit(exp.id)}
+                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/50"
+                        aria-label="Valider"
+                      >
+                        <Check size={14} />
+                      </button>
+                      <button
+                        onClick={() => setEditingId(null)}
+                        className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                        aria-label="Annuler"
+                      >
+                        <X size={14} />
+                      </button>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <p className="font-bold text-slate-900 dark:text-slate-100">
-                      {exp.amount ? `${exp.amount}₪` : '—'}
-                    </p>
-                    <button
-                      onClick={() => handleRemove(exp.id)}
-                      disabled={deletingId === exp.id}
-                      className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-50"
-                      aria-label="Retirer cette dépense du suivi"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-slate-800 dark:text-slate-200 text-sm truncate">{exp.provider_name}</p>
+                        <div className="flex items-center gap-3 mt-1 flex-wrap">
+                          <span className="text-xs text-slate-500 dark:text-slate-400 inline-flex items-center gap-1">
+                            <Calendar size={11} /> {FREQ_LABELS[exp.frequency || 'monthly'] || exp.frequency}
+                          </span>
+                          <span className="text-xs text-slate-400 dark:text-slate-500">
+                            Dernière : {formatDate(exp.last_seen_date)}
+                          </span>
+                          {Array.isArray(exp.document_ids) && exp.document_ids.length > 0 && (
+                            <span className="text-xs text-slate-400 dark:text-slate-500">
+                              {exp.document_ids.length} document{exp.document_ids.length > 1 ? 's' : ''}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <p className="font-bold text-slate-900 dark:text-slate-100">
+                          {exp.amount ? `${exp.amount}₪` : '—'}
+                        </p>
+                        <button
+                          onClick={() => startEdit(exp)}
+                          className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/30 transition-colors"
+                          aria-label="Modifier"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleRemove(exp.id)}
+                          disabled={deletingId === exp.id}
+                          className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-50"
+                          aria-label="Retirer cette dépense du suivi"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

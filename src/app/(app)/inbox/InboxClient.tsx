@@ -22,7 +22,10 @@ const CATEGORY_TABS = [
   { key: 'autre', label: 'Autre' },
 ]
 
-export default function InboxClient({ documents, userEmail }: { documents: AppDocument[]; userEmail: string }) {
+interface FolderOption { id: string; name: string }
+
+export default function InboxClient({ documents, folders = [], userEmail }: { documents: AppDocument[]; folders?: FolderOption[]; userEmail: string }) {
+  void userEmail
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const [docs, setDocs] = useState<AppDocument[]>(documents)
@@ -30,12 +33,17 @@ export default function InboxClient({ documents, userEmail }: { documents: AppDo
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
+  const [activeFolderId, setActiveFolderId] = useState<string>('all')
   const inputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 
-  const categoryDocs = activeCategory === 'all'
+  const folderFilteredDocs = activeFolderId === 'all'
     ? docs
-    : docs.filter(d => DOC_CATEGORIES[d.document_type] === activeCategory)
+    : docs.filter(d => d.folder_id === activeFolderId)
+
+  const categoryDocs = activeCategory === 'all'
+    ? folderFilteredDocs
+    : folderFilteredDocs.filter(d => DOC_CATEGORIES[d.document_type] === activeCategory)
 
   const filteredDocs = search.trim()
     ? categoryDocs.filter(d =>
@@ -51,9 +59,9 @@ export default function InboxClient({ documents, userEmail }: { documents: AppDo
 
   const categoryCounts = CATEGORY_TABS.reduce((acc, tab) => {
     if (tab.key === 'all') {
-      acc[tab.key] = docs.length
+      acc[tab.key] = folderFilteredDocs.length
     } else {
-      acc[tab.key] = docs.filter(d => DOC_CATEGORIES[d.document_type] === tab.key).length
+      acc[tab.key] = folderFilteredDocs.filter(d => DOC_CATEGORIES[d.document_type] === tab.key).length
     }
     return acc
   }, {} as Record<string, number>)
@@ -250,6 +258,23 @@ export default function InboxClient({ documents, userEmail }: { documents: AppDo
               </div>
             )}
           </div>
+
+          {/* Folder filter */}
+          {folders.length > 0 && (
+            <div className="mb-3">
+              <select
+                value={activeFolderId}
+                onChange={e => setActiveFolderId(e.target.value)}
+                className="w-full sm:w-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-300"
+                aria-label="Filtrer par dossier"
+              >
+                <option value="all">Tous les dossiers</option>
+                {folders.map(f => (
+                  <option key={f.id} value={f.id}>{f.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Category filter tabs */}
           {docs.length > 3 && (

@@ -13,11 +13,19 @@ export default async function InboxPage() {
 
   if (!user) redirect('/auth/login')
 
-  const { data: documents } = await supabase
-    .from('documents')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
+  const [documentsRes, foldersRes] = await Promise.all([
+    supabase
+      .from('documents')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('folders')
+      .select('id, name')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .order('name', { ascending: true }),
+  ])
 
-  return <InboxClient documents={documents || []} userEmail={user.email || ''} />
+  return <InboxClient documents={documentsRes.data || []} folders={foldersRes.data || []} userEmail={user.email || ''} />
 }

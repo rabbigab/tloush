@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap, CalendarClock, Check } from 'lucide-react'
+import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap, CalendarClock, Check, Wallet } from 'lucide-react'
 import { DOC_LABELS, DOC_ICONS } from '@/lib/docTypes'
 import type { AppDocument } from '@/types'
 
@@ -11,7 +11,34 @@ interface DashboardDocument extends AppDocument {
   action_completed_at?: string | null
 }
 
-export default function DashboardClient({ documents }: { documents: DashboardDocument[] }) {
+interface DashboardExpense {
+  id: string
+  provider_name: string
+  category: string | null
+  amount: number | null
+  frequency: string | null
+  last_seen_date: string | null
+}
+
+const EXPENSE_FREQ_MULTIPLIER: Record<string, number> = {
+  monthly: 1,
+  bimonthly: 0.5,
+  quarterly: 1 / 3,
+  annual: 1 / 12,
+  one_time: 0,
+}
+
+export default function DashboardClient({ documents, expenses = [] }: { documents: DashboardDocument[]; expenses?: DashboardExpense[] }) {
+  const monthlyExpenses = expenses.reduce((sum, e) => {
+    const mult = EXPENSE_FREQ_MULTIPLIER[e.frequency || 'monthly'] ?? 1
+    return sum + (e.amount || 0) * mult
+  }, 0)
+  const topProviders = [...expenses]
+    .filter(e => e.amount)
+    .map(e => ({ ...e, monthlyAmount: (e.amount || 0) * (EXPENSE_FREQ_MULTIPLIER[e.frequency || 'monthly'] ?? 1) }))
+    .sort((a, b) => b.monthlyAmount - a.monthlyAmount)
+    .slice(0, 5)
+
   const [completedActions, setCompletedActions] = useState<Set<string>>(
     new Set(documents.filter(d => d.action_completed_at).map(d => d.id))
   )
@@ -120,6 +147,54 @@ export default function DashboardClient({ documents }: { documents: DashboardDoc
           </div>
         </div>
       </div>
+
+      {/* Budget mensuel */}
+      {expenses.length > 0 && (
+        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-brand-50 dark:bg-brand-950/30 rounded-lg flex items-center justify-center">
+                <Wallet size={16} className="text-brand-600" />
+              </div>
+              <h2 className="font-bold text-slate-800 dark:text-slate-200">Budget mensuel</h2>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                  {monthlyExpenses.toFixed(0)}<span className="text-sm text-slate-500 ml-1">₪/mois</span>
+                </p>
+                <p className="text-xs text-slate-400 dark:text-slate-500">
+                  {(monthlyExpenses * 12).toFixed(0)}₪ /an · {expenses.length} suivis
+                </p>
+              </div>
+              <Link href="/expenses" className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1">
+                Détails <ArrowRight size={12} />
+              </Link>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {topProviders.map(p => {
+              const pct = monthlyExpenses > 0 ? (p.monthlyAmount / monthlyExpenses) * 100 : 0
+              return (
+                <div key={p.id}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate pr-2">{p.provider_name}</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold shrink-0">
+                      {p.monthlyAmount.toFixed(0)}₪
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-brand-500 to-indigo-500 rounded-full transition-all duration-500"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Alertes actives */}
       {(urgent.length > 0 || actionRequired.length > 0) && (

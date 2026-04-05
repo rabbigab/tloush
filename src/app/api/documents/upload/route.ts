@@ -306,6 +306,29 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
             .maybeSingle()
 
           if (existing) {
+            // Anomaly detection: compare new amount vs previous tracked amount
+            if (amount && existing.amount && existing.amount > 0) {
+              const diff = amount - existing.amount
+              const pct = Math.abs(diff / existing.amount) * 100
+              if (pct >= 20) {
+                const direction = diff > 0 ? 'augmenté' : 'diminué'
+                const level = pct >= 50 ? 'critical' : 'warning'
+                const anomalyPoint = {
+                  level,
+                  title: `Montant ${direction} de ${pct.toFixed(0)}%`,
+                  description: `Cette facture ${providerName} est à ${amount}₪ contre ${existing.amount}₪ habituellement. Vérifiez que c'est normal.`,
+                }
+                const existingPoints = Array.isArray((analysisResult.attention_points as unknown[]))
+                  ? (analysisResult.attention_points as Array<Record<string, unknown>>)
+                  : []
+                analysisResult.attention_points = [anomalyPoint, ...existingPoints]
+                // Persist updated analysis
+                await supabase
+                  .from('documents')
+                  .update({ analysis_data: analysisResult })
+                  .eq('id', document.id)
+              }
+            }
             const docIds = Array.isArray(existing.document_ids) ? existing.document_ids : []
             if (!docIds.includes(document.id)) docIds.push(document.id)
             await supabase

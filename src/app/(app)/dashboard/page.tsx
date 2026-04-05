@@ -12,11 +12,19 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: documents } = await supabase
-    .from('documents')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
+  const [docsRes, expensesRes] = await Promise.all([
+    supabase
+      .from('documents')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('recurring_expenses')
+      .select('id, provider_name, category, amount, frequency, last_seen_date')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .order('amount', { ascending: false }),
+  ])
 
-  return <DashboardClient documents={documents || []} />
+  return <DashboardClient documents={docsRes.data || []} expenses={expensesRes.data || []} />
 }

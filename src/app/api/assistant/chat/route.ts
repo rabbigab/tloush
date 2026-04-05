@@ -60,6 +60,25 @@ DOCUMENT DE RÉFÉRENCE :
       }
     }
 
+    // Détecter si la question concerne les dépenses / budget
+    const expenseKeywords = /combien|budget|d[ée]pens|factur|arnona|mensuel|annuel|co[ûu]te|paye|fournisseur|ab\s*onne|par mois|par an/i
+    let expensesContext = ''
+    if (expenseKeywords.test(message)) {
+      const { data: expenses } = await supabase
+        .from('recurring_expenses')
+        .select('provider_name, category, amount, currency, frequency, last_seen_date')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .order('amount', { ascending: false })
+        .limit(30)
+      if (expenses && expenses.length > 0) {
+        const mult: Record<string, number> = { monthly: 1, bimonthly: 0.5, quarterly: 1 / 3, annual: 1 / 12, one_time: 0 }
+        const monthly = expenses.reduce((s, e) => s + (e.amount || 0) * (mult[e.frequency || 'monthly'] ?? 1), 0)
+        const list = expenses.map(e => `- ${e.provider_name} : ${e.amount || '?'}${e.currency || '₪'} (${e.frequency || 'monthly'}, ${e.category || 'autre'})`).join('\n')
+        expensesContext = `\n\nDÉPENSES RÉCURRENTES SUIVIES (issues des factures scannées) :\nBudget mensuel total estimé : ${monthly.toFixed(0)}₪ · Annuel : ${(monthly * 12).toFixed(0)}₪\n${list}\n`
+      }
+    }
+
     // Charger l'historique de la conversation
     let historyMessages: Array<{ role: 'user' | 'assistant'; content: string }> = []
     let activeConversationId = conversationId
@@ -109,6 +128,7 @@ Tes réponses doivent être :
 - CONCISES : va droit au but, pas de longs paragraphes inutiles
 
 ${documentContext ? `Tu as accès au document suivant de l'utilisateur :\n${documentContext}` : 'Aucun document spécifique chargé. Réponds aux questions générales sur l\'administration israélienne.'}
+${expensesContext}
 
 IMPORTANT — Recommandation d'experts :
 Quand la question dépasse tes compétences (juridique, fiscal complexe, litige), recommande un expert adapté avec un lien vers l'annuaire Tloush :
