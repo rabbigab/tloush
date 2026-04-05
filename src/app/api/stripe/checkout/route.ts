@@ -14,6 +14,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Price ID manquant' }, { status: 400 })
     }
 
+    // Whitelist : n'accepter que les priceId connus de l'application
+    const ALLOWED_PRICE_IDS = [
+      process.env.STRIPE_PRICE_SOLO,
+      process.env.STRIPE_PRICE_FAMILY,
+    ].filter(Boolean)
+
+    if (!ALLOWED_PRICE_IDS.includes(priceId)) {
+      return NextResponse.json({ error: 'Prix non autorisé' }, { status: 400 })
+    }
+
     const sub = await getSubscription(supabase, user.id)
 
     // Get or create Stripe customer

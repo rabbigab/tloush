@@ -406,9 +406,10 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
 
     // Send urgent alert email (fire-and-forget, don't block response)
     if (document && Boolean(analysisResult.is_urgent) && process.env.CRON_SECRET) {
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : 'http://localhost:3000'
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+        ?? (process.env.VERCEL_URL
+          ? `https://${process.env.VERCEL_URL}`
+          : 'http://localhost:3000')
       fetch(`${baseUrl}/api/alerts/urgent`, {
         method: 'POST',
         headers: {

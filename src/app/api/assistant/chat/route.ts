@@ -84,6 +84,18 @@ DOCUMENT DE RÉFÉRENCE :
     let activeConversationId = conversationId
 
     if (conversationId) {
+      // Vérifier que la conversation appartient à l'utilisateur (prévention IDOR)
+      const { data: conv } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('id', conversationId)
+        .eq('user_id', user.id)
+        .single()
+
+      if (!conv) {
+        return NextResponse.json({ error: 'Conversation introuvable' }, { status: 404 })
+      }
+
       const { data: msgs } = await supabase
         .from('messages')
         .select('role, content')

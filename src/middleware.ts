@@ -2,7 +2,17 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 // Routes protégées (nécessitent un compte)
-const PROTECTED_ROUTES = ['/inbox', '/assistant', '/profile', '/dashboard', '/compare']
+const PROTECTED_ROUTES = [
+  '/inbox',
+  '/assistant',
+  '/profile',
+  '/dashboard',
+  '/compare',
+  '/documents',
+  '/folders',
+  '/expenses',
+  '/search',
+]
 
 // Routes publiques qui n'ont pas besoin du middleware auth
 const PUBLIC_ROUTES = ['/', '/auth', '/pricing', '/droits-olim', '/droits', '/privacy', '/calculateurs', '/modeles', '/scanner', '/results', '/experts', '/api/stripe/webhook']

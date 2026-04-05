@@ -15,9 +15,10 @@ export default async function DashboardPage() {
   const [docsRes, expensesRes, payslipsRes] = await Promise.all([
     supabase
       .from('documents')
-      .select('*')
+      .select('id, file_name, document_type, is_urgent, action_required, action_description, period, summary_fr, deadline, created_at, folder_id, status')
       .eq('user_id', user.id)
-      .order('created_at', { ascending: false }),
+      .order('created_at', { ascending: false })
+      .limit(50),
     supabase
       .from('recurring_expenses')
       .select('id, provider_name, category, amount, frequency, last_seen_date')

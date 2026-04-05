@@ -13,18 +13,30 @@ export const metadata: Metadata = {
     "Uploadez vos documents administratifs israéliens en hébreu. Recevez une analyse complète en français en 30 secondes avec alertes et assistant IA.",
   keywords: ["documents israéliens", "fiche de paie", "israël", "tloush", "hébreu", "français", "analyse", "olim", "bituah leumi", "impôts israël"],
   metadataBase: new URL("https://tloush.com"),
+  alternates: {
+    canonical: "https://tloush.com",
+  },
   openGraph: {
     title: "Tloush — Comprenez vos documents israéliens en français",
-    description: "Uploadez vos documents en hébreu et recevez une analyse complète en français en 30 secondes. 100% gratuit.",
+    description: "Uploadez vos documents administratifs israéliens en hébreu et recevez une analyse complète en français en 30 secondes. Essai gratuit 60 jours inclus.",
     url: "https://tloush.com",
     siteName: "Tloush",
     locale: "fr_FR",
     type: "website",
+    images: [
+      {
+        url: "https://tloush.com/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Tloush — Analysez vos documents israéliens en français",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Tloush — Comprenez vos documents israéliens en français",
-    description: "Uploadez vos documents en hébreu et recevez une analyse complète en français en 30 secondes. 100% gratuit.",
+    description: "Uploadez vos documents administratifs israéliens en hébreu et recevez une analyse complète en français en 30 secondes. Essai gratuit 60 jours inclus.",
+    images: ["https://tloush.com/og-image.png"],
   },
   robots: {
     index: true,

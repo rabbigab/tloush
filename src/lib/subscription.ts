@@ -90,18 +90,11 @@ export async function getSubscription(
     .eq('user_id', targetUserId)
     .single()
 
-  // If table doesn't exist or query fails, allow access (graceful degradation)
+  // Si erreur inattendue (autre que "aucune ligne"), on lève une erreur — fail-closed
+  // Ne jamais accorder l'accès silencieusement en cas d'erreur DB
   if (error && error.code !== 'PGRST116') {
-    console.warn('[subscription] Query error, allowing access:', error.message)
-    return {
-      planId: 'free',
-      plan: PLANS.free,
-      status: 'active',
-      isTrialActive: true,
-      trialDaysLeft: 60,
-      stripeCustomerId: null,
-      stripeSubscriptionId: null,
-    }
+    console.error('[subscription] Unexpected DB error:', error.message, error.code)
+    throw new Error(`[subscription] DB error: ${error.message}`)
   }
 
   if (!sub) {

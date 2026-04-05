@@ -28,6 +28,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
+  // Idempotence : ignorer les events déjà traités (Stripe peut réenvoyer en cas d'échec)
+  const { data: alreadyProcessed } = await supabaseAdmin
+    .from('processed_webhook_events')
+    .select('stripe_event_id')
+    .eq('stripe_event_id', event.id)
+    .single()
+
+  if (alreadyProcessed) {
+    console.log(`[stripe webhook] Duplicate event ignored: ${event.id}`)
+    return NextResponse.json({ received: true, duplicate: true })
+  }
+
+  // Marquer l'event comme en cours de traitement (avant le switch pour éviter les races)
+  await supabaseAdmin
+    .from('processed_webhook_events')
+    .insert({ stripe_event_id: event.id })
+
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -151,6 +168,33 @@ export async function POST(req: NextRequest) {
           .eq('user_id', userId)
 
         console.log(`[stripe webhook] Subscription canceled for user ${userId}, downgraded to free`)
+        break
+      }
+
+      case 'invoice.payment_action_required': {
+        // SCA/3DS requis — mettre l'abonnement en past_due jusqu'à résolution
+        const invoice = event.data.object as Stripe.Invoice
+        const userId = await getSupabaseUserByCustomer(invoice.customer as string)
+        if (!userId) break
+
+        await supabaseAdmin
+          .from('subscriptions')
+          .update({
+            status: 'past_due',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', userId)
+
+        console.log(`[stripe webhook] Payment action required (SCA) for user ${userId}`)
+        break
+      }
+
+      case 'customer.subscription.trial_will_end': {
+        // Trial se termine dans 3 jours — logguer pour déclencher un email de rappel
+        const subscription = event.data.object as Stripe.Subscription
+        const userId = await getSupabaseUserByCustomer(subscription.customer as string)
+        console.log(`[stripe webhook] Trial ending soon for user ${userId || 'unknown'}`)
+        // TODO: envoyer un email de rappel via /api/alerts/trial-ending
         break
       }
 

@@ -5,6 +5,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const staticPages = [
     '',
+    '/pricing',
     '/calculateurs',
     '/calculateurs/brut-net',
     '/calculateurs/conges',
@@ -14,7 +15,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/droits-olim',
     '/modeles',
     '/scanner',
+    '/experts',
     '/privacy',
+    '/cgv',
+    '/mentions-legales',
   ]
 
   return staticPages.map((route) => ({
