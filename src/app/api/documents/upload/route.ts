@@ -575,39 +575,55 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
         }
       }
 
-      // Auto-group into folder by emitter
-      const emitter = (analysisResult.key_info as Record<string, unknown>)?.emitter as string | undefined
-      if (emitter && emitter.trim().length > 0) {
-        try {
-          const { data: existingFolder } = await supabase
+      // Auto-group into folder by document type (e.g. "Fiches de paie", "Factures")
+      const docType = (analysisResult.document_type as string) || 'other'
+      const FOLDER_NAMES: Record<string, string> = {
+        payslip: 'Fiches de paie',
+        bituah_leumi: 'Bituah Leumi',
+        tax_notice: 'Documents fiscaux',
+        work_contract: 'Contrats de travail',
+        pension: 'Retraite',
+        health_insurance: 'Assurance santé',
+        rental: 'Logement',
+        bank: 'Documents bancaires',
+        official_letter: 'Courriers officiels',
+        contract: 'Contrats',
+        invoice: 'Factures',
+        receipt: 'Tickets de caisse',
+        utility_bill: 'Factures services',
+        insurance: 'Assurances',
+        other: 'Autres documents',
+      }
+      const folderName = FOLDER_NAMES[docType] || FOLDER_NAMES.other
+      try {
+        const { data: existingFolder } = await supabase
+          .from('folders')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('name', folderName)
+          .maybeSingle()
+
+        let folderId = existingFolder?.id
+        if (!folderId) {
+          const { data: newFolder } = await supabase
             .from('folders')
+            .insert({
+              user_id: user.id,
+              name: folderName,
+              category: (analysisResult.category as string) || null,
+              auto_generated: true,
+              status: 'active',
+            })
             .select('id')
-            .eq('user_id', user.id)
-            .ilike('name', emitter)
-            .maybeSingle()
-
-          let folderId = existingFolder?.id
-          if (!folderId) {
-            const { data: newFolder } = await supabase
-              .from('folders')
-              .insert({
-                user_id: user.id,
-                name: emitter,
-                category: (analysisResult.category as string) || null,
-                auto_generated: true,
-                status: 'active',
-              })
-              .select('id')
-              .single()
-            folderId = newFolder?.id
-          }
-
-          if (folderId) {
-            await supabase.from('documents').update({ folder_id: folderId }).eq('id', document.id)
-          }
-        } catch (folderErr) {
-          console.error('[Folder] Auto-group error:', folderErr)
+            .single()
+          folderId = newFolder?.id
         }
+
+        if (folderId) {
+          await supabase.from('documents').update({ folder_id: folderId }).eq('id', document.id)
+        }
+      } catch (folderErr) {
+        console.error('[Folder] Auto-group error:', folderErr)
       }
     }
 
