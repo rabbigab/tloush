@@ -12,6 +12,7 @@ const PROTECTED_ROUTES = [
   '/folders',
   '/expenses',
   '/search',
+  '/admin',
 ]
 
 // Routes publiques qui n'ont pas besoin du middleware auth
