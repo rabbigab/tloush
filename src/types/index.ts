@@ -175,6 +175,7 @@ export interface AppDocument {
   period: string | null
   analysis_data?: Record<string, unknown>
   created_at: string
+  file_path?: string | null
   folder_id?: string | null
   deadline?: string | null
   action_completed_at?: string | null
