@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import SearchClient from './SearchClient'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: 'Recherche',
   description: 'Rechercher dans tous vos documents.',

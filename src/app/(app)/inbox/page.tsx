@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import InboxClient from './InboxClient'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: 'Mon inbox',
   description: 'Vos documents israéliens analysés en français avec alertes visuelles.',

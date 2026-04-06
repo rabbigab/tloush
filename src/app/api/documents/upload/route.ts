@@ -3,11 +3,11 @@ import Anthropic from '@anthropic-ai/sdk'
 import { validateFile } from '@/lib/fileValidation'
 import { createRateLimit } from '@/lib/rateLimit'
 import { requireAuth } from '@/lib/apiAuth'
-import { canUseFeature, incrementUsage } from '@/lib/subscription'
+import { canUseFeature, incrementUsage, getSubscription } from '@/lib/subscription'
 import { parseDeadline, detectAmountAnomaly } from '@/lib/parsers'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-const ratelimit = createRateLimit('upload', 5, '1 h')
+const freeRateLimit = createRateLimit('upload-free', 3, '1 h')
 
 function buildSystemPrompt(userContext?: { firstName?: string; lastName?: string; employerName?: string }): string {
   let prompt = `Tu es un expert en documents administratifs israéliens pour francophones.
@@ -118,12 +118,19 @@ export async function POST(req: NextRequest) {
     if (auth instanceof NextResponse) return auth
     const { user, supabase } = auth
 
-    // Rate limiting
-    if (ratelimit) {
-      const { success, remaining, reset } = await ratelimit.limit(user.id)
+    // Check subscription & quota
+    const access = await canUseFeature(supabase, user.id, 'document_analysis')
+    if (!access.allowed) {
+      return NextResponse.json({ error: access.reason, code: 'QUOTA_EXCEEDED' }, { status: 403 })
+    }
+
+    // Rate limiting — only for free plan (paid plans have no hourly limit)
+    const sub = await getSubscription(supabase, user.id)
+    if (sub.planId === 'free' && freeRateLimit) {
+      const { success, remaining, reset } = await freeRateLimit.limit(user.id)
       if (!success) {
         return NextResponse.json(
-          { error: 'Limite atteinte : 5 documents par heure. Réessayez plus tard.' },
+          { error: 'Limite atteinte. Réessayez plus tard.' },
           {
             status: 429,
             headers: {
@@ -133,12 +140,6 @@ export async function POST(req: NextRequest) {
           }
         )
       }
-    }
-
-    // Check subscription & quota
-    const access = await canUseFeature(supabase, user.id, 'document_analysis')
-    if (!access.allowed) {
-      return NextResponse.json({ error: access.reason, code: 'QUOTA_EXCEEDED' }, { status: 403 })
     }
 
     const formData = await req.formData()

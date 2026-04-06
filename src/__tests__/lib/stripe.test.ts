@@ -20,7 +20,7 @@ describe('stripe plan config', () => {
   })
 
   it('has correct document quotas', () => {
-    expect(PLANS.free.limits.documentsPerMonth).toBe(5)
+    expect(PLANS.free.limits.documentsPerMonth).toBe(3)
     expect(PLANS.solo.limits.documentsPerMonth).toBe(50)
     expect(PLANS.family.limits.documentsPerMonth).toBe(150)
   })
@@ -31,8 +31,8 @@ describe('stripe plan config', () => {
     expect(PLANS.family.limits.maxMembers).toBe(5)
   })
 
-  it('free plan has 60 days trial, paid plans have no trial', () => {
-    expect(PLANS.free.trialDays).toBe(60)
+  it('free plan has no trial, paid plans have no trial', () => {
+    expect(PLANS.free.trialDays).toBe(0)
     expect(PLANS.solo.trialDays).toBe(0)
     expect(PLANS.family.trialDays).toBe(0)
   })

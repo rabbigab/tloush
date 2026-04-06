@@ -73,7 +73,6 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
       const res = await fetch(`/api/documents/${docId}`, { method: 'DELETE' })
       if (res.ok) {
         setDocs(prev => prev.filter(d => d.id !== docId))
-        // Refresh server data (folders dropdown, counts, etc.)
         router.refresh()
       }
     } catch {
@@ -100,7 +99,7 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
 
       if (!res.ok) {
         const userMsg = res.status === 429
-          ? 'Limite atteinte : 5 documents par heure. Réessayez plus tard.'
+          ? 'Limite atteinte. Réessayez plus tard.'
           : res.status === 401
           ? 'Session expirée. Veuillez vous reconnecter.'
           : res.status === 403

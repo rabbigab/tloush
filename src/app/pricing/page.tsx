@@ -12,11 +12,11 @@ const PLANS = [
     id: 'free',
     name: 'Gratuit',
     price: 0,
-    period: '2 mois',
+    period: '',
     description: 'Découvrez Tloush gratuitement',
     popular: false,
     features: [
-      { text: '3 analyses de documents/mois', included: true },
+      { text: '3 analyses offertes', included: true },
       { text: 'Questionnaire droits des olim', included: true },
       { text: 'Historique 7 jours', included: true },
       { text: 'Assistant IA', included: false },
@@ -114,7 +114,7 @@ export default function PricingPage() {
             Choisissez votre plan
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Simplifiez votre vie administrative en Israël. Essayez gratuitement pendant 2 mois, sans engagement.
+            Simplifiez votre vie administrative en Israël. 3 analyses offertes pour découvrir, puis à partir de 49₪/mois.
           </p>
         </div>
 
@@ -151,7 +151,7 @@ export default function PricingPage() {
                   )}
                 </div>
                 {plan.price === 0 && (
-                  <p className="text-xs text-slate-400 mt-1">Pendant 2 mois</p>
+                  <p className="text-xs text-slate-400 mt-1">3 documents offerts</p>
                 )}
               </div>
 
@@ -196,8 +196,8 @@ export default function PricingPage() {
                 a: "Oui, vous pouvez annuler votre abonnement à tout moment depuis votre profil. Vous continuerez à avoir accès jusqu'à la fin de la période payée.",
               },
               {
-                q: "Que se passe-t-il après les 2 mois gratuits ?",
-                a: "Votre accès sera suspendu. Vous pourrez choisir un plan payant pour continuer à utiliser Tloush. Vos documents analysés restent sauvegardés.",
+                q: "Que se passe-t-il après les 3 analyses gratuites ?",
+                a: "Vous pourrez choisir un plan payant pour continuer à utiliser Tloush. Vos documents déjà analysés restent sauvegardés.",
               },
               {
                 q: 'Le plan Famille, comment ça marche ?',

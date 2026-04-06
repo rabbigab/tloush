@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Tloush — Comprenez vos documents israéliens en français",
-    description: "Uploadez vos documents administratifs israéliens en hébreu et recevez une analyse complète en français en 30 secondes. Essai gratuit 60 jours inclus.",
+    description: "Uploadez vos documents administratifs israéliens en hébreu et recevez une analyse complète en français en 30 secondes. 3 analyses offertes.",
     url: "https://tloush.com",
     siteName: "Tloush",
     locale: "fr_FR",
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Tloush — Comprenez vos documents israéliens en français",
-    description: "Uploadez vos documents administratifs israéliens en hébreu et recevez une analyse complète en français en 30 secondes. Essai gratuit 60 jours inclus.",
+    description: "Uploadez vos documents administratifs israéliens en hébreu et recevez une analyse complète en français en 30 secondes. 3 analyses offertes.",
     images: ["https://tloush.com/og-image.png"],
   },
   robots: {

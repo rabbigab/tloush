@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import CompareClient from './CompareClient'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: 'Tloush — Comparer mes fiches de paie',
 }
