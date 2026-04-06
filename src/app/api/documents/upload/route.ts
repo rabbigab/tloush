@@ -245,6 +245,47 @@ Pour les factures/tickets (invoice, receipt, utility_bill, insurance) :
 - Indiquer si c'est une dépense récurrente probable (mensuelle, bimestrielle, etc.)
 - Ajouter un champ "recurring_info" dans analysis_data: {"is_recurring": true/false, "frequency": "monthly"|"bimonthly"|"quarterly"|"annual"|"one_time", "provider": "nom du fournisseur", "amount": nombre}
 
+=== EXTRACTION DES INFORMATIONS DE PAIEMENT (CRITIQUE pour les factures) ===
+Pour TOUTE facture (invoice, utility_bill, insurance, receipt), tu DOIS chercher et extraire les informations de paiement.
+Ajoute OBLIGATOIREMENT un objet "payment_info" dans analysis_data :
+{
+  "payment_info": {
+    "payment_url": "URL de paiement en ligne si visible sur le document, ou null",
+    "payment_reference": "Numéro de référence/facture pour le paiement, ou null",
+    "bank_details": {
+      "bank_name": "nom de la banque ou null",
+      "branch": "numéro de succursale ou null",
+      "account": "numéro de compte ou null",
+      "iban": "IBAN si présent ou null"
+    } ou null,
+    "payment_methods": ["liste des moyens de paiement acceptés détectés sur le document"],
+    "amount_due": nombre ou null,
+    "due_date": "date limite de paiement (format JJ/MM/AAAA) ou null",
+    "is_paid": true/false/null,
+    "payment_code": "code-barres, QR code ou référence de paiement automatique si détecté, ou null",
+    "phone_payment": "numéro de téléphone pour payer si indiqué, ou null",
+    "standing_order_info": "informations sur le prélèvement automatique (הוראת קבע) si mentionné, ou null"
+  }
+}
+
+Termes hébreux courants pour le paiement :
+- תשלום = paiement
+- לתשלום = à payer
+- סכום לתשלום = montant à payer
+- מועד תשלום / תאריך אחרון לתשלום = date limite de paiement
+- אסמכתא / מספר חשבונית = référence / numéro de facture
+- הוראת קבע = prélèvement automatique (standing order)
+- כרטיס אשראי = carte de crédit
+- העברה בנקאית = virement bancaire
+- קוד לתשלום = code de paiement
+- אתר התשלומים = site de paiement
+- שולם / לא שולם = payé / non payé
+- יתרה לתשלום = solde à payer
+
+Si tu détectes une URL de paiement (souvent sous forme de lien ou QR code), extrais-la EXACTEMENT. Les factures israéliennes de חברת חשמל (compagnie d'électricité), עיריה (mairie/arnona), מים (eau) ont souvent des liens de paiement en ligne.
+
+=== FIN GUIDE PAIEMENT ===
+
 Guide pour document_type :
 - "payslip" = fiche de paie / tloush maskoret
 - "bituah_leumi" = tout document du Bituah Leumi (sécurité sociale)

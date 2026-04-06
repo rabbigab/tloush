@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, FileText, AlertTriangle, CheckCircle, Info, AlertCircle, Clock, ListChecks, UserCheck, CalendarClock, MessageSquare, Download, Check, Eye } from 'lucide-react'
+import { ArrowLeft, FileText, AlertTriangle, CheckCircle, Info, AlertCircle, Clock, ListChecks, UserCheck, CalendarClock, MessageSquare, Download, Check, Eye, CreditCard, ExternalLink } from 'lucide-react'
 import { DOC_LABELS, DOC_ICONS, DOC_COLORS } from '@/lib/docTypes'
 
 interface AttentionPoint {
@@ -86,6 +86,18 @@ export default function DocumentDetailClient({ document: doc, originalUrl }: { d
   const consultPro = analysis?.should_consult_pro
   const keyInfo = analysis?.key_info
   const recurringInfo = analysis?.recurring_info
+  const paymentInfo = analysis?.payment_info as {
+    payment_url?: string | null
+    payment_reference?: string | null
+    bank_details?: { bank_name?: string; branch?: string; account?: string; iban?: string } | null
+    payment_methods?: string[]
+    amount_due?: number | null
+    due_date?: string | null
+    is_paid?: boolean | null
+    payment_code?: string | null
+    phone_payment?: string | null
+    standing_order_info?: string | null
+  } | undefined
 
   async function markActionDone() {
     setActionDone(true)
@@ -334,6 +346,107 @@ export default function DocumentDetailClient({ document: doc, originalUrl }: { d
                 <Check size={12} />
                 Marquer comme fait
               </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Payment info */}
+      {paymentInfo && (paymentInfo.payment_url || paymentInfo.payment_reference || paymentInfo.amount_due || paymentInfo.bank_details) && (
+        <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-200 dark:border-emerald-800 p-5">
+          <h2 className="text-sm font-semibold text-emerald-800 dark:text-emerald-200 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <CreditCard size={16} />
+            Informations de paiement
+            {paymentInfo.is_paid === true && (
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 ml-2">Payé</span>
+            )}
+            {paymentInfo.is_paid === false && (
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 ml-2">Non payé</span>
+            )}
+          </h2>
+
+          <div className="space-y-3">
+            {/* Amount + due date */}
+            {(paymentInfo.amount_due || paymentInfo.due_date) && (
+              <div className="flex items-center gap-4">
+                {paymentInfo.amount_due && (
+                  <div>
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400">Montant à payer</p>
+                    <p className="text-lg font-bold text-emerald-900 dark:text-emerald-100">{paymentInfo.amount_due}₪</p>
+                  </div>
+                )}
+                {paymentInfo.due_date && (
+                  <div>
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400">Date limite</p>
+                    <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">{paymentInfo.due_date}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Payment URL - prominent button */}
+            {paymentInfo.payment_url && (
+              <a
+                href={paymentInfo.payment_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-5 rounded-xl text-sm transition-colors"
+              >
+                <ExternalLink size={16} />
+                Payer en ligne
+              </a>
+            )}
+
+            {/* Reference + payment code */}
+            {(paymentInfo.payment_reference || paymentInfo.payment_code) && (
+              <div className="flex flex-wrap gap-3">
+                {paymentInfo.payment_reference && (
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-emerald-200 dark:border-emerald-700 px-3 py-2">
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400">Référence</p>
+                    <p className="text-sm font-mono font-semibold text-slate-800 dark:text-slate-200">{paymentInfo.payment_reference}</p>
+                  </div>
+                )}
+                {paymentInfo.payment_code && (
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-emerald-200 dark:border-emerald-700 px-3 py-2">
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400">Code de paiement</p>
+                    <p className="text-sm font-mono font-semibold text-slate-800 dark:text-slate-200">{paymentInfo.payment_code}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Bank details */}
+            {paymentInfo.bank_details && (paymentInfo.bank_details.bank_name || paymentInfo.bank_details.account) && (
+              <div className="bg-white dark:bg-slate-800 rounded-xl border border-emerald-200 dark:border-emerald-700 px-3 py-2">
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">Coordonnées bancaires</p>
+                <p className="text-sm text-slate-800 dark:text-slate-200">
+                  {[
+                    paymentInfo.bank_details.bank_name,
+                    paymentInfo.bank_details.branch && `Agence ${paymentInfo.bank_details.branch}`,
+                    paymentInfo.bank_details.account && `Compte ${paymentInfo.bank_details.account}`,
+                    paymentInfo.bank_details.iban,
+                  ].filter(Boolean).join(' · ')}
+                </p>
+              </div>
+            )}
+
+            {/* Phone payment */}
+            {paymentInfo.phone_payment && (
+              <div className="text-sm text-emerald-700 dark:text-emerald-300">
+                Paiement par téléphone : <a href={`tel:${paymentInfo.phone_payment}`} className="font-semibold underline">{paymentInfo.phone_payment}</a>
+              </div>
+            )}
+
+            {/* Standing order */}
+            {paymentInfo.standing_order_info && (
+              <p className="text-xs text-emerald-600 dark:text-emerald-400">{paymentInfo.standing_order_info}</p>
+            )}
+
+            {/* Payment methods */}
+            {paymentInfo.payment_methods && paymentInfo.payment_methods.length > 0 && (
+              <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                Moyens de paiement : {paymentInfo.payment_methods.join(', ')}
+              </p>
             )}
           </div>
         </div>
