@@ -21,5 +21,14 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
 
   if (!document) notFound()
 
-  return <DocumentDetailClient document={document} />
+  // Generate signed URL for the original file (valid 1 hour)
+  let originalUrl: string | null = null
+  if (document.file_path) {
+    const { data: signedData } = await supabase.storage
+      .from('documents')
+      .createSignedUrl(document.file_path, 3600)
+    originalUrl = signedData?.signedUrl || null
+  }
+
+  return <DocumentDetailClient document={document} originalUrl={originalUrl} />
 }
