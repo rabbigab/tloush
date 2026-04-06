@@ -73,6 +73,8 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
       const res = await fetch(`/api/documents/${docId}`, { method: 'DELETE' })
       if (res.ok) {
         setDocs(prev => prev.filter(d => d.id !== docId))
+        // Refresh server data (folders dropdown, counts, etc.)
+        router.refresh()
       }
     } catch {
       // Document stays in list
