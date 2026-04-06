@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import FoldersClient from './FoldersClient'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: 'Dossiers',
   description: 'Vos documents regroupés automatiquement par émetteur.',

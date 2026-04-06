@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ProfileClient from './ProfileClient'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: 'Mon profil',
   description: 'Gérez votre compte, vos préférences de notification et vos données.',

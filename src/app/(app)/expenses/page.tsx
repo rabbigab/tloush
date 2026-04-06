@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ExpensesClient from './ExpensesClient'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: 'Mes dépenses',
   description: 'Vue d\'ensemble de vos dépenses récurrentes détectées depuis vos factures.',
