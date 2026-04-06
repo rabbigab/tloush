@@ -5,7 +5,7 @@ import Link from 'next/link'
 import {
   Users, FileText, CreditCard, TrendingUp, RefreshCw, Search,
   ArrowLeft, ChevronDown, ChevronUp, Clock, UserCheck, AlertCircle,
-  Crown, UserPlus, Activity, DollarSign, BarChart3, Eye
+  Crown, UserPlus, Activity, DollarSign, BarChart3, Eye, Trash2, Phone
 } from 'lucide-react'
 
 interface UserData {
@@ -93,6 +93,26 @@ export default function AdminDashboard() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [tab, setTab] = useState<'users' | 'documents'>('users')
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
+
+  async function handleDeleteUser(userId: string) {
+    setDeleting(userId)
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const data = await res.json()
+        alert(data.error || 'Erreur lors de la suppression')
+        return
+      }
+      setDeleteConfirm(null)
+      fetchData()
+    } catch {
+      alert('Erreur réseau')
+    } finally {
+      setDeleting(null)
+    }
+  }
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -292,6 +312,7 @@ export default function AdminDashboard() {
                       </th>
                       <th className="text-left px-4 py-3 font-medium text-slate-500 hidden lg:table-cell">Téléphone</th>
                       <th className="text-center px-4 py-3 font-medium text-slate-500 hidden xl:table-cell">Connexion</th>
+                      <th className="text-center px-4 py-3 font-medium text-slate-500 w-16">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -353,6 +374,33 @@ export default function AdminDashboard() {
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${u.provider === 'google' ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-600'}`}>
                             {u.provider === 'google' ? 'Google' : 'Email'}
                           </span>
+                        </td>
+                        <td className="px-4 py-3 text-center" onClick={e => e.stopPropagation()}>
+                          {deleteConfirm === u.id ? (
+                            <div className="flex items-center gap-1 justify-center">
+                              <button
+                                onClick={() => handleDeleteUser(u.id)}
+                                disabled={deleting === u.id}
+                                className="px-2 py-1 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-50"
+                              >
+                                {deleting === u.id ? '...' : 'Oui'}
+                              </button>
+                              <button
+                                onClick={() => setDeleteConfirm(null)}
+                                className="px-2 py-1 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg"
+                              >
+                                Non
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setDeleteConfirm(u.id)}
+                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Supprimer ce compte"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
