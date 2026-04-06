@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Wallet, TrendingUp, Trash2, FileText, Calendar, Download, Pencil, Check, X } from 'lucide-react'
+import { Wallet, TrendingUp, Trash2, FileText, Calendar, Download, Pencil, Check, X, Plus } from 'lucide-react'
 
 interface RecurringExpense {
   id: string
@@ -51,6 +51,12 @@ export default function ExpensesClient({ expenses: initialExpenses, monthly = []
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editAmount, setEditAmount] = useState('')
   const [editFrequency, setEditFrequency] = useState('monthly')
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [newName, setNewName] = useState('')
+  const [newAmount, setNewAmount] = useState('')
+  const [newFrequency, setNewFrequency] = useState('monthly')
+  const [newCategory, setNewCategory] = useState('logement')
+  const [addingExpense, setAddingExpense] = useState(false)
 
   function startEdit(exp: RecurringExpense) {
     setEditingId(exp.id)
@@ -95,6 +101,37 @@ export default function ExpensesClient({ expenses: initialExpenses, monthly = []
       // stays in list
     } finally {
       setDeletingId(null)
+    }
+  }
+
+  async function addExpense() {
+    if (!newName.trim()) return
+    setAddingExpense(true)
+    try {
+      const amount = parseFloat(newAmount)
+      const res = await fetch('/api/recurring-expenses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider_name: newName.trim(),
+          amount: isNaN(amount) ? null : amount,
+          frequency: newFrequency,
+          category: newCategory,
+        }),
+      })
+      if (res.ok) {
+        const { expense } = await res.json()
+        setExpenses(prev => [...prev, expense])
+        setNewName('')
+        setNewAmount('')
+        setNewFrequency('monthly')
+        setNewCategory('logement')
+        setShowAddForm(false)
+      }
+    } catch {
+      // keep form open
+    } finally {
+      setAddingExpense(false)
     }
   }
 
@@ -158,6 +195,101 @@ export default function ExpensesClient({ expenses: initialExpenses, monthly = []
           </p>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Sur 12 mois</p>
         </div>
+      </div>
+
+      {/* Add expense manually */}
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        {!showAddForm ? (
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="w-full px-6 py-4 flex items-center gap-3 text-sm font-medium text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-950/20 transition-colors"
+          >
+            <Plus size={18} />
+            Ajouter une dépense manuellement (loyer, assurance, abonnement...)
+          </button>
+        ) : (
+          <div className="px-6 py-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Nouvelle dépense récurrente</h3>
+              <button onClick={() => setShowAddForm(false)} className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
+                <X size={16} />
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Nom *</label>
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={e => setNewName(e.target.value)}
+                  placeholder="Ex: Loyer, Harel assurance, Internet..."
+                  className="w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-300 text-slate-800 dark:text-slate-200 placeholder-slate-400"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Montant (₪)</label>
+                <input
+                  type="number"
+                  value={newAmount}
+                  onChange={e => setNewAmount(e.target.value)}
+                  placeholder="Ex: 3500"
+                  className="w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-300 text-slate-800 dark:text-slate-200 placeholder-slate-400"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Fréquence</label>
+                <select
+                  value={newFrequency}
+                  onChange={e => setNewFrequency(e.target.value)}
+                  className="w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-300 text-slate-800 dark:text-slate-200"
+                >
+                  <option value="monthly">Mensuel</option>
+                  <option value="bimonthly">Bimestriel</option>
+                  <option value="quarterly">Trimestriel</option>
+                  <option value="annual">Annuel</option>
+                  <option value="one_time">Ponctuel</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Catégorie</label>
+                <select
+                  value={newCategory}
+                  onChange={e => setNewCategory(e.target.value)}
+                  className="w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-300 text-slate-800 dark:text-slate-200"
+                >
+                  <option value="logement">Logement</option>
+                  <option value="finance">Factures</option>
+                  <option value="bancaire">Bancaire</option>
+                  <option value="securite_sociale">Sécurité sociale</option>
+                  <option value="fiscal">Fiscal</option>
+                  <option value="retraite">Retraite</option>
+                  <option value="travail">Travail</option>
+                  <option value="autre">Autre</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setShowAddForm(false)}
+                className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={addExpense}
+                disabled={!newName.trim() || addingExpense}
+                className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors flex items-center gap-2"
+              >
+                {addingExpense ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Plus size={14} />
+                )}
+                Ajouter
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Evolution chart */}
