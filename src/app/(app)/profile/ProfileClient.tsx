@@ -14,6 +14,7 @@ export default function ProfileClient({
   firstName: initialFirstName,
   lastName: initialLastName,
   employerName: initialEmployerName,
+  phone: initialPhone,
   createdAt,
   documentCount
 }: {
@@ -22,6 +23,7 @@ export default function ProfileClient({
   firstName: string
   lastName: string
   employerName: string
+  phone: string
   createdAt: string
   documentCount: number
 }) {
@@ -32,11 +34,13 @@ export default function ProfileClient({
   const [firstName, setFirstName] = useState(initialFirstName)
   const [lastName, setLastName] = useState(initialLastName)
   const [employerName, setEmployerName] = useState(initialEmployerName)
+  const [phone, setPhone] = useState(initialPhone)
   const [editingIdentity, setEditingIdentity] = useState(false)
   const [identitySaving, setIdentitySaving] = useState(false)
   const [firstNameInput, setFirstNameInput] = useState(initialFirstName)
   const [lastNameInput, setLastNameInput] = useState(initialLastName)
   const [employerInput, setEmployerInput] = useState(initialEmployerName)
+  const [phoneInput, setPhoneInput] = useState(initialPhone)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteInput, setDeleteInput] = useState('')
@@ -102,12 +106,14 @@ export default function ProfileClient({
           first_name: firstNameInput.trim(),
           last_name: lastNameInput.trim(),
           employer_name: employerInput.trim(),
+          phone: phoneInput.trim(),
         }
       })
       if (!error) {
         setFirstName(firstNameInput.trim())
         setLastName(lastNameInput.trim())
         setEmployerName(employerInput.trim())
+        setPhone(phoneInput.trim())
         setEditingIdentity(false)
         track('profile_updated', { field: 'identity' })
       }
@@ -246,15 +252,27 @@ export default function ProfileClient({
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Nom de l&apos;employeur / entreprise</label>
-                <input
-                  type="text"
-                  value={employerInput}
-                  onChange={e => setEmployerInput(e.target.value)}
-                  placeholder="Check Point Software"
-                  className="w-full border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Employeur / entreprise</label>
+                  <input
+                    type="text"
+                    value={employerInput}
+                    onChange={e => setEmployerInput(e.target.value)}
+                    placeholder="Check Point Software"
+                    className="w-full border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Téléphone</label>
+                  <input
+                    type="tel"
+                    value={phoneInput}
+                    onChange={e => setPhoneInput(e.target.value)}
+                    placeholder="05X-XXX-XXXX"
+                    className="w-full border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                  />
+                </div>
               </div>
               <div className="flex items-center gap-2 pt-1">
                 <button

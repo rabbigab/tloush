@@ -96,6 +96,7 @@ export async function GET() {
       total_documents: docsPerUser[u.id] || 0,
       documents_this_month: usageByUser[u.id] || 0,
       provider: u.app_metadata?.provider || 'email',
+      phone: (u.user_metadata as Record<string, string>)?.phone || null,
     }
   }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 

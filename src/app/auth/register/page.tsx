@@ -9,6 +9,7 @@ import { track } from '@/lib/analytics'
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
@@ -44,6 +45,12 @@ export default function RegisterPage() {
     setLoading(true)
     setError('')
 
+    if (!phone.trim()) {
+      setError('Veuillez saisir votre numéro de téléphone')
+      setLoading(false)
+      return
+    }
+
     if (password !== confirm) {
       setError('Les mots de passe ne correspondent pas')
       setLoading(false)
@@ -62,6 +69,9 @@ export default function RegisterPage() {
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: {
+          phone: phone.trim() || undefined,
+        },
       },
     })
 
@@ -157,6 +167,22 @@ export default function RegisterPage() {
                 placeholder="vous@email.com"
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
               />
+            </div>
+
+            <div>
+              <label htmlFor="reg-phone" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Téléphone
+              </label>
+              <input
+                id="reg-phone"
+                type="tel"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                required
+                placeholder="05X-XXX-XXXX"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+              />
+              <p className="text-xs text-slate-400 mt-1">Pour vous contacter si besoin (jamais partagé)</p>
             </div>
 
             <div>

@@ -27,6 +27,7 @@ export default async function ProfilePage() {
       firstName={user.user_metadata?.first_name || ''}
       lastName={user.user_metadata?.last_name || ''}
       employerName={user.user_metadata?.employer_name || ''}
+      phone={user.user_metadata?.phone || ''}
       createdAt={user.created_at}
       documentCount={documentCount || 0}
     />

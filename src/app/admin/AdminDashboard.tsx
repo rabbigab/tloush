@@ -18,6 +18,7 @@ interface UserData {
   total_documents: number
   documents_this_month: number
   provider: string
+  phone: string | null
 }
 
 interface RecentDoc {
@@ -289,7 +290,8 @@ export default function AdminDashboard() {
                       <th className="text-left px-4 py-3 font-medium text-slate-500 cursor-pointer select-none hidden md:table-cell" onClick={() => toggleSort('last_sign_in_at')}>
                         <span className="inline-flex items-center gap-1">Dernière connexion <SortIcon field="last_sign_in_at" /></span>
                       </th>
-                      <th className="text-center px-4 py-3 font-medium text-slate-500 hidden lg:table-cell">Connexion</th>
+                      <th className="text-left px-4 py-3 font-medium text-slate-500 hidden lg:table-cell">Téléphone</th>
+                      <th className="text-center px-4 py-3 font-medium text-slate-500 hidden xl:table-cell">Connexion</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -338,7 +340,16 @@ export default function AdminDashboard() {
                             <span className="text-slate-300">—</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-center hidden lg:table-cell">
+                        <td className="px-4 py-3 hidden lg:table-cell">
+                          {u.phone ? (
+                            <a href={`tel:${u.phone}`} className="text-blue-600 hover:underline font-mono text-xs">
+                              {u.phone}
+                            </a>
+                          ) : (
+                            <span className="text-slate-300">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-center hidden xl:table-cell">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${u.provider === 'google' ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-600'}`}>
                             {u.provider === 'google' ? 'Google' : 'Email'}
                           </span>
