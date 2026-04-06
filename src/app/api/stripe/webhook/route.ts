@@ -73,6 +73,75 @@ export async function POST(req: NextRequest) {
           .eq('user_id', userId)
 
         console.log(`[stripe webhook] Subscription activated for user ${userId}: plan ${planId}`)
+
+        // --- Referral reward: if this user was referred, grant 1 free month Solo to the referrer ---
+        try {
+          const { data: referral } = await supabaseAdmin
+            .from('referrals')
+            .select('id, referrer_id, referred_upgraded')
+            .eq('referred_id', userId)
+            .eq('referred_upgraded', false)
+            .single()
+
+          if (referral) {
+            // Mark referral as upgraded
+            await supabaseAdmin
+              .from('referrals')
+              .update({ referred_upgraded: true, upgraded_at: new Date().toISOString() })
+              .eq('id', referral.id)
+
+            // Grant +1 free month to the referrer
+            const { data: existingBonus } = await supabaseAdmin
+              .from('referral_bonuses')
+              .select('id, free_months_earned')
+              .eq('user_id', referral.referrer_id)
+              .single()
+
+            if (existingBonus) {
+              await supabaseAdmin
+                .from('referral_bonuses')
+                .update({
+                  free_months_earned: (existingBonus.free_months_earned || 0) + 1,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', existingBonus.id)
+            } else {
+              await supabaseAdmin.from('referral_bonuses').insert({
+                user_id: referral.referrer_id,
+                bonus_analyses: 0,
+                free_months_earned: 1,
+              })
+            }
+
+            // Upgrade referrer to Solo for 1 month if they're on free plan
+            const { data: referrerSub } = await supabaseAdmin
+              .from('subscriptions')
+              .select('plan_id')
+              .eq('user_id', referral.referrer_id)
+              .single()
+
+            if (referrerSub?.plan_id === 'free') {
+              const oneMonthFromNow = new Date()
+              oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1)
+
+              await supabaseAdmin
+                .from('subscriptions')
+                .update({
+                  plan_id: 'solo',
+                  status: 'active',
+                  current_period_start: new Date().toISOString(),
+                  current_period_end: oneMonthFromNow.toISOString(),
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('user_id', referral.referrer_id)
+
+              console.log(`[stripe webhook] Referral reward: user ${referral.referrer_id} upgraded to Solo for 1 month`)
+            }
+          }
+        } catch (refErr) {
+          console.error('[stripe webhook] Referral reward error:', refErr)
+        }
+
         break
       }
 

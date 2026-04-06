@@ -8,6 +8,7 @@ import AppNav from './AppNav'
 import OnboardingGuide from './OnboardingGuide'
 import FeedbackWidget from './FeedbackWidget'
 import PhonePrompt from './PhonePrompt'
+import ReferralApply from './ReferralApply'
 import { createClient } from '@/lib/supabase/client'
 import { identifyUser } from '@/lib/analytics'
 
@@ -44,6 +45,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <OnboardingGuide />
       <FeedbackWidget />
       <PhonePrompt />
+      <ReferralApply />
     </div>
   )
 }

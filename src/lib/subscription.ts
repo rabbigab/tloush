@@ -295,10 +295,11 @@ export async function canUseFeature(
     }
   }
 
-  // --- FREE plan: 3 documents au TOTAL (pas par mois) ---
+  // --- FREE plan: 3 documents au TOTAL (pas par mois) + bonus parrainage ---
   if (feature === 'document_analysis' && sub.planId === 'free') {
     const totalDocs = await getTotalDocumentsAnalyzed(supabase, userId)
-    const freeLimit = sub.plan.limits.documentsPerMonth // = 3
+    const bonusAnalyses = await getReferralBonusAnalyses(supabase, userId)
+    const freeLimit = sub.plan.limits.documentsPerMonth + bonusAnalyses // 3 + bonus
     if (totalDocs >= freeLimit) {
       return {
         allowed: false,
@@ -331,6 +332,22 @@ export async function canUseFeature(
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+async function getReferralBonusAnalyses(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<number> {
+  try {
+    const { data } = await supabase
+      .from('referral_bonuses')
+      .select('bonus_analyses')
+      .eq('user_id', userId)
+      .single()
+    return data?.bonus_analyses || 0
+  } catch {
+    return 0
+  }
+}
 
 async function getTotalDocumentsAnalyzed(
   supabase: SupabaseClient,
