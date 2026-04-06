@@ -55,14 +55,14 @@ export async function GET(req: NextRequest) {
     byUser.set(doc.user_id, list)
   }
 
-  for (const [userId, userDocs] of byUser) {
+  for (const [userId, userDocs] of Array.from(byUser.entries())) {
     // Get user email
     const { data: { user } } = await supabase.auth.admin.getUserById(userId)
     if (!user?.email) continue
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tloush.com'
 
-    const docRows = userDocs.map(doc => {
+    const docRows = userDocs.map((doc: { id: string; file_name: string; deadline: string; action_description: string | null }) => {
       const daysLeft = doc.deadline === format(in1day) ? '1 jour' : '3 jours'
       const urgencyColor = doc.deadline === format(in1day) ? '#dc2626' : '#d97706'
       return `
@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
         </tr>`
     }).join('')
 
-    const hasUrgent = userDocs.some(d => d.deadline === format(in1day))
+    const hasUrgent = userDocs.some((d: { deadline: string }) => d.deadline === format(in1day))
     const subject = hasUrgent
       ? `⚠️ Échéance demain — ${userDocs.length} document${userDocs.length > 1 ? 's' : ''} à traiter`
       : `📅 Échéance dans 3 jours — ${userDocs.length} document${userDocs.length > 1 ? 's' : ''}`
