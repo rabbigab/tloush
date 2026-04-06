@@ -277,25 +277,20 @@ export async function canUseFeature(
 ): Promise<{ allowed: boolean; reason?: string }> {
   const sub = await getSubscription(supabase, userId)
 
-  // Check if subscription is active
-  if (sub.status === 'trial_expired') {
-    return {
-      allowed: false,
-      reason: 'Votre essai gratuit de 2 mois est terminé. Choisissez un plan pour continuer.',
+  // Check paid plan status
+  if (sub.planId !== 'free') {
+    if (sub.status === 'expired' || sub.status === 'canceled') {
+      return {
+        allowed: false,
+        reason: 'Votre abonnement a expiré. Renouvelez pour continuer.',
+      }
     }
-  }
 
-  if (sub.status === 'expired' || sub.status === 'canceled') {
-    return {
-      allowed: false,
-      reason: 'Votre abonnement a expiré. Renouvelez pour continuer.',
-    }
-  }
-
-  if (sub.status === 'past_due') {
-    return {
-      allowed: false,
-      reason: 'Votre paiement est en retard. Mettez à jour vos informations de paiement.',
+    if (sub.status === 'past_due') {
+      return {
+        allowed: false,
+        reason: 'Votre paiement est en retard. Mettez à jour vos informations de paiement.',
+      }
     }
   }
 
@@ -307,7 +302,20 @@ export async function canUseFeature(
     }
   }
 
-  // Check usage limits
+  // --- FREE plan: 3 documents au TOTAL (pas par mois) ---
+  if (feature === 'document_analysis' && sub.planId === 'free') {
+    const totalDocs = await getTotalDocumentsAnalyzed(supabase, userId)
+    const freeLimit = sub.plan.limits.documentsPerMonth // = 3
+    if (totalDocs >= freeLimit) {
+      return {
+        allowed: false,
+        reason: `Vous avez utilisé vos ${freeLimit} analyses gratuites. Passez au plan Solo (49₪/mois) pour analyser jusqu'à 50 documents par mois.`,
+      }
+    }
+    return { allowed: true }
+  }
+
+  // --- PAID plans: check monthly usage ---
   const usage = await getUsage(supabase, userId)
 
   if (feature === 'document_analysis' && usage.documentsRemaining <= 0) {
@@ -330,6 +338,26 @@ export async function canUseFeature(
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+async function getTotalDocumentsAnalyzed(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<number> {
+  try {
+    const { count, error } = await supabase
+      .from('documents')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+
+    if (error) {
+      console.warn('[usage] Failed to count total docs:', error.message)
+      return 0
+    }
+    return count || 0
+  } catch {
+    return 0
+  }
+}
 
 function getCurrentPeriod(): string {
   const now = new Date()

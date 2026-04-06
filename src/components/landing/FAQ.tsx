@@ -7,7 +7,7 @@ import { ChevronDown } from "lucide-react";
 const FAQS = [
   {
     q: "C'est vraiment gratuit ?",
-    a: "Oui, vous pouvez analyser jusqu'à 5 documents par mois gratuitement pendant 2 mois. Ensuite, choisissez le plan qui vous convient à partir de 49₪/mois.",
+    a: "Oui, vous pouvez analyser jusqu'à 3 documents gratuitement pour découvrir le service. Ensuite, passez au plan Solo à 49₪/mois pour un accès complet.",
   },
   {
     q: "Quels types de documents puis-je analyser ?",

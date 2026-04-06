@@ -33,12 +33,12 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     price: 0,
     stripePriceId: null,
     limits: {
-      documentsPerMonth: 5,
+      documentsPerMonth: 3, // 3 docs au TOTAL (pas par mois) — géré dans canUseFeature
       assistantMessagesPerMonth: 0,
       historyDays: 30,
       maxMembers: 1,
     },
-    trialDays: 60,
+    trialDays: 0, // Plus de trial — 3 docs gratuits puis paywall
     features: [
       'Analysez vos premiers documents',
       'Résultat complet en français',

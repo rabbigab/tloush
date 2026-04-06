@@ -98,7 +98,7 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
 
       if (!res.ok) {
         const userMsg = res.status === 429
-          ? 'Limite atteinte : 5 documents par heure. Réessayez plus tard.'
+          ? 'Limite atteinte. Réessayez plus tard.'
           : res.status === 401
           ? 'Session expirée. Veuillez vous reconnecter.'
           : 'Une erreur est survenue lors de l\'analyse. Réessayez ou contactez le support.'
