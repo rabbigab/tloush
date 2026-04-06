@@ -142,6 +142,9 @@ Tes réponses doivent être :
 ${documentContext ? `Tu as accès au document suivant de l'utilisateur :\n${documentContext}` : 'Aucun document spécifique chargé. Réponds aux questions générales sur l\'administration israélienne.'}
 ${expensesContext}
 
+IMPORTANT — Actions sur les documents :
+Si l'utilisateur indique qu'il a effectué une action demandée (ex: "c'est fait", "j'ai payé", "j'ai envoyé", etc.), confirme-lui que tu as bien noté que l'action est faite et que le document est mis à jour. Sois encourageant ("Parfait, c'est noté ! L'action est marquée comme effectuée.").
+
 IMPORTANT — Recommandation d'experts :
 Quand la question dépasse tes compétences (juridique, fiscal complexe, litige), recommande un expert adapté avec un lien vers l'annuaire Tloush :
 - Pour les questions fiscales/comptables → "Consultez un expert-comptable francophone sur [notre annuaire](/experts?specialite=comptabilite)"
@@ -162,6 +165,25 @@ Donne toujours les informations générales d'abord, puis suggère l'expert si n
     })
 
     const assistantMessage = response.content[0].type === 'text' ? response.content[0].text : ''
+
+    // Détecter si l'utilisateur indique qu'une action est faite
+    const actionDoneKeywords = /c['']?est fait|je l['']?ai fait|c['']?est r[ée]gl[ée]|c['']?est termin[ée]|j['']?ai termin[ée]|effectu[ée]|accompli|r[ée]alis[ée]|d[ée]j[aà] fait|c['']?est bon|c['']?est ok|j['']?ai envoy[ée]|j['']?ai pay[ée]|j['']?ai sign[ée]/i
+    if (documentId && actionDoneKeywords.test(message)) {
+      const { data: actionDoc } = await supabase
+        .from('documents')
+        .select('id, action_required, action_completed_at')
+        .eq('id', documentId)
+        .eq('user_id', user.id)
+        .single()
+
+      if (actionDoc && actionDoc.action_required && !actionDoc.action_completed_at) {
+        await supabase
+          .from('documents')
+          .update({ action_completed_at: new Date().toISOString() })
+          .eq('id', documentId)
+          .eq('user_id', user.id)
+      }
+    }
 
     // Increment usage counter
     await incrementUsage(supabase, user.id, 'assistant_messages')
