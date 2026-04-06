@@ -265,7 +265,7 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
                     type="text"
                     value={uploadContext.employeeName}
                     onChange={e => setUploadContext(c => ({ ...c, employeeName: e.target.value }))}
-                    placeholder="Ex: Johanna Lellouche"
+                    placeholder="Votre nom complet"
                     className="w-full border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   />
                 </div>
@@ -275,7 +275,7 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
                     type="text"
                     value={uploadContext.employerName}
                     onChange={e => setUploadContext(c => ({ ...c, employerName: e.target.value }))}
-                    placeholder="Ex: La Moulin Doré"
+                    placeholder="Nom de l'entreprise"
                     className="w-full border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   />
                 </div>
@@ -285,7 +285,7 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
                     type="text"
                     value={uploadContext.docPeriod}
                     onChange={e => setUploadContext(c => ({ ...c, docPeriod: e.target.value }))}
-                    placeholder="Ex: Janvier 2025"
+                    placeholder="Ex: Mars 2025"
                     className="w-full border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   />
                 </div>
