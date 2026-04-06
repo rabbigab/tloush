@@ -7,6 +7,7 @@ import AppHeader from './AppHeader'
 import AppNav from './AppNav'
 import OnboardingGuide from './OnboardingGuide'
 import FeedbackWidget from './FeedbackWidget'
+import PhonePrompt from './PhonePrompt'
 import { createClient } from '@/lib/supabase/client'
 import { identifyUser } from '@/lib/analytics'
 
@@ -42,6 +43,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
       <OnboardingGuide />
       <FeedbackWidget />
+      <PhonePrompt />
     </div>
   )
 }
