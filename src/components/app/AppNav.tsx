@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { Inbox, LayoutDashboard, MessageSquare, BarChart3, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift } from 'lucide-react'
+import { Inbox, LayoutDashboard, MessageSquare, BarChart3, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle } from 'lucide-react'
 
 const NAV_ITEMS = [
   { label: 'Inbox', href: '/inbox', icon: Inbox },
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { label: 'Droits', href: '/droits-olim', icon: Scale },
   { label: 'Experts', href: '/experts', icon: Users },
   { label: 'Parrainage', href: '/referral', icon: Gift },
+  { label: 'Aide', href: '/help', icon: HelpCircle },
   { label: 'Profil', href: '/profile', icon: User },
 ]
 
@@ -32,6 +33,7 @@ const MOBILE_MORE = [
   { label: 'Droits des olim', href: '/droits-olim', icon: Scale },
   { label: 'Experts', href: '/experts', icon: Users },
   { label: 'Parrainage', href: '/referral', icon: Gift },
+  { label: 'Aide', href: '/help', icon: HelpCircle },
 ]
 
 export default function AppNav() {

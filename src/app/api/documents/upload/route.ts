@@ -679,20 +679,27 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
       }
     }
 
-    // Send urgent alert email (fire-and-forget, don't block response)
-    if (document && Boolean(analysisResult.is_urgent) && process.env.CRON_SECRET) {
+    // Fire-and-forget emails (don't block response)
+    if (document && process.env.CRON_SECRET) {
       const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
         ?? (process.env.VERCEL_URL
           ? `https://${process.env.VERCEL_URL}`
           : 'http://localhost:3000')
-      fetch(`${baseUrl}/api/alerts/urgent`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.CRON_SECRET}`,
-        },
-        body: JSON.stringify({ userId: user.id, documentId: document.id }),
-      }).catch(err => console.error('[Urgent Alert] Fire-and-forget error:', err))
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+      }
+      const body = JSON.stringify({ userId: user.id, documentId: document.id })
+
+      // Urgent alert email
+      if (Boolean(analysisResult.is_urgent)) {
+        fetch(`${baseUrl}/api/alerts/urgent`, { method: 'POST', headers, body })
+          .catch(err => console.error('[Urgent Alert] Fire-and-forget error:', err))
+      }
+
+      // Post-analysis summary email
+      fetch(`${baseUrl}/api/alerts/analysis-complete`, { method: 'POST', headers, body })
+        .catch(err => console.error('[Analysis Email] Fire-and-forget error:', err))
     }
 
     // Increment usage counter after successful analysis
