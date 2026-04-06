@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, FileText, AlertTriangle, CheckCircle, Info, AlertCircle, Clock, ListChecks, UserCheck, CalendarClock, MessageSquare, Download, Check } from 'lucide-react'
+import { ArrowLeft, FileText, AlertTriangle, CheckCircle, Info, AlertCircle, Clock, ListChecks, UserCheck, CalendarClock, MessageSquare, Download, Check, Eye } from 'lucide-react'
 import { DOC_LABELS, DOC_ICONS, DOC_COLORS } from '@/lib/docTypes'
 
 interface AttentionPoint {
@@ -77,8 +77,9 @@ const PRO_LABELS: Record<string, string> = {
   agent_immobilier: 'Agent immobilier',
 }
 
-export default function DocumentDetailClient({ document: doc }: { document: DocumentData }) {
+export default function DocumentDetailClient({ document: doc, originalUrl }: { document: DocumentData; originalUrl: string | null }) {
   const [actionDone, setActionDone] = useState(!!doc.action_completed_at)
+  const [showOriginal, setShowOriginal] = useState(false)
   const analysis = doc.analysis_data
   const attentionPoints = analysis?.attention_points || []
   const actions = analysis?.recommended_actions || []
@@ -122,6 +123,19 @@ export default function DocumentDetailClient({ document: doc }: { document: Docu
           <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate">{doc.file_name}</h1>
         </div>
         <div className="flex gap-2 shrink-0">
+          {originalUrl && (
+            <button
+              onClick={() => setShowOriginal(!showOriginal)}
+              className={`inline-flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-xl border transition-colors ${
+                showOriginal
+                  ? 'text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/30'
+                  : 'text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
+              }`}
+            >
+              <Eye size={14} />
+              Original
+            </button>
+          )}
           <Link
             href={`/assistant?doc=${doc.id}`}
             className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 px-3 py-2 rounded-xl border border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors"
@@ -138,6 +152,55 @@ export default function DocumentDetailClient({ document: doc }: { document: Docu
           </Link>
         </div>
       </div>
+
+      {/* Original document viewer */}
+      {showOriginal && originalUrl && (
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <Eye size={14} />
+              Document original
+            </h2>
+            <a
+              href={originalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              Ouvrir dans un nouvel onglet
+            </a>
+          </div>
+          {doc.file_name.match(/\.(jpg|jpeg|png|gif|webp|bmp)$/i) ? (
+            <img
+              src={originalUrl}
+              alt={doc.file_name}
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700"
+            />
+          ) : doc.file_name.match(/\.pdf$/i) ? (
+            <iframe
+              src={originalUrl}
+              className="w-full h-[600px] rounded-xl border border-slate-200 dark:border-slate-700"
+              title="Document original"
+            />
+          ) : (
+            <div className="text-center py-8">
+              <FileText size={48} className="mx-auto text-slate-300 dark:text-slate-600 mb-3" />
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+                Aperçu non disponible pour ce type de fichier
+              </p>
+              <a
+                href={originalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 px-4 py-2 rounded-xl border border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors"
+              >
+                <Download size={14} />
+                Télécharger le fichier
+              </a>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Summary */}
       {doc.summary_fr && (
