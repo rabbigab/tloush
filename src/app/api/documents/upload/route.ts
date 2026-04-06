@@ -20,10 +20,10 @@ RÈGLE CRITIQUE SUR LES NOMS PROPRES :
 - Ne traduis PAS le sens des noms (ex: ne traduis pas כהן en "prêtre", garde "Cohen").`
 
   if (userContext?.firstName || userContext?.lastName || userContext?.employerName) {
-    prompt += `\n\nINFORMATIONS SUR L'UTILISATEUR (utilise ces noms quand tu les reconnais dans le document) :`
+    prompt += `\n\nINFORMATIONS SUR L'UTILISATEUR (aide à la reconnaissance, ne PAS forcer sur le document) :`
     if (userContext.firstName) prompt += `\n- Prénom : ${userContext.firstName}`
     if (userContext.lastName) prompt += `\n- Nom de famille : ${userContext.lastName}`
-    if (userContext.employerName) prompt += `\n- Employeur : ${userContext.employerName}`
+    if (userContext.employerName) prompt += `\n- Employeur actuel : ${userContext.employerName} (ATTENTION : le document peut concerner un autre employeur — base-toi TOUJOURS sur ce qui est écrit dans le document, pas sur cette info)`
   }
 
   prompt += `\n\nIMPORTANT : Retourne UNIQUEMENT le JSON, sans texte avant ou après.`
