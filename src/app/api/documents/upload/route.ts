@@ -304,6 +304,9 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData()
     const file = formData.get('file') as File | null
+    const employeeName = (formData.get('employee_name') as string)?.trim() || ''
+    const employerName = (formData.get('employer_name') as string)?.trim() || ''
+    const docPeriod = (formData.get('doc_period') as string)?.trim() || ''
 
     if (!file) {
       return NextResponse.json({ error: 'Aucun fichier reçu' }, { status: 400 })
@@ -358,7 +361,15 @@ export async function POST(req: NextRequest) {
       ]
     }
 
-    const systemPrompt = buildSystemPrompt()
+    // Build system prompt, inject user-provided context if available
+    let systemPrompt = buildSystemPrompt()
+    if (employeeName || employerName || docPeriod) {
+      systemPrompt += `\n\nCONTEXTE FOURNI PAR L'UTILISATEUR (utilise ces infos pour mieux reconnaître les noms sur le document) :`
+      if (employeeName) systemPrompt += `\n- Nom de l'employé/titulaire : ${employeeName}`
+      if (employerName) systemPrompt += `\n- Employeur / émetteur du document : ${employerName}`
+      if (docPeriod) systemPrompt += `\n- Période du document : ${docPeriod}`
+      systemPrompt += `\nATTENTION : ces infos sont indicatives. Base-toi TOUJOURS sur ce qui est écrit dans le document. Utilise ces infos uniquement pour mieux identifier les noms propres.`
+    }
 
     // Cast needed: 'document' content block not yet in SDK types (v0.24)
     const message = await (anthropic.messages.create as Function)({

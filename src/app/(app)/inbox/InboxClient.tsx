@@ -36,6 +36,8 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
   const [activeFolderId, setActiveFolderId] = useState<string>('all')
   const inputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [uploadContext, setUploadContext] = useState({ employeeName: '', employerName: '', docPeriod: '' })
 
   const folderFilteredDocs = activeFolderId === 'all'
     ? docs
@@ -82,12 +84,16 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
     }
   }
 
-  async function handleUpload(file: File) {
+  async function handleUpload(file: File, context?: { employeeName: string; employerName: string; docPeriod: string }) {
     setUploading(true)
     setUploadError('')
+    setPendingFile(null)
 
     const formData = new FormData()
     formData.append('file', file)
+    if (context?.employeeName) formData.append('employee_name', context.employeeName)
+    if (context?.employerName) formData.append('employer_name', context.employerName)
+    if (context?.docPeriod) formData.append('doc_period', context.docPeriod)
 
     try {
       const res = await fetch('/api/documents/upload', {
@@ -122,7 +128,10 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
 
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (file) handleUpload(file)
+    if (file) {
+      setPendingFile(file)
+      setUploadContext({ employeeName: '', employerName: '', docPeriod: '' })
+    }
   }
 
   function formatDate(iso: string) {
@@ -231,6 +240,70 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
               <button onClick={() => setUploadError('')} className="min-w-[44px] min-h-[44px] flex items-center justify-center text-red-400 hover:text-red-600" aria-label="Fermer">
                 <X size={16} />
               </button>
+            </div>
+          )}
+
+          {/* Modal contexte avant upload */}
+          {pendingFile && !uploading && (
+            <div className="mt-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-2">
+                  <FileText size={16} className="text-blue-600" />
+                  {pendingFile.name}
+                </h3>
+                <button onClick={() => { setPendingFile(null); if (inputRef.current) inputRef.current.value = '' }} className="text-slate-400 hover:text-slate-600 p-1">
+                  <X size={16} />
+                </button>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                Ces infos sont optionnelles mais aident l&apos;IA à mieux analyser votre document.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Votre nom</label>
+                  <input
+                    type="text"
+                    value={uploadContext.employeeName}
+                    onChange={e => setUploadContext(c => ({ ...c, employeeName: e.target.value }))}
+                    placeholder="Ex: Johanna Lellouche"
+                    className="w-full border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Employeur / émetteur</label>
+                  <input
+                    type="text"
+                    value={uploadContext.employerName}
+                    onChange={e => setUploadContext(c => ({ ...c, employerName: e.target.value }))}
+                    placeholder="Ex: La Moulin Doré"
+                    className="w-full border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Période</label>
+                  <input
+                    type="text"
+                    value={uploadContext.docPeriod}
+                    onChange={e => setUploadContext(c => ({ ...c, docPeriod: e.target.value }))}
+                    placeholder="Ex: Janvier 2025"
+                    className="w-full border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleUpload(pendingFile, uploadContext)}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl text-sm transition-colors"
+                >
+                  Analyser le document
+                </button>
+                <button
+                  onClick={() => handleUpload(pendingFile)}
+                  className="px-4 py-2.5 text-slate-500 hover:text-slate-700 dark:text-slate-400 text-sm font-medium"
+                >
+                  Passer
+                </button>
+              </div>
             </div>
           )}
         </div>
