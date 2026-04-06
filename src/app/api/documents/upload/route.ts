@@ -9,10 +9,26 @@ import { parseDeadline, detectAmountAnomaly } from '@/lib/parsers'
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const ratelimit = createRateLimit('upload', 5, '1 h')
 
-const SYSTEM_PROMPT = `Tu es un expert en documents administratifs israéliens pour francophones.
+function buildSystemPrompt(userContext?: { firstName?: string; lastName?: string; employerName?: string }): string {
+  let prompt = `Tu es un expert en documents administratifs israéliens pour francophones.
 Ton rôle est d'analyser un document (fiche de paie, courrier officiel, contrat, facture, etc.) et de retourner un JSON structuré en FRANÇAIS.
 Tu dois non seulement expliquer le document, mais aussi détecter les anomalies potentielles, les points à vérifier et recommander des actions concrètes.
-IMPORTANT : Retourne UNIQUEMENT le JSON, sans texte avant ou après.`
+
+RÈGLE CRITIQUE SUR LES NOMS PROPRES :
+- Ne traduis JAMAIS les noms de personnes, d'entreprises ou d'organismes. Garde-les tels quels ou translittère-les fidèlement de l'hébreu.
+- Pour les noms propres en hébreu (שם פרטי, שם משפחה, שם חברה), utilise la translittération standard (ex: גבריאל → Gabriel, כהן → Cohen) ou garde la version hébraïque si tu n'es pas sûr.
+- Ne traduis PAS le sens des noms (ex: ne traduis pas כהן en "prêtre", garde "Cohen").`
+
+  if (userContext?.firstName || userContext?.lastName || userContext?.employerName) {
+    prompt += `\n\nINFORMATIONS SUR L'UTILISATEUR (utilise ces noms quand tu les reconnais dans le document) :`
+    if (userContext.firstName) prompt += `\n- Prénom : ${userContext.firstName}`
+    if (userContext.lastName) prompt += `\n- Nom de famille : ${userContext.lastName}`
+    if (userContext.employerName) prompt += `\n- Employeur : ${userContext.employerName}`
+  }
+
+  prompt += `\n\nIMPORTANT : Retourne UNIQUEMENT le JSON, sans texte avant ou après.`
+  return prompt
+}
 
 const USER_PROMPT = `Analyse ce document israélien et retourne UNIQUEMENT ce JSON :
 
@@ -181,11 +197,19 @@ export async function POST(req: NextRequest) {
       ]
     }
 
+    // Build system prompt with user context for better name recognition
+    const userMeta = user.user_metadata as Record<string, string> | undefined
+    const systemPrompt = buildSystemPrompt({
+      firstName: userMeta?.first_name,
+      lastName: userMeta?.last_name,
+      employerName: userMeta?.employer_name,
+    })
+
     // Cast needed: 'document' content block not yet in SDK types (v0.24)
     const message = await (anthropic.messages.create as Function)({
       model: 'claude-sonnet-4-5',
       max_tokens: 3000,
-      system: SYSTEM_PROMPT,
+      system: systemPrompt,
       messages: [{ role: 'user', content: contentBlocks }]
     }) as Anthropic.Message
 

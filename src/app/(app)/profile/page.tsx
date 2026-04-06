@@ -22,6 +22,9 @@ export default async function ProfilePage() {
     <ProfileClient
       email={user.email || ''}
       displayName={user.user_metadata?.display_name || ''}
+      firstName={user.user_metadata?.first_name || ''}
+      lastName={user.user_metadata?.last_name || ''}
+      employerName={user.user_metadata?.employer_name || ''}
       createdAt={user.created_at}
       documentCount={documentCount || 0}
     />

@@ -15,7 +15,7 @@ export default async function DashboardPage() {
   const [docsRes, expensesRes, payslipsRes] = await Promise.all([
     supabase
       .from('documents')
-      .select('id, file_name, document_type, is_urgent, action_required, action_description, period, summary_fr, deadline, created_at, folder_id, status')
+      .select('id, file_name, file_type, document_type, is_urgent, action_required, action_description, period, summary_fr, deadline, created_at, folder_id, status, action_completed_at, file_path, analysis_data, analyzed_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(50),

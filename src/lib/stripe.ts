@@ -1,11 +1,11 @@
 import Stripe from 'stripe'
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY
-if (!stripeSecretKey) {
+if (!stripeSecretKey && process.env.NODE_ENV === 'production') {
   throw new Error('STRIPE_SECRET_KEY environment variable is not set')
 }
 
-export const stripe = new Stripe(stripeSecretKey, {
+export const stripe = new Stripe(stripeSecretKey || 'sk_test_placeholder', {
   apiVersion: '2025-03-31.basil',
   typescript: true,
 })

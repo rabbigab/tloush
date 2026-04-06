@@ -11,11 +11,17 @@ import FamilySection from '@/components/app/FamilySection'
 export default function ProfileClient({
   email,
   displayName: initialDisplayName,
+  firstName: initialFirstName,
+  lastName: initialLastName,
+  employerName: initialEmployerName,
   createdAt,
   documentCount
 }: {
   email: string
   displayName: string
+  firstName: string
+  lastName: string
+  employerName: string
   createdAt: string
   documentCount: number
 }) {
@@ -23,6 +29,14 @@ export default function ProfileClient({
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(initialDisplayName)
   const [nameSaving, setNameSaving] = useState(false)
+  const [firstName, setFirstName] = useState(initialFirstName)
+  const [lastName, setLastName] = useState(initialLastName)
+  const [employerName, setEmployerName] = useState(initialEmployerName)
+  const [editingIdentity, setEditingIdentity] = useState(false)
+  const [identitySaving, setIdentitySaving] = useState(false)
+  const [firstNameInput, setFirstNameInput] = useState(initialFirstName)
+  const [lastNameInput, setLastNameInput] = useState(initialLastName)
+  const [employerInput, setEmployerInput] = useState(initialEmployerName)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteInput, setDeleteInput] = useState('')
@@ -76,6 +90,29 @@ export default function ProfileClient({
       }
     } finally {
       setNameSaving(false)
+    }
+  }
+
+  async function saveIdentity() {
+    setIdentitySaving(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          first_name: firstNameInput.trim(),
+          last_name: lastNameInput.trim(),
+          employer_name: employerInput.trim(),
+        }
+      })
+      if (!error) {
+        setFirstName(firstNameInput.trim())
+        setLastName(lastNameInput.trim())
+        setEmployerName(employerInput.trim())
+        setEditingIdentity(false)
+        track('profile_updated', { field: 'identity' })
+      }
+    } finally {
+      setIdentitySaving(false)
     }
   }
 
@@ -163,6 +200,99 @@ export default function ProfileClient({
               <span className="text-sm font-semibold text-brand-600">{documentCount}</span>
             </div>
           </div>
+        </div>
+
+        {/* Identité pour analyse */}
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="section-heading flex items-center gap-2">
+              <FileText size={18} className="text-brand-600" />
+              Informations pour l&apos;analyse
+            </h2>
+            {!editingIdentity && (
+              <button
+                onClick={() => setEditingIdentity(true)}
+                className="text-xs font-medium text-brand-600 hover:text-brand-700 hover:bg-brand-50 dark:hover:bg-brand-950/30 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Modifier
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+            Ces informations aident Tloush à mieux reconnaître votre nom et celui de votre employeur sur vos documents en hébreu, au lieu de les traduire incorrectement.
+          </p>
+
+          {editingIdentity ? (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Prénom</label>
+                  <input
+                    type="text"
+                    value={firstNameInput}
+                    onChange={e => setFirstNameInput(e.target.value)}
+                    placeholder="Gabriel"
+                    className="w-full border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Nom de famille</label>
+                  <input
+                    type="text"
+                    value={lastNameInput}
+                    onChange={e => setLastNameInput(e.target.value)}
+                    placeholder="Cohen"
+                    className="w-full border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Nom de l&apos;employeur / entreprise</label>
+                <input
+                  type="text"
+                  value={employerInput}
+                  onChange={e => setEmployerInput(e.target.value)}
+                  placeholder="Check Point Software"
+                  className="w-full border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                />
+              </div>
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  onClick={saveIdentity}
+                  disabled={identitySaving}
+                  className="text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 disabled:opacity-60 px-4 py-2 rounded-xl transition-colors"
+                >
+                  {identitySaving ? 'Enregistrement...' : 'Enregistrer'}
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingIdentity(false)
+                    setFirstNameInput(firstName)
+                    setLastNameInput(lastName)
+                    setEmployerInput(employerName)
+                  }}
+                  className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 px-4 py-2 rounded-xl transition-colors"
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                <span className="text-sm text-slate-500 dark:text-slate-400">Prénom</span>
+                <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{firstName || <span className="text-slate-400 dark:text-slate-500 italic">Non renseigné</span>}</span>
+              </div>
+              <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                <span className="text-sm text-slate-500 dark:text-slate-400">Nom de famille</span>
+                <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{lastName || <span className="text-slate-400 dark:text-slate-500 italic">Non renseigné</span>}</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-500 dark:text-slate-400">Employeur</span>
+                <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{employerName || <span className="text-slate-400 dark:text-slate-500 italic">Non renseigné</span>}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Famille */}
