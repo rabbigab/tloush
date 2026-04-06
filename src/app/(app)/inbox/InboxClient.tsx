@@ -101,7 +101,9 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
           ? 'Limite atteinte : 5 documents par heure. Réessayez plus tard.'
           : res.status === 401
           ? 'Session expirée. Veuillez vous reconnecter.'
-          : 'Une erreur est survenue lors de l\'analyse. Réessayez ou contactez le support.'
+          : res.status === 403
+          ? (data.error || 'Quota dépassé. Passez à un plan supérieur.')
+          : (data.error || 'Une erreur est survenue lors de l\'analyse. Réessayez ou contactez le support.')
         setUploadError(userMsg)
         track('extraction_failed', { error: data.error, status: res.status })
         return

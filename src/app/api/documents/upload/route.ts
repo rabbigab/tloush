@@ -249,30 +249,58 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
 
     // 5. Sauvegarder en base
     const fileType = mimeType === 'application/pdf' ? 'pdf' : 'image'
-    const { data: document, error: dbError } = await supabase
+
+    // Build insert payload — only include optional columns if they have values
+    // to avoid errors if columns haven't been migrated yet
+    const insertPayload: Record<string, unknown> = {
+      user_id: user.id,
+      file_name: file.name,
+      file_path: storagePath,
+      file_type: fileType,
+      document_type: (analysisResult.document_type as string) || 'other',
+      status: 'analyzed',
+      is_urgent: Boolean(analysisResult.is_urgent),
+      summary_fr: (analysisResult.summary_fr as string) || null,
+      action_required: Boolean(analysisResult.action_required),
+      action_description: (analysisResult.action_description as string) || null,
+      period: (analysisResult.period as string) || null,
+      analysis_data: analysisResult,
+      analyzed_at: new Date().toISOString()
+    }
+    if (deadlineDate) insertPayload.deadline = deadlineDate
+
+    let document: Record<string, unknown> | null = null
+    let dbError: { message?: string; code?: string } | null = null
+
+    // Try with full payload first, retry without optional columns if it fails
+    const result = await supabase
       .from('documents')
-      .insert({
-        user_id: user.id,
-        file_name: file.name,
-        file_path: storagePath,
-        file_type: fileType,
-        document_type: (analysisResult.document_type as string) || 'other',
-        status: 'analyzed',
-        is_urgent: Boolean(analysisResult.is_urgent),
-        summary_fr: (analysisResult.summary_fr as string) || null,
-        action_required: Boolean(analysisResult.action_required),
-        action_description: (analysisResult.action_description as string) || null,
-        period: (analysisResult.period as string) || null,
-        deadline: deadlineDate,
-        analysis_data: analysisResult,
-        analyzed_at: new Date().toISOString()
-      })
+      .insert(insertPayload)
       .select()
       .single()
 
-    if (dbError) {
+    if (result.error) {
+      // Retry without deadline column (might not exist in DB)
+      console.warn('DB insert failed, retrying without optional columns:', result.error.message)
+      delete insertPayload.deadline
+      const retry = await supabase
+        .from('documents')
+        .insert(insertPayload)
+        .select()
+        .single()
+      document = retry.data
+      dbError = retry.error
+    } else {
+      document = result.data
+      dbError = result.error
+    }
+
+    if (dbError || !document) {
       console.error('DB error:', dbError)
-      return NextResponse.json({ error: 'Erreur lors de la sauvegarde' }, { status: 500 })
+      return NextResponse.json(
+        { error: `Erreur lors de la sauvegarde: ${dbError?.message || 'Inconnu'}` },
+        { status: 500 }
+      )
     }
 
     // Track recurring expense if detected
