@@ -269,7 +269,7 @@ export default function ProfileClient({
                     type="tel"
                     value={phoneInput}
                     onChange={e => setPhoneInput(e.target.value)}
-                    placeholder="05X-XXX-XXXX"
+                    placeholder="+972 ou +33..."
                     className="w-full border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                   />
                 </div>
