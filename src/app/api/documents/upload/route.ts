@@ -9,7 +9,7 @@ import { parseDeadline, detectAmountAnomaly } from '@/lib/parsers'
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const freeRateLimit = createRateLimit('upload-free', 3, '1 h')
 
-function buildSystemPrompt(userContext?: { firstName?: string; lastName?: string; employerName?: string }): string {
+function buildSystemPrompt(): string {
   let prompt = `Tu es un EXPERT-COMPTABLE spécialisé en droit du travail israélien et en documents administratifs pour francophones vivant en Israël.
 
 TON RÔLE :
@@ -23,9 +23,10 @@ TON RÔLE :
 RÈGLE ABSOLUE : Lis le document LIGNE PAR LIGNE. Chaque ligne du document contient une information. Ne saute AUCUNE ligne. Si tu vois un chiffre, reporte-le fidèlement. Si tu n'arrives pas à lire une valeur, indique "illisible" plutôt que de deviner.
 
 RÈGLE CRITIQUE SUR LES NOMS PROPRES :
-- Ne traduis JAMAIS les noms de personnes, d'entreprises ou d'organismes. Garde-les tels quels ou translittère-les fidèlement de l'hébreu.
-- Pour les noms propres en hébreu (שם פרטי, שם משפחה, שם חברה), utilise la translittération standard (ex: גבריאל → Gabriel, כהן → Cohen) ou garde la version hébraïque si tu n'es pas sûr.
-- Ne traduis PAS le sens des noms (ex: ne traduis pas כהן en "prêtre", garde "Cohen").
+- GARDE TOUJOURS les noms de personnes, d'entreprises et d'organismes EN HÉBREU tel qu'ils apparaissent sur le document.
+- NE TRADUIS PAS et NE TRANSLITTÈRE PAS les noms propres. Exemple : écris ג'ואנה לילוש, PAS "Johanna Lellouche".
+- Pour les entreprises : garde le nom hébreu original. Exemple : écris לה מולן דורה בע"מ, PAS "Le Moulin Doré".
+- Si un nom apparaît à la fois en hébreu et en français/anglais sur le document, utilise la version hébraïque en priorité et mets l'autre entre parenthèses.
 
 CONNAISSANCES DROIT DU TRAVAIL ISRAÉLIEN :
 - Salaire minimum 2024-2025 : 5 880.02₪/mois, 32.3₪/heure
@@ -37,13 +38,6 @@ CONNAISSANCES DROIT DU TRAVAIL ISRAÉLIEN :
 - Caisse de retraite (פנסיה) : cotisation employé ~6%, employeur ~6.5%
 - Prévoyance (קופת גמל) : variable, souvent 2.5% employé
 - Frais de transport (נסיעות) : remboursement selon trajet réel, plafond mensuel selon distance`
-
-  if (userContext?.firstName || userContext?.lastName || userContext?.employerName) {
-    prompt += `\n\nINFORMATIONS SUR L'UTILISATEUR (aide à la reconnaissance, ne PAS forcer sur le document) :`
-    if (userContext.firstName) prompt += `\n- Prénom : ${userContext.firstName}`
-    if (userContext.lastName) prompt += `\n- Nom de famille : ${userContext.lastName}`
-    if (userContext.employerName) prompt += `\n- Employeur actuel : ${userContext.employerName} (ATTENTION : le document peut concerner un autre employeur — base-toi TOUJOURS sur ce qui est écrit dans le document, pas sur cette info)`
-  }
 
   prompt += `\n\nIMPORTANT : Retourne UNIQUEMENT le JSON, sans texte avant ou après.`
   return prompt
@@ -181,8 +175,8 @@ VÉRIFICATIONS DE CONFORMITÉ (attention_points) :
 
 Dans analysis_data, ajoute OBLIGATOIREMENT un objet "payslip_details" :
 {
-  "employee_name": "nom de l'employé",
-  "employer_name": "nom de l'employeur",
+  "employee_name": "nom de l'employé EN HÉBREU tel qu'écrit sur le document",
+  "employer_name": "nom de l'employeur EN HÉBREU tel qu'écrit sur le document",
   "employee_id": "numéro d'identité",
   "start_date": "date début emploi",
   "department": "département/numéro",
@@ -364,13 +358,7 @@ export async function POST(req: NextRequest) {
       ]
     }
 
-    // Build system prompt with user context for better name recognition
-    const userMeta = user.user_metadata as Record<string, string> | undefined
-    const systemPrompt = buildSystemPrompt({
-      firstName: userMeta?.first_name,
-      lastName: userMeta?.last_name,
-      employerName: userMeta?.employer_name,
-    })
+    const systemPrompt = buildSystemPrompt()
 
     // Cast needed: 'document' content block not yet in SDK types (v0.24)
     const message = await (anthropic.messages.create as Function)({
