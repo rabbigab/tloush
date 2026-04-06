@@ -9,6 +9,7 @@ import OnboardingGuide from './OnboardingGuide'
 import FeedbackWidget from './FeedbackWidget'
 import PhonePrompt from './PhonePrompt'
 import ReferralApply from './ReferralApply'
+import { ToastProvider } from './Toast'
 import { createClient } from '@/lib/supabase/client'
 import { identifyUser } from '@/lib/analytics'
 
@@ -27,25 +28,27 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col">
-      <AppHeader userEmail={userEmail} />
-      <AppNav />
-      <AnimatePresence mode="wait">
-        <motion.main
-          key={pathname}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.2, ease: 'easeInOut' }}
-          className="flex-1 pb-24 md:pb-0"
-        >
-          {children}
-        </motion.main>
-      </AnimatePresence>
-      <OnboardingGuide />
-      <FeedbackWidget />
-      <PhonePrompt />
-      <ReferralApply />
-    </div>
+    <ToastProvider>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col">
+        <AppHeader userEmail={userEmail} />
+        <AppNav />
+        <AnimatePresence mode="wait">
+          <motion.main
+            key={pathname}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className="flex-1 pb-24 md:pb-0"
+          >
+            {children}
+          </motion.main>
+        </AnimatePresence>
+        <OnboardingGuide />
+        <FeedbackWidget />
+        <PhonePrompt />
+        <ReferralApply />
+      </div>
+    </ToastProvider>
   )
 }

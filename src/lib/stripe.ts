@@ -39,7 +39,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     stripePriceId: null,
     limits: {
       documentsPerMonth: 3, // 3 docs au TOTAL (pas par mois) — géré dans canUseFeature
-      assistantMessagesPerMonth: 0,
+      assistantMessagesPerMonth: 5,
       historyDays: 30,
       maxMembers: 1,
     },
@@ -47,6 +47,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     features: [
       'Analysez vos premiers documents',
       'Résultat complet en français',
+      '5 messages assistant IA / mois',
       'Historique 30 jours',
     ],
   },

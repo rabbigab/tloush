@@ -287,12 +287,16 @@ export async function canUseFeature(
     }
   }
 
-  // Check feature access (assistant is paid-only)
+  // Check feature access — free plan gets 5 messages/month
   if (feature === 'assistant_chat' && sub.planId === 'free') {
-    return {
-      allowed: false,
-      reason: 'L\'assistant IA est disponible avec un plan payant. Passez au plan Solo ou Famille.',
+    const usage = await getUsage(supabase, userId)
+    if (usage.assistantRemaining <= 0) {
+      return {
+        allowed: false,
+        reason: `Vous avez utilisé vos ${usage.assistantLimit} messages gratuits ce mois-ci. Passez au plan Solo pour un accès illimité.`,
+      }
     }
+    return { allowed: true }
   }
 
   // --- FREE plan: 3 documents au TOTAL (pas par mois) + bonus parrainage ---

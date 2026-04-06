@@ -8,6 +8,7 @@ import { getExpertRecommendation, getExpertUrl } from '@/lib/expertMatcher'
 import { track } from '@/lib/analytics'
 import { DOC_LABELS, DOC_COLORS, DOC_CATEGORIES } from '@/lib/docTypes'
 import type { AppDocument } from '@/types'
+import { useToast } from '@/components/app/Toast'
 
 
 const CATEGORY_TABS = [
@@ -26,7 +27,9 @@ interface FolderOption { id: string; name: string }
 
 export default function InboxClient({ documents, folders = [], userEmail }: { documents: AppDocument[]; folders?: FolderOption[]; userEmail: string }) {
   void userEmail
+  const { toast } = useToast()
   const [uploading, setUploading] = useState(false)
+  const [uploadStep, setUploadStep] = useState(0)
   const [uploadError, setUploadError] = useState('')
   const [docs, setDocs] = useState<AppDocument[]>(documents)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -76,9 +79,10 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
       if (res.ok) {
         setDocs(prev => prev.filter(d => d.id !== docId))
         router.refresh()
+        toast('Document supprimé')
       }
     } catch {
-      // Document stays in list
+      toast('Erreur lors de la suppression', 'error')
     } finally {
       setDeletingId(null)
     }
@@ -87,6 +91,13 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
   async function handleUpload(file: File, context?: { employeeName: string; employerName: string; docPeriod: string }) {
     setUploading(true)
     setUploadError('')
+    setUploadStep(1)
+    // Simulate progress steps while API processes
+    const stepTimers = [
+      setTimeout(() => setUploadStep(2), 2000),
+      setTimeout(() => setUploadStep(3), 5000),
+      setTimeout(() => setUploadStep(4), 9000),
+    ]
     setPendingFile(null)
 
     const formData = new FormData()
@@ -117,10 +128,13 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
       }
 
       setDocs(prev => [data.document, ...prev])
+      toast('Document analysé avec succès !')
       track('file_uploaded', { document_type: data.document?.document_type, is_urgent: data.document?.is_urgent })
     } catch {
       setUploadError('Erreur de connexion. Reessayez.')
     } finally {
+      stepTimers.forEach(clearTimeout)
+      setUploadStep(0)
       setUploading(false)
       if (inputRef.current) inputRef.current.value = ''
     }
@@ -216,10 +230,44 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
             className="w-full border-2 border-dashed border-slate-200 dark:border-slate-600 hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-50/30 dark:hover:bg-brand-950/20 rounded-xl p-8 transition-all text-center group disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99]"
           >
             {uploading ? (
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-10 h-10 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm font-medium text-brand-600">Analyse en cours...</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Claude lit votre document</p>
+              <div className="flex flex-col items-center gap-4 py-2">
+                {(() => {
+                  const steps = [
+                    { label: 'Envoi du fichier', done: uploadStep >= 2 },
+                    { label: 'Lecture du document', done: uploadStep >= 3 },
+                    { label: 'Extraction des données', done: uploadStep >= 4 },
+                    { label: 'Analyse intelligente', done: false },
+                  ]
+                  const activeIdx = Math.min(uploadStep - 1, 3)
+                  return (
+                    <>
+                      <div className="w-full max-w-xs">
+                        <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-brand-600 rounded-full transition-all duration-1000 ease-out"
+                            style={{ width: `${Math.min(uploadStep * 25, 95)}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        {steps.map((step, i) => (
+                          <div key={i} className={`flex items-center gap-2 text-xs transition-colors ${
+                            i === activeIdx ? 'text-brand-600 font-semibold' : step.done ? 'text-green-600 dark:text-green-400' : 'text-slate-300 dark:text-slate-600'
+                          }`}>
+                            {step.done ? (
+                              <CheckCircle size={14} />
+                            ) : i === activeIdx ? (
+                              <div className="w-3.5 h-3.5 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <div className="w-3.5 h-3.5 rounded-full border border-slate-300 dark:border-slate-600" />
+                            )}
+                            {step.label}
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )
+                })()}
               </div>
             ) : (
               <div className="flex flex-col items-center gap-3">
