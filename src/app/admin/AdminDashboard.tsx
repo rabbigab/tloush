@@ -95,6 +95,28 @@ export default function AdminDashboard() {
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [changingPlan, setChangingPlan] = useState<string | null>(null)
+
+  async function handleChangePlan(userId: string, planId: string) {
+    setChangingPlan(userId)
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan_id: planId }),
+      })
+      if (!res.ok) {
+        const d = await res.json()
+        alert(d.error || 'Erreur')
+        return
+      }
+      fetchData()
+    } catch {
+      alert('Erreur réseau')
+    } finally {
+      setChangingPlan(null)
+    }
+  }
 
   async function handleDeleteUser(userId: string) {
     setDeleting(userId)
@@ -335,10 +357,17 @@ export default function AdminDashboard() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${PLAN_COLORS[u.plan] || PLAN_COLORS.free}`}>
-                            {PLAN_LABELS[u.plan] || 'Gratuit'}
-                          </span>
+                        <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
+                          <select
+                            value={u.plan}
+                            onChange={e => handleChangePlan(u.id, e.target.value)}
+                            disabled={changingPlan === u.id}
+                            className={`text-xs font-medium rounded-full px-2 py-1 border-0 cursor-pointer disabled:opacity-50 ${PLAN_COLORS[u.plan] || PLAN_COLORS.free}`}
+                          >
+                            <option value="free">Gratuit</option>
+                            <option value="solo">Solo</option>
+                            <option value="family">Famille</option>
+                          </select>
                           {u.subscription_status !== 'none' && u.subscription_status !== 'active' && (
                             <span className={`ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[u.subscription_status]}`}>
                               {u.subscription_status}

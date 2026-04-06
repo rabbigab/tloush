@@ -4,6 +4,68 @@ import { createClient } from '@supabase/supabase-js'
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
 
+// Change user plan
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const supabase = await createServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+  if (!ADMIN_EMAILS.includes(user.email?.toLowerCase() || '')) {
+    return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+  }
+
+  const { id: userId } = await params
+  const body = await req.json()
+  const planId = body.plan_id
+
+  if (!['free', 'solo', 'family'].includes(planId)) {
+    return NextResponse.json({ error: 'Plan invalide' }, { status: 400 })
+  }
+
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  try {
+    // Check if subscription exists
+    const { data: existing } = await supabaseAdmin
+      .from('subscriptions')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    if (existing) {
+      await supabaseAdmin
+        .from('subscriptions')
+        .update({
+          plan_id: planId,
+          status: 'active',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', userId)
+    } else {
+      await supabaseAdmin
+        .from('subscriptions')
+        .insert({
+          user_id: userId,
+          plan_id: planId,
+          status: 'active',
+          current_period_start: new Date().toISOString(),
+          current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+        })
+    }
+
+    return NextResponse.json({ success: true, plan_id: planId })
+  } catch (err) {
+    console.error('[Admin PATCH user plan]', err)
+    return NextResponse.json({ error: 'Erreur lors du changement de plan' }, { status: 500 })
+  }
+}
+
+// Delete user account
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
