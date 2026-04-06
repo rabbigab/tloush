@@ -12,10 +12,10 @@ export async function DELETE(
 
     const { id } = await params
 
-    // Récupérer le document pour obtenir le file_path
+    // Récupérer le document pour obtenir le file_path et folder_id
     const { data: doc, error: fetchError } = await supabase
       .from('documents')
-      .select('file_path')
+      .select('file_path, folder_id')
       .eq('id', id)
       .eq('user_id', user.id)
       .single()
@@ -44,6 +44,19 @@ export async function DELETE(
     if (dbError) {
       console.error('DB delete error:', dbError)
       return NextResponse.json({ error: 'Erreur lors de la suppression' }, { status: 500 })
+    }
+
+    // Nettoyer le dossier s'il est désormais vide
+    if (doc.folder_id) {
+      const { count } = await supabase
+        .from('documents')
+        .select('*', { count: 'exact', head: true })
+        .eq('folder_id', doc.folder_id)
+        .eq('user_id', user.id)
+
+      if (count === 0) {
+        await supabase.from('folders').delete().eq('id', doc.folder_id).eq('user_id', user.id)
+      }
     }
 
     return NextResponse.json({ success: true })

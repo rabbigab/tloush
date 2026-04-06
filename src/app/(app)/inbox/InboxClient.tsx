@@ -262,22 +262,26 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
             )}
           </div>
 
-          {/* Folder filter */}
-          {folders.length > 0 && (
-            <div className="mb-3">
-              <select
-                value={activeFolderId}
-                onChange={e => setActiveFolderId(e.target.value)}
-                className="w-full sm:w-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-300"
-                aria-label="Filtrer par dossier"
-              >
-                <option value="all">Tous les dossiers</option>
-                {folders.map(f => (
-                  <option key={f.id} value={f.id}>{f.name}</option>
-                ))}
-              </select>
-            </div>
-          )}
+          {/* Folder filter — only show folders that still have documents */}
+          {(() => {
+            const folderIdsWithDocs = new Set(docs.map(d => d.folder_id).filter(Boolean))
+            const activeFolders = folders.filter(f => folderIdsWithDocs.has(f.id))
+            return activeFolders.length > 0 ? (
+              <div className="mb-3">
+                <select
+                  value={activeFolderId}
+                  onChange={e => setActiveFolderId(e.target.value)}
+                  className="w-full sm:w-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-300"
+                  aria-label="Filtrer par dossier"
+                >
+                  <option value="all">Tous les dossiers</option>
+                  {activeFolders.map(f => (
+                    <option key={f.id} value={f.id}>{f.name}</option>
+                  ))}
+                </select>
+              </div>
+            ) : null
+          })()}
 
           {/* Category filter tabs */}
           {docs.length > 3 && (
