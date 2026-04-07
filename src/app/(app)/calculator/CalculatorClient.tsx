@@ -93,10 +93,12 @@ export default function CalculatorClient() {
           <div className="relative">
             <input
               type="number"
+              name="gross_salary"
+              inputMode="decimal"
               value={gross}
               onChange={e => setGross(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && calculate()}
-              placeholder="Ex: 12000"
+              placeholder="Ex: 12000…"
               className="w-full px-4 py-3 pr-12 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-400 text-slate-900 dark:text-slate-100 text-lg font-semibold"
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">₪</span>
@@ -175,7 +177,7 @@ export default function CalculatorClient() {
         )}
 
         {error && (
-          <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
+          <p role="alert" className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
         )}
         <button
           onClick={calculate}
@@ -194,12 +196,12 @@ export default function CalculatorClient() {
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 text-center shadow-sm">
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Salaire net</p>
               <p className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">{fmt(result.net)}₪</p>
-              <p className="text-xs text-slate-400 mt-1">par mois</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">par mois</p>
             </div>
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 text-center shadow-sm">
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Total retenues</p>
               <p className="text-3xl font-extrabold text-red-500 dark:text-red-400">{fmt(result.totalDeductions)}₪</p>
-              <p className="text-xs text-slate-400 mt-1">{result.effectiveDeductionRate}% du brut</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{result.effectiveDeductionRate}% du brut</p>
             </div>
           </div>
 
@@ -216,7 +218,7 @@ export default function CalculatorClient() {
                   <div key={i} className="flex items-center justify-between px-5 py-3">
                     <div>
                       <p className="text-sm text-slate-700 dark:text-slate-200">{item.label}</p>
-                      {item.rate && <p className="text-xs text-slate-400">{item.rate}</p>}
+                      {item.rate && <p className="text-xs text-slate-500 dark:text-slate-400">{item.rate}</p>}
                     </div>
                     <p className="text-sm font-semibold text-red-600 dark:text-red-400 flex items-center gap-1">
                       <TrendingDown size={14} />
@@ -240,7 +242,7 @@ export default function CalculatorClient() {
                   <div key={i} className="flex items-center justify-between px-5 py-3">
                     <div>
                       <p className="text-sm text-slate-700 dark:text-slate-200">{item.label}</p>
-                      {item.rate && <p className="text-xs text-slate-400">{item.rate}</p>}
+                      {item.rate && <p className="text-xs text-slate-500 dark:text-slate-400">{item.rate}</p>}
                     </div>
                     <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1">
                       <TrendingUp size={14} />
@@ -294,7 +296,7 @@ export default function CalculatorClient() {
             </div>
           </div>
 
-          <p className="text-[11px] text-slate-400 dark:text-slate-500 text-center">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 text-center">
             Calcul indicatif base sur les taux 2024-2025. Des ecarts sont possibles selon votre situation personnelle. Consultez un expert-comptable pour un calcul exact.
           </p>
         </div>

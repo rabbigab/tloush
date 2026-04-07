@@ -63,7 +63,7 @@ export default function HowItWorks() {
               </div>
 
               {/* Emoji icon */}
-              <div className="text-4xl">{step.emoji}</div>
+              <div className="text-4xl" aria-hidden="true">{step.emoji}</div>
 
               {/* Content */}
               <div>

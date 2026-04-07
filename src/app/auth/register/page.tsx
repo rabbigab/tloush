@@ -191,7 +191,7 @@ export default function RegisterPage() {
                 placeholder="+972 ou +33..."
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
               />
-              <p className="text-xs text-slate-400 mt-1">Israélien, français ou autre — pour vous contacter si besoin</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Israélien, français ou autre — pour vous contacter si besoin</p>
             </div>
 
             <div>

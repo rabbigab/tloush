@@ -81,6 +81,8 @@ export default function ArnonaClient() {
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Surface (m2)</label>
             <input
               type="number"
+              name="surface_area"
+              inputMode="decimal"
               value={size}
               onChange={e => setSize(e.target.value)}
               placeholder="70"
@@ -142,7 +144,7 @@ export default function ArnonaClient() {
         </div>
 
         {error && (
-          <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
+          <p role="alert" className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
         )}
         <button
           onClick={calculate}
@@ -161,17 +163,17 @@ export default function ArnonaClient() {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
               <p className="text-xl font-bold text-orange-600">{fmt(result.discountedBimonthly)}₪</p>
               <p className="text-sm text-slate-700 dark:text-slate-300">/ 2 mois</p>
-              <p className="text-xs text-slate-400">bimestriel</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">bimestriel</p>
             </div>
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
               <p className="text-xl font-bold text-orange-600">{fmt(Math.round(result.discountedAnnual / 12))}₪</p>
               <p className="text-sm text-slate-700 dark:text-slate-300">/ mois</p>
-              <p className="text-xs text-slate-400">estimation</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">estimation</p>
             </div>
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
               <p className="text-xl font-bold text-orange-600">{fmt(result.discountedAnnual)}₪</p>
               <p className="text-sm text-slate-700 dark:text-slate-300">/ an</p>
-              <p className="text-xs text-slate-400">{result.cityLabel}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{result.cityLabel}</p>
             </div>
           </div>
 

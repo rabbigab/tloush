@@ -153,7 +153,7 @@ export default function AppNav() {
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
-                  <item.icon size={16} />
+                  <item.icon size={16} aria-hidden="true" />
                   {item.label}
                 </Link>
               )
@@ -172,9 +172,9 @@ export default function AppNav() {
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
-                <Wrench size={16} />
+                <Wrench size={16} aria-hidden="true" />
                 Outils
-                <ChevronDown size={14} className={`transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={14} aria-hidden="true" className={`transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
               </button>
               {toolsOpen && (
                 <div role="menu" className="absolute top-full left-0 mt-2 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl py-2 z-50">
@@ -198,7 +198,7 @@ export default function AppNav() {
                                 : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                             }`}
                           >
-                            <item.icon size={16} />
+                            <item.icon size={16} aria-hidden="true" />
                             {item.label}
                           </Link>
                         )
@@ -221,7 +221,7 @@ export default function AppNav() {
               title="Recherche"
               aria-label="Recherche"
             >
-              <Search size={16} />
+              <Search size={16} aria-hidden="true" />
             </Link>
 
             {SECONDARY_NAV.map(item => {
@@ -237,7 +237,7 @@ export default function AppNav() {
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
-                  <item.icon size={16} />
+                  <item.icon size={16} aria-hidden="true" />
                   {item.label}
                 </Link>
               )
@@ -259,7 +259,7 @@ export default function AppNav() {
                   className="w-full flex items-center justify-between text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-4 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
                 >
                   {section.title}
-                  <ChevronDown size={12} className={`transition-transform ${collapsedSections[section.title] ? '' : 'rotate-180'}`} />
+                  <ChevronDown size={12} aria-hidden="true" className={`transition-transform ${collapsedSections[section.title] ? '' : 'rotate-180'}`} />
                 </button>
                 {!collapsedSections[section.title] && section.items.map(item => {
                   const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
@@ -275,7 +275,7 @@ export default function AppNav() {
                           : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                       }`}
                     >
-                      <item.icon size={18} />
+                      <item.icon size={18} aria-hidden="true" />
                       {item.label}
                     </Link>
                   )
@@ -300,7 +300,7 @@ export default function AppNav() {
                 }`}
               >
                 <div className={`p-1.5 rounded-lg transition-all duration-200 ${isActive ? 'bg-blue-50 dark:bg-blue-950/50' : ''}`}>
-                  <item.icon size={22} />
+                  <item.icon size={22} aria-hidden="true" />
                 </div>
                 <span className={`text-xs font-semibold leading-tight ${isActive ? '' : 'font-medium'}`}>{item.label}</span>
               </Link>
@@ -319,7 +319,7 @@ export default function AppNav() {
             }`}
           >
             <div className={`p-1.5 rounded-lg transition-all duration-200 ${moreOpen ? 'bg-blue-50 dark:bg-blue-950/50' : ''}`}>
-              {moreOpen ? <X size={22} /> : <MoreHorizontal size={22} />}
+              {moreOpen ? <X size={22} aria-hidden="true" /> : <MoreHorizontal size={22} aria-hidden="true" />}
             </div>
             <span className="text-xs font-medium leading-tight">Plus</span>
           </button>

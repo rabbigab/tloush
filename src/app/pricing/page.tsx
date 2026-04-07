@@ -151,7 +151,7 @@ export default function PricingPage() {
                   )}
                 </div>
                 {plan.price === 0 && (
-                  <p className="text-xs text-slate-400 mt-1">3 documents offerts</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">3 documents offerts</p>
                 )}
               </div>
 
@@ -163,7 +163,7 @@ export default function PricingPage() {
                     ) : (
                       <X size={18} className="text-slate-300 mt-0.5 shrink-0" />
                     )}
-                    <span className={`text-sm ${feature.included ? 'text-slate-700' : 'text-slate-400'}`}>
+                    <span className={`text-sm ${feature.included ? 'text-slate-700' : 'text-slate-500 dark:text-slate-400'}`}>
                       {feature.text}
                     </span>
                   </li>

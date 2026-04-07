@@ -51,7 +51,7 @@ export default function TrustBadges() {
                 className="flex flex-col items-center text-center gap-3 p-4"
               >
                 <div className={`w-12 h-12 rounded-2xl ${badge.bg} flex items-center justify-center`}>
-                  <Icon size={22} className={badge.color} />
+                  <Icon size={22} className={badge.color} aria-hidden="true" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-neutral-800 dark:text-slate-200 text-sm mb-1">
