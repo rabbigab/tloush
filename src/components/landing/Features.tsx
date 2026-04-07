@@ -91,11 +91,11 @@ export default function Features() {
               transition={{ duration: 0.6, delay: idx * 0.1 }}
             >
               <Link href={feature.href}>
-                <div className="group h-full bg-white dark:bg-slate-800 rounded-2xl border border-neutral-100 dark:border-slate-700 p-6 flex flex-col gap-5 hover:shadow-lg transition-all duration-300 cursor-pointer hover:border-brand-200 dark:hover:border-brand-700">
+                <div className="group h-full bg-white dark:bg-slate-800 rounded-2xl border border-neutral-100 dark:border-slate-700 p-6 flex flex-col gap-5 hover:shadow-lg transition-shadow transition-colors duration-300 cursor-pointer hover:border-brand-200 dark:hover:border-brand-700">
                   {/* Icon + Number */}
                   <div className="flex items-center gap-3">
                     <div className={`inline-flex w-12 h-12 rounded-xl bg-gradient-to-br ${feature.gradient} items-center justify-center text-white shadow-sm`}>
-                      <Icon size={22} />
+                      <Icon size={22} aria-hidden="true" />
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-neutral-800 dark:text-slate-200 group-hover:text-brand-600 transition-colors">
@@ -123,7 +123,7 @@ export default function Features() {
                   {/* CTA */}
                   <div className={`flex items-center gap-2 ${feature.accent} font-semibold text-sm group-hover:gap-3 transition-all`}>
                     {feature.cta}
-                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" aria-hidden="true" />
                   </div>
                 </div>
               </Link>

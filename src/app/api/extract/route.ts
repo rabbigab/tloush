@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
     }
 
     // File validation
-    const validationError = validateFile(file);
+    const validationError = await validateFile(file);
     if (validationError) return validationError;
 
     const arrayBuffer = await file.arrayBuffer();

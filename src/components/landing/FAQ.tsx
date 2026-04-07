@@ -73,6 +73,7 @@ export default function FAQ() {
             >
               <button
                 onClick={() => setOpen(isOpen ? null : idx)}
+                aria-expanded={isOpen}
                 className="w-full bg-white dark:bg-slate-800 rounded-2xl border border-neutral-100 dark:border-slate-700 p-5 text-left hover:border-brand-200 dark:hover:border-brand-700 hover:shadow-sm transition-all"
               >
                 <div className="flex items-center justify-between gap-4">
@@ -81,6 +82,7 @@ export default function FAQ() {
                   </h3>
                   <ChevronDown
                     size={18}
+                    aria-hidden="true"
                     className={`text-neutral-400 shrink-0 transition-transform duration-200 ${
                       isOpen ? "rotate-180" : ""
                     }`}

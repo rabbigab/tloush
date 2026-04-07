@@ -34,7 +34,7 @@ export default function ProblemSection() {
                 transition={{ duration: 0.4, delay: idx * 0.08 }}
                 className="flex items-start gap-3 text-sm sm:text-base text-red-800 dark:text-red-300"
               >
-                <X size={16} className="text-red-500 shrink-0 mt-0.5" />
+                <X size={16} className="text-red-500 shrink-0 mt-0.5" aria-hidden="true" />
                 <span>{problem}</span>
               </motion.li>
             ))}

@@ -3,21 +3,9 @@ import { Resend } from 'resend'
 import { requireAuth } from '@/lib/apiAuth'
 import { escapeHtml } from '@/lib/fileValidation'
 import { createClient } from '@supabase/supabase-js'
+import { createRateLimit } from '@/lib/rateLimit'
 
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
-const RATE_LIMIT = 3
-const RATE_WINDOW = 15 * 60 * 1000
-
-function isRateLimited(key: string): boolean {
-  const now = Date.now()
-  const entry = rateLimitMap.get(key)
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(key, { count: 1, resetAt: now + RATE_WINDOW })
-    return false
-  }
-  entry.count++
-  return entry.count > RATE_LIMIT
-}
+const ratelimit = createRateLimit('feedback', 3, '15 m')
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,11 +13,14 @@ export async function POST(req: NextRequest) {
     if (auth instanceof NextResponse) return auth
     const { user } = auth
 
-    if (isRateLimited(user.id)) {
-      return NextResponse.json(
-        { error: 'Trop de messages. Réessayez dans quelques minutes.' },
-        { status: 429 }
-      )
+    if (ratelimit) {
+      const { success } = await ratelimit.limit(user.id)
+      if (!success) {
+        return NextResponse.json(
+          { error: 'Trop de messages. Réessayez dans quelques minutes.' },
+          { status: 429 }
+        )
+      }
     }
 
     const body = await req.json()

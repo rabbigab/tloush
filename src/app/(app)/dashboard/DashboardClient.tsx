@@ -188,7 +188,7 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
       </div>
 
       {/* Dashboard tabs */}
-      <div className="flex gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-1">
+      <div role="tablist" aria-label="Sections du dashboard" className="flex gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-1">
         {([
           { id: 'overview' as const, label: 'Apercu', count: urgent.length + actionRequired.length },
           { id: 'finances' as const, label: 'Finances', count: 0 },
@@ -196,6 +196,9 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
         ]).map(t => (
           <button
             key={t.id}
+            role="tab"
+            aria-selected={dashTab === t.id}
+            aria-controls={`tabpanel-${t.id}`}
             onClick={() => setDashTab(t.id)}
             className={`flex-1 px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
               dashTab === t.id ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
@@ -203,7 +206,7 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
           >
             {t.label}
             {t.count > 0 && (
-              <span className="ml-1.5 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold bg-red-500 text-white rounded-full">
+              <span className="ml-1.5 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold bg-red-500 text-white rounded-full" aria-hidden="true">
                 {t.count}
               </span>
             )}

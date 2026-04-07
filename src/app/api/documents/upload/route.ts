@@ -367,7 +367,7 @@ export async function POST(req: NextRequest) {
     }
 
     // File validation
-    const validationError = validateFile(file)
+    const validationError = await validateFile(file)
     if (validationError) return validationError
 
     // 1. Upload vers Supabase Storage
@@ -427,9 +427,9 @@ export async function POST(req: NextRequest) {
     let systemPrompt = buildSystemPrompt()
     if (employeeName || employerName || docPeriod) {
       systemPrompt += `\n\nCONTEXTE FOURNI PAR L'UTILISATEUR (utilise ces infos pour mieux reconnaître les noms sur le document) :`
-      if (employeeName) systemPrompt += `\n- Nom de l'employé/titulaire : ${employeeName}`
-      if (employerName) systemPrompt += `\n- Employeur / émetteur du document : ${employerName}`
-      if (docPeriod) systemPrompt += `\n- Période du document : ${docPeriod}`
+      if (employeeName) systemPrompt += `\n- Nom de l'employé/titulaire : ${JSON.stringify(employeeName)}`
+      if (employerName) systemPrompt += `\n- Employeur / émetteur du document : ${JSON.stringify(employerName)}`
+      if (docPeriod) systemPrompt += `\n- Période du document : ${JSON.stringify(docPeriod)}`
       systemPrompt += `\nATTENTION : ces infos sont indicatives. Base-toi TOUJOURS sur ce qui est écrit dans le document. Utilise ces infos uniquement pour mieux identifier les noms propres.`
     }
 

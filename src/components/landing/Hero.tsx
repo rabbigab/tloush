@@ -63,7 +63,7 @@ export default function Hero() {
                 className="inline-flex items-center justify-center gap-2 bg-brand-600 text-white font-bold px-8 py-4 rounded-xl hover:bg-brand-700 transition-colors shadow-lg shadow-brand-500/25 text-base"
               >
                 Analyser mon 1er document gratuitement
-                <ArrowRight size={18} />
+                <ArrowRight size={18} aria-hidden="true" />
               </Link>
             </motion.div>
             <motion.div
@@ -90,17 +90,17 @@ export default function Hero() {
           {/* Trust badges inline */}
           <div className="flex flex-wrap justify-center gap-3 mb-10 text-sm text-neutral-600 dark:text-slate-400">
             <span className="flex items-center gap-1.5">
-              <FileCheck size={14} className="text-brand-600" />
+              <FileCheck size={14} className="text-brand-600" aria-hidden="true" />
               <span className="font-semibold">100% en francais</span>
             </span>
             <span className="text-neutral-300 dark:text-slate-600">&bull;</span>
             <span className="flex items-center gap-1.5">
-              <AlertTriangle size={14} className="text-amber-500" />
+              <AlertTriangle size={14} className="text-amber-500" aria-hidden="true" />
               <span className="font-semibold">Detection des anomalies</span>
             </span>
             <span className="text-neutral-300 dark:text-slate-600">&bull;</span>
             <span className="flex items-center gap-1.5">
-              <ListChecks size={14} className="text-green-500" />
+              <ListChecks size={14} className="text-green-500" aria-hidden="true" />
               <span className="font-semibold">Actions recommandees</span>
             </span>
           </div>
@@ -114,7 +114,7 @@ export default function Hero() {
               { icon: "🧾", label: "Factures", desc: "Suivre vos depenses" },
             ].map((item) => (
               <div key={item.label} className="bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl border border-neutral-100 dark:border-slate-700 p-3 text-center">
-                <div className="text-2xl mb-1">{item.icon}</div>
+                <div className="text-2xl mb-1" aria-hidden="true">{item.icon}</div>
                 <div className="text-sm font-semibold text-neutral-800 dark:text-slate-200">{item.label}</div>
                 <div className="text-xs text-neutral-500 dark:text-slate-400">{item.desc}</div>
               </div>

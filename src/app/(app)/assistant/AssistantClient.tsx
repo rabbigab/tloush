@@ -224,7 +224,7 @@ export default function AssistantClient({
           )}
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div role="log" aria-live="polite" className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((msg, i) => (
               <div key={i} className={`flex gap-2.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {msg.role === 'assistant' && (
@@ -249,12 +249,12 @@ export default function AssistantClient({
             ))}
 
             {loading && (
-              <div className="flex gap-2.5 justify-start">
+              <div role="status" className="flex gap-2.5 justify-start">
                 <div className="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-900/40 flex items-center justify-center shrink-0 mt-1">
-                  <Bot size={14} className="text-brand-600 dark:text-brand-400" />
+                  <Bot size={14} className="text-brand-600 dark:text-brand-400" aria-hidden="true" />
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl px-4 py-3 flex items-center gap-2">
-                  <Loader2 size={14} className="animate-spin text-brand-500" />
+                  <Loader2 size={14} className="animate-spin text-brand-500" aria-hidden="true" />
                   <span className="text-sm text-slate-600 dark:text-slate-300">Tloush reflechit...</span>
                 </div>
               </div>

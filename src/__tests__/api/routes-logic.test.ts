@@ -7,27 +7,27 @@ function makeFile(name: string, type: string, size: number): File {
 }
 
 describe('validateFile (real)', () => {
-  it('accepts a valid PDF', () => {
+  it('accepts a valid PDF', async () => {
     const file = makeFile('doc.pdf', 'application/pdf', 1000)
-    expect(validateFile(file)).toBeNull()
+    expect(await validateFile(file)).toBeNull()
   })
 
-  it('accepts JPEG, PNG, WEBP', () => {
-    expect(validateFile(makeFile('a.jpg', 'image/jpeg', 1000))).toBeNull()
-    expect(validateFile(makeFile('a.png', 'image/png', 1000))).toBeNull()
-    expect(validateFile(makeFile('a.webp', 'image/webp', 1000))).toBeNull()
+  it('accepts JPEG, PNG, WEBP', async () => {
+    expect(await validateFile(makeFile('a.jpg', 'image/jpeg', 1000))).toBeNull()
+    expect(await validateFile(makeFile('a.png', 'image/png', 1000))).toBeNull()
+    expect(await validateFile(makeFile('a.webp', 'image/webp', 1000))).toBeNull()
   })
 
   it('rejects files over 10MB with 413', async () => {
     const file = makeFile('big.pdf', 'application/pdf', 11 * 1024 * 1024)
-    const res = validateFile(file)
+    const res = await validateFile(file)
     expect(res).not.toBeNull()
     expect(res!.status).toBe(413)
   })
 
   it('rejects disallowed mime types with 400', async () => {
     const file = makeFile('evil.exe', 'application/x-msdownload', 100)
-    const res = validateFile(file)
+    const res = await validateFile(file)
     expect(res).not.toBeNull()
     expect(res!.status).toBe(400)
   })
@@ -35,21 +35,21 @@ describe('validateFile (real)', () => {
   it('rejects mismatched extension with 400', async () => {
     // Correct mime but extension not allowed
     const file = makeFile('noext', 'application/pdf', 100)
-    const res = validateFile(file)
+    const res = await validateFile(file)
     expect(res).not.toBeNull()
     expect(res!.status).toBe(400)
   })
 
   it('rejects .txt extension even if mime faked as pdf', async () => {
     const file = makeFile('doc.txt', 'application/pdf', 100)
-    const res = validateFile(file)
+    const res = await validateFile(file)
     expect(res).not.toBeNull()
     expect(res!.status).toBe(400)
   })
 
-  it('handles mixed-case extensions', () => {
-    expect(validateFile(makeFile('doc.PDF', 'application/pdf', 100))).toBeNull()
-    expect(validateFile(makeFile('image.JPG', 'image/jpeg', 100))).toBeNull()
+  it('handles mixed-case extensions', async () => {
+    expect(await validateFile(makeFile('doc.PDF', 'application/pdf', 100))).toBeNull()
+    expect(await validateFile(makeFile('image.JPG', 'image/jpeg', 100))).toBeNull()
   })
 })
 

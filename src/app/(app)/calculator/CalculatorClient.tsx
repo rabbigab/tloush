@@ -93,10 +93,12 @@ export default function CalculatorClient() {
           <div className="relative">
             <input
               type="number"
+              name="gross_salary"
+              inputMode="decimal"
               value={gross}
               onChange={e => setGross(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && calculate()}
-              placeholder="Ex: 12000"
+              placeholder="Ex: 12000…"
               className="w-full px-4 py-3 pr-12 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-400 text-slate-900 dark:text-slate-100 text-lg font-semibold"
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">₪</span>
@@ -175,7 +177,7 @@ export default function CalculatorClient() {
         )}
 
         {error && (
-          <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
+          <p role="alert" className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
         )}
         <button
           onClick={calculate}
