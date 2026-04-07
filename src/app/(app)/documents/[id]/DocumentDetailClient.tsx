@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, FileText, AlertTriangle, CheckCircle, Info, AlertCircle, Clock, ListChecks, UserCheck, CalendarClock, MessageSquare, Download, Check, Eye, CreditCard, ExternalLink } from 'lucide-react'
+import { ArrowLeft, FileText, AlertTriangle, CheckCircle, Info, AlertCircle, Clock, ListChecks, UserCheck, CalendarClock, MessageSquare, Download, Check, Eye, CreditCard, ExternalLink, Scale, Loader2, X } from 'lucide-react'
 import { DOC_LABELS, DOC_ICONS, DOC_COLORS } from '@/lib/docTypes'
 
 interface AttentionPoint {
