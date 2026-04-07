@@ -202,3 +202,52 @@ export function calculateMashkanta(input: MashkantaInput): MashkantaResult {
     tips,
   }
 }
+
+// ─── Multi-Offer Comparison ───
+
+export interface MashkantaOffer {
+  id: string
+  bankName: string
+  interestRate: number
+  loanTermYears: number
+  trackType: 'prime' | 'fixed' | 'variable' | 'cpi_linked'
+}
+
+export interface MashkantaComparison {
+  offers: (MashkantaOffer & {
+    monthlyPayment: number
+    totalPayments: number
+    totalInterest: number
+  })[]
+  cheapestId: string
+  savingsVsWorst: number
+}
+
+export function compareMashkantaOffers(
+  loanAmount: number,
+  offers: MashkantaOffer[]
+): MashkantaComparison {
+  const results = offers.map(offer => {
+    const monthlyRate = offer.interestRate / 100 / 12
+    const numPayments = offer.loanTermYears * 12
+    let monthlyPayment: number
+    if (monthlyRate === 0) {
+      monthlyPayment = loanAmount / numPayments
+    } else {
+      monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)
+    }
+    const totalPayments = monthlyPayment * numPayments
+    const totalInterest = totalPayments - loanAmount
+    return { ...offer, monthlyPayment, totalPayments, totalInterest }
+  })
+
+  results.sort((a, b) => a.totalPayments - b.totalPayments)
+  const cheapest = results[0]
+  const mostExpensive = results[results.length - 1]
+
+  return {
+    offers: results,
+    cheapestId: cheapest.id,
+    savingsVsWorst: mostExpensive.totalPayments - cheapest.totalPayments,
+  }
+}

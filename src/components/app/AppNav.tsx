@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
-import { Inbox, LayoutDashboard, MessageSquare, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Building2, Briefcase, Home, Landmark, Wrench, ChevronDown, Search, HeartPulse, GitCompareArrows } from 'lucide-react'
+import { Inbox, LayoutDashboard, MessageSquare, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Building2, Briefcase, Home, Landmark, Wrench, ChevronDown, Search, HeartPulse, GitCompareArrows, PiggyBank, FileSpreadsheet, Building } from 'lucide-react'
 
 // Desktop: core items always visible + "Outils" dropdown
 const CORE_NAV = [
@@ -23,10 +23,12 @@ const TOOLS_NAV = [
   { label: 'Freelance', href: '/freelance', icon: Briefcase },
   { label: 'Arnona', href: '/arnona', icon: Home },
   { label: 'Mashkanta', href: '/mashkanta', icon: Landmark },
-  { label: 'Verification employeur', href: '/company-check', icon: Search },
   { label: 'Guide assurances', href: '/assurances', icon: HeartPulse },
   { label: 'Droits olim', href: '/droits-olim', icon: Scale },
   { label: 'Comparer tlushs', href: '/compare', icon: GitCompareArrows },
+  { label: 'Smart Saver', href: '/smart-saver', icon: PiggyBank },
+  { label: 'Import bancaire', href: '/bank-import', icon: FileSpreadsheet },
+  { label: 'Immobilier', href: '/real-estate', icon: Building },
 ]
 
 const SECONDARY_NAV = [
@@ -67,6 +69,9 @@ const MOBILE_SECTIONS = [
       { label: 'Guide assurances', href: '/assurances', icon: HeartPulse },
       { label: 'Droits olim', href: '/droits-olim', icon: Scale },
       { label: 'Comparer tlushs', href: '/compare', icon: GitCompareArrows },
+      { label: 'Smart Saver', href: '/smart-saver', icon: PiggyBank },
+      { label: 'Import bancaire', href: '/bank-import', icon: FileSpreadsheet },
+      { label: 'Immobilier', href: '/real-estate', icon: Building },
     ],
   },
   {

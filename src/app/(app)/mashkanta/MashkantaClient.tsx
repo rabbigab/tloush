@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Home, Calculator, AlertTriangle, Lightbulb, ChevronDown, ChevronUp } from 'lucide-react'
-import { calculateMashkanta, type MashkantaInput, type MashkantaResult } from '@/lib/mashkantaCalculator'
+import { calculateMashkanta, compareMashkantaOffers, type MashkantaInput, type MashkantaResult, type MashkantaOffer, type MashkantaComparison } from '@/lib/mashkantaCalculator'
 
 export default function MashkantaClient() {
   const [propertyPrice, setPropertyPrice] = useState('')
@@ -14,6 +14,12 @@ export default function MashkantaClient() {
   const [monthlyIncome, setMonthlyIncome] = useState('')
   const [result, setResult] = useState<MashkantaResult | null>(null)
   const [showAmortization, setShowAmortization] = useState(false)
+  const [showCompare, setShowCompare] = useState(false)
+  const [offers, setOffers] = useState<MashkantaOffer[]>([
+    { id: '1', bankName: 'Banque A', interestRate: 4.5, loanTermYears: 25, trackType: 'prime' },
+    { id: '2', bankName: 'Banque B', interestRate: 4.2, loanTermYears: 25, trackType: 'fixed' },
+  ])
+  const [comparison, setComparison] = useState<MashkantaComparison | null>(null)
 
   function calculate() {
     if (!propertyPrice || !downPayment || Number(propertyPrice) <= 0) return
@@ -286,6 +292,131 @@ export default function MashkantaClient() {
               </p>
             ))}
           </div>
+
+          {/* Compare offers */}
+          <button
+            onClick={() => setShowCompare(!showCompare)}
+            className="w-full py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:border-cyan-300 dark:hover:border-cyan-700 transition-colors flex items-center justify-center gap-2"
+          >
+            {showCompare ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            Comparer plusieurs offres
+          </button>
+
+          {showCompare && (
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-5 space-y-4">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100">Comparateur d&apos;offres</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Entrez les offres de differentes banques pour les comparer. Le montant du pret est calcule a partir des champs ci-dessus.
+              </p>
+              {offers.map((offer, i) => (
+                <div key={offer.id} className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">Offre {i + 1}</span>
+                    {offers.length > 2 && (
+                      <button onClick={() => setOffers(prev => prev.filter(o => o.id !== offer.id))} className="text-xs text-red-500 hover:underline">Supprimer</button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <input
+                      type="text"
+                      value={offer.bankName}
+                      onChange={e => setOffers(prev => prev.map(o => o.id === offer.id ? { ...o, bankName: e.target.value } : o))}
+                      placeholder="Nom banque"
+                      className="px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800"
+                    />
+                    <div>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={offer.interestRate}
+                        onChange={e => setOffers(prev => prev.map(o => o.id === offer.id ? { ...o, interestRate: Number(e.target.value) } : o))}
+                        className="w-full px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800"
+                      />
+                      <span className="text-[10px] text-slate-400">Taux %</span>
+                    </div>
+                    <div>
+                      <input
+                        type="number"
+                        value={offer.loanTermYears}
+                        onChange={e => setOffers(prev => prev.map(o => o.id === offer.id ? { ...o, loanTermYears: Number(e.target.value) } : o))}
+                        className="w-full px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800"
+                      />
+                      <span className="text-[10px] text-slate-400">Duree (ans)</span>
+                    </div>
+                    <select
+                      value={offer.trackType}
+                      onChange={e => setOffers(prev => prev.map(o => o.id === offer.id ? { ...o, trackType: e.target.value as MashkantaOffer['trackType'] } : o))}
+                      className="px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800"
+                    >
+                      <option value="prime">Prime</option>
+                      <option value="fixed">Fixe</option>
+                      <option value="variable">Variable</option>
+                      <option value="cpi_linked">Lie au Madad</option>
+                    </select>
+                  </div>
+                </div>
+              ))}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setOffers(prev => [...prev, { id: String(Date.now()), bankName: `Banque ${String.fromCharCode(65 + prev.length)}`, interestRate: 4.0, loanTermYears: 25, trackType: 'prime' }])}
+                  className="text-xs text-blue-600 hover:underline font-semibold"
+                >
+                  + Ajouter une offre
+                </button>
+              </div>
+              <button
+                onClick={() => {
+                  const loanAmount = Number(propertyPrice) - Number(downPayment)
+                  if (loanAmount <= 0) return
+                  setComparison(compareMashkantaOffers(loanAmount, offers))
+                }}
+                disabled={!propertyPrice || !downPayment}
+                className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-300 text-white font-semibold rounded-xl text-sm transition-colors"
+              >
+                Comparer
+              </button>
+
+              {comparison && (
+                <div className="space-y-3">
+                  <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-xl p-3">
+                    <p className="text-sm font-semibold text-green-800 dark:text-green-300">
+                      Economie potentielle : {comparison.savingsVsWorst.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}₪
+                    </p>
+                    <p className="text-xs text-green-700 dark:text-green-400">entre la meilleure et la moins bonne offre</p>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-xs text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">
+                          <th className="text-left py-2 font-medium">Banque</th>
+                          <th className="text-right py-2 font-medium">Taux</th>
+                          <th className="text-right py-2 font-medium">Duree</th>
+                          <th className="text-right py-2 font-medium">Mensualite</th>
+                          <th className="text-right py-2 font-medium">Total interet</th>
+                          <th className="text-right py-2 font-medium">Cout total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {comparison.offers.map(o => (
+                          <tr key={o.id} className={`border-b border-slate-50 dark:border-slate-800 ${o.id === comparison.cheapestId ? 'bg-green-50/50 dark:bg-green-950/10' : ''}`}>
+                            <td className="py-2 font-medium text-slate-800 dark:text-slate-200">
+                              {o.bankName}
+                              {o.id === comparison.cheapestId && <span className="ml-1 text-[10px] text-green-600 font-bold">BEST</span>}
+                            </td>
+                            <td className="py-2 text-right text-slate-600 dark:text-slate-300">{o.interestRate}%</td>
+                            <td className="py-2 text-right text-slate-600 dark:text-slate-300">{o.loanTermYears} ans</td>
+                            <td className="py-2 text-right font-semibold text-slate-800 dark:text-slate-200">{o.monthlyPayment.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}₪</td>
+                            <td className="py-2 text-right text-slate-600 dark:text-slate-300">{o.totalInterest.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}₪</td>
+                            <td className="py-2 text-right font-semibold text-slate-800 dark:text-slate-200">{o.totalPayments.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}₪</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

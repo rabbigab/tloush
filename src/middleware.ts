@@ -22,8 +22,10 @@ const PROTECTED_ROUTES = [
   '/freelance',
   '/arnona',
   '/mashkanta',
-  '/company-check',
   '/assurances',
+  '/smart-saver',
+  '/bank-import',
+  '/real-estate',
 ]
 
 // Routes publiques qui n'ont pas besoin du middleware auth

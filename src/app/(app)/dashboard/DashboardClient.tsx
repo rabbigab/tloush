@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap, CalendarClock, Check, Wallet, Megaphone, Calculator, Briefcase, Home, Landmark, Building2, GitCompareArrows } from 'lucide-react'
+import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap, CalendarClock, Check, Wallet, Megaphone, Calculator, Briefcase, Home, Landmark, GitCompareArrows, PiggyBank } from 'lucide-react'
 import { DOC_LABELS, DOC_ICONS } from '@/lib/docTypes'
 import { track } from '@/lib/analytics'
 import type { AppDocument } from '@/types'
@@ -168,7 +168,7 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
           { label: 'Mashkanta', href: '/mashkanta', icon: Landmark, color: 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600' },
           { label: 'Arnona', href: '/arnona', icon: Home, color: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600' },
           { label: 'Comparer tlushs', href: '/compare', icon: GitCompareArrows, color: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600' },
-          { label: 'Verif. employeur', href: '/company-check', icon: Building2, color: 'bg-teal-50 dark:bg-teal-950/30 text-teal-600' },
+          { label: 'Smart Saver', href: '/smart-saver', icon: PiggyBank, color: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600' },
         ].map(tool => (
           <Link
             key={tool.href}

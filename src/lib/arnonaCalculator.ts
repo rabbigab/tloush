@@ -169,3 +169,113 @@ export function calculateArnona(input: ArnonaInput): ArnonaResult {
     tips,
   }
 }
+
+// ─── Arnona Appeal Letter Generator ───
+
+export interface ArnonaAppealInput {
+  fullName: string
+  address: string
+  city: string
+  tz: string // Teudat Zehut
+  currentAmount: number
+  expectedAmount: number
+  reasons: ArnonaAppealReason[]
+}
+
+export type ArnonaAppealReason =
+  | 'oleh_discount_not_applied'
+  | 'wrong_surface'
+  | 'elderly_discount'
+  | 'disabled_discount'
+  | 'single_parent_discount'
+  | 'income_supplement'
+  | 'property_classification_error'
+  | 'other'
+
+const REASON_TEXT_HE: Record<ArnonaAppealReason, string> = {
+  oleh_discount_not_applied: 'הנחת עולה חדש לא הופעלה על אף שאני זכאי/ת לה',
+  wrong_surface: 'שטח הנכס הרשום אינו תואם את השטח בפועל',
+  elderly_discount: 'הנחת אזרח ותיק לא הופעלה',
+  disabled_discount: 'הנחת נכה לא הופעלה',
+  single_parent_discount: 'הנחת הורה יחיד/נית לא הופעלה',
+  income_supplement: 'הנחת מקבל/ת השלמת הכנסה לא הופעלה',
+  property_classification_error: 'סיווג הנכס שגוי (למשל: מסחרי במקום מגורים)',
+  other: 'סיבה אחרת (ראו פירוט למטה)',
+}
+
+const REASON_TEXT_FR: Record<ArnonaAppealReason, string> = {
+  oleh_discount_not_applied: 'Reduction oleh hadash non appliquee',
+  wrong_surface: 'Surface du bien incorrecte dans le registre',
+  elderly_discount: 'Reduction citoyen senior non appliquee',
+  disabled_discount: 'Reduction personne handicapee non appliquee',
+  single_parent_discount: 'Reduction parent isole non appliquee',
+  income_supplement: 'Reduction complement de revenus non appliquee',
+  property_classification_error: 'Classification du bien incorrecte (ex: commercial au lieu de residentiel)',
+  other: 'Autre motif (voir details ci-dessous)',
+}
+
+/**
+ * Generate an arnona appeal letter in Hebrew (official) and French (for the user)
+ */
+export function generateArnonaAppeal(input: ArnonaAppealInput): { hebrew: string; french: string } {
+  const today = new Date().toLocaleDateString('he-IL')
+  const todayFr = new Date().toLocaleDateString('fr-FR')
+  const diff = input.currentAmount - input.expectedAmount
+  const reasonsHe = input.reasons.map(r => `• ${REASON_TEXT_HE[r]}`).join('\n')
+  const reasonsFr = input.reasons.map(r => `• ${REASON_TEXT_FR[r]}`).join('\n')
+
+  const hebrew = `תאריך: ${today}
+
+לכבוד
+מחלקת הארנונה
+עיריית ${input.city}
+
+הנדון: השגה על שומת ארנונה
+
+שם: ${input.fullName}
+ת.ז.: ${input.tz}
+כתובת: ${input.address}
+
+אני הח"מ פונה בהשגה על שומת הארנונה שנקבעה לנכס שלי.
+
+הסכום שנקבע: ${input.currentAmount.toLocaleString('he-IL')}₪ לשנה
+הסכום המשוער הנכון: ${input.expectedAmount.toLocaleString('he-IL')}₪ לשנה
+הפרש: ${diff.toLocaleString('he-IL')}₪
+
+סיבות ההשגה:
+${reasonsHe}
+
+אבקש לבדוק את חיובי ולתקן בהתאם. מצ"ב מסמכים תומכים.
+
+בכבוד רב,
+${input.fullName}`
+
+  const french = `Date: ${todayFr}
+
+A l'attention de
+Service de l'Arnona
+Mairie de ${input.city}
+
+Objet: Contestation de l'avis d'arnona
+
+Nom: ${input.fullName}
+T.Z.: ${input.tz}
+Adresse: ${input.address}
+
+Je soussigne(e) conteste le montant d'arnona fixe pour mon bien.
+
+Montant actuel: ${input.currentAmount.toLocaleString('fr-FR')}₪/an
+Montant attendu: ${input.expectedAmount.toLocaleString('fr-FR')}₪/an
+Difference: ${diff.toLocaleString('fr-FR')}₪
+
+Motifs de la contestation:
+${reasonsFr}
+
+Je vous prie de bien vouloir verifier mon dossier et corriger le montant en consequence. Pieces justificatives jointes.
+
+Cordialement,
+${input.fullName}`
+
+  return { hebrew, french }
+}
+
