@@ -159,6 +159,9 @@ export default function AdminDashboard() {
   const [deleting, setDeleting] = useState<string | null>(null)
   const [changingPlan, setChangingPlan] = useState<string | null>(null)
   const [updatingFeedback, setUpdatingFeedback] = useState<string | null>(null)
+  const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [replyText, setReplyText] = useState('')
+  const [sendingReply, setSendingReply] = useState(false)
 
   async function handleChangePlan(userId: string, planId: string) {
     setChangingPlan(userId)
@@ -231,6 +234,39 @@ export default function AdminDashboard() {
       alert('Erreur réseau')
     } finally {
       setUpdatingFeedback(null)
+    }
+  }
+
+  async function handleReplyFeedback(feedbackId: string) {
+    if (!replyText.trim() || replyText.trim().length < 2) return
+    setSendingReply(true)
+    try {
+      const res = await fetch('/api/admin/feedbacks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: feedbackId, reply: replyText.trim() }),
+      })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        alert(d.error || 'Erreur envoi')
+        return
+      }
+      // Update local state
+      setData(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          feedbacks: prev.feedbacks.map(f =>
+            f.id === feedbackId ? { ...f, status: 'resolved', admin_note: replyText.trim() } : f
+          ),
+        }
+      })
+      setReplyingTo(null)
+      setReplyText('')
+    } catch {
+      alert('Erreur réseau')
+    } finally {
+      setSendingReply(false)
     }
   }
 
@@ -714,9 +750,24 @@ export default function AdminDashboard() {
                               <span className="text-[10px] text-slate-400">{timeAgo(fb.created_at)}</span>
                             </div>
                             <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap break-words">{fb.message}</p>
+                            {fb.admin_note && (
+                              <div className="mt-2 bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 rounded-lg p-2.5">
+                                <p className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 mb-0.5">Votre reponse :</p>
+                                <p className="text-xs text-blue-800 dark:text-blue-300 whitespace-pre-wrap">{fb.admin_note}</p>
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
+                          {fb.email && fb.status !== 'archived' && (
+                            <button
+                              onClick={() => { setReplyingTo(replyingTo === fb.id ? null : fb.id); setReplyText(fb.admin_note || '') }}
+                              className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Repondre par email"
+                            >
+                              <MessageSquare size={15} />
+                            </button>
+                          )}
                           {fb.status === 'new' && (
                             <button
                               onClick={() => handleFeedbackStatus(fb.id, 'read')}
@@ -747,6 +798,35 @@ export default function AdminDashboard() {
                           </button>
                         </div>
                       </div>
+                      {replyingTo === fb.id && (
+                        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700">
+                          <textarea
+                            value={replyText}
+                            onChange={e => setReplyText(e.target.value)}
+                            rows={3}
+                            placeholder="Votre reponse..."
+                            className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                          />
+                          <div className="flex items-center justify-between mt-2">
+                            <p className="text-[10px] text-slate-400">Un email sera envoye a {fb.email}</p>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => { setReplyingTo(null); setReplyText('') }}
+                                className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                              >
+                                Annuler
+                              </button>
+                              <button
+                                onClick={() => handleReplyFeedback(fb.id)}
+                                disabled={sendingReply || replyText.trim().length < 2}
+                                className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-lg transition-colors flex items-center gap-1.5"
+                              >
+                                {sendingReply ? 'Envoi...' : 'Envoyer'}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )
                 })}
