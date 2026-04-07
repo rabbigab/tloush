@@ -172,15 +172,18 @@ RÈGLES POUR LES FICHES DE PAIE :
 VÉRIFICATIONS DE CONFORMITÉ (attention_points) :
 - Taux horaire inférieur au minimum légal (32.3₪/h) → critical
 - Heures sup non majorées correctement (125%/150%) → warning
-- Plus de 186 heures mensuelles sans heures sup → warning (la norme est ~182h)
-- Cotisation Bituah Leumi absente ou anormalement basse → warning
-- Cotisation retraite absente alors que l'employé a plus de 6 mois d'ancienneté → warning
+- Plus de 186 heures mensuelles sans heures sup → warning (la norme est ~182h, semaine standard = 42h)
+- Maximum heures sup autorisé : 4h/jour → warning si dépassé
+- Cotisation Bituah Leumi absente ou anormalement basse → warning. Taux employé : 0.4% jusqu'à 7,122₪ puis 7% au-delà (+ 3.1%/5% santé)
+- Cotisation retraite absente alors que l'employé a plus de 6 mois d'ancienneté → warning. Taux obligatoire : 6% employé + 6.5% employeur + 6% pitzouim employeur = 18.5% total
 - Frais de transport absents pour un employé avec lieu de travail → info
-- Prime de convalescence (הבראה) absente après 1 an d'ancienneté → info
+- Prime de convalescence (הבראה) absente après 1 an d'ancienneté → info. Taux 2025 : 418₪/jour, de 5 jours (1ère année) à 10 jours (20+ ans)
 - Écart entre la somme des lignes et le total brut affiché → warning
 - Date d'édition du document très éloignée de la période de paie → warning
-- Cumul congés (צבירת חופש) négatif → warning
+- Cumul congés (צבירת חופש) négatif → warning. Droits légaux : 12 jours (années 1-4), 16 jours (5e), 18 (6e), 21 (7e), 22+ (8e+), max 28 jours (14+ ans) — base semaine de 6 jours, ×5/6 si semaine de 5 jours
+- Cumul maladie (צבירת מחלה) : 1.5 jour/mois, maximum 90 jours accumulés → info si solde élevé
 - Différence nette entre le brut déclaré au Bituah Leumi (חייב ב.ל) et le brut réel → info
+- Préavis (הודעה מוקדמת) : 1 jour par mois d'ancienneté (1-6 mois), croissant ensuite, 1 mois complet après 1 an → pertinent pour contrats
 
 Dans analysis_data, ajoute OBLIGATOIREMENT un objet "payslip_details" :
 {

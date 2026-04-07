@@ -22,21 +22,25 @@ const TAX_BRACKETS_2025 = [
   { from: 560_280, to: 721_560, rate: 0.47 },
   { from: 721_560, to: Infinity, rate: 0.50 },
 ]
+// Surtax (mas yoter): additional 3% above 721,560₪/year (effective 53%)
+const SURTAX_THRESHOLD_ANNUAL = 721_560
+const SURTAX_RATE = 0.03
 
 // ─── Bituah Leumi (National Insurance) 2025 ───
 // Employee rates - salaried workers
 const BL_RATES_2025 = {
-  // Below 60% of average wage (threshold ~6,331₪/month in 2025)
-  reducedThresholdMonthly: 6_331,
-  reducedRate: 0.004, // 0.4% employee share (reduced bracket)
-  normalRate: 0.07,   // 7% employee share (normal bracket)
+  // Below 60% of average wage (threshold ~7,122₪/month in 2025)
+  reducedThresholdMonthly: 7_122,
+  reducedRate: 0.004, // 0.4% employee NI (reduced bracket)
+  normalRate: 0.07,   // 7% employee NI (normal bracket)
   // Maximum insurable income
   maxInsurableMonthly: 49_030,
 }
 
 // ─── Health Insurance (Mas Briut) 2025 ───
+// Health tax is collected alongside BL but at separate rates
 const HEALTH_RATES_2025 = {
-  reducedThresholdMonthly: 6_331, // Same threshold as BL
+  reducedThresholdMonthly: 7_122, // Same threshold as BL
   reducedRate: 0.031, // 3.1%
   normalRate: 0.05,   // 5%
   maxInsurableMonthly: 49_030,
@@ -46,7 +50,17 @@ const HEALTH_RATES_2025 = {
 const PENSION_RATES = {
   employeeRate: 0.06,     // 6% employee contribution
   employerRate: 0.065,    // 6.5% employer contribution
-  severanceRate: 0.0833,  // 8.33% employer severance (Section 14)
+  severanceRate: 0.06,    // 6% employer severance (standard). Section 14 = 8.33% to cover full obligation
+  severanceSection14Rate: 0.0833, // 8.33% under Section 14 (last salary × years)
+}
+
+// ─── Keren Hishtalmut default rates ───
+const KEREN_HISHTALMUT_DEFAULTS = {
+  employeeRate: 0.025, // 2.5%
+  employerRate: 0.075, // 7.5%
+  taxFreeYears: 6,     // Tax-free withdrawal after 6 years
+  educationYears: 3,   // Early withdrawal for education after 3 years
+  annualCeiling: 15_712, // Tax-free gains ceiling
 }
 
 // ─── Tax Credit Points (Nekudot Zikui) 2025 ───
@@ -95,6 +109,7 @@ export const OVERTIME_RATES = {
 }
 
 // ─── Vacation Days by Seniority ───
+// Vacation days based on 6-day work week. For 5-day week, multiply by 5/6
 const VACATION_DAYS_BY_SENIORITY = [
   { years: 1, days: 12 },  // Years 1-4
   { years: 5, days: 16 },
@@ -103,6 +118,40 @@ const VACATION_DAYS_BY_SENIORITY = [
   { years: 8, days: 22 },  // 8+
   { years: 14, days: 28 }, // 14+ (max by law)
 ]
+
+// ─── Notice Periods (Hoda'a Mukdemet) ───
+// Required advance notice before termination
+const NOTICE_PERIODS = [
+  { months: 1, noticeDays: 1 },
+  { months: 2, noticeDays: 2 },
+  { months: 3, noticeDays: 3 },
+  { months: 4, noticeDays: 4 },
+  { months: 5, noticeDays: 5 },
+  { months: 6, noticeDays: 6 },
+  { months: 7, noticeDays: 7 + 2.5 * 1 },   // 6 days + 2.5 per additional month
+  { months: 8, noticeDays: 7 + 2.5 * 2 },
+  { months: 9, noticeDays: 7 + 2.5 * 3 },
+  { months: 10, noticeDays: 7 + 2.5 * 4 },
+  { months: 11, noticeDays: 7 + 2.5 * 5 },
+  { months: 12, noticeDays: 30 },            // 1 month after 1 year
+]
+
+// ─── Maternity Leave ───
+export const MATERNITY = {
+  totalWeeks: 26,
+  paidWeeks: 15,       // Paid by Bituah Leumi
+  jobProtectionDays: 60, // Cannot fire 60 days after return
+  paternityDays: 5,
+  transferableWeeks: 6,  // Father can take up to 6 weeks from mother's allowance
+}
+
+// ─── Severance (Pitzuim) ───
+export const SEVERANCE = {
+  formula: 'last_monthly_salary × years_of_service',
+  paymentDeadlineDays: 15,
+  section14Rate: 0.0833,  // Monthly deposit that covers full obligation
+  taxExemptPerYear: 13_750, // ₪13,750 per year of service
+}
 
 // ─── Sick Days ───
 export const SICK_DAYS = {
@@ -273,6 +322,10 @@ function calculateIncomeTax(annualGross: number): number {
     const taxableInBracket = Math.min(annualGross, bracket.to) - bracket.from
     tax += taxableInBracket * bracket.rate
   }
+  // Surtax (mas yoter) for high earners
+  if (annualGross > SURTAX_THRESHOLD_ANNUAL) {
+    tax += (annualGross - SURTAX_THRESHOLD_ANNUAL) * SURTAX_RATE
+  }
   return tax
 }
 
@@ -293,9 +346,9 @@ function calculateBituahLeumiEmployer(monthlyGross: number): number {
   const capped = Math.min(monthlyGross, BL_RATES_2025.maxInsurableMonthly)
   const threshold = BL_RATES_2025.reducedThresholdMonthly
 
-  // Employer rates are higher
-  const reducedRateEmployer = 0.0355 // 3.55%
-  const normalRateEmployer = 0.076   // 7.6%
+  // Employer rates: NI + health combined
+  const reducedRateEmployer = 0.038 + 0.034  // 3.8% NI + 3.4% health = 7.2%
+  const normalRateEmployer = 0.076 + 0.0345  // 7.6% NI + 3.45% health = 11.05%
 
   if (capped <= threshold) {
     return round2(capped * reducedRateEmployer)
@@ -519,4 +572,22 @@ export function getSickDayPayRate(dayNumber: number): number {
   return SICK_DAYS.day4PlusPay
 }
 
-export { TAX_BRACKETS_2025, BL_RATES_2025, HEALTH_RATES_2025, PENSION_RATES, DEFAULT_CREDIT_POINTS, CREDIT_POINT_VALUE_MONTHLY }
+export function getNoticePeriodDays(monthsEmployed: number): number {
+  if (monthsEmployed >= 12) return 30
+  for (let i = NOTICE_PERIODS.length - 1; i >= 0; i--) {
+    if (monthsEmployed >= NOTICE_PERIODS[i].months) return Math.round(NOTICE_PERIODS[i].noticeDays)
+  }
+  return 1
+}
+
+export function calculateSeverance(lastMonthlySalary: number, yearsOfService: number): {
+  total: number
+  taxExempt: number
+  taxable: number
+} {
+  const total = round2(lastMonthlySalary * yearsOfService)
+  const taxExempt = round2(SEVERANCE.taxExemptPerYear * yearsOfService)
+  return { total, taxExempt, taxable: Math.max(0, round2(total - taxExempt)) }
+}
+
+export { TAX_BRACKETS_2025, BL_RATES_2025, HEALTH_RATES_2025, PENSION_RATES, DEFAULT_CREDIT_POINTS, CREDIT_POINT_VALUE_MONTHLY, KEREN_HISHTALMUT_DEFAULTS, NOTICE_PERIODS }
