@@ -5,6 +5,7 @@ import { createRateLimit } from '@/lib/rateLimit'
 import { requireAuth } from '@/lib/apiAuth'
 import { canUseFeature, incrementUsage, getSubscription } from '@/lib/subscription'
 import { parseDeadline, detectAmountAnomaly } from '@/lib/parsers'
+import { preprocessImage, buildQualityHint } from '@/lib/imagePreprocess'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const freeRateLimit = createRateLimit('upload-free', 3, '1 h')
@@ -21,6 +22,13 @@ TON RÔLE :
 - Retourner un JSON structuré en FRANÇAIS
 
 RÈGLE ABSOLUE : Lis le document LIGNE PAR LIGNE. Chaque ligne du document contient une information. Ne saute AUCUNE ligne. Si tu vois un chiffre, reporte-le fidèlement. Si tu n'arrives pas à lire une valeur, indique "illisible" plutôt que de deviner.
+
+GESTION DES DOCUMENTS DE MAUVAISE QUALITÉ :
+- Si le document est un scan ou une photo de mauvaise qualité, fais de ton mieux pour déchiffrer chaque élément
+- Utilise le contexte pour déduire les valeurs ambiguës (ex: si c'est une fiche de paie et que tu vois un montant autour de 5800₪, c'est probablement proche du salaire minimum)
+- Pour les chiffres flous, indique ta meilleure lecture suivie de "(lecture incertaine)"
+- Si un document est tourné/incliné, essaie quand même de lire le texte
+- Les documents hébreux se lisent de DROITE À GAUCHE — garde cela en tête pour l'ordre des colonnes dans les tableaux
 
 RÈGLE CRITIQUE SUR LES NOMS PROPRES :
 - GARDE TOUJOURS les noms de personnes, d'entreprises et d'organismes EN HÉBREU tel qu'ils apparaissent sur le document.
@@ -377,9 +385,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Erreur lors du stockage du fichier' }, { status: 500 })
     }
 
-    // 2. Analyse Claude
-    const base64Data = fileBuffer.toString('base64')
+    // 2. Preprocess image for better OCR quality
     const mimeType = file.type as string
+    const preprocessResult = await preprocessImage(fileBuffer, mimeType)
+    const analysisBuffer = preprocessResult.enhanced ? preprocessResult.buffer : fileBuffer
+    const base64Data = analysisBuffer.toString('base64')
+
+    if (preprocessResult.enhanced) {
+      console.log(`[upload] Image enhanced: quality=${preprocessResult.quality}, fixes=[${preprocessResult.appliedFixes.join(', ')}]`)
+    }
 
     type ImageMediaType = 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
     type ContentBlock =
@@ -395,7 +409,9 @@ export async function POST(req: NextRequest) {
         { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64Data } }
       ]
     } else {
-      const imageMediaType = (mimeType === 'image/png' ? 'image/png' : 'image/jpeg') as ImageMediaType
+      // Enhanced images are always PNG, originals keep their type
+      const outputMime = preprocessResult.enhanced ? 'image/png' : mimeType
+      const imageMediaType = (outputMime === 'image/png' ? 'image/png' : 'image/jpeg') as ImageMediaType
       contentBlocks = [
         { type: 'text', text: USER_PROMPT },
         { type: 'image', source: { type: 'base64', media_type: imageMediaType, data: base64Data } }
@@ -410,6 +426,12 @@ export async function POST(req: NextRequest) {
       if (employerName) systemPrompt += `\n- Employeur / émetteur du document : ${employerName}`
       if (docPeriod) systemPrompt += `\n- Période du document : ${docPeriod}`
       systemPrompt += `\nATTENTION : ces infos sont indicatives. Base-toi TOUJOURS sur ce qui est écrit dans le document. Utilise ces infos uniquement pour mieux identifier les noms propres.`
+    }
+
+    // Add quality hint if image was enhanced
+    const qualityHint = buildQualityHint(preprocessResult)
+    if (qualityHint) {
+      systemPrompt += qualityHint
     }
 
     // Cast needed: 'document' content block not yet in SDK types (v0.24)
