@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { PosthogProvider } from "@/components/providers/PosthogProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import CrispChat from "@/components/providers/CrispChat";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -74,6 +75,7 @@ export default function RootLayout({
           </PosthogProvider>
         </ThemeProvider>
         <Analytics />
+        <CrispChat />
       </body>
     </html>
   );

@@ -5,7 +5,8 @@ import Link from 'next/link'
 import {
   Users, FileText, CreditCard, TrendingUp, RefreshCw, Search,
   ArrowLeft, ChevronDown, ChevronUp, Clock, UserCheck, AlertCircle,
-  Crown, UserPlus, Activity, DollarSign, BarChart3, Eye, Trash2, Phone
+  Crown, UserPlus, Activity, DollarSign, BarChart3, Eye, Trash2, Phone,
+  MessageSquare, Bug, Lightbulb, HelpCircle, Archive, CheckCircle, Percent, ArrowUpRight
 } from 'lucide-react'
 
 interface UserData {
@@ -31,17 +32,43 @@ interface RecentDoc {
   summary_fr: string | null
 }
 
+interface Feedback {
+  id: string
+  user_id: string
+  email: string | null
+  category: string
+  message: string
+  status: string
+  admin_note: string | null
+  created_at: string
+}
+
 interface AdminData {
   overview: {
     total_users: number
     recent_signups_7d: number
     active_users_7d: number
+    active_users_30d: number
     total_documents: number
     mrr: number
     active_solo: number
     active_family: number
+    avg_docs_per_user: number
+    retention_rate_7d: number
+    conversion_rate: number
+    users_with_docs: number
+    feedback_new: number
   }
   plan_distribution: { free: number; solo: number; family: number }
+  signup_trend: { date: string; count: number }[]
+  docs_trend: { date: string; count: number }[]
+  doc_type_distribution: Record<string, number>
+  feedback_stats: {
+    total: number
+    new: number
+    byCategory: { bug: number; suggestion: number; question: number; other: number }
+  }
+  feedbacks: Feedback[]
   users: UserData[]
   recent_documents: RecentDoc[]
 }
@@ -65,6 +92,21 @@ const DOC_LABELS: Record<string, string> = {
   bank: 'Bancaire', official_letter: 'Courrier', receipt: 'Reçu',
   utility_bill: 'Facture', insurance: 'Assurance', contract: 'Contrat',
 }
+const FEEDBACK_STATUS_LABELS: Record<string, string> = {
+  new: 'Nouveau', read: 'Lu', resolved: 'Résolu', archived: 'Archivé',
+}
+const FEEDBACK_STATUS_COLORS: Record<string, string> = {
+  new: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+  read: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+  resolved: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+  archived: 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400',
+}
+const CATEGORY_ICONS: Record<string, React.ElementType> = {
+  bug: Bug, suggestion: Lightbulb, question: HelpCircle, other: MessageSquare,
+}
+const CATEGORY_LABELS: Record<string, string> = {
+  bug: 'Bug', suggestion: 'Suggestion', question: 'Question', other: 'Autre',
+}
 
 function timeAgo(date: string): string {
   const diff = Date.now() - new Date(date).getTime()
@@ -83,6 +125,26 @@ function formatDate(date: string): string {
   return new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
+// Mini sparkline chart component
+function MiniChart({ data, color = 'blue' }: { data: { date: string; count: number }[]; color?: string }) {
+  const max = Math.max(...data.map(d => d.count), 1)
+  const colorMap: Record<string, string> = {
+    blue: 'bg-blue-500', green: 'bg-green-500', indigo: 'bg-indigo-500',
+  }
+  return (
+    <div className="flex items-end gap-px h-16">
+      {data.map((d, i) => (
+        <div
+          key={i}
+          className={`flex-1 rounded-t-sm ${colorMap[color] || colorMap.blue} opacity-70 hover:opacity-100 transition-opacity`}
+          style={{ height: `${Math.max((d.count / max) * 100, 4)}%` }}
+          title={`${d.date}: ${d.count}`}
+        />
+      ))}
+    </div>
+  )
+}
+
 export default function AdminDashboard() {
   const [data, setData] = useState<AdminData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -91,11 +153,15 @@ export default function AdminDashboard() {
   const [planFilter, setPlanFilter] = useState<string>('all')
   const [sortBy, setSortBy] = useState<'created_at' | 'last_sign_in_at' | 'total_documents'>('created_at')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
-  const [tab, setTab] = useState<'users' | 'documents'>('users')
+  const [tab, setTab] = useState<'overview' | 'users' | 'documents' | 'feedbacks'>('overview')
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [changingPlan, setChangingPlan] = useState<string | null>(null)
+  const [updatingFeedback, setUpdatingFeedback] = useState<string | null>(null)
+  const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [replyText, setReplyText] = useState('')
+  const [sendingReply, setSendingReply] = useState(false)
 
   async function handleChangePlan(userId: string, planId: string) {
     setChangingPlan(userId)
@@ -133,6 +199,74 @@ export default function AdminDashboard() {
       alert('Erreur réseau')
     } finally {
       setDeleting(null)
+    }
+  }
+
+  async function handleFeedbackStatus(feedbackId: string, newStatus: string) {
+    setUpdatingFeedback(feedbackId)
+    try {
+      const res = await fetch('/api/admin/feedbacks', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: feedbackId, status: newStatus }),
+      })
+      if (!res.ok) {
+        alert('Erreur mise à jour')
+        return
+      }
+      // Update local state
+      setData(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          feedbacks: prev.feedbacks.map(f =>
+            f.id === feedbackId ? { ...f, status: newStatus } : f
+          ),
+          overview: {
+            ...prev.overview,
+            feedback_new: prev.feedbacks.filter(f =>
+              f.id === feedbackId ? newStatus === 'new' : f.status === 'new'
+            ).length,
+          },
+        }
+      })
+    } catch {
+      alert('Erreur réseau')
+    } finally {
+      setUpdatingFeedback(null)
+    }
+  }
+
+  async function handleReplyFeedback(feedbackId: string) {
+    if (!replyText.trim() || replyText.trim().length < 2) return
+    setSendingReply(true)
+    try {
+      const res = await fetch('/api/admin/feedbacks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: feedbackId, reply: replyText.trim() }),
+      })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        alert(d.error || 'Erreur envoi')
+        return
+      }
+      // Update local state
+      setData(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          feedbacks: prev.feedbacks.map(f =>
+            f.id === feedbackId ? { ...f, status: 'resolved', admin_note: replyText.trim() } : f
+          ),
+        }
+      })
+      setReplyingTo(null)
+      setReplyText('')
+    } catch {
+      alert('Erreur réseau')
+    } finally {
+      setSendingReply(false)
     }
   }
 
@@ -177,7 +311,7 @@ export default function AdminDashboard() {
 
   if (!data) return null
 
-  const { overview, plan_distribution, users, recent_documents } = data
+  const { overview, plan_distribution, signup_trend, docs_trend, doc_type_distribution, feedback_stats, feedbacks, users, recent_documents } = data
 
   // Filter & sort users
   let filteredUsers = users.filter(u => {
@@ -211,9 +345,14 @@ export default function AdminDashboard() {
     return sortDir === 'desc' ? <ChevronDown size={14} /> : <ChevronUp size={14} />
   }
 
-  // Map user_id to email for recent docs
   const emailMap: Record<string, string> = {}
   for (const u of users) emailMap[u.id] = u.email
+
+  // Top doc types sorted
+  const sortedDocTypes = Object.entries(doc_type_distribution)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 8)
+  const maxDocTypeCount = Math.max(...sortedDocTypes.map(([, c]) => c), 1)
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -243,55 +382,147 @@ export default function AdminDashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-        {/* KPI Cards */}
+        {/* KPI Cards — row 1: core metrics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <KpiCard icon={Users} label="Utilisateurs" value={overview.total_users} sub={`+${overview.recent_signups_7d} cette semaine`} color="blue" />
-          <KpiCard icon={UserCheck} label="Actifs (7j)" value={overview.active_users_7d} sub={`${overview.total_users > 0 ? Math.round(overview.active_users_7d / overview.total_users * 100) : 0}% du total`} color="green" />
-          <KpiCard icon={FileText} label="Documents" value={overview.total_documents} sub="analysés au total" color="indigo" />
+          <KpiCard icon={UserCheck} label="Actifs (7j)" value={overview.active_users_7d} sub={`${overview.active_users_30d} actifs 30j`} color="green" />
+          <KpiCard icon={FileText} label="Documents" value={overview.total_documents} sub={`${overview.avg_docs_per_user} moy/user`} color="indigo" />
           <KpiCard icon={DollarSign} label="MRR" value={`${overview.mrr}₪`} sub={`${overview.active_solo} Solo · ${overview.active_family} Famille`} color="amber" />
         </div>
 
-        {/* Plan Distribution */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
-          <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
-            <BarChart3 size={16} />
-            Répartition des plans
-          </h2>
-          <div className="flex gap-4 items-end h-32">
-            {(['free', 'solo', 'family'] as const).map(plan => {
-              const count = plan_distribution[plan]
-              const maxCount = Math.max(...Object.values(plan_distribution), 1)
-              const height = Math.max((count / maxCount) * 100, 8)
-              return (
-                <div key={plan} className="flex-1 flex flex-col items-center gap-2">
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">{count}</span>
-                  <div
-                    style={{ height: `${height}%` }}
-                    className={`w-full rounded-t-lg transition-all ${plan === 'free' ? 'bg-slate-300 dark:bg-slate-600' : plan === 'solo' ? 'bg-blue-500' : 'bg-purple-500'}`}
-                  />
-                  <span className="text-xs font-medium text-slate-500">{PLAN_LABELS[plan]}</span>
+        {/* KPI Cards — row 2: engagement metrics */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <KpiCard icon={Activity} label="Retention 7j" value={`${overview.retention_rate_7d}%`} sub="users anciens revenus" color="green" />
+          <KpiCard icon={Percent} label="Conversion" value={`${overview.conversion_rate}%`} sub="free → payant" color="amber" />
+          <KpiCard icon={ArrowUpRight} label="Ont upload" value={overview.users_with_docs} sub={`${overview.total_users > 0 ? Math.round(overview.users_with_docs / overview.total_users * 100) : 0}% activation`} color="indigo" />
+          <KpiCard icon={MessageSquare} label="Feedbacks" value={feedback_stats.total} sub={`${feedback_stats.new} non lus`} color="blue" badge={feedback_stats.new > 0 ? feedback_stats.new : undefined} />
+        </div>
+
+        {/* Trends charts */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-2">
+              <UserPlus size={16} />
+              Inscriptions (30j)
+            </h2>
+            <p className="text-xs text-slate-400 mb-3">Total: {signup_trend.reduce((a, d) => a + d.count, 0)}</p>
+            <MiniChart data={signup_trend} color="blue" />
+            <div className="flex justify-between mt-1 text-[10px] text-slate-400">
+              <span>{signup_trend[0]?.date.slice(5)}</span>
+              <span>{signup_trend[signup_trend.length - 1]?.date.slice(5)}</span>
+            </div>
+          </div>
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-2">
+              <FileText size={16} />
+              Documents analyses (30j)
+            </h2>
+            <p className="text-xs text-slate-400 mb-3">Total: {docs_trend.reduce((a, d) => a + d.count, 0)}</p>
+            <MiniChart data={docs_trend} color="indigo" />
+            <div className="flex justify-between mt-1 text-[10px] text-slate-400">
+              <span>{docs_trend[0]?.date.slice(5)}</span>
+              <span>{docs_trend[docs_trend.length - 1]?.date.slice(5)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Plan distribution + doc type distribution */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+              <BarChart3 size={16} />
+              Repartition des plans
+            </h2>
+            <div className="flex gap-4 items-end h-28">
+              {(['free', 'solo', 'family'] as const).map(plan => {
+                const count = plan_distribution[plan]
+                const maxCount = Math.max(...Object.values(plan_distribution), 1)
+                const height = Math.max((count / maxCount) * 100, 8)
+                return (
+                  <div key={plan} className="flex-1 flex flex-col items-center gap-2">
+                    <span className="text-sm font-bold text-slate-900 dark:text-white">{count}</span>
+                    <div
+                      style={{ height: `${height}%` }}
+                      className={`w-full rounded-t-lg transition-all ${plan === 'free' ? 'bg-slate-300 dark:bg-slate-600' : plan === 'solo' ? 'bg-blue-500' : 'bg-purple-500'}`}
+                    />
+                    <span className="text-xs font-medium text-slate-500">{PLAN_LABELS[plan]}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+              <FileText size={16} />
+              Types de documents
+            </h2>
+            <div className="space-y-2">
+              {sortedDocTypes.map(([type, count]) => (
+                <div key={type} className="flex items-center gap-3">
+                  <span className="text-xs text-slate-500 w-24 truncate">{DOC_LABELS[type] || type}</span>
+                  <div className="flex-1 h-5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-indigo-500 rounded-full transition-all"
+                      style={{ width: `${(count / maxDocTypeCount) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 w-8 text-right">{count}</span>
                 </div>
-              )
-            })}
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 border-b border-slate-200 dark:border-slate-700">
-          <button onClick={() => setTab('users')} className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${tab === 'users' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
+        <div className="flex gap-1 border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
+          <button onClick={() => setTab('overview')} className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === 'overview' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
+            <TrendingUp size={14} className="inline mr-1.5" />
+            Vue d&apos;ensemble
+          </button>
+          <button onClick={() => setTab('users')} className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === 'users' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
             <Users size={14} className="inline mr-1.5" />
             Utilisateurs ({users.length})
           </button>
-          <button onClick={() => setTab('documents')} className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${tab === 'documents' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
+          <button onClick={() => setTab('documents')} className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === 'documents' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
             <FileText size={14} className="inline mr-1.5" />
-            Documents récents ({recent_documents.length})
+            Documents ({recent_documents.length})
+          </button>
+          <button onClick={() => setTab('feedbacks')} className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === 'feedbacks' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
+            <MessageSquare size={14} className="inline mr-1.5" />
+            Feedbacks
+            {feedback_stats.new > 0 && (
+              <span className="ml-1.5 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold bg-red-500 text-white rounded-full">
+                {feedback_stats.new}
+              </span>
+            )}
           </button>
         </div>
+
+        {/* Overview Tab */}
+        {tab === 'overview' && (
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">Feedback par categorie</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {(['bug', 'suggestion', 'question', 'other'] as const).map(cat => {
+                const Icon = CATEGORY_ICONS[cat]
+                return (
+                  <div key={cat} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl">
+                    <Icon size={18} className="text-slate-400" />
+                    <div>
+                      <p className="text-lg font-bold text-slate-900 dark:text-white">{feedback_stats.byCategory[cat]}</p>
+                      <p className="text-xs text-slate-500">{CATEGORY_LABELS[cat]}</p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Users Tab */}
         {tab === 'users' && (
           <div className="space-y-4">
-            {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -315,7 +546,6 @@ export default function AdminDashboard() {
               </select>
             </div>
 
-            {/* Users Table */}
             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -330,9 +560,9 @@ export default function AdminDashboard() {
                         <span className="inline-flex items-center gap-1">Inscription <SortIcon field="created_at" /></span>
                       </th>
                       <th className="text-left px-4 py-3 font-medium text-slate-500 cursor-pointer select-none hidden md:table-cell" onClick={() => toggleSort('last_sign_in_at')}>
-                        <span className="inline-flex items-center gap-1">Dernière connexion <SortIcon field="last_sign_in_at" /></span>
+                        <span className="inline-flex items-center gap-1">Derniere connexion <SortIcon field="last_sign_in_at" /></span>
                       </th>
-                      <th className="text-left px-4 py-3 font-medium text-slate-500 hidden lg:table-cell">Téléphone</th>
+                      <th className="text-left px-4 py-3 font-medium text-slate-500 hidden lg:table-cell">Telephone</th>
                       <th className="text-center px-4 py-3 font-medium text-slate-500 hidden xl:table-cell">Connexion</th>
                       <th className="text-center px-4 py-3 font-medium text-slate-500 w-16">Actions</th>
                     </tr>
@@ -387,7 +617,7 @@ export default function AdminDashboard() {
                           {u.last_sign_in_at ? (
                             <span title={formatDate(u.last_sign_in_at)}>{timeAgo(u.last_sign_in_at)}</span>
                           ) : (
-                            <span className="text-slate-300">—</span>
+                            <span className="text-slate-300">&mdash;</span>
                           )}
                         </td>
                         <td className="px-4 py-3 hidden lg:table-cell">
@@ -396,7 +626,7 @@ export default function AdminDashboard() {
                               {u.phone}
                             </a>
                           ) : (
-                            <span className="text-slate-300">—</span>
+                            <span className="text-slate-300">&mdash;</span>
                           )}
                         </td>
                         <td className="px-4 py-3 text-center hidden xl:table-cell">
@@ -437,7 +667,7 @@ export default function AdminDashboard() {
                 </table>
               </div>
               {filteredUsers.length === 0 && (
-                <div className="p-8 text-center text-slate-400">Aucun utilisateur trouvé</div>
+                <div className="p-8 text-center text-slate-400">Aucun utilisateur trouve</div>
               )}
             </div>
           </div>
@@ -453,7 +683,7 @@ export default function AdminDashboard() {
                     <th className="text-left px-4 py-3 font-medium text-slate-500">Document</th>
                     <th className="text-left px-4 py-3 font-medium text-slate-500">Utilisateur</th>
                     <th className="text-left px-4 py-3 font-medium text-slate-500 hidden md:table-cell">Type</th>
-                    <th className="text-left px-4 py-3 font-medium text-slate-500 hidden lg:table-cell">Résumé</th>
+                    <th className="text-left px-4 py-3 font-medium text-slate-500 hidden lg:table-cell">Resume</th>
                     <th className="text-left px-4 py-3 font-medium text-slate-500">Date</th>
                   </tr>
                 </thead>
@@ -487,13 +717,130 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+
+        {/* Feedbacks Tab */}
+        {tab === 'feedbacks' && (
+          <div className="space-y-4">
+            {feedbacks.length === 0 ? (
+              <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-12 text-center">
+                <MessageSquare size={40} className="text-slate-300 mx-auto mb-3" />
+                <p className="text-slate-500 text-sm">Aucun feedback pour le moment</p>
+                <p className="text-slate-400 text-xs mt-1">Les feedbacks des utilisateurs apparaitront ici</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {feedbacks.map(fb => {
+                  const CatIcon = CATEGORY_ICONS[fb.category] || MessageSquare
+                  return (
+                    <div key={fb.id} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0">
+                            <CatIcon size={18} className="text-slate-500" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                              <span className="text-xs font-semibold text-slate-900 dark:text-white">
+                                {fb.email || 'Anonyme'}
+                              </span>
+                              <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${FEEDBACK_STATUS_COLORS[fb.status] || FEEDBACK_STATUS_COLORS.new}`}>
+                                {FEEDBACK_STATUS_LABELS[fb.status] || fb.status}
+                              </span>
+                              <span className="text-[10px] text-slate-400">{CATEGORY_LABELS[fb.category]}</span>
+                              <span className="text-[10px] text-slate-400">{timeAgo(fb.created_at)}</span>
+                            </div>
+                            <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap break-words">{fb.message}</p>
+                            {fb.admin_note && (
+                              <div className="mt-2 bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 rounded-lg p-2.5">
+                                <p className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 mb-0.5">Votre reponse :</p>
+                                <p className="text-xs text-blue-800 dark:text-blue-300 whitespace-pre-wrap">{fb.admin_note}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
+                          {fb.email && fb.status !== 'archived' && (
+                            <button
+                              onClick={() => { setReplyingTo(replyingTo === fb.id ? null : fb.id); setReplyText(fb.admin_note || '') }}
+                              className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Repondre par email"
+                            >
+                              <MessageSquare size={15} />
+                            </button>
+                          )}
+                          {fb.status === 'new' && (
+                            <button
+                              onClick={() => handleFeedbackStatus(fb.id, 'read')}
+                              disabled={updatingFeedback === fb.id}
+                              className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                              title="Marquer comme lu"
+                            >
+                              <Eye size={15} />
+                            </button>
+                          )}
+                          {(fb.status === 'new' || fb.status === 'read') && (
+                            <button
+                              onClick={() => handleFeedbackStatus(fb.id, 'resolved')}
+                              disabled={updatingFeedback === fb.id}
+                              className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
+                              title="Marquer comme resolu"
+                            >
+                              <CheckCircle size={15} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleFeedbackStatus(fb.id, 'archived')}
+                            disabled={updatingFeedback === fb.id}
+                            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-50"
+                            title="Archiver"
+                          >
+                            <Archive size={15} />
+                          </button>
+                        </div>
+                      </div>
+                      {replyingTo === fb.id && (
+                        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700">
+                          <textarea
+                            value={replyText}
+                            onChange={e => setReplyText(e.target.value)}
+                            rows={3}
+                            placeholder="Votre reponse..."
+                            className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                          />
+                          <div className="flex items-center justify-between mt-2">
+                            <p className="text-[10px] text-slate-400">Un email sera envoye a {fb.email}</p>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => { setReplyingTo(null); setReplyText('') }}
+                                className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                              >
+                                Annuler
+                              </button>
+                              <button
+                                onClick={() => handleReplyFeedback(fb.id)}
+                                disabled={sendingReply || replyText.trim().length < 2}
+                                className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-lg transition-colors flex items-center gap-1.5"
+                              >
+                                {sendingReply ? 'Envoi...' : 'Envoyer'}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
-function KpiCard({ icon: Icon, label, value, sub, color }: {
-  icon: React.ElementType, label: string, value: string | number, sub: string, color: string
+function KpiCard({ icon: Icon, label, value, sub, color, badge }: {
+  icon: React.ElementType, label: string, value: string | number, sub: string, color: string, badge?: number
 }) {
   const colorMap: Record<string, string> = {
     blue: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400',
@@ -502,7 +849,12 @@ function KpiCard({ icon: Icon, label, value, sub, color }: {
     amber: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400',
   }
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 relative">
+      {badge !== undefined && badge > 0 && (
+        <span className="absolute -top-2 -right-2 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold bg-red-500 text-white rounded-full">
+          {badge}
+        </span>
+      )}
       <div className="flex items-center gap-3 mb-3">
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${colorMap[color]}`}>
           <Icon size={20} />

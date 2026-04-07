@@ -23,9 +23,14 @@ export default function ArnonaClient() {
   const [appealReasons, setAppealReasons] = useState<ArnonaAppealReason[]>([])
   const [appealResult, setAppealResult] = useState<{ hebrew: string; french: string } | null>(null)
   const [copied, setCopied] = useState<'he' | 'fr' | null>(null)
+  const [error, setError] = useState('')
 
   function calculate() {
-    if (!size || Number(size) <= 0) return
+    if (!size || Number(size) <= 0) {
+      setError('Veuillez entrer une surface valide')
+      return
+    }
+    setError('')
     const input: ArnonaInput = {
       city,
       propertySizeM2: Number(size),
@@ -92,7 +97,7 @@ export default function ArnonaClient() {
                 key={val}
                 onClick={() => setUsage(val)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  usage === val ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                  usage === val ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                 }`}
               >
                 {label}
@@ -136,10 +141,13 @@ export default function ArnonaClient() {
           </label>
         </div>
 
+        {error && (
+          <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
+        )}
         <button
           onClick={calculate}
           disabled={!size || Number(size) <= 0}
-          className="w-full py-3 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+          className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
         >
           <Calculator size={18} />
           Estimer l&apos;arnona
@@ -234,20 +242,20 @@ export default function ArnonaClient() {
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Nom complet</label>
-                  <input type="text" value={appealName} onChange={e => setAppealName(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm" placeholder="Israel Israeli" />
+                  <input type="text" value={appealName} onChange={e => setAppealName(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Israel Israeli" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Teudat Zehut</label>
-                  <input type="text" value={appealTz} onChange={e => setAppealTz(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm" placeholder="012345678" />
+                  <input type="text" value={appealTz} onChange={e => setAppealTz(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="012345678" />
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Adresse complete</label>
-                <input type="text" value={appealAddress} onChange={e => setAppealAddress(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm" placeholder="Rehov Herzl 12, Apt 5" />
+                <input type="text" value={appealAddress} onChange={e => setAppealAddress(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Rehov Herzl 12, Apt 5" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Montant facture actuel (annuel ₪)</label>
-                <input type="number" value={appealCurrentAmount} onChange={e => setAppealCurrentAmount(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm" placeholder="8000" />
+                <input type="number" value={appealCurrentAmount} onChange={e => setAppealCurrentAmount(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="8000" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Motifs de la contestation</label>
@@ -287,7 +295,7 @@ export default function ArnonaClient() {
                   }))
                 }}
                 disabled={!appealName || appealReasons.length === 0}
-                className="w-full py-2.5 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-semibold rounded-xl transition-colors text-sm"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-semibold rounded-xl transition-colors text-sm"
               >
                 Generer les lettres
               </button>

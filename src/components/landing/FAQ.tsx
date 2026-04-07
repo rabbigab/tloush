@@ -23,11 +23,23 @@ const FAQS = [
   },
   {
     q: "Tloush remplace-t-il un comptable ou un avocat ?",
-    a: "Non. Tloush est un outil d'aide à la compréhension et à la vérification. Pour des décisions importantes, nous vous orientons vers le bon professionnel via notre annuaire d'experts francophones.",
+    a: "Non. Tloush est un outil d'aide a la comprehension et a la verification. Pour des decisions importantes, nous vous orientons vers le bon professionnel via notre annuaire d'experts francophones.",
   },
   {
     q: "C'est quoi le plan Famille ?",
-    a: "Le plan Famille permet de partager un abonnement avec jusqu'à 5 membres de votre famille. Chacun a son propre espace et ses propres documents, le quota est partagé. Idéal pour les couples ou les familles avec des enfants adultes.",
+    a: "Le plan Famille permet de partager un abonnement avec jusqu'a 5 membres de votre famille. Chacun a son propre espace et ses propres documents, le quota est partage. Ideal pour les couples ou les familles avec des enfants adultes.",
+  },
+  {
+    q: "Je suis independant / freelance, ca marche aussi ?",
+    a: "Oui ! Analysez vos factures, documents de l'administration fiscale, courriers de Bituach Leumi. Tloush repere les anomalies qui pourraient vous couter cher.",
+  },
+  {
+    q: "Que fait Tloush avec mes donnees dans 5 ans ?",
+    a: "Vous pouvez exporter votre historique complet a tout moment et tout supprimer en un clic. Vos donnees, vos regles. On ne garde rien apres suppression.",
+  },
+  {
+    q: "Pourquoi pas juste Google Translate ?",
+    a: "Google Translate traduit les mots. Tloush comprend les regles. Bituach Leumi n'est pas juste un mot, c'est un systeme de retenues qui varie selon votre statut d'olim. Un traducteur le manquerait. Pas Tloush.",
   },
 ];
 

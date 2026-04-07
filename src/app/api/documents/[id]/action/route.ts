@@ -17,7 +17,11 @@ export async function POST(
 
   const { error } = await supabase
     .from('documents')
-    .update({ action_completed_at: new Date().toISOString() })
+    .update({
+      action_completed_at: new Date().toISOString(),
+      action_required: false,
+      is_urgent: false,
+    })
     .eq('id', id)
     .eq('user_id', user.id)
 

@@ -20,9 +20,22 @@ export default function MashkantaClient() {
     { id: '2', bankName: 'Banque B', interestRate: 4.2, loanTermYears: 25, trackType: 'fixed' },
   ])
   const [comparison, setComparison] = useState<MashkantaComparison | null>(null)
+  const [error, setError] = useState('')
 
   function calculate() {
-    if (!propertyPrice || !downPayment || Number(propertyPrice) <= 0) return
+    if (!propertyPrice || Number(propertyPrice) <= 0) {
+      setError('Veuillez entrer un prix valide')
+      return
+    }
+    if (!downPayment || Number(downPayment) <= 0) {
+      setError('Veuillez entrer un apport valide')
+      return
+    }
+    if (Number(downPayment) >= Number(propertyPrice)) {
+      setError("L'apport doit etre inferieur au prix du bien")
+      return
+    }
+    setError('')
     const input: MashkantaInput = {
       propertyPrice: Number(propertyPrice),
       downPayment: Number(downPayment),
@@ -64,7 +77,7 @@ export default function MashkantaClient() {
                   value={propertyPrice}
                   onChange={e => setPropertyPrice(e.target.value)}
                   placeholder="2000000"
-                  className="w-full px-3 py-2 pr-8 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
+                  className="w-full px-3 py-2 pr-8 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">₪</span>
               </div>
@@ -77,7 +90,7 @@ export default function MashkantaClient() {
                   value={downPayment}
                   onChange={e => setDownPayment(e.target.value)}
                   placeholder="500000"
-                  className="w-full px-3 py-2 pr-8 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
+                  className="w-full px-3 py-2 pr-8 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">₪</span>
               </div>
@@ -95,7 +108,7 @@ export default function MashkantaClient() {
               <select
                 value={loanTermYears}
                 onChange={e => setLoanTermYears(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
+                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
                 {[10, 15, 20, 25, 30].map(y => (
                   <option key={y} value={y}>{y} ans</option>
@@ -109,7 +122,7 @@ export default function MashkantaClient() {
                 step="0.1"
                 value={interestRate}
                 onChange={e => setInterestRate(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
+                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
             </div>
           </div>
@@ -122,7 +135,7 @@ export default function MashkantaClient() {
                 value={monthlyIncome}
                 onChange={e => setMonthlyIncome(e.target.value)}
                 placeholder="25000"
-                className="w-full px-3 py-2 pr-8 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
+                className="w-full px-3 py-2 pr-8 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">₪</span>
             </div>
@@ -139,10 +152,13 @@ export default function MashkantaClient() {
             </label>
           </div>
 
+          {error && (
+            <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
+          )}
           <button
             onClick={calculate}
             disabled={!propertyPrice || !downPayment}
-            className="w-full py-3 bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
           >
             <Calculator size={18} />
             Simuler
@@ -322,7 +338,7 @@ export default function MashkantaClient() {
                       value={offer.bankName}
                       onChange={e => setOffers(prev => prev.map(o => o.id === offer.id ? { ...o, bankName: e.target.value } : o))}
                       placeholder="Nom banque"
-                      className="px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800"
+                      className="px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     />
                     <div>
                       <input
@@ -330,7 +346,7 @@ export default function MashkantaClient() {
                         step="0.1"
                         value={offer.interestRate}
                         onChange={e => setOffers(prev => prev.map(o => o.id === offer.id ? { ...o, interestRate: Number(e.target.value) } : o))}
-                        className="w-full px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800"
+                        className="w-full px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                       />
                       <span className="text-[10px] text-slate-400">Taux %</span>
                     </div>
@@ -339,14 +355,14 @@ export default function MashkantaClient() {
                         type="number"
                         value={offer.loanTermYears}
                         onChange={e => setOffers(prev => prev.map(o => o.id === offer.id ? { ...o, loanTermYears: Number(e.target.value) } : o))}
-                        className="w-full px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800"
+                        className="w-full px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                       />
                       <span className="text-[10px] text-slate-400">Duree (ans)</span>
                     </div>
                     <select
                       value={offer.trackType}
                       onChange={e => setOffers(prev => prev.map(o => o.id === offer.id ? { ...o, trackType: e.target.value as MashkantaOffer['trackType'] } : o))}
-                      className="px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800"
+                      className="px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     >
                       <option value="prime">Prime</option>
                       <option value="fixed">Fixe</option>
@@ -371,7 +387,7 @@ export default function MashkantaClient() {
                   setComparison(compareMashkantaOffers(loanAmount, offers))
                 }}
                 disabled={!propertyPrice || !downPayment}
-                className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-300 text-white font-semibold rounded-xl text-sm transition-colors"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-semibold rounded-xl text-sm transition-colors"
               >
                 Comparer
               </button>

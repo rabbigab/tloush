@@ -55,13 +55,19 @@ export default function RealEstateClient() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2">
-        <button onClick={() => setTab('rental')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${tab === 'rental' ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}`}>
+      <div className="flex flex-wrap gap-2">
+        <button onClick={() => setTab('rental')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${tab === 'rental' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}`}>
           Location / Bail
         </button>
-        <button onClick={() => setTab('purchase')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${tab === 'purchase' ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}`}>
+        <button onClick={() => setTab('purchase')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${tab === 'purchase' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}`}>
           Achat immobilier
         </button>
+        <a href="/mashkanta" className="px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center gap-1.5">
+          Simulateur Mashkanta
+        </a>
+        <a href="/arnona" className="px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center gap-1.5">
+          Simulateur Arnona
+        </a>
       </div>
 
       {tab === 'rental' && (
@@ -72,25 +78,25 @@ export default function RealEstateClient() {
             <div className="grid sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Loyer mensuel (₪)</label>
-                <input type="number" value={rent} onChange={e => setRent(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm" />
+                <input type="number" value={rent} onChange={e => setRent(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Depot / Garantie (₪)</label>
-                <input type="number" value={deposit} onChange={e => setDeposit(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm" />
+                <input type="number" value={deposit} onChange={e => setDeposit(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Debut du bail</label>
-                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm" />
+                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Fin du bail</label>
-                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm" />
+                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
               </div>
             </div>
             <div className="grid sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Type de depot</label>
-                <select value={depositType} onChange={e => setDepositType(e.target.value as typeof depositType)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm">
+                <select value={depositType} onChange={e => setDepositType(e.target.value as typeof depositType)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
                   <option value="bank_guarantee">Garantie bancaire</option>
                   <option value="check">Cheque(s)</option>
                   <option value="cash">Especes</option>
@@ -99,7 +105,7 @@ export default function RealEstateClient() {
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Preavis sortie (jours)</label>
-                <input type="number" value={breakDays} onChange={e => setBreakDays(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm" placeholder="60" />
+                <input type="number" value={breakDays} onChange={e => setBreakDays(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="60" />
               </div>
             </div>
             <div className="space-y-2">
@@ -124,7 +130,7 @@ export default function RealEstateClient() {
                 <span className="text-sm text-slate-700 dark:text-slate-300">Arnona incluse</span>
               </label>
             </div>
-            <button onClick={analyzeRental} className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm transition-colors flex items-center justify-center gap-2">
+            <button onClick={analyzeRental} className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition-colors flex items-center justify-center gap-2">
               <FileCheck size={16} />
               Analyser le bail
             </button>

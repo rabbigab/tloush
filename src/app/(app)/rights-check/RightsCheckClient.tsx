@@ -150,7 +150,7 @@ export default function RightsCheckClient() {
           </div>
         )}
 
-        <button onClick={calculate} disabled={!salary} className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-colors active:scale-[0.99]">
+        <button onClick={calculate} disabled={!salary} className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-colors active:scale-[0.99]">
           Calculer mes droits
         </button>
       </div>
