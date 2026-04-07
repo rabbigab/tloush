@@ -92,7 +92,7 @@ export default function PhonePrompt() {
                 Plus tard
               </button>
             </div>
-            <p className="text-xs text-slate-400 mt-2 text-center">Jamais partagé. Israélien, français ou autre.</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 text-center">Jamais partagé. Israélien, français ou autre.</p>
           </>
         )}
       </div>

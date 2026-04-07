@@ -74,6 +74,8 @@ export default function MashkantaClient() {
               <div className="relative">
                 <input
                   type="number"
+                  name="property_price"
+                  inputMode="decimal"
                   value={propertyPrice}
                   onChange={e => setPropertyPrice(e.target.value)}
                   placeholder="2000000"
@@ -87,6 +89,8 @@ export default function MashkantaClient() {
               <div className="relative">
                 <input
                   type="number"
+                  name="down_payment"
+                  inputMode="decimal"
                   value={downPayment}
                   onChange={e => setDownPayment(e.target.value)}
                   placeholder="500000"
@@ -95,7 +99,7 @@ export default function MashkantaClient() {
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">₪</span>
               </div>
               {propertyPrice && downPayment && (
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   LTV : {(((Number(propertyPrice) - Number(downPayment)) / Number(propertyPrice)) * 100).toFixed(0)}%
                 </p>
               )}
@@ -132,6 +136,8 @@ export default function MashkantaClient() {
             <div className="relative">
               <input
                 type="number"
+                name="monthly_income"
+                inputMode="decimal"
                 value={monthlyIncome}
                 onChange={e => setMonthlyIncome(e.target.value)}
                 placeholder="25000"
@@ -272,7 +278,7 @@ export default function MashkantaClient() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="text-slate-400 text-xs">
+                      <tr className="text-slate-500 dark:text-slate-400 text-xs">
                         <th className="text-left py-2">Annee</th>
                         <th className="text-right py-2">Capital</th>
                         <th className="text-right py-2">Interets</th>

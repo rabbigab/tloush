@@ -212,7 +212,7 @@ export default function FamilySection({ userEmail }: { userEmail: string }) {
       <h2 className="section-heading mb-4 flex items-center gap-2">
         <Users size={18} className="text-brand-600" />
         Membres de la famille
-        <span className="text-xs font-normal text-slate-400 ml-auto">
+        <span className="text-xs font-normal text-slate-500 dark:text-slate-400 ml-auto">
           {members.length}/{maxInvites} membres
         </span>
       </h2>
@@ -235,7 +235,7 @@ export default function FamilySection({ userEmail }: { userEmail: string }) {
                   <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
                     {member.member_email}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {member.status === 'active' ? 'Actif' : 'En attente'}
                   </p>
                 </div>
@@ -251,7 +251,7 @@ export default function FamilySection({ userEmail }: { userEmail: string }) {
           ))}
         </div>
       ) : (
-        <p className="text-sm text-slate-400 mb-4">
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
           Aucun membre pour l&apos;instant. Invitez jusqu&apos;a {maxInvites} personnes.
         </p>
       )}
@@ -279,7 +279,7 @@ export default function FamilySection({ userEmail }: { userEmail: string }) {
       )}
 
       {spotsLeft === 0 && (
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-slate-500 dark:text-slate-400">
           Toutes les places sont prises ({maxInvites}/{maxInvites}).
         </p>
       )}

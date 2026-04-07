@@ -725,7 +725,7 @@ export default function AdminDashboard() {
               <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-12 text-center">
                 <MessageSquare size={40} className="text-slate-300 mx-auto mb-3" />
                 <p className="text-slate-500 text-sm">Aucun feedback pour le moment</p>
-                <p className="text-slate-400 text-xs mt-1">Les feedbacks des utilisateurs apparaitront ici</p>
+                <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">Les feedbacks des utilisateurs apparaitront ici</p>
               </div>
             ) : (
               <div className="space-y-3">

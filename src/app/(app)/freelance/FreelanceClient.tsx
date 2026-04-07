@@ -72,7 +72,7 @@ export default function FreelanceClient() {
             >
               <div className="flex items-center gap-2 mb-2">
                 <h3 className="font-bold text-slate-900 dark:text-slate-100">{ft.name_fr}</h3>
-                <span className="text-xs text-slate-400 font-mono" dir="rtl">{ft.name_he}</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-mono" dir="rtl">{ft.name_he}</span>
               </div>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">{ft.description_fr}</p>
               <div className="space-y-1.5">

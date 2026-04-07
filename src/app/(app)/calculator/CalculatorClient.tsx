@@ -196,12 +196,12 @@ export default function CalculatorClient() {
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 text-center shadow-sm">
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Salaire net</p>
               <p className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">{fmt(result.net)}₪</p>
-              <p className="text-xs text-slate-400 mt-1">par mois</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">par mois</p>
             </div>
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 text-center shadow-sm">
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Total retenues</p>
               <p className="text-3xl font-extrabold text-red-500 dark:text-red-400">{fmt(result.totalDeductions)}₪</p>
-              <p className="text-xs text-slate-400 mt-1">{result.effectiveDeductionRate}% du brut</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{result.effectiveDeductionRate}% du brut</p>
             </div>
           </div>
 
@@ -218,7 +218,7 @@ export default function CalculatorClient() {
                   <div key={i} className="flex items-center justify-between px-5 py-3">
                     <div>
                       <p className="text-sm text-slate-700 dark:text-slate-200">{item.label}</p>
-                      {item.rate && <p className="text-xs text-slate-400">{item.rate}</p>}
+                      {item.rate && <p className="text-xs text-slate-500 dark:text-slate-400">{item.rate}</p>}
                     </div>
                     <p className="text-sm font-semibold text-red-600 dark:text-red-400 flex items-center gap-1">
                       <TrendingDown size={14} />
@@ -242,7 +242,7 @@ export default function CalculatorClient() {
                   <div key={i} className="flex items-center justify-between px-5 py-3">
                     <div>
                       <p className="text-sm text-slate-700 dark:text-slate-200">{item.label}</p>
-                      {item.rate && <p className="text-xs text-slate-400">{item.rate}</p>}
+                      {item.rate && <p className="text-xs text-slate-500 dark:text-slate-400">{item.rate}</p>}
                     </div>
                     <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1">
                       <TrendingUp size={14} />
@@ -296,7 +296,7 @@ export default function CalculatorClient() {
             </div>
           </div>
 
-          <p className="text-[11px] text-slate-400 dark:text-slate-500 text-center">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 text-center">
             Calcul indicatif base sur les taux 2024-2025. Des ecarts sont possibles selon votre situation personnelle. Consultez un expert-comptable pour un calcul exact.
           </p>
         </div>
