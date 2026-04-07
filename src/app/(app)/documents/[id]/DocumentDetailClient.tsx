@@ -77,9 +77,36 @@ const PRO_LABELS: Record<string, string> = {
   agent_immobilier: 'Agent immobilier',
 }
 
+interface ComparisonMatch {
+  field: string
+  contract_value: string
+  payslip_value: string
+  status: 'ok' | 'warning' | 'critical'
+}
+
+interface ComparisonResult {
+  comparison: {
+    matches: ComparisonMatch[]
+    summary_fr: string
+    issues: string[]
+  }
+  contract: { id: string; file_name: string }
+  payslip: { id: string; file_name: string; period: string | null }
+}
+
+const STATUS_CONFIG = {
+  ok: { icon: CheckCircle, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', label: 'Conforme' },
+  warning: { icon: AlertTriangle, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', label: 'À vérifier' },
+  critical: { icon: AlertCircle, color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-200 dark:border-red-800', label: 'Problème' },
+}
+
 export default function DocumentDetailClient({ document: doc, originalUrl }: { document: DocumentData; originalUrl: string | null }) {
   const [actionDone, setActionDone] = useState(!!doc.action_completed_at)
   const [showOriginal, setShowOriginal] = useState(false)
+  const [contractComparison, setContractComparison] = useState<ComparisonResult | null>(null)
+  const [contractCompareLoading, setContractCompareLoading] = useState(false)
+  const [contractCompareError, setContractCompareError] = useState<string | null>(null)
+  const [showContractComparison, setShowContractComparison] = useState(false)
   const analysis = doc.analysis_data
   const attentionPoints = analysis?.attention_points || []
   const actions = analysis?.recommended_actions || []
@@ -105,6 +132,29 @@ export default function DocumentDetailClient({ document: doc, originalUrl }: { d
       await fetch(`/api/documents/${doc.id}/action`, { method: 'POST' })
     } catch {
       setActionDone(false)
+    }
+  }
+
+  async function compareWithContract() {
+    setContractCompareLoading(true)
+    setContractCompareError(null)
+    setShowContractComparison(true)
+    try {
+      const res = await fetch('/api/documents/compare-contract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ payslipId: doc.id }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setContractCompareError(data.error || 'Erreur lors de la comparaison')
+        return
+      }
+      setContractComparison(data)
+    } catch {
+      setContractCompareError('Erreur de connexion. Veuillez réessayer.')
+    } finally {
+      setContractCompareLoading(false)
     }
   }
 
@@ -146,6 +196,16 @@ export default function DocumentDetailClient({ document: doc, originalUrl }: { d
             >
               <Eye size={14} />
               Original
+            </button>
+          )}
+          {doc.document_type === 'payslip' && (
+            <button
+              onClick={compareWithContract}
+              disabled={contractCompareLoading}
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-violet-600 dark:text-violet-400 px-3 py-2 rounded-xl border border-violet-200 dark:border-violet-800 hover:bg-violet-50 dark:hover:bg-violet-950/30 transition-colors disabled:opacity-50"
+            >
+              {contractCompareLoading ? <Loader2 size={14} className="animate-spin" /> : <Scale size={14} />}
+              Comparer avec mon contrat
             </button>
           )}
           <Link
@@ -209,6 +269,97 @@ export default function DocumentDetailClient({ document: doc, originalUrl }: { d
                 <Download size={14} />
                 Télécharger le fichier
               </a>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Contract comparison results */}
+      {showContractComparison && (
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-violet-200 dark:border-violet-800 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-violet-700 dark:text-violet-300 uppercase tracking-wider flex items-center gap-2">
+              <Scale size={14} />
+              Comparaison contrat / fiche de paie
+            </h2>
+            <button
+              onClick={() => { setShowContractComparison(false); setContractComparison(null); setContractCompareError(null) }}
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-700 transition-colors"
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          {contractCompareLoading && (
+            <div className="flex items-center justify-center gap-3 py-12">
+              <Loader2 size={24} className="animate-spin text-violet-500" />
+              <p className="text-sm text-slate-500 dark:text-slate-400">Analyse en cours avec Claude...</p>
+            </div>
+          )}
+
+          {contractCompareError && (
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+              <AlertCircle size={18} className="text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+              <p className="text-sm text-red-700 dark:text-red-300">{contractCompareError}</p>
+            </div>
+          )}
+
+          {contractComparison && (
+            <div className="space-y-4">
+              {/* Contract reference */}
+              <p className="text-xs text-slate-400 dark:text-slate-500">
+                Contrat : {contractComparison.contract.file_name}
+              </p>
+
+              {/* Summary */}
+              <div className="p-4 rounded-xl bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800">
+                <p className="text-sm text-violet-800 dark:text-violet-200 leading-relaxed">
+                  {contractComparison.comparison.summary_fr}
+                </p>
+              </div>
+
+              {/* Matches table */}
+              {contractComparison.comparison.matches.length > 0 && (
+                <div className="space-y-2">
+                  {contractComparison.comparison.matches.map((match, idx) => {
+                    const config = STATUS_CONFIG[match.status] || STATUS_CONFIG.ok
+                    const Icon = config.icon
+                    return (
+                      <div key={idx} className={`flex items-start gap-3 p-3 rounded-xl border ${config.border} ${config.bg}`}>
+                        <Icon size={18} className={`${config.color} shrink-0 mt-0.5`} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{match.field}</p>
+                            <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${config.bg} ${config.color}`}>{config.label}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
+                            <span>Contrat : <strong className="text-slate-800 dark:text-slate-200">{match.contract_value}</strong></span>
+                            <span>Fiche de paie : <strong className="text-slate-800 dark:text-slate-200">{match.payslip_value}</strong></span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* Issues */}
+              {contractComparison.comparison.issues.length > 0 && (
+                <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                  <h3 className="text-xs font-semibold text-red-700 dark:text-red-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <AlertCircle size={12} />
+                    Divergences detectees
+                  </h3>
+                  <ul className="space-y-1.5">
+                    {contractComparison.comparison.issues.map((issue, idx) => (
+                      <li key={idx} className="text-sm text-red-700 dark:text-red-300 flex items-start gap-2">
+                        <span className="shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full bg-red-400 dark:bg-red-500" />
+                        {issue}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
         </div>
