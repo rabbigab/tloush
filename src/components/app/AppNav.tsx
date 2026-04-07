@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { Inbox, LayoutDashboard, MessageSquare, BarChart3, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator } from 'lucide-react'
+import { Inbox, LayoutDashboard, MessageSquare, BarChart3, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield } from 'lucide-react'
 
 const NAV_ITEMS = [
   { label: 'Inbox', href: '/inbox', icon: Inbox },
@@ -11,8 +11,9 @@ const NAV_ITEMS = [
   { label: 'Dossiers', href: '/folders', icon: Folder },
   { label: 'Dépenses', href: '/expenses', icon: Wallet },
   { label: 'Simulateur', href: '/calculator', icon: Calculator },
+  { label: 'Mes droits', href: '/rights-check', icon: Shield },
   { label: 'Assistant', href: '/assistant', icon: MessageSquare },
-  { label: 'Droits', href: '/droits-olim', icon: Scale },
+  { label: 'Droits olim', href: '/droits-olim', icon: Scale },
   { label: 'Experts', href: '/experts', icon: Users },
   { label: 'Parrainage', href: '/referral', icon: Gift },
   { label: 'Aide', href: '/help', icon: HelpCircle },
@@ -31,6 +32,7 @@ const MOBILE_MORE = [
   { label: 'Dossiers', href: '/folders', icon: Folder },
   { label: 'Dépenses', href: '/expenses', icon: Wallet },
   { label: 'Simulateur', href: '/calculator', icon: Calculator },
+  { label: 'Mes droits', href: '/rights-check', icon: Shield },
   { label: 'Comparer', href: '/compare', icon: BarChart3 },
   { label: 'Droits des olim', href: '/droits-olim', icon: Scale },
   { label: 'Experts', href: '/experts', icon: Users },

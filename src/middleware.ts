@@ -13,6 +13,10 @@ const PROTECTED_ROUTES = [
   '/expenses',
   '/search',
   '/admin',
+  '/calculator',
+  '/rights-check',
+  '/referral',
+  '/help',
 ]
 
 // Routes publiques qui n'ont pas besoin du middleware auth

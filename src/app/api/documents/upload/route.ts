@@ -7,6 +7,7 @@ import { canUseFeature, incrementUsage, getSubscription } from '@/lib/subscripti
 import { parseDeadline, detectAmountAnomaly } from '@/lib/parsers'
 import { preprocessImage, buildQualityHint } from '@/lib/imagePreprocess'
 import { verifyPayslip, calculateNetSalary } from '@/lib/israeliPayroll'
+import { calculateEmployeeRights } from '@/lib/employeeRights'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const freeRateLimit = createRateLimit('upload-free', 3, '1 h')
@@ -549,6 +550,65 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
       } catch (verifyErr) {
         console.error('[Payslip verification] Error:', verifyErr)
         // Non-blocking
+      }
+    }
+
+    // 3c. Employee rights estimation from payslip data
+    if (analysisResult.document_type === 'payslip') {
+      try {
+        const payslipDetails = (analysisResult.analysis_data as Record<string, unknown>)?.payslip_details as Record<string, unknown> | undefined
+        if (payslipDetails) {
+          const grossSalary = Number(payslipDetails.gross_salary) || 0
+          const startDate = payslipDetails.start_date as string | undefined
+          let seniorityYears = 1
+          if (startDate) {
+            const start = new Date(startDate)
+            if (!isNaN(start.getTime())) {
+              seniorityYears = Math.max(1, Math.floor((Date.now() - start.getTime()) / (365.25 * 24 * 60 * 60 * 1000)))
+            }
+          }
+
+          if (grossSalary > 0) {
+            const rights = calculateEmployeeRights({
+              seniorityYears,
+              workDaysPerWeek: 5,
+              hoursPerDay: 9,
+              monthlySalary: grossSalary,
+              employmentType: 'full_time',
+              hasPension: Number(payslipDetails.pension_employee) > 0,
+              hasKerenHishtalmut: Number(payslipDetails.keren_hishtalmut_employee) > 0,
+            })
+
+            // Store rights summary in analysis_data
+            ;(analysisResult.analysis_data as Record<string, unknown>).employee_rights = {
+              vacation_days: rights.vacation.adjustedForWorkWeek,
+              vacation_value: rights.vacation.annualValue,
+              sick_days_estimate: rights.sickLeave.currentEstimate,
+              convalescence_amount: rights.convalescence.annualAmount,
+              severance_estimate: rights.severance.estimatedAmount,
+              notice_days: rights.notice.employeeDays,
+              pension_required: rights.pension.isRequired,
+              pension_total_monthly: rights.pension.totalMonthly,
+              credit_points: rights.creditPoints.totalPoints,
+              summary: rights.summary.filter(s => s.status === 'critical' || s.status === 'warning'),
+            }
+
+            // Add critical rights issues to attention_points
+            const existingPoints = (analysisResult.attention_points as Array<Record<string, unknown>>) || []
+            for (const item of rights.summary) {
+              if (item.status === 'critical') {
+                existingPoints.push({
+                  level: 'critical',
+                  title: `[Droits] ${item.title}`,
+                  description: item.description,
+                })
+              }
+            }
+            analysisResult.attention_points = existingPoints
+          }
+        }
+      } catch (rightsErr) {
+        console.error('[Employee rights] Error:', rightsErr)
       }
     }
 
