@@ -1,22 +1,30 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Gift } from 'lucide-react'
 import { track } from '@/lib/analytics'
 
 export default function RegisterPage() {
+  const searchParams = useSearchParams()
+  const refCode = searchParams.get('ref') || ''
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
+  const [redirecting, setRedirecting] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
 
-  useEffect(() => { track('signup_started', { method: 'email' }) }, [])
+  useEffect(() => {
+    track('signup_started', { method: 'email' })
+    // Store referral code for Google OAuth flow (params are lost during redirect)
+    if (refCode) localStorage.setItem('tloush_referral_code', refCode)
+  }, [refCode])
 
   async function handleGoogleLogin() {
     track('signup_started', { method: 'google' })
@@ -44,6 +52,12 @@ export default function RegisterPage() {
     setLoading(true)
     setError('')
 
+    if (!phone.trim()) {
+      setError('Veuillez saisir votre numéro de téléphone')
+      setLoading(false)
+      return
+    }
+
     if (password !== confirm) {
       setError('Les mots de passe ne correspondent pas')
       setLoading(false)
@@ -61,7 +75,10 @@ export default function RegisterPage() {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: {
+          phone: phone.trim() || undefined,
+          referral_code: refCode || undefined,
+        },
       },
     })
 
@@ -73,29 +90,21 @@ export default function RegisterPage() {
     }
 
     track('signup_completed', { method: 'email' })
-    setSuccess(true)
-    setLoading(false)
+    setRedirecting(true)
+    // Redirect directly to inbox — no email verification needed
+    window.location.href = '/inbox'
   }
 
-  if (success) {
+  if (redirecting) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center px-4">
         <div className="w-full max-w-md text-center">
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
-            <div className="w-16 h-16 bg-brand-50 dark:bg-brand-950/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">📬</span>
-            </div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">Verifiez votre email</h2>
+            <Loader2 size={32} className="animate-spin text-brand-600 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">Compte créé !</h2>
             <p className="text-slate-500 dark:text-slate-400 text-sm">
-              Nous avons envoye un lien de confirmation a <strong className="text-slate-700 dark:text-slate-200">{email}</strong>.
-              Cliquez sur le lien pour activer votre compte.
+              Redirection vers votre espace...
             </p>
-            <Link
-              href="/auth/login"
-              className="mt-6 inline-block text-brand-600 hover:underline text-sm font-medium"
-            >
-              Retour a la connexion
-            </Link>
           </div>
         </div>
       </div>
@@ -111,6 +120,16 @@ export default function RegisterPage() {
             <p className="text-slate-500 dark:text-slate-400 text-sm">Votre assistant administratif en Israel</p>
           </Link>
         </div>
+
+        {refCode && (
+          <div className="mb-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-2xl px-4 py-3 flex items-center gap-3">
+            <Gift size={20} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">Vous avez été parrainé !</p>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400">Créez votre compte pour profiter de vos analyses gratuites.</p>
+            </div>
+          </div>
+        )}
 
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
           <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6">Créer un compte</h2>
@@ -157,6 +176,22 @@ export default function RegisterPage() {
                 placeholder="vous@email.com"
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
               />
+            </div>
+
+            <div>
+              <label htmlFor="reg-phone" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Téléphone
+              </label>
+              <input
+                id="reg-phone"
+                type="tel"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                required
+                placeholder="+972 ou +33..."
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+              />
+              <p className="text-xs text-slate-400 mt-1">Israélien, français ou autre — pour vous contacter si besoin</p>
             </div>
 
             <div>
