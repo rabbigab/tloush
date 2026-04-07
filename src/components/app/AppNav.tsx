@@ -3,13 +3,14 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { Inbox, LayoutDashboard, MessageSquare, BarChart3, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle } from 'lucide-react'
+import { Inbox, LayoutDashboard, MessageSquare, BarChart3, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator } from 'lucide-react'
 
 const NAV_ITEMS = [
   { label: 'Inbox', href: '/inbox', icon: Inbox },
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Dossiers', href: '/folders', icon: Folder },
   { label: 'Dépenses', href: '/expenses', icon: Wallet },
+  { label: 'Simulateur', href: '/calculator', icon: Calculator },
   { label: 'Assistant', href: '/assistant', icon: MessageSquare },
   { label: 'Droits', href: '/droits-olim', icon: Scale },
   { label: 'Experts', href: '/experts', icon: Users },
@@ -29,6 +30,7 @@ const MOBILE_MAIN = [
 const MOBILE_MORE = [
   { label: 'Dossiers', href: '/folders', icon: Folder },
   { label: 'Dépenses', href: '/expenses', icon: Wallet },
+  { label: 'Simulateur', href: '/calculator', icon: Calculator },
   { label: 'Comparer', href: '/compare', icon: BarChart3 },
   { label: 'Droits des olim', href: '/droits-olim', icon: Scale },
   { label: 'Experts', href: '/experts', icon: Users },

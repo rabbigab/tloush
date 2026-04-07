@@ -6,6 +6,7 @@ import { requireAuth } from '@/lib/apiAuth'
 import { canUseFeature, incrementUsage, getSubscription } from '@/lib/subscription'
 import { parseDeadline, detectAmountAnomaly } from '@/lib/parsers'
 import { preprocessImage, buildQualityHint } from '@/lib/imagePreprocess'
+import { verifyPayslip, calculateNetSalary } from '@/lib/israeliPayroll'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const freeRateLimit = createRateLimit('upload-free', 3, '1 h')
@@ -493,6 +494,58 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
           console.error('[Auto-compare] Error:', compareErr)
           // Non-blocking: continue without comparison
         }
+      }
+    }
+
+    // 3b. Payslip verification with Israeli payroll calculator
+    if (analysisResult.document_type === 'payslip') {
+      try {
+        const payslipDetails = (analysisResult.analysis_data as Record<string, unknown>)?.payslip_details as Record<string, unknown> | undefined
+        if (payslipDetails) {
+          const grossSalary = Number(payslipDetails.gross_salary) || 0
+          if (grossSalary > 0) {
+            const verificationChecks = verifyPayslip({
+              grossSalary,
+              netSalary: Number(payslipDetails.net_salary) || undefined,
+              incomeTax: Number(payslipDetails.income_tax) || undefined,
+              bituahLeumi: Number(payslipDetails.bituah_leumi) || undefined,
+              healthInsurance: Number(payslipDetails.health_insurance) || undefined,
+              pensionEmployee: Number(payslipDetails.pension_employee) || undefined,
+              hourlyRate: Number(payslipDetails.base_hourly_rate) || undefined,
+              hoursWorked: Number(payslipDetails.hours_worked) || undefined,
+              overtimeHours125: Number(payslipDetails.overtime_125_hours) || undefined,
+              overtimeRate125: Number(payslipDetails.overtime_125_rate) || undefined,
+              overtimeHours150: Number(payslipDetails.overtime_150_hours) || undefined,
+              overtimeRate150: Number(payslipDetails.overtime_150_rate) || undefined,
+              creditPoints: Number(payslipDetails.tax_credit_points) || undefined,
+              vacationDays: Number(payslipDetails.vacation_balance) || undefined,
+            })
+
+            // Add verification results to analysis
+            ;(analysisResult.analysis_data as Record<string, unknown>).payroll_verification = verificationChecks
+
+            // Calculate expected net for display
+            const calcResult = calculateNetSalary({ grossMonthlySalary: grossSalary })
+            ;(analysisResult.analysis_data as Record<string, unknown>).calculated_net = calcResult.net
+            ;(analysisResult.analysis_data as Record<string, unknown>).payroll_breakdown = calcResult.breakdown
+
+            // Merge critical/warning checks into attention_points
+            const existingPoints = (analysisResult.attention_points as Array<Record<string, unknown>>) || []
+            for (const check of verificationChecks) {
+              if (check.level === 'critical' || check.level === 'warning') {
+                existingPoints.push({
+                  level: check.level,
+                  title: `[Vérification auto] ${check.title}`,
+                  description: check.description,
+                })
+              }
+            }
+            analysisResult.attention_points = existingPoints
+          }
+        }
+      } catch (verifyErr) {
+        console.error('[Payslip verification] Error:', verifyErr)
+        // Non-blocking
       }
     }
 
