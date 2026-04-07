@@ -7,6 +7,9 @@ import {
   CalendarDays,
   TrendingDown,
   Baby,
+  Briefcase,
+  Home,
+  Landmark,
 } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -56,6 +59,36 @@ const CALCULATORS = [
       "Estimez la durée de votre congé maternité/paternité et vos allocations Bituach Leumi en Israël.",
     badge: null,
     color: "pink",
+  },
+  {
+    href: "/freelance",
+    icon: Briefcase,
+    emoji: "💼",
+    title: "Simulateur Freelance",
+    description:
+      "Osek Patur ou Murshe ? Calculez vos charges, TVA, BL et impôts en tant qu'indépendant en Israël.",
+    badge: "Nouveau",
+    color: "green",
+  },
+  {
+    href: "/arnona",
+    icon: Home,
+    emoji: "🏠",
+    title: "Simulateur Arnona",
+    description:
+      "Estimez votre taxe municipale (arnona) selon votre ville, surface et réductions possibles.",
+    badge: "Nouveau",
+    color: "orange",
+  },
+  {
+    href: "/mashkanta",
+    icon: Landmark,
+    emoji: "🏗️",
+    title: "Simulateur Mashkanta",
+    description:
+      "Simulez votre prêt immobilier : mensualités, mas rechisha, taux d'endettement et amortissement.",
+    badge: "Nouveau",
+    color: "blue",
   },
 ];
 
