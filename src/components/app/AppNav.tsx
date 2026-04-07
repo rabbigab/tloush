@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { Inbox, LayoutDashboard, MessageSquare, BarChart3, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield } from 'lucide-react'
+import { Inbox, LayoutDashboard, MessageSquare, BarChart3, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Building2, Briefcase, Home, Landmark } from 'lucide-react'
 
 const NAV_ITEMS = [
   { label: 'Inbox', href: '/inbox', icon: Inbox },
@@ -13,6 +13,11 @@ const NAV_ITEMS = [
   { label: 'Simulateur', href: '/calculator', icon: Calculator },
   { label: 'Mes droits', href: '/rights-check', icon: Shield },
   { label: 'Assistant', href: '/assistant', icon: MessageSquare },
+  { label: 'Courriers', href: '/letters', icon: FileText },
+  { label: 'Bituach Leumi', href: '/bituach-leumi', icon: Building2 },
+  { label: 'Freelance', href: '/freelance', icon: Briefcase },
+  { label: 'Arnona', href: '/arnona', icon: Home },
+  { label: 'Mashkanta', href: '/mashkanta', icon: Landmark },
   { label: 'Droits olim', href: '/droits-olim', icon: Scale },
   { label: 'Experts', href: '/experts', icon: Users },
   { label: 'Parrainage', href: '/referral', icon: Gift },
@@ -34,6 +39,11 @@ const MOBILE_MORE = [
   { label: 'Simulateur', href: '/calculator', icon: Calculator },
   { label: 'Mes droits', href: '/rights-check', icon: Shield },
   { label: 'Comparer', href: '/compare', icon: BarChart3 },
+  { label: 'Courriers', href: '/letters', icon: FileText },
+  { label: 'Bituach Leumi', href: '/bituach-leumi', icon: Building2 },
+  { label: 'Freelance', href: '/freelance', icon: Briefcase },
+  { label: 'Arnona', href: '/arnona', icon: Home },
+  { label: 'Mashkanta', href: '/mashkanta', icon: Landmark },
   { label: 'Droits des olim', href: '/droits-olim', icon: Scale },
   { label: 'Experts', href: '/experts', icon: Users },
   { label: 'Parrainage', href: '/referral', icon: Gift },

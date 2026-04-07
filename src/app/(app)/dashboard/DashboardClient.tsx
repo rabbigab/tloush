@@ -3,10 +3,11 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap, CalendarClock, Check, Wallet } from 'lucide-react'
+import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap, CalendarClock, Check, Wallet, Megaphone } from 'lucide-react'
 import { DOC_LABELS, DOC_ICONS } from '@/lib/docTypes'
 import { track } from '@/lib/analytics'
 import type { AppDocument } from '@/types'
+import { getHighImpactUpdates } from '@/lib/regulatoryUpdates'
 
 interface DashboardDocument extends AppDocument {
   deadline?: string | null
@@ -252,6 +253,36 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
                 <span key={p.id} className="flex-1 text-center text-[10px] text-slate-400 dark:text-slate-500 truncate">
                   {p.label}
                 </span>
+              ))}
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Mises a jour reglementaires */}
+      {(() => {
+        const updates = getHighImpactUpdates()
+        if (updates.length === 0) return null
+        return (
+          <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+                <Megaphone size={16} className="text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <h2 className="font-bold text-slate-800 dark:text-slate-200">Actualites reglementaires</h2>
+            </div>
+            <div className="space-y-3">
+              {updates.slice(0, 3).map(u => (
+                <div key={u.id} className="p-3 rounded-xl border border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/50 dark:bg-indigo-950/20">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                      {u.category === 'salary' ? 'Salaire' : u.category === 'tax' ? 'Impots' : u.category === 'social_security' ? 'BL' : u.category === 'pension' ? 'Pension' : 'Droit du travail'}
+                    </span>
+                    <span className="text-xs text-slate-400 dark:text-slate-500">{new Date(u.date).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })}</span>
+                  </div>
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{u.title_fr}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{u.description_fr}</p>
+                </div>
               ))}
             </div>
           </div>

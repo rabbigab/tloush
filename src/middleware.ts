@@ -17,6 +17,11 @@ const PROTECTED_ROUTES = [
   '/rights-check',
   '/referral',
   '/help',
+  '/letters',
+  '/bituach-leumi',
+  '/freelance',
+  '/arnona',
+  '/mashkanta',
 ]
 
 // Routes publiques qui n'ont pas besoin du middleware auth
