@@ -1,19 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
-
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+import { requireAdmin } from '@/lib/apiAuth'
 
 export async function PATCH(req: NextRequest) {
-  const supabase = await createServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
-  }
-  if (!ADMIN_EMAILS.includes(user.email?.toLowerCase() || '')) {
-    return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
-  }
+  const auth = await requireAdmin()
+  if (auth instanceof NextResponse) return auth
+  const { user } = auth
 
   const body = await req.json()
   const { id, status, admin_note } = body as { id?: string; status?: string; admin_note?: string }
@@ -47,14 +40,9 @@ export async function PATCH(req: NextRequest) {
 
 // POST: reply to a feedback via email
 export async function POST(req: NextRequest) {
-  const supabase = await createServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
-  }
-  if (!ADMIN_EMAILS.includes(user.email?.toLowerCase() || '')) {
-    return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
-  }
+  const auth = await requireAdmin()
+  if (auth instanceof NextResponse) return auth
+  const { user } = auth
 
   const body = await req.json()
   const { id, reply } = body as { id?: string; reply?: string }

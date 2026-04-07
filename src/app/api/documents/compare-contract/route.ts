@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { requireAuth } from '@/lib/apiAuth'
+import { COMPARE_CONTRACT_SYSTEM_PROMPT } from '@/lib/prompts'
 
 export const dynamic = 'force-dynamic'
 
@@ -53,10 +54,7 @@ export async function POST(req: NextRequest) {
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-5',
       max_tokens: 4096,
-      system: `Tu es un expert en droit du travail israélien, spécialisé dans l'accompagnement des francophones en Israël.
-Tu compares un contrat de travail avec une fiche de paie pour vérifier que la fiche de paie respecte les termes du contrat.
-Tu retournes UNIQUEMENT un JSON structuré en français. Sois précis, factuel, et signale toute divergence.
-IMPORTANT : Retourne UNIQUEMENT le JSON, sans texte avant ou après, sans blocs markdown.`,
+      system: COMPARE_CONTRACT_SYSTEM_PROMPT,
       messages: [{
         role: 'user',
         content: `Compare ce contrat de travail avec cette fiche de paie et vérifie que la fiche de paie respecte les termes du contrat.

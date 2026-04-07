@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
 import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
+import { invalidateSubscriptionCache } from '@/lib/subscription'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -52,9 +53,25 @@ export async function POST(req: NextRequest) {
         const userId = session.metadata?.supabase_user_id
         const subscriptionId = session.subscription as string
 
-        if (!userId || !subscriptionId) break
+        if (!userId) {
+          console.error('[stripe webhook] checkout.session.completed missing supabase_user_id in metadata')
+          break
+        }
+        if (!subscriptionId) {
+          console.error('[stripe webhook] checkout.session.completed missing subscription ID')
+          break
+        }
 
         const subscription = await getStripe().subscriptions.retrieve(subscriptionId)
+
+        // Ensure supabase_user_id metadata is set on the subscription itself
+        // so that future invoice/update events can resolve the user directly
+        if (!subscription.metadata?.supabase_user_id) {
+          await getStripe().subscriptions.update(subscriptionId, {
+            metadata: { supabase_user_id: userId },
+          })
+        }
+
         const priceId = subscription.items.data[0]?.price.id
         const planId = getPlanIdFromPrice(priceId)
         const item = subscription.items.data[0]
@@ -73,6 +90,7 @@ export async function POST(req: NextRequest) {
           .eq('user_id', userId)
 
         console.log(`[stripe webhook] Subscription activated for user ${userId}: plan ${planId}`)
+        await invalidateSubscriptionCache(userId)
 
         // --- Referral reward: if this user was referred, grant 1 free month Solo to the referrer ---
         try {
@@ -136,6 +154,7 @@ export async function POST(req: NextRequest) {
                 .eq('user_id', referral.referrer_id)
 
               console.log(`[stripe webhook] Referral reward: user ${referral.referrer_id} upgraded to Solo for 1 month`)
+              await invalidateSubscriptionCache(referral.referrer_id)
             }
           }
         } catch (refErr) {
@@ -149,13 +168,19 @@ export async function POST(req: NextRequest) {
         const invoice = event.data.object as Stripe.Invoice
         const sub = invoice.parent?.subscription_details?.subscription
         const subscriptionId = typeof sub === 'string' ? sub : sub?.id
-        if (!subscriptionId) break
+        if (!subscriptionId) {
+          console.warn('[stripe webhook] invoice.paid: no subscription ID found')
+          break
+        }
 
         const subscription = await getStripe().subscriptions.retrieve(subscriptionId)
         const userId = subscription.metadata?.supabase_user_id
           ?? (await getSupabaseUserByCustomer(invoice.customer as string))
 
-        if (!userId) break
+        if (!userId) {
+          console.error('[stripe webhook] invoice.paid: could not resolve user for subscription', subscriptionId)
+          break
+        }
 
         const priceId = subscription.items.data[0]?.price.id
         const planId = getPlanIdFromPrice(priceId)
@@ -173,6 +198,7 @@ export async function POST(req: NextRequest) {
           .eq('user_id', userId)
 
         console.log(`[stripe webhook] Invoice paid for user ${userId}: plan ${planId}`)
+        await invalidateSubscriptionCache(userId)
         break
       }
 
@@ -190,6 +216,7 @@ export async function POST(req: NextRequest) {
           .eq('user_id', userId)
 
         console.log(`[stripe webhook] Payment failed for user ${userId}`)
+        await invalidateSubscriptionCache(userId)
         break
       }
 
@@ -217,6 +244,7 @@ export async function POST(req: NextRequest) {
           .eq('user_id', userId)
 
         console.log(`[stripe webhook] Subscription updated for user ${userId}: ${planId} / ${status}`)
+        await invalidateSubscriptionCache(userId)
         break
       }
 
@@ -237,6 +265,7 @@ export async function POST(req: NextRequest) {
           .eq('user_id', userId)
 
         console.log(`[stripe webhook] Subscription canceled for user ${userId}, downgraded to free`)
+        await invalidateSubscriptionCache(userId)
         break
       }
 
@@ -255,6 +284,7 @@ export async function POST(req: NextRequest) {
           .eq('user_id', userId)
 
         console.log(`[stripe webhook] Payment action required (SCA) for user ${userId}`)
+        await invalidateSubscriptionCache(userId)
         break
       }
 

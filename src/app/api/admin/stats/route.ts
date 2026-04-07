@@ -1,25 +1,14 @@
 import { NextResponse } from 'next/server'
-import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
-
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+import { requireAdmin } from '@/lib/apiAuth'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  // 1. Auth check — must be logged in
-  const supabase = await createServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (auth instanceof NextResponse) return auth
 
-  // 2. Admin check
-  if (!ADMIN_EMAILS.includes(user.email?.toLowerCase() || '')) {
-    return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
-  }
-
-  // 3. Use service role to read all data
+  // Use service role to read all data
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!

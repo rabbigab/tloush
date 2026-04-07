@@ -1,20 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
-
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+import { requireAdmin } from '@/lib/apiAuth'
 
 // Change user plan
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
-  if (!ADMIN_EMAILS.includes(user.email?.toLowerCase() || '')) {
-    return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
-  }
+  const auth = await requireAdmin()
+  if (auth instanceof NextResponse) return auth
 
   const { id: userId } = await params
   const body = await req.json()
@@ -70,17 +64,9 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // 1. Auth check
-  const supabase = await createServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
-  }
-
-  // 2. Admin check
-  if (!ADMIN_EMAILS.includes(user.email?.toLowerCase() || '')) {
-    return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
-  }
+  const auth = await requireAdmin()
+  if (auth instanceof NextResponse) return auth
+  const { user } = auth
 
   const { id: userId } = await params
 

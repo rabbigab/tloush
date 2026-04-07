@@ -16,7 +16,17 @@ export default async function AdminPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/auth/login?redirect=/admin')
-  if (!ADMIN_EMAILS.includes(user.email?.toLowerCase() || '')) redirect('/inbox')
+
+  // Check env-based admin list OR is_admin column in profiles
+  const isEnvAdmin = ADMIN_EMAILS.includes(user.email?.toLowerCase() || '')
+  if (!isEnvAdmin) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single()
+    if (!profile?.is_admin) redirect('/inbox')
+  }
 
   return <AdminDashboard />
 }

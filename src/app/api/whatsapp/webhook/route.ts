@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@supabase/supabase-js'
+import { WHATSAPP_SYSTEM_PROMPT } from '@/lib/prompts'
 
 /**
  * WhatsApp Business API webhook.
@@ -91,12 +92,7 @@ export async function POST(req: NextRequest) {
       const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-5',
         max_tokens: 1024,
-        system: `Tu es Tloush, un assistant qui analyse des documents administratifs israéliens pour les francophones en Israël.
-Réponds en français, de manière claire et concise (max 500 mots).
-Donne un résumé du document, les points importants, et ce que la personne doit faire.
-Si c'est une fiche de paie, vérifie le salaire minimum et les heures sup.
-Si c'est une facture, indique le montant et la date limite de paiement.
-Garde les noms propres en hébreu.`,
+        system: WHATSAPP_SYSTEM_PROMPT,
         messages: [{
           role: 'user',
           content: [

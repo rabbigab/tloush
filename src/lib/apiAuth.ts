@@ -23,3 +23,37 @@ export async function requireAuth(): Promise<AuthResult> {
   }
   return { user, supabase }
 }
+
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '')
+  .split(',')
+  .map(e => e.trim().toLowerCase())
+  .filter(Boolean)
+
+/**
+ * Authenticate and verify admin privileges.
+ * Checks both the is_admin column on profiles AND the ADMIN_EMAILS env var.
+ * Returns { user, supabase } on success, or a 401/403 NextResponse on failure.
+ */
+export async function requireAdmin(): Promise<AuthResult> {
+  const auth = await requireAuth()
+  if (auth instanceof NextResponse) return auth
+  const { user, supabase } = auth
+
+  // Check env-based admin list (backward compat)
+  if (ADMIN_EMAILS.includes(user.email?.toLowerCase() || '')) {
+    return { user, supabase }
+  }
+
+  // Check is_admin column on profiles table
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.is_admin) {
+    return { user, supabase }
+  }
+
+  return NextResponse.json({ error: 'Accès réservé aux administrateurs' }, { status: 403 })
+}

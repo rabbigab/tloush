@@ -1,5 +1,27 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import { PLANS, type PlanId, type PlanConfig } from '@/lib/stripe'
+import { Redis } from '@upstash/redis'
+
+const redis = process.env.UPSTASH_REDIS_REST_URL ? Redis.fromEnv() : null
+const SUB_CACHE_TTL = 300 // 5 minutes
+
+async function cacheSubscription(userId: string, info: SubscriptionInfo): Promise<void> {
+  if (!redis) return
+  try {
+    await redis.set(`sub:${userId}`, info, { ex: SUB_CACHE_TTL })
+  } catch {
+    // Non-fatal
+  }
+}
+
+export async function invalidateSubscriptionCache(userId: string): Promise<void> {
+  if (!redis) return
+  try {
+    await redis.del(`sub:${userId}`)
+  } catch {
+    // Non-fatal
+  }
+}
 
 export interface SubscriptionInfo {
   planId: PlanId
@@ -78,6 +100,16 @@ export async function getSubscription(
   supabase: SupabaseClient,
   userId: string
 ): Promise<SubscriptionInfo> {
+  // Check Redis cache first
+  if (redis) {
+    try {
+      const cached = await redis.get<SubscriptionInfo>(`sub:${userId}`)
+      if (cached) return cached
+    } catch {
+      // Redis failure is non-fatal — fall through to DB
+    }
+  }
+
   // First check if this user is a family member
   const familyOwnerId = await getFamilyOwnerId(supabase, userId)
 
@@ -110,7 +142,7 @@ export async function getSubscription(
       trial_end: trialEnd.toISOString(),
     }).single()
 
-    return {
+    const info: SubscriptionInfo = {
       planId: 'free',
       plan: PLANS.free,
       status: 'active',
@@ -119,6 +151,8 @@ export async function getSubscription(
       stripeCustomerId: null,
       stripeSubscriptionId: null,
     }
+    await cacheSubscription(userId, info)
+    return info
   }
 
   const planId = (sub.plan_id as PlanId) || 'free'
@@ -142,7 +176,7 @@ export async function getSubscription(
     }
   }
 
-  return {
+  const result: SubscriptionInfo = {
     planId,
     plan,
     status,
@@ -152,6 +186,8 @@ export async function getSubscription(
     stripeSubscriptionId: sub.stripe_subscription_id,
     ...(familyOwnerId ? { isFamilyMember: true, familyOwnerId } : {}),
   }
+  await cacheSubscription(userId, result)
+  return result
 }
 
 // ---------------------------------------------------------------------------
@@ -160,10 +196,11 @@ export async function getSubscription(
 
 export async function getUsage(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
+  existingSub?: SubscriptionInfo
 ): Promise<UsageInfo> {
   const period = getCurrentPeriod()
-  const sub = await getSubscription(supabase, userId)
+  const sub = existingSub ?? await getSubscription(supabase, userId)
   const limits = sub.plan.limits
 
   // For family plans, aggregate usage across all members
@@ -289,7 +326,7 @@ export async function canUseFeature(
 
   // Check feature access — free plan gets 5 messages/month
   if (feature === 'assistant_chat' && sub.planId === 'free') {
-    const usage = await getUsage(supabase, userId)
+    const usage = await getUsage(supabase, userId, sub)
     if (usage.assistantRemaining <= 0) {
       return {
         allowed: false,
@@ -314,7 +351,7 @@ export async function canUseFeature(
   }
 
   // --- PAID plans: check monthly usage ---
-  const usage = await getUsage(supabase, userId)
+  const usage = await getUsage(supabase, userId, sub)
 
   if (feature === 'document_analysis' && usage.documentsRemaining <= 0) {
     return {

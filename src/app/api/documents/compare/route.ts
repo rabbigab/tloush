@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { requireAuth } from '@/lib/apiAuth'
+import { COMPARE_PAYSLIPS_SYSTEM_PROMPT } from '@/lib/prompts'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -36,10 +37,7 @@ export async function POST(req: NextRequest) {
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-5',
       max_tokens: 2048,
-      system: `Tu es un expert en fiches de paie israéliennes pour francophones.
-Tu compares deux documents et retournes UNIQUEMENT un JSON structuré en français.
-Sois précis, factuel, et mets en avant les différences significatives.
-IMPORTANT : Retourne UNIQUEMENT le JSON, sans texte avant ou après.`,
+      system: COMPARE_PAYSLIPS_SYSTEM_PROMPT,
       messages: [{
         role: 'user',
         content: `Compare ces deux fiches de paie israéliennes et retourne UNIQUEMENT ce JSON :
