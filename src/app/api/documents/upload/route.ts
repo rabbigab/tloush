@@ -5,14 +5,51 @@ import { createRateLimit } from '@/lib/rateLimit'
 import { requireAuth } from '@/lib/apiAuth'
 import { canUseFeature, incrementUsage, getSubscription } from '@/lib/subscription'
 import { parseDeadline, detectAmountAnomaly } from '@/lib/parsers'
+import { preprocessImage, buildQualityHint } from '@/lib/imagePreprocess'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const freeRateLimit = createRateLimit('upload-free', 3, '1 h')
 
-const SYSTEM_PROMPT = `Tu es un expert en documents administratifs israéliens pour francophones.
-Ton rôle est d'analyser un document (fiche de paie, courrier officiel, contrat, facture, etc.) et de retourner un JSON structuré en FRANÇAIS.
-Tu dois non seulement expliquer le document, mais aussi détecter les anomalies potentielles, les points à vérifier et recommander des actions concrètes.
-IMPORTANT : Retourne UNIQUEMENT le JSON, sans texte avant ou après.`
+function buildSystemPrompt(): string {
+  let prompt = `Tu es un EXPERT-COMPTABLE spécialisé en droit du travail israélien et en documents administratifs pour francophones vivant en Israël.
+
+TON RÔLE :
+- Analyser en profondeur chaque document (fiche de paie, courrier officiel, contrat, facture, relevé, etc.)
+- Extraire TOUTES les données chiffrées avec précision — ne jamais inventer ou deviner un chiffre
+- Détecter les anomalies, erreurs et points à vérifier
+- Vérifier la conformité avec le droit du travail israélien
+- Recommander des actions concrètes et pratiques
+- Retourner un JSON structuré en FRANÇAIS
+
+RÈGLE ABSOLUE : Lis le document LIGNE PAR LIGNE. Chaque ligne du document contient une information. Ne saute AUCUNE ligne. Si tu vois un chiffre, reporte-le fidèlement. Si tu n'arrives pas à lire une valeur, indique "illisible" plutôt que de deviner.
+
+GESTION DES DOCUMENTS DE MAUVAISE QUALITÉ :
+- Si le document est un scan ou une photo de mauvaise qualité, fais de ton mieux pour déchiffrer chaque élément
+- Utilise le contexte pour déduire les valeurs ambiguës (ex: si c'est une fiche de paie et que tu vois un montant autour de 5800₪, c'est probablement proche du salaire minimum)
+- Pour les chiffres flous, indique ta meilleure lecture suivie de "(lecture incertaine)"
+- Si un document est tourné/incliné, essaie quand même de lire le texte
+- Les documents hébreux se lisent de DROITE À GAUCHE — garde cela en tête pour l'ordre des colonnes dans les tableaux
+
+RÈGLE CRITIQUE SUR LES NOMS PROPRES :
+- GARDE TOUJOURS les noms de personnes, d'entreprises et d'organismes EN HÉBREU tel qu'ils apparaissent sur le document.
+- NE TRADUIS PAS et NE TRANSLITTÈRE PAS les noms propres. Exemple : écris ג'ואנה לילוש, PAS "Johanna Lellouche".
+- Pour les entreprises : garde le nom hébreu original. Exemple : écris לה מולן דורה בע"מ, PAS "Le Moulin Doré".
+- Si un nom apparaît à la fois en hébreu et en français/anglais sur le document, utilise la version hébraïque en priorité et mets l'autre entre parenthèses.
+
+CONNAISSANCES DROIT DU TRAVAIL ISRAÉLIEN :
+- Salaire minimum 2024-2025 : 5 880.02₪/mois, 32.3₪/heure
+- Heures supplémentaires : 125% pour les 2 premières heures au-delà de 8h/jour, 150% au-delà
+- Congés payés (חופשה) : selon ancienneté, minimum 12 jours/an les 4 premières années
+- Jours de maladie (מחלה) : 1.5 jour/mois accumulé, 90 jours max. Paiement : 0% jour 1, 50% jours 2-3, 100% à partir du jour 4
+- Convalescence (הבראה) : 5 jours la 1ère année, augmente avec l'ancienneté. Valeur ~418₪/jour en 2024
+- Bituah Leumi (ביטוח לאומי) : cotisation employé ~3.5% jusqu'au seuil, ~12% au-delà
+- Caisse de retraite (פנסיה) : cotisation employé ~6%, employeur ~6.5%
+- Prévoyance (קופת גמל) : variable, souvent 2.5% employé
+- Frais de transport (נסיעות) : remboursement selon trajet réel, plafond mensuel selon distance`
+
+  prompt += `\n\nIMPORTANT : Retourne UNIQUEMENT le JSON, sans texte avant ou après.`
+  return prompt
+}
 
 const USER_PROMPT = `Analyse ce document israélien et retourne UNIQUEMENT ce JSON :
 
@@ -64,10 +101,198 @@ GUIDE recommended_actions.priority :
 - "soon" = à faire dans les 2 semaines
 - "when_possible" = pas urgent mais recommandé
 
+=== GUIDE SPÉCIFIQUE FICHES DE PAIE ISRAÉLIENNES (תלוש משכורת) ===
+
+CRITIQUE : Lis CHAQUE LIGNE du tableau des paiements (תשלומים). Une fiche de paie israélienne contient plusieurs rubriques. Tu DOIS toutes les identifier et les reporter fidèlement.
+
+STRUCTURE TYPE d'une fiche de paie israélienne :
+1. EN-TÊTE :
+   - שם החברה = Nom de l'entreprise (employeur)
+   - שם עובד = Nom de l'employé
+   - מס' עובד = Numéro d'employé
+   - מחלקה = Département
+   - תעודת זהות / ת.ז = Numéro d'identité
+   - תחילת עבודה = Date de début d'emploi
+
+2. TABLEAU DES PAIEMENTS (תשלומים) — colonnes typiques :
+   - תאור התשלום = Description du paiement
+   - כמות = Quantité (heures, jours)
+   - תעריף = Tarif/Taux
+   - תעריף יום = Tarif journalier
+   - תעריף שעה = Tarif horaire
+   - סכום = Montant
+
+3. LIGNES DE PAIEMENT COURANTES (lis-les TOUTES) :
+   - שכר יסוד = Salaire de base
+   - נסיעות = Indemnité de transport
+   - שעות נוספות 125% = Heures supplémentaires à 125%
+   - שעות נוספות 150% = Heures supplémentaires à 150%
+   - שעות נוספות 100% = Heures supplémentaires à 100%
+   - מחלה = Jours de maladie
+   - חופשה = Congés payés
+   - הבראה = Prime de convalescence (havra'a)
+   - חגים = Jours fériés
+   - פרמיה / בונוס = Prime/Bonus
+   - עמלות = Commissions
+   - תוספת = Supplément
+
+4. RETENUES (ניכויים) :
+   - מס הכנסה = Impôt sur le revenu
+   - ביטוח לאומי / ב.ל = Bituah Leumi (sécurité sociale)
+   - דמי בריאות = Assurance santé
+   - קופת גמל / קופ"ג = Caisse de prévoyance
+   - קרן פנסיה / קה"ל = Caisse de retraite
+   - אלטשולר שחם / מגדל / מנורה / כלל / הראל = Noms de caisses de retraite/prévoyance
+
+5. INFORMATIONS COMPLÉMENTAIRES :
+   - נקודות זיכוי = Points de crédit fiscal (Nekudot Zikuy)
+   - ימי עבודה = Jours travaillés
+   - שעות עבודה = Heures travaillées
+   - שעות תקן = Heures standard
+   - ימי תקן = Jours standard
+   - שכר מינימום לחודש = Salaire minimum mensuel (informatif)
+   - שכר מינימום לשעה = Salaire minimum horaire (informatif)
+   - צבירת חופש = Cumul congés
+   - צבירת מחלה = Cumul maladie
+
+6. TOTAUX :
+   - סה"כ תשלומים = Total des paiements
+   - סה"כ ניכויים = Total des retenues
+   - שכר ברוטו = Salaire brut
+   - שכר נטו / נטו לתשלום = Salaire net à payer
+
+RÈGLES POUR LES FICHES DE PAIE :
+- Le taux horaire DE BASE est celui de la ligne שכר יסוד (souvent entre 30-80₪). NE PAS le confondre avec un calcul brut/heures.
+- Si tu vois des lignes שעות נוספות (125%, 150%, 200%), il Y A des heures supplémentaires — ne dis JAMAIS qu'il n'y en a pas.
+- Vérifie que le taux des heures sup est bien 125% ou 150% du taux de base. Calcul : taux_base × 1.25 = taux 125%, taux_base × 1.5 = taux 150%.
+- Compare le salaire de base au שכר מינימום (salaire minimum) si indiqué. Si le taux horaire est inférieur à 32.3₪, c'est un WARNING critique.
+- Reporte dans le summary_fr : salaire brut, net, heures sup (nombre d'heures + montant) s'il y en a, et tout élément notable.
+
+VÉRIFICATIONS DE CONFORMITÉ (attention_points) :
+- Taux horaire inférieur au minimum légal (32.3₪/h) → critical
+- Heures sup non majorées correctement (125%/150%) → warning
+- Plus de 186 heures mensuelles sans heures sup → warning (la norme est ~182h)
+- Cotisation Bituah Leumi absente ou anormalement basse → warning
+- Cotisation retraite absente alors que l'employé a plus de 6 mois d'ancienneté → warning
+- Frais de transport absents pour un employé avec lieu de travail → info
+- Prime de convalescence (הבראה) absente après 1 an d'ancienneté → info
+- Écart entre la somme des lignes et le total brut affiché → warning
+- Date d'édition du document très éloignée de la période de paie → warning
+- Cumul congés (צבירת חופש) négatif → warning
+- Différence nette entre le brut déclaré au Bituah Leumi (חייב ב.ל) et le brut réel → info
+
+Dans analysis_data, ajoute OBLIGATOIREMENT un objet "payslip_details" :
+{
+  "employee_name": "nom de l'employé EN HÉBREU tel qu'écrit sur le document",
+  "employer_name": "nom de l'employeur EN HÉBREU tel qu'écrit sur le document",
+  "employee_id": "numéro d'identité",
+  "start_date": "date début emploi",
+  "department": "département/numéro",
+  "base_salary": nombre,
+  "base_hourly_rate": nombre,
+  "daily_rate": nombre ou null,
+  "hours_worked": nombre,
+  "days_worked": nombre ou null,
+  "standard_hours": nombre ou null,
+  "standard_days": nombre ou null,
+  "overtime_125_hours": nombre ou null,
+  "overtime_125_rate": nombre ou null,
+  "overtime_125_amount": nombre ou null,
+  "overtime_150_hours": nombre ou null,
+  "overtime_150_rate": nombre ou null,
+  "overtime_150_amount": nombre ou null,
+  "sick_days": nombre ou null,
+  "sick_amount": nombre ou null,
+  "vacation_days": nombre ou null,
+  "vacation_amount": nombre ou null,
+  "convalescence_days": nombre ou null,
+  "convalescence_amount": nombre ou null,
+  "transport": nombre ou null,
+  "bonuses": nombre ou null,
+  "commissions": nombre ou null,
+  "other_payments": [{"description": "...", "amount": nombre}],
+  "gross_salary": nombre,
+  "income_tax": nombre ou null,
+  "bituah_leumi": nombre ou null,
+  "health_insurance": nombre ou null,
+  "pension_employee": nombre ou null,
+  "pension_employer": nombre ou null,
+  "provident_fund": nombre ou null,
+  "other_deductions": [{"description": "...", "amount": nombre}],
+  "total_deductions": nombre,
+  "net_salary": nombre,
+  "tax_credit_points": nombre ou null,
+  "tax_credit_amount": nombre ou null,
+  "vacation_balance": nombre ou null,
+  "sick_balance": nombre ou null,
+  "edition_date": "date d'édition du document"
+}
+
+Si le montant brut ne correspond pas à la somme des lignes, signale-le en warning.
+
+=== FIN GUIDE FICHES DE PAIE ===
+
+=== GUIDE SPÉCIFIQUE DOCUMENTS BITUAH LEUMI (ביטוח לאומי) ===
+- Identifier le type exact : allocation, convocation, confirmation de droits, appel, etc.
+- Extraire les montants d'allocation, dates de paiement, périodes couvertes
+- Vérifier si un délai de réponse/recours est mentionné → action_required = true
+- Termes clés : קצבה (allocation), תביעה (demande), זכאות (éligibilité), ערעור (appel), מועד אחרון (date limite)
+
+=== GUIDE SPÉCIFIQUE CONTRATS DE TRAVAIL (חוזה עבודה) ===
+- Vérifier que le salaire proposé ≥ salaire minimum
+- Identifier : période d'essai, préavis, clause de non-concurrence, heures de travail
+- Termes clés : תקופת ניסיון (période d'essai), הודעה מוקדמת (préavis), שעות עבודה (heures), חופשה שנתית (congé annuel)
+
+=== GUIDE SPÉCIFIQUE DOCUMENTS FISCAUX (מס הכנסה) ===
+- Identifier le type : avis d'imposition (שומה), formulaire annuel (106), demande de remboursement, confirmation
+- Extraire : revenus déclarés, impôts payés, crédits d'impôt, solde dû ou remboursement
+- Vérifier les délais de recours/paiement
+
 Pour les factures/tickets (invoice, receipt, utility_bill, insurance) :
 - Extraire le fournisseur, le montant TTC, la date de la facture
 - Indiquer si c'est une dépense récurrente probable (mensuelle, bimestrielle, etc.)
 - Ajouter un champ "recurring_info" dans analysis_data: {"is_recurring": true/false, "frequency": "monthly"|"bimonthly"|"quarterly"|"annual"|"one_time", "provider": "nom du fournisseur", "amount": nombre}
+
+=== EXTRACTION DES INFORMATIONS DE PAIEMENT (CRITIQUE pour les factures) ===
+Pour TOUTE facture (invoice, utility_bill, insurance, receipt), tu DOIS chercher et extraire les informations de paiement.
+Ajoute OBLIGATOIREMENT un objet "payment_info" dans analysis_data :
+{
+  "payment_info": {
+    "payment_url": "URL de paiement en ligne si visible sur le document, ou null",
+    "payment_reference": "Numéro de référence/facture pour le paiement, ou null",
+    "bank_details": {
+      "bank_name": "nom de la banque ou null",
+      "branch": "numéro de succursale ou null",
+      "account": "numéro de compte ou null",
+      "iban": "IBAN si présent ou null"
+    } ou null,
+    "payment_methods": ["liste des moyens de paiement acceptés détectés sur le document"],
+    "amount_due": nombre ou null,
+    "due_date": "date limite de paiement (format JJ/MM/AAAA) ou null",
+    "is_paid": true/false/null,
+    "payment_code": "code-barres, QR code ou référence de paiement automatique si détecté, ou null",
+    "phone_payment": "numéro de téléphone pour payer si indiqué, ou null",
+    "standing_order_info": "informations sur le prélèvement automatique (הוראת קבע) si mentionné, ou null"
+  }
+}
+
+Termes hébreux courants pour le paiement :
+- תשלום = paiement
+- לתשלום = à payer
+- סכום לתשלום = montant à payer
+- מועד תשלום / תאריך אחרון לתשלום = date limite de paiement
+- אסמכתא / מספר חשבונית = référence / numéro de facture
+- הוראת קבע = prélèvement automatique (standing order)
+- כרטיס אשראי = carte de crédit
+- העברה בנקאית = virement bancaire
+- קוד לתשלום = code de paiement
+- אתר התשלומים = site de paiement
+- שולם / לא שולם = payé / non payé
+- יתרה לתשלום = solde à payer
+
+Si tu détectes une URL de paiement (souvent sous forme de lien ou QR code), extrais-la EXACTEMENT. Les factures israéliennes de חברת חשמל (compagnie d'électricité), עיריה (mairie/arnona), מים (eau) ont souvent des liens de paiement en ligne.
+
+=== FIN GUIDE PAIEMENT ===
 
 Guide pour document_type :
 - "payslip" = fiche de paie / tloush maskoret
@@ -128,6 +353,9 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData()
     const file = formData.get('file') as File | null
+    const employeeName = (formData.get('employee_name') as string)?.trim() || ''
+    const employerName = (formData.get('employer_name') as string)?.trim() || ''
+    const docPeriod = (formData.get('doc_period') as string)?.trim() || ''
 
     if (!file) {
       return NextResponse.json({ error: 'Aucun fichier reçu' }, { status: 400 })
@@ -157,9 +385,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Erreur lors du stockage du fichier' }, { status: 500 })
     }
 
-    // 2. Analyse Claude
-    const base64Data = fileBuffer.toString('base64')
+    // 2. Preprocess image for better OCR quality
     const mimeType = file.type as string
+    const preprocessResult = await preprocessImage(fileBuffer, mimeType)
+    const analysisBuffer = preprocessResult.enhanced ? preprocessResult.buffer : fileBuffer
+    const base64Data = analysisBuffer.toString('base64')
+
+    if (preprocessResult.enhanced) {
+      console.log(`[upload] Image enhanced: quality=${preprocessResult.quality}, fixes=[${preprocessResult.appliedFixes.join(', ')}]`)
+    }
 
     type ImageMediaType = 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
     type ContentBlock =
@@ -175,18 +409,36 @@ export async function POST(req: NextRequest) {
         { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64Data } }
       ]
     } else {
-      const imageMediaType = (mimeType === 'image/png' ? 'image/png' : 'image/jpeg') as ImageMediaType
+      // Enhanced images are always PNG, originals keep their type
+      const outputMime = preprocessResult.enhanced ? 'image/png' : mimeType
+      const imageMediaType = (outputMime === 'image/png' ? 'image/png' : 'image/jpeg') as ImageMediaType
       contentBlocks = [
         { type: 'text', text: USER_PROMPT },
         { type: 'image', source: { type: 'base64', media_type: imageMediaType, data: base64Data } }
       ]
     }
 
+    // Build system prompt, inject user-provided context if available
+    let systemPrompt = buildSystemPrompt()
+    if (employeeName || employerName || docPeriod) {
+      systemPrompt += `\n\nCONTEXTE FOURNI PAR L'UTILISATEUR (utilise ces infos pour mieux reconnaître les noms sur le document) :`
+      if (employeeName) systemPrompt += `\n- Nom de l'employé/titulaire : ${employeeName}`
+      if (employerName) systemPrompt += `\n- Employeur / émetteur du document : ${employerName}`
+      if (docPeriod) systemPrompt += `\n- Période du document : ${docPeriod}`
+      systemPrompt += `\nATTENTION : ces infos sont indicatives. Base-toi TOUJOURS sur ce qui est écrit dans le document. Utilise ces infos uniquement pour mieux identifier les noms propres.`
+    }
+
+    // Add quality hint if image was enhanced
+    const qualityHint = buildQualityHint(preprocessResult)
+    if (qualityHint) {
+      systemPrompt += qualityHint
+    }
+
     // Cast needed: 'document' content block not yet in SDK types (v0.24)
     const message = await (anthropic.messages.create as Function)({
       model: 'claude-sonnet-4-5',
-      max_tokens: 3000,
-      system: SYSTEM_PROMPT,
+      max_tokens: 4096,
+      system: systemPrompt,
       messages: [{ role: 'user', content: contentBlocks }]
     }) as Anthropic.Message
 
@@ -250,30 +502,58 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
 
     // 5. Sauvegarder en base
     const fileType = mimeType === 'application/pdf' ? 'pdf' : 'image'
-    const { data: document, error: dbError } = await supabase
+
+    // Build insert payload — only include optional columns if they have values
+    // to avoid errors if columns haven't been migrated yet
+    const insertPayload: Record<string, unknown> = {
+      user_id: user.id,
+      file_name: file.name,
+      file_path: storagePath,
+      file_type: fileType,
+      document_type: (analysisResult.document_type as string) || 'other',
+      status: 'analyzed',
+      is_urgent: Boolean(analysisResult.is_urgent),
+      summary_fr: (analysisResult.summary_fr as string) || null,
+      action_required: Boolean(analysisResult.action_required),
+      action_description: (analysisResult.action_description as string) || null,
+      period: (analysisResult.period as string) || null,
+      analysis_data: analysisResult,
+      analyzed_at: new Date().toISOString()
+    }
+    if (deadlineDate) insertPayload.deadline = deadlineDate
+
+    let document: Record<string, unknown> | null = null
+    let dbError: { message?: string; code?: string } | null = null
+
+    // Try with full payload first, retry without optional columns if it fails
+    const result = await supabase
       .from('documents')
-      .insert({
-        user_id: user.id,
-        file_name: file.name,
-        file_path: storagePath,
-        file_type: fileType,
-        document_type: (analysisResult.document_type as string) || 'other',
-        status: 'analyzed',
-        is_urgent: Boolean(analysisResult.is_urgent),
-        summary_fr: (analysisResult.summary_fr as string) || null,
-        action_required: Boolean(analysisResult.action_required),
-        action_description: (analysisResult.action_description as string) || null,
-        period: (analysisResult.period as string) || null,
-        deadline: deadlineDate,
-        analysis_data: analysisResult,
-        analyzed_at: new Date().toISOString()
-      })
+      .insert(insertPayload)
       .select()
       .single()
 
-    if (dbError) {
+    if (result.error) {
+      // Retry without deadline column (might not exist in DB)
+      console.warn('DB insert failed, retrying without optional columns:', result.error.message)
+      delete insertPayload.deadline
+      const retry = await supabase
+        .from('documents')
+        .insert(insertPayload)
+        .select()
+        .single()
+      document = retry.data
+      dbError = retry.error
+    } else {
+      document = result.data
+      dbError = result.error
+    }
+
+    if (dbError || !document) {
       console.error('DB error:', dbError)
-      return NextResponse.json({ error: 'Erreur lors de la sauvegarde' }, { status: 500 })
+      return NextResponse.json(
+        { error: `Erreur lors de la sauvegarde: ${dbError?.message || 'Inconnu'}` },
+        { status: 500 }
+      )
     }
 
     // Track recurring expense if detected
@@ -369,55 +649,79 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
         }
       }
 
-      // Auto-group into folder by emitter
-      const emitter = (analysisResult.key_info as Record<string, unknown>)?.emitter as string | undefined
-      if (emitter && emitter.trim().length > 0) {
-        try {
-          const { data: existingFolder } = await supabase
+      // Auto-group into folder by document type (e.g. "Fiches de paie", "Factures")
+      const docType = (analysisResult.document_type as string) || 'other'
+      const FOLDER_NAMES: Record<string, string> = {
+        payslip: 'Fiches de paie',
+        bituah_leumi: 'Bituah Leumi',
+        tax_notice: 'Documents fiscaux',
+        work_contract: 'Contrats de travail',
+        pension: 'Retraite',
+        health_insurance: 'Assurance santé',
+        rental: 'Logement',
+        bank: 'Documents bancaires',
+        official_letter: 'Courriers officiels',
+        contract: 'Contrats',
+        invoice: 'Factures',
+        receipt: 'Tickets de caisse',
+        utility_bill: 'Factures services',
+        insurance: 'Assurances',
+        other: 'Autres documents',
+      }
+      const folderName = FOLDER_NAMES[docType] || FOLDER_NAMES.other
+      try {
+        const { data: existingFolder } = await supabase
+          .from('folders')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('name', folderName)
+          .maybeSingle()
+
+        let folderId = existingFolder?.id
+        if (!folderId) {
+          const { data: newFolder } = await supabase
             .from('folders')
+            .insert({
+              user_id: user.id,
+              name: folderName,
+              category: (analysisResult.category as string) || null,
+              auto_generated: true,
+              status: 'active',
+            })
             .select('id')
-            .eq('user_id', user.id)
-            .ilike('name', emitter)
-            .maybeSingle()
-
-          let folderId = existingFolder?.id
-          if (!folderId) {
-            const { data: newFolder } = await supabase
-              .from('folders')
-              .insert({
-                user_id: user.id,
-                name: emitter,
-                category: (analysisResult.category as string) || null,
-                auto_generated: true,
-                status: 'active',
-              })
-              .select('id')
-              .single()
-            folderId = newFolder?.id
-          }
-
-          if (folderId) {
-            await supabase.from('documents').update({ folder_id: folderId }).eq('id', document.id)
-          }
-        } catch (folderErr) {
-          console.error('[Folder] Auto-group error:', folderErr)
+            .single()
+          folderId = newFolder?.id
         }
+
+        if (folderId) {
+          await supabase.from('documents').update({ folder_id: folderId }).eq('id', document.id)
+        }
+      } catch (folderErr) {
+        console.error('[Folder] Auto-group error:', folderErr)
       }
     }
 
-    // Send urgent alert email (fire-and-forget, don't block response)
-    if (document && Boolean(analysisResult.is_urgent) && process.env.CRON_SECRET) {
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : 'http://localhost:3000'
-      fetch(`${baseUrl}/api/alerts/urgent`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.CRON_SECRET}`,
-        },
-        body: JSON.stringify({ userId: user.id, documentId: document.id }),
-      }).catch(err => console.error('[Urgent Alert] Fire-and-forget error:', err))
+    // Fire-and-forget emails (don't block response)
+    if (document && process.env.CRON_SECRET) {
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+        ?? (process.env.VERCEL_URL
+          ? `https://${process.env.VERCEL_URL}`
+          : 'http://localhost:3000')
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+      }
+      const body = JSON.stringify({ userId: user.id, documentId: document.id })
+
+      // Urgent alert email
+      if (Boolean(analysisResult.is_urgent)) {
+        fetch(`${baseUrl}/api/alerts/urgent`, { method: 'POST', headers, body })
+          .catch(err => console.error('[Urgent Alert] Fire-and-forget error:', err))
+      }
+
+      // Post-analysis summary email
+      fetch(`${baseUrl}/api/alerts/analysis-complete`, { method: 'POST', headers, body })
+        .catch(err => console.error('[Analysis Email] Fire-and-forget error:', err))
     }
 
     // Increment usage counter after successful analysis
