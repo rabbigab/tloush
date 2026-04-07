@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { requireAuth } from '@/lib/apiAuth'
 import { getSubscription } from '@/lib/subscription'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 
 export async function DELETE(req: NextRequest) {
   try {
@@ -14,7 +14,7 @@ export async function DELETE(req: NextRequest) {
     try {
       const sub = await getSubscription(supabase, user.id)
       if (sub.stripeSubscriptionId) {
-        await stripe.subscriptions.cancel(sub.stripeSubscriptionId)
+        await getStripe().subscriptions.cancel(sub.stripeSubscriptionId)
         console.log(`[account/delete] Stripe subscription ${sub.stripeSubscriptionId} cancelled`)
       }
     } catch (stripeErr) {

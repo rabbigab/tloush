@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 import { requireAuth } from '@/lib/apiAuth'
 import { getSubscription } from '@/lib/subscription'
 
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const session = await stripe.billingPortal.sessions.create({
+    const session = await getStripe().billingPortal.sessions.create({
       customer: sub.stripeCustomerId,
       return_url: `${req.headers.get('origin')}/profile`,
     })
