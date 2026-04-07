@@ -1,25 +1,21 @@
 "use client";
 
-import { Upload, Zap, Bell } from "lucide-react";
 import { motion } from "framer-motion";
 
 const STEPS = [
   {
-    icon: Upload,
     emoji: "📤",
     number: "1",
     title: "Uploadez",
     desc: "Déposez votre document en hébreu : fiche de paie, contrat, facture, courrier officiel (PDF ou photo)",
   },
   {
-    icon: Zap,
     emoji: "🔍",
     number: "2",
     title: "Tloush analyse",
     desc: "Notre IA lit, traduit et vérifie votre document. Elle repère les anomalies et les points importants.",
   },
   {
-    icon: Bell,
     emoji: "✅",
     number: "3",
     title: "Comprenez et agissez",

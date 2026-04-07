@@ -1,29 +1,36 @@
 "use client";
 
-import { ShieldCheck, Scale, Users } from "lucide-react";
+import { ShieldCheck, Scale, Users, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 
 const BADGES = [
   {
-    icon: ShieldCheck,
-    title: "Vos données sont en sécurité",
-    desc: "Stockage chiffré. Suppression à tout moment. Conforme RGPD.",
+    icon: Lock,
+    title: "Vos documents restent prives",
+    desc: "Chiffrement de bout en bout. Nous ne vendons jamais vos donnees. Suppression en 1 clic.",
     color: "text-success",
-    bg: "bg-success/10",
+    bg: "bg-success/10 dark:bg-green-950/30",
   },
   {
     icon: Scale,
-    title: "Législation israélienne 2026",
-    desc: "Basé sur les lois et régulations à jour.",
-    color: "text-brand-600",
-    bg: "bg-brand-50",
+    title: "Legislation israelienne 2026",
+    desc: "Base sur les lois et regulations a jour. Mis a jour chaque trimestre.",
+    color: "text-brand-600 dark:text-brand-400",
+    bg: "bg-brand-50 dark:bg-brand-950/30",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Conforme RGPD",
+    desc: "Droit a l'oubli complet. Aucun tracking publicitaire. Vos donnees, vos regles.",
+    color: "text-indigo-600 dark:text-indigo-400",
+    bg: "bg-indigo-50 dark:bg-indigo-950/30",
   },
   {
     icon: Users,
     title: "Par et pour francophones",
-    desc: "Créé par des francophones en Israël, pour des francophones.",
-    color: "text-amber-600",
-    bg: "bg-amber-50",
+    desc: "Cree par des francophones en Israel. On connait vos galeres, on les a vecues.",
+    color: "text-amber-600 dark:text-amber-400",
+    bg: "bg-amber-50 dark:bg-amber-950/30",
   },
 ];
 
@@ -31,7 +38,7 @@ export default function TrustBadges() {
   return (
     <section className="bg-white dark:bg-slate-900 border-t border-neutral-100 dark:border-slate-700 py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {BADGES.map((badge, idx) => {
             const Icon = badge.icon;
             return (

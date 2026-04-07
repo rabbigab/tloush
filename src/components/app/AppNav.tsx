@@ -20,8 +20,6 @@ const TOOLS_SECTIONS = [
     title: 'Calculateurs',
     items: [
       { label: 'Simulateur salaire', href: '/calculator', icon: Calculator },
-      { label: 'Mashkanta', href: '/mashkanta', icon: Landmark },
-      { label: 'Arnona', href: '/arnona', icon: Home },
       { label: 'Freelance', href: '/freelance', icon: Briefcase },
       { label: 'Comparer tlushs', href: '/compare', icon: GitCompareArrows },
     ],
@@ -39,9 +37,9 @@ const TOOLS_SECTIONS = [
   {
     title: 'Finances',
     items: [
+      { label: 'Immobilier', href: '/real-estate', icon: Building },
       { label: 'Smart Saver', href: '/smart-saver', icon: PiggyBank },
       { label: 'Import bancaire', href: '/bank-import', icon: FileSpreadsheet },
-      { label: 'Immobilier', href: '/real-estate', icon: Building },
     ],
   },
 ]
@@ -77,8 +75,6 @@ const MOBILE_SECTIONS = [
     title: 'Calculateurs',
     items: [
       { label: 'Simulateur salaire', href: '/calculator', icon: Calculator },
-      { label: 'Mashkanta', href: '/mashkanta', icon: Landmark },
-      { label: 'Arnona', href: '/arnona', icon: Home },
       { label: 'Freelance', href: '/freelance', icon: Briefcase },
       { label: 'Comparer tlushs', href: '/compare', icon: GitCompareArrows },
     ],
@@ -96,9 +92,9 @@ const MOBILE_SECTIONS = [
   {
     title: 'Finances',
     items: [
+      { label: 'Immobilier', href: '/real-estate', icon: Building },
       { label: 'Smart Saver', href: '/smart-saver', icon: PiggyBank },
       { label: 'Import bancaire', href: '/bank-import', icon: FileSpreadsheet },
-      { label: 'Immobilier', href: '/real-estate', icon: Building },
     ],
   },
   {

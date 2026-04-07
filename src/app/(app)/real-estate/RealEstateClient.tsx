@@ -55,13 +55,19 @@ export default function RealEstateClient() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <button onClick={() => setTab('rental')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${tab === 'rental' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}`}>
           Location / Bail
         </button>
         <button onClick={() => setTab('purchase')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${tab === 'purchase' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}`}>
           Achat immobilier
         </button>
+        <a href="/mashkanta" className="px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center gap-1.5">
+          Simulateur Mashkanta
+        </a>
+        <a href="/arnona" className="px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center gap-1.5">
+          Simulateur Arnona
+        </a>
       </div>
 
       {tab === 'rental' && (

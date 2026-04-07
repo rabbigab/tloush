@@ -108,6 +108,8 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
   const recentCount = documents.filter(d => new Date(d.created_at) > thirtyDaysAgo).length
 
+  const [dashTab, setDashTab] = useState<'overview' | 'finances' | 'infos'>('overview')
+
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir'
 
@@ -185,134 +187,32 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
         ))}
       </div>
 
-      {/* Budget mensuel */}
-      {expenses.length > 0 && (
-        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-brand-50 dark:bg-brand-950/30 rounded-lg flex items-center justify-center">
-                <Wallet size={16} className="text-brand-600" />
-              </div>
-              <h2 className="font-bold text-slate-800 dark:text-slate-200">Budget mensuel</h2>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                  {monthlyExpenses.toFixed(0)}<span className="text-sm text-slate-500 ml-1">₪/mois</span>
-                </p>
-                <p className="text-xs text-slate-400 dark:text-slate-500">
-                  {(monthlyExpenses * 12).toFixed(0)}₪ /an · {expenses.length} suivis
-                </p>
-              </div>
-              <Link href="/expenses" className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1">
-                Détails <ArrowRight size={12} />
-              </Link>
-            </div>
-          </div>
-          <div className="space-y-2">
-            {topProviders.map(p => {
-              const pct = monthlyExpenses > 0 ? (p.monthlyAmount / monthlyExpenses) * 100 : 0
-              return (
-                <div key={p.id}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate pr-2">{p.provider_name}</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold shrink-0">
-                      {p.monthlyAmount.toFixed(0)}₪
-                    </span>
-                  </div>
-                  <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-brand-500 to-indigo-500 rounded-full transition-all duration-500"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
+      {/* Dashboard tabs */}
+      <div className="flex gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-1">
+        {([
+          { id: 'overview' as const, label: 'Apercu', count: urgent.length + actionRequired.length },
+          { id: 'finances' as const, label: 'Finances', count: 0 },
+          { id: 'infos' as const, label: 'Infos', count: 0 },
+        ]).map(t => (
+          <button
+            key={t.id}
+            onClick={() => setDashTab(t.id)}
+            className={`flex-1 px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
+              dashTab === t.id ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+            }`}
+          >
+            {t.label}
+            {t.count > 0 && (
+              <span className="ml-1.5 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold bg-red-500 text-white rounded-full">
+                {t.count}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
 
-      {/* Évolution fiches de paie */}
-      {payslipEvolution.length >= 2 && (() => {
-        const maxAmount = Math.max(...payslipEvolution.map(p => p.amount))
-        const last = payslipEvolution[payslipEvolution.length - 1]
-        const prev = payslipEvolution[payslipEvolution.length - 2]
-        const diff = last.amount - prev.amount
-        const pct = prev.amount > 0 ? (diff / prev.amount) * 100 : 0
-        return (
-          <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
-                  <TrendingUp size={16} className="text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <h2 className="font-bold text-slate-800 dark:text-slate-200">Évolution fiches de paie</h2>
-              </div>
-              <div className="text-right">
-                <p className="text-xl font-bold text-slate-900 dark:text-slate-100">{last.amount.toFixed(0)}₪</p>
-                {Math.abs(pct) >= 0.5 && (
-                  <p className={`text-xs font-semibold ${pct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {pct >= 0 ? '+' : ''}{pct.toFixed(1)}% vs précédent
-                  </p>
-                )}
-              </div>
-            </div>
-            <div className="flex items-end justify-between gap-1 h-28">
-              {payslipEvolution.map((p, i) => {
-                const height = maxAmount > 0 ? (p.amount / maxAmount) * 100 : 0
-                const isLast = i === payslipEvolution.length - 1
-                return (
-                  <div key={p.id} className="flex-1 flex flex-col items-center justify-end gap-1 min-w-0 group">
-                    <div
-                      className={`w-full rounded-t-md transition-all ${isLast ? 'bg-gradient-to-t from-emerald-500 to-emerald-400' : 'bg-gradient-to-t from-slate-300 to-slate-200 dark:from-slate-600 dark:to-slate-500'}`}
-                      style={{ height: `${Math.max(height, 4)}%` }}
-                      title={`${p.label} : ${p.amount.toFixed(0)}₪`}
-                    />
-                  </div>
-                )
-              })}
-            </div>
-            <div className="flex items-center justify-between gap-1 mt-1">
-              {payslipEvolution.map(p => (
-                <span key={p.id} className="flex-1 text-center text-[10px] text-slate-400 dark:text-slate-500 truncate">
-                  {p.label}
-                </span>
-              ))}
-            </div>
-          </div>
-        )
-      })()}
-
-      {/* Mises a jour reglementaires */}
-      {(() => {
-        const updates = getHighImpactUpdates()
-        if (updates.length === 0) return null
-        return (
-          <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
-                <Megaphone size={16} className="text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <h2 className="font-bold text-slate-800 dark:text-slate-200">Actualites reglementaires</h2>
-            </div>
-            <div className="space-y-3">
-              {updates.slice(0, 3).map(u => (
-                <div key={u.id} className="p-3 rounded-xl border border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/50 dark:bg-indigo-950/20">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
-                      {u.category === 'salary' ? 'Salaire' : u.category === 'tax' ? 'Impots' : u.category === 'social_security' ? 'BL' : u.category === 'pension' ? 'Pension' : 'Droit du travail'}
-                    </span>
-                    <span className="text-xs text-slate-400 dark:text-slate-500">{new Date(u.date).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })}</span>
-                  </div>
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{u.title_fr}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{u.description_fr}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )
-      })()}
+      {/* === OVERVIEW TAB === */}
+      {dashTab === 'overview' && (<>
 
       {/* Alertes actives */}
       {(urgent.length > 0 || actionRequired.length > 0) && (
@@ -335,14 +235,14 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
                   <p className="text-xs text-red-600 dark:text-red-400 mt-0.5 truncate">{doc.action_description}</p>
                 )}
               </div>
-              <ArrowRight size={16} className="text-red-300 dark:text-red-600 group-hover:text-red-500 dark:group-hover:text-red-400 shrink-0 mt-1 transition-colors group-hover:translate-x-0.5 transition-transform" />
+              <ArrowRight size={16} className="text-red-300 dark:text-red-600 group-hover:text-red-500 dark:group-hover:text-red-400 shrink-0 mt-1 transition-colors" />
             </Link>
           ))}
           {actionRequired.map(doc => (
             <Link
               key={doc.id}
               href={`/assistant?doc=${doc.id}`}
-              className="flex items-start gap-3 bg-gradient-to-r from-amber-50 to-amber-50/50 dark:from-amber-950/40 dark:to-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 hover:shadow-md hover:shadow-amber-500/10 hover:border-amber-300 dark:hover:border-amber-700 transition-all group min-h-[44px]"
+              className="flex items-start gap-3 bg-gradient-to-r from-amber-50 to-amber-50/50 dark:from-amber-950/40 dark:to-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 hover:shadow-md transition-all group min-h-[44px]"
             >
               <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/50 rounded-xl flex items-center justify-center shrink-0">
                 <Clock size={20} className="text-amber-500 dark:text-amber-400" />
@@ -356,20 +256,20 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
                   <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5 truncate">{doc.action_description}</p>
                 )}
               </div>
-              <ArrowRight size={16} className="text-amber-300 dark:text-amber-600 group-hover:text-amber-500 dark:group-hover:text-amber-400 shrink-0 mt-1 transition-colors" />
+              <ArrowRight size={16} className="text-amber-300 dark:text-amber-600 shrink-0 mt-1" />
             </Link>
           ))}
         </div>
       )}
 
-      {/* Échéances à venir */}
+      {/* Echeances a venir */}
       {upcomingDeadlines.length > 0 && (
         <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 bg-amber-50 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
               <CalendarClock size={16} className="text-amber-600 dark:text-amber-400" />
             </div>
-            <h2 className="font-bold text-slate-800 dark:text-slate-200">Échéances à venir</h2>
+            <h2 className="font-bold text-slate-800 dark:text-slate-200">Echeances a venir</h2>
           </div>
           <div className="space-y-3">
             {upcomingDeadlines.map(doc => {
@@ -403,146 +303,58 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
         </div>
       )}
 
-      {/* Actions en attente */}
-      {actionRequired.length > 0 && (
-        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-              <CheckCircle size={16} className="text-blue-600 dark:text-blue-400" />
+      {/* Documents recents */}
+      <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+              <Zap size={16} className="text-emerald-600 dark:text-emerald-400" />
             </div>
-            <h2 className="font-bold text-slate-800 dark:text-slate-200">Actions en attente</h2>
-            <span className="text-xs text-slate-400 dark:text-slate-500 ml-auto">{actionRequired.length} restante{actionRequired.length > 1 ? 's' : ''}</span>
+            <h2 className="font-bold text-slate-800 dark:text-slate-200">Documents recents</h2>
           </div>
-          <div className="space-y-2">
-            {actionRequired.slice(0, 5).map(doc => (
-              <div
-                key={doc.id}
-                className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-700 group"
-              >
-                <button
-                  onClick={() => markActionDone(doc.id)}
-                  className="w-6 h-6 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center shrink-0 hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors"
-                  title="Marquer comme fait"
-                >
-                  <Check size={12} className="text-transparent group-hover:text-green-500 transition-colors" />
-                </button>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-slate-700 dark:text-slate-300 truncate">
-                    {doc.action_description || DOC_LABELS[doc.document_type]}
-                  </p>
-                  <p className="text-xs text-slate-400 dark:text-slate-500">
-                    {DOC_LABELS[doc.document_type]} {doc.period && `· ${doc.period}`}
-                  </p>
-                </div>
-                <Link href={`/assistant?doc=${doc.id}`} className="text-blue-500 hover:text-blue-600 shrink-0">
-                  <ArrowRight size={14} />
-                </Link>
-              </div>
-            ))}
-          </div>
+          <Link href="/inbox" className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1">
+            Voir tout <ArrowRight size={12} />
+          </Link>
         </div>
-      )}
-
-      <div className="grid lg:grid-cols-3 gap-5">
-        {/* Repartition par type - prend 1 col */}
-        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-2 mb-5">
-            <div className="w-8 h-8 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-              <Shield size={16} className="text-blue-600 dark:text-blue-400" />
+        {recent.length === 0 ? (
+          <div className="text-center py-10">
+            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <FileText size={28} className="text-slate-300 dark:text-slate-500" />
             </div>
-            <h2 className="font-bold text-slate-800 dark:text-slate-200">Par type</h2>
-          </div>
-          {Object.keys(byType).length === 0 ? (
-            <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Aucun document</p>
-          ) : (
-            <div className="space-y-3">
-              {Object.entries(byType)
-                .sort(([, a], [, b]) => b - a)
-                .map(([type, count]) => {
-                  const pct = Math.round((count / documents.length) * 100)
-                  return (
-                    <div key={type}>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-sm text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5">
-                          <span>{DOC_ICONS[type] || '📄'}</span>
-                          {DOC_LABELS[type] || type}
-                        </span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">{count} ({pct}%)</span>
-                      </div>
-                      <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-500"
-                          role="progressbar"
-                          aria-valuenow={count}
-                          aria-valuemin={0}
-                          aria-valuemax={documents.length}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
-            </div>
-          )}
-        </div>
-
-        {/* Documents recents - prend 2 cols */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
-                <Zap size={16} className="text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <h2 className="font-bold text-slate-800 dark:text-slate-200">Documents recents</h2>
-            </div>
-            <Link href="/inbox" className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1">
-              Voir tout <ArrowRight size={12} />
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">Aucun document encore</p>
+            <Link href="/inbox" className="inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors">
+              <Inbox size={15} />
+              Uploader un document
             </Link>
           </div>
-          {recent.length === 0 ? (
-            <div className="text-center py-10">
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <FileText size={28} className="text-slate-300 dark:text-slate-500" />
-              </div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">Aucun document encore</p>
-              <Link href="/inbox" className="inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors">
-                <Inbox size={15} />
-                Uploader un document
+        ) : (
+          <div className="grid sm:grid-cols-2 gap-3">
+            {recent.map(doc => (
+              <Link
+                key={doc.id}
+                href={`/assistant?doc=${doc.id}`}
+                className="flex items-start gap-3 p-3.5 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-all group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-700 flex items-center justify-center shrink-0 text-lg">
+                  {DOC_ICONS[doc.document_type] || '📄'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    {doc.is_urgent && <span className="w-2 h-2 bg-red-500 rounded-full shrink-0" />}
+                    {!doc.is_urgent && doc.action_required && <span className="w-2 h-2 bg-amber-500 rounded-full shrink-0" />}
+                    {!doc.is_urgent && !doc.action_required && <span className="w-2 h-2 bg-emerald-500 rounded-full shrink-0" />}
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
+                      {DOC_LABELS[doc.document_type] || doc.document_type}
+                    </p>
+                  </div>
+                  {doc.period && <p className="text-xs text-slate-400 dark:text-slate-500 mb-0.5">{doc.period}</p>}
+                  {doc.summary_fr && <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{doc.summary_fr}</p>}
+                </div>
+                <MessageSquare size={14} className="text-slate-200 dark:text-slate-600 group-hover:text-blue-400 shrink-0 mt-1 transition-colors" />
               </Link>
-            </div>
-          ) : (
-            <div className="grid sm:grid-cols-2 gap-3">
-              {recent.map(doc => (
-                <Link
-                  key={doc.id}
-                  href={`/assistant?doc=${doc.id}`}
-                  className="flex items-start gap-3 p-3.5 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-all group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-700 flex items-center justify-center shrink-0 text-lg">
-                    {DOC_ICONS[doc.document_type] || '📄'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      {doc.is_urgent && <span className="w-2 h-2 bg-red-500 rounded-full shrink-0" />}
-                      {!doc.is_urgent && doc.action_required && <span className="w-2 h-2 bg-amber-500 rounded-full shrink-0" />}
-                      {!doc.is_urgent && !doc.action_required && <span className="w-2 h-2 bg-emerald-500 rounded-full shrink-0" />}
-                      <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
-                        {DOC_LABELS[doc.document_type] || doc.document_type}
-                      </p>
-                    </div>
-                    {doc.period && (
-                      <p className="text-xs text-slate-400 dark:text-slate-500 mb-0.5">{doc.period}</p>
-                    )}
-                    {doc.summary_fr && (
-                      <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{doc.summary_fr}</p>
-                    )}
-                  </div>
-                  <MessageSquare size={14} className="text-slate-200 dark:text-slate-600 group-hover:text-blue-400 shrink-0 mt-1 transition-colors" />
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* CTA si pas de documents */}
@@ -552,17 +364,214 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
           <FileText size={40} className="text-blue-300 dark:text-blue-700 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">Commencez par uploader un document</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-5 max-w-md mx-auto">
-            Fiche de paie, courrier officiel, contrat... Tloush vous l&apos;explique en français en quelques secondes.
+            Fiche de paie, courrier officiel, contrat... Tloush vous l&apos;explique en francais en quelques secondes.
           </p>
           <Link
             href="/inbox"
             className="inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/25 active:scale-95"
           >
             <Inbox size={16} />
-            Aller à l&apos;inbox
+            Aller a l&apos;inbox
           </Link>
         </div>
       )}
+
+      </>)}
+
+      {/* === FINANCES TAB === */}
+      {dashTab === 'finances' && (<>
+
+      {/* Budget mensuel */}
+      {expenses.length > 0 ? (
+        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-brand-50 dark:bg-brand-950/30 rounded-lg flex items-center justify-center">
+                <Wallet size={16} className="text-brand-600" />
+              </div>
+              <h2 className="font-bold text-slate-800 dark:text-slate-200">Budget mensuel</h2>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                  {monthlyExpenses.toFixed(0)}<span className="text-sm text-slate-500 ml-1">₪/mois</span>
+                </p>
+                <p className="text-xs text-slate-400 dark:text-slate-500">
+                  {(monthlyExpenses * 12).toFixed(0)}₪ /an · {expenses.length} suivis
+                </p>
+              </div>
+              <Link href="/expenses" className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1">
+                Details <ArrowRight size={12} />
+              </Link>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {topProviders.map(p => {
+              const pct = monthlyExpenses > 0 ? (p.monthlyAmount / monthlyExpenses) * 100 : 0
+              return (
+                <div key={p.id}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate pr-2">{p.provider_name}</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold shrink-0">
+                      {p.monthlyAmount.toFixed(0)}₪
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-brand-500 to-indigo-500 rounded-full transition-all duration-500"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-8 text-center">
+          <Wallet size={32} className="text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">Aucune depense suivie</p>
+          <Link href="/expenses" className="inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors">
+            <Wallet size={15} />
+            Ajouter des depenses
+          </Link>
+        </div>
+      )}
+
+      {/* Evolution fiches de paie */}
+      {payslipEvolution.length >= 2 && (() => {
+        const maxAmount = Math.max(...payslipEvolution.map(p => p.amount))
+        const last = payslipEvolution[payslipEvolution.length - 1]
+        const prev = payslipEvolution[payslipEvolution.length - 2]
+        const diff = last.amount - prev.amount
+        const pct = prev.amount > 0 ? (diff / prev.amount) * 100 : 0
+        return (
+          <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+                  <TrendingUp size={16} className="text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <h2 className="font-bold text-slate-800 dark:text-slate-200">Evolution fiches de paie</h2>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-bold text-slate-900 dark:text-slate-100">{last.amount.toFixed(0)}₪</p>
+                {Math.abs(pct) >= 0.5 && (
+                  <p className={`text-xs font-semibold ${pct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {pct >= 0 ? '+' : ''}{pct.toFixed(1)}% vs precedent
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex items-end justify-between gap-1 h-28">
+              {payslipEvolution.map((p, i) => {
+                const height = maxAmount > 0 ? (p.amount / maxAmount) * 100 : 0
+                const isLast = i === payslipEvolution.length - 1
+                return (
+                  <div key={p.id} className="flex-1 flex flex-col items-center justify-end gap-1 min-w-0 group">
+                    <div
+                      className={`w-full rounded-t-md transition-all ${isLast ? 'bg-gradient-to-t from-emerald-500 to-emerald-400' : 'bg-gradient-to-t from-slate-300 to-slate-200 dark:from-slate-600 dark:to-slate-500'}`}
+                      style={{ height: `${Math.max(height, 4)}%` }}
+                      title={`${p.label} : ${p.amount.toFixed(0)}₪`}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+            <div className="flex items-center justify-between gap-1 mt-1">
+              {payslipEvolution.map(p => (
+                <span key={p.id} className="flex-1 text-center text-[10px] text-slate-400 dark:text-slate-500 truncate">
+                  {p.label}
+                </span>
+              ))}
+            </div>
+          </div>
+        )
+      })()}
+
+      </>)}
+
+      {/* === INFOS TAB === */}
+      {dashTab === 'infos' && (<>
+
+      {/* Mises a jour reglementaires */}
+      {(() => {
+        const updates = getHighImpactUpdates()
+        if (updates.length === 0) return (
+          <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-8 text-center">
+            <Megaphone size={32} className="text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+            <p className="text-sm text-slate-500 dark:text-slate-400">Aucune actualite reglementaire pour le moment</p>
+          </div>
+        )
+        return (
+          <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+                <Megaphone size={16} className="text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <h2 className="font-bold text-slate-800 dark:text-slate-200">Actualites reglementaires</h2>
+            </div>
+            <div className="space-y-3">
+              {updates.slice(0, 5).map(u => (
+                <div key={u.id} className="p-3 rounded-xl border border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/50 dark:bg-indigo-950/20">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                      {u.category === 'salary' ? 'Salaire' : u.category === 'tax' ? 'Impots' : u.category === 'social_security' ? 'BL' : u.category === 'pension' ? 'Pension' : 'Droit du travail'}
+                    </span>
+                    <span className="text-xs text-slate-400 dark:text-slate-500">{new Date(u.date).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })}</span>
+                  </div>
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{u.title_fr}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{u.description_fr}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Repartition par type */}
+      <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="w-8 h-8 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+            <Shield size={16} className="text-blue-600 dark:text-blue-400" />
+          </div>
+          <h2 className="font-bold text-slate-800 dark:text-slate-200">Repartition par type</h2>
+        </div>
+        {Object.keys(byType).length === 0 ? (
+          <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Aucun document</p>
+        ) : (
+          <div className="space-y-3">
+            {Object.entries(byType)
+              .sort(([, a], [, b]) => b - a)
+              .map(([type, count]) => {
+                const pct = Math.round((count / documents.length) * 100)
+                return (
+                  <div key={type}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5">
+                        <span>{DOC_ICONS[type] || '📄'}</span>
+                        {DOC_LABELS[type] || type}
+                      </span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">{count} ({pct}%)</span>
+                    </div>
+                    <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-500"
+                        role="progressbar"
+                        aria-valuenow={count}
+                        aria-valuemin={0}
+                        aria-valuemax={documents.length}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+          </div>
+        )}
+      </div>
+
+      </>)}
 
     </div>
   )

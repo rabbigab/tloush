@@ -17,9 +17,14 @@ export default function FreelanceClient() {
   const [result, setResult] = useState<FreelanceResult | null>(null)
   const [showComparison, setShowComparison] = useState(true)
   const [showDeadlines, setShowDeadlines] = useState(false)
+  const [error, setError] = useState('')
 
   function calculate() {
-    if (!annualRevenue || Number(annualRevenue) <= 0) return
+    if (!annualRevenue || Number(annualRevenue) <= 0) {
+      setError("Veuillez entrer un chiffre d'affaires valide")
+      return
+    }
+    setError('')
     const profile: FreelanceProfile = {
       type,
       annualRevenue: Number(annualRevenue),
@@ -188,6 +193,9 @@ export default function FreelanceClient() {
             )}
           </div>
 
+          {error && (
+            <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
+          )}
           <button
             onClick={calculate}
             disabled={!annualRevenue || Number(annualRevenue) <= 0}

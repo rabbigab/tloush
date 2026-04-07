@@ -20,9 +20,22 @@ export default function MashkantaClient() {
     { id: '2', bankName: 'Banque B', interestRate: 4.2, loanTermYears: 25, trackType: 'fixed' },
   ])
   const [comparison, setComparison] = useState<MashkantaComparison | null>(null)
+  const [error, setError] = useState('')
 
   function calculate() {
-    if (!propertyPrice || !downPayment || Number(propertyPrice) <= 0) return
+    if (!propertyPrice || Number(propertyPrice) <= 0) {
+      setError('Veuillez entrer un prix valide')
+      return
+    }
+    if (!downPayment || Number(downPayment) <= 0) {
+      setError('Veuillez entrer un apport valide')
+      return
+    }
+    if (Number(downPayment) >= Number(propertyPrice)) {
+      setError("L'apport doit etre inferieur au prix du bien")
+      return
+    }
+    setError('')
     const input: MashkantaInput = {
       propertyPrice: Number(propertyPrice),
       downPayment: Number(downPayment),
@@ -139,6 +152,9 @@ export default function MashkantaClient() {
             </label>
           </div>
 
+          {error && (
+            <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
+          )}
           <button
             onClick={calculate}
             disabled={!propertyPrice || !downPayment}

@@ -39,9 +39,14 @@ export default function CalculatorClient() {
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [result, setResult] = useState<CalcResult | null>(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   async function calculate() {
-    if (!gross || Number(gross) <= 0) return
+    if (!gross || Number(gross) <= 0) {
+      setError('Veuillez entrer un salaire brut valide')
+      return
+    }
+    setError('')
     setLoading(true)
     try {
       const res = await fetch('/api/calculator', {
@@ -169,6 +174,9 @@ export default function CalculatorClient() {
           </div>
         )}
 
+        {error && (
+          <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
+        )}
         <button
           onClick={calculate}
           disabled={loading || !gross}

@@ -23,9 +23,14 @@ export default function ArnonaClient() {
   const [appealReasons, setAppealReasons] = useState<ArnonaAppealReason[]>([])
   const [appealResult, setAppealResult] = useState<{ hebrew: string; french: string } | null>(null)
   const [copied, setCopied] = useState<'he' | 'fr' | null>(null)
+  const [error, setError] = useState('')
 
   function calculate() {
-    if (!size || Number(size) <= 0) return
+    if (!size || Number(size) <= 0) {
+      setError('Veuillez entrer une surface valide')
+      return
+    }
+    setError('')
     const input: ArnonaInput = {
       city,
       propertySizeM2: Number(size),
@@ -136,6 +141,9 @@ export default function ArnonaClient() {
           </label>
         </div>
 
+        {error && (
+          <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
+        )}
         <button
           onClick={calculate}
           disabled={!size || Number(size) <= 0}
