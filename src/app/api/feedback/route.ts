@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { requireAuth } from '@/lib/apiAuth'
 import { escapeHtml } from '@/lib/fileValidation'
+import { createClient } from '@supabase/supabase-js'
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
 const RATE_LIMIT = 3
@@ -44,30 +45,40 @@ export async function POST(req: NextRequest) {
     const validCategories = ['bug', 'suggestion', 'question', 'other']
     const safeCategory = validCategories.includes(category || '') ? category : 'other'
 
+    // Save to Supabase (primary storage)
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    const { error: dbError } = await supabaseAdmin.from('feedbacks').insert({
+      user_id: user.id,
+      email: user.email || null,
+      category: safeCategory,
+      message: message.trim(),
+    })
+
+    if (dbError) {
+      console.error('[/api/feedback] DB insert failed:', dbError)
+      // Don't fail the request — still try email
+    }
+
+    // Also send email notification (optional)
     const resendApiKey = process.env.RESEND_API_KEY
-    if (!resendApiKey) {
-      // Log but don't fail — avoid breaking UX if email service is down
-      console.error('[/api/feedback] RESEND_API_KEY not set, feedback logged only:', {
-        userId: user.id,
-        email: user.email,
-        category: safeCategory,
-        message,
-      })
-      return NextResponse.json({ ok: true })
-    }
+    if (resendApiKey) {
+      try {
+        const resend = new Resend(resendApiKey)
+        const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_FROM || 'onboarding@resend.dev'
+        const fromAddress = process.env.EMAIL_FROM || 'Tloush <onboarding@resend.dev>'
 
-    const resend = new Resend(resendApiKey)
-    const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_FROM || 'onboarding@resend.dev'
-    const fromAddress = process.env.EMAIL_FROM || 'Tloush <onboarding@resend.dev>'
+        const categoryLabels: Record<string, string> = {
+          bug: '🐛 Bug',
+          suggestion: '💡 Suggestion',
+          question: '❓ Question',
+          other: '💬 Autre',
+        }
 
-    const categoryLabels: Record<string, string> = {
-      bug: '🐛 Bug',
-      suggestion: '💡 Suggestion',
-      question: '❓ Question',
-      other: '💬 Autre',
-    }
-
-    const html = `<!DOCTYPE html>
+        const html = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"></head>
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;margin:0;padding:24px">
   <div style="max-width:560px;margin:0 auto;background:white;border-radius:12px;padding:24px;border:1px solid #e2e8f0">
@@ -83,13 +94,17 @@ export async function POST(req: NextRequest) {
   </div>
 </body></html>`
 
-    await resend.emails.send({
-      from: fromAddress,
-      to: adminEmail,
-      replyTo: user.email || undefined,
-      subject: `[Feedback Tloush] ${categoryLabels[safeCategory || 'other']} — ${user.email || user.id}`,
-      html,
-    })
+        await resend.emails.send({
+          from: fromAddress,
+          to: adminEmail,
+          replyTo: user.email || undefined,
+          subject: `[Feedback Tloush] ${categoryLabels[safeCategory || 'other']} — ${user.email || user.id}`,
+          html,
+        })
+      } catch (emailErr) {
+        console.error('[/api/feedback] Email send failed:', emailErr)
+      }
+    }
 
     return NextResponse.json({ ok: true })
   } catch (err) {
