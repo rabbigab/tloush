@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
-import { Inbox, LayoutDashboard, MessageSquare, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Building2, Briefcase, Home, Landmark, Wrench, ChevronDown, Search, HeartPulse } from 'lucide-react'
+import { Inbox, LayoutDashboard, MessageSquare, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Building2, Briefcase, Home, Landmark, Wrench, ChevronDown, Search, HeartPulse, GitCompareArrows } from 'lucide-react'
 
 // Desktop: core items always visible + "Outils" dropdown
 const CORE_NAV = [
@@ -26,6 +26,7 @@ const TOOLS_NAV = [
   { label: 'Verification employeur', href: '/company-check', icon: Search },
   { label: 'Guide assurances', href: '/assurances', icon: HeartPulse },
   { label: 'Droits olim', href: '/droits-olim', icon: Scale },
+  { label: 'Comparer tlushs', href: '/compare', icon: GitCompareArrows },
 ]
 
 const SECONDARY_NAV = [
@@ -65,11 +66,13 @@ const MOBILE_SECTIONS = [
       { label: 'Verification employeur', href: '/company-check', icon: Search },
       { label: 'Guide assurances', href: '/assurances', icon: HeartPulse },
       { label: 'Droits olim', href: '/droits-olim', icon: Scale },
+      { label: 'Comparer tlushs', href: '/compare', icon: GitCompareArrows },
     ],
   },
   {
     title: 'Autres',
     items: [
+      { label: 'Recherche', href: '/search', icon: Search },
       { label: 'Experts', href: '/experts', icon: Users },
       { label: 'Parrainage', href: '/referral', icon: Gift },
       { label: 'Aide', href: '/help', icon: HelpCircle },
@@ -159,6 +162,19 @@ export default function AppNav() {
                 </div>
               )}
             </div>
+
+            {/* Search icon */}
+            <Link
+              href="/search"
+              className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ${
+                pathname === '/search'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
+                  : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+              title="Recherche"
+            >
+              <Search size={16} />
+            </Link>
 
             {SECONDARY_NAV.map(item => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/')

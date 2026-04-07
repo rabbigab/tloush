@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap, CalendarClock, Check, Wallet, Megaphone } from 'lucide-react'
+import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap, CalendarClock, Check, Wallet, Megaphone, Calculator, Briefcase, Home, Landmark, Building2, GitCompareArrows } from 'lucide-react'
 import { DOC_LABELS, DOC_ICONS } from '@/lib/docTypes'
 import { track } from '@/lib/analytics'
 import type { AppDocument } from '@/types'
@@ -158,6 +158,31 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Outils rapides */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {[
+          { label: 'Salaire brut/net', href: '/calculator', icon: Calculator, color: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600' },
+          { label: 'Freelance', href: '/freelance', icon: Briefcase, color: 'bg-green-50 dark:bg-green-950/30 text-green-600' },
+          { label: 'Mashkanta', href: '/mashkanta', icon: Landmark, color: 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600' },
+          { label: 'Arnona', href: '/arnona', icon: Home, color: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600' },
+          { label: 'Comparer tlushs', href: '/compare', icon: GitCompareArrows, color: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600' },
+          { label: 'Verif. employeur', href: '/company-check', icon: Building2, color: 'bg-teal-50 dark:bg-teal-950/30 text-teal-600' },
+        ].map(tool => (
+          <Link
+            key={tool.href}
+            href={tool.href}
+            className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-md transition-all group"
+          >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tool.color}`}>
+              <tool.icon size={20} />
+            </div>
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              {tool.label}
+            </span>
+          </Link>
+        ))}
       </div>
 
       {/* Budget mensuel */}
