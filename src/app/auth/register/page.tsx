@@ -16,7 +16,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
+  const [redirecting, setRedirecting] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
 
@@ -75,7 +75,6 @@ export default function RegisterPage() {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
         data: {
           phone: phone.trim() || undefined,
           referral_code: refCode || undefined,
@@ -91,29 +90,21 @@ export default function RegisterPage() {
     }
 
     track('signup_completed', { method: 'email' })
-    setSuccess(true)
-    setLoading(false)
+    setRedirecting(true)
+    // Redirect directly to inbox — no email verification needed
+    window.location.href = '/inbox'
   }
 
-  if (success) {
+  if (redirecting) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center px-4">
         <div className="w-full max-w-md text-center">
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
-            <div className="w-16 h-16 bg-brand-50 dark:bg-brand-950/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">📬</span>
-            </div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">Verifiez votre email</h2>
+            <Loader2 size={32} className="animate-spin text-brand-600 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">Compte créé !</h2>
             <p className="text-slate-500 dark:text-slate-400 text-sm">
-              Nous avons envoye un lien de confirmation a <strong className="text-slate-700 dark:text-slate-200">{email}</strong>.
-              Cliquez sur le lien pour activer votre compte.
+              Redirection vers votre espace...
             </p>
-            <Link
-              href="/auth/login"
-              className="mt-6 inline-block text-brand-600 hover:underline text-sm font-medium"
-            >
-              Retour a la connexion
-            </Link>
           </div>
         </div>
       </div>
