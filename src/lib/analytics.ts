@@ -46,6 +46,10 @@ type TloushEvent =
   | "onboarding_started"
   | "onboarding_completed"
   | "onboarding_dismissed"
+  | "onboarding_v2_started"
+  | "onboarding_v2_completed"
+  | "onboarding_v2_dismissed"
+  | "onboarding_v2_step"
   | "feedback_submitted";
 
 export function track(event: TloushEvent, properties?: Record<string, unknown>) {

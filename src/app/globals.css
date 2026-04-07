@@ -111,6 +111,13 @@
 }
 .animate-slide-in-right { animation: slideInRight 0.3s ease both; }
 
+/* Onboarding tooltip */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slideUp { animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
 /* Scrollbar */
 ::-webkit-scrollbar        { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track  { background: #f1f5f9; }

@@ -225,6 +225,7 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
           />
 
           <button
+            id="upload-zone"
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
             className="w-full border-2 border-dashed border-slate-200 dark:border-slate-600 hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-50/30 dark:hover:bg-brand-950/20 rounded-xl p-8 transition-all text-center group disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99]"
