@@ -179,7 +179,11 @@ Donne toujours les informations générales d'abord, puis suggère l'expert si n
       if (actionDoc && actionDoc.action_required && !actionDoc.action_completed_at) {
         await supabase
           .from('documents')
-          .update({ action_completed_at: new Date().toISOString() })
+          .update({
+            action_completed_at: new Date().toISOString(),
+            action_required: false,
+            is_urgent: false,
+          })
           .eq('id', documentId)
           .eq('user_id', user.id)
       }
