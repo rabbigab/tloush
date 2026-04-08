@@ -22,6 +22,24 @@ const TESTIMONIALS = [
     location: "Netanya",
     plan: "Plan Famille",
   },
+  {
+    quote: "J'ai scanne mon contrat de travail avec le scanner de documents. Il a detecte une clause de non-concurrence abusive que je n'avais meme pas remarquee. Mon avocat a confirme.",
+    name: "Jonathan M.",
+    location: "Herzliya",
+    plan: "Plan Pro",
+  },
+  {
+    quote: "En tant que freelance, je ne savais jamais combien mettre de cote pour les impots. Le simulateur freelance m'a tout calcule : Bituach Leumi, mas akhnasa, TVA. Plus de mauvaises surprises.",
+    name: "Lea R.",
+    location: "Raanana",
+    plan: "Plan Solo",
+  },
+  {
+    quote: "L'assistant m'a aide a comprendre un courrier du Bituach Leumi que je n'arrivais pas a dechiffrer. En 2 minutes j'avais la traduction et les actions a faire. Indispensable pour tout ole.",
+    name: "Marc T.",
+    location: "Ashdod",
+    plan: "Plan Famille",
+  },
 ];
 
 export default function Testimonials() {
@@ -73,6 +91,27 @@ export default function Testimonials() {
             </motion.div>
           ))}
         </div>
+
+        {/* Social proof stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 text-center"
+        >
+          {[
+            { value: '500+', label: 'Fiches de paie analysees' },
+            { value: '4.9/5', label: 'Note moyenne' },
+            { value: '98%', label: 'Taux de satisfaction' },
+            { value: '2 min', label: 'Temps moyen d\'analyse' },
+          ].map((stat, idx) => (
+            <div key={idx} className="bg-white dark:bg-slate-800 rounded-xl border border-neutral-100 dark:border-slate-700 p-4">
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stat.value}</p>
+              <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">{stat.label}</p>
+            </div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );

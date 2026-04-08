@@ -37,9 +37,18 @@ const TOOLS_SECTIONS = [
   {
     title: 'Finances',
     items: [
+      { label: 'Mashkanta', href: '/mashkanta', icon: Landmark },
+      { label: 'Arnona', href: '/arnona', icon: Home },
       { label: 'Immobilier', href: '/real-estate', icon: Building },
       { label: 'Smart Saver', href: '/smart-saver', icon: PiggyBank },
       { label: 'Import bancaire', href: '/bank-import', icon: FileSpreadsheet },
+    ],
+  },
+  {
+    title: 'Autres',
+    items: [
+      { label: 'Parrainage', href: '/referral', icon: Gift },
+      { label: 'Aide', href: '/help', icon: HelpCircle },
     ],
   },
 ]
@@ -49,8 +58,6 @@ const ALL_TOOLS = TOOLS_SECTIONS.flatMap(s => s.items)
 
 const SECONDARY_NAV = [
   { label: 'Experts', href: '/experts', icon: Users },
-  { label: 'Parrainage', href: '/referral', icon: Gift },
-  { label: 'Aide', href: '/help', icon: HelpCircle },
   { label: 'Profil', href: '/profile', icon: User },
 ]
 
@@ -92,6 +99,8 @@ const MOBILE_SECTIONS = [
   {
     title: 'Finances',
     items: [
+      { label: 'Mashkanta', href: '/mashkanta', icon: Landmark },
+      { label: 'Arnona', href: '/arnona', icon: Home },
       { label: 'Immobilier', href: '/real-estate', icon: Building },
       { label: 'Smart Saver', href: '/smart-saver', icon: PiggyBank },
       { label: 'Import bancaire', href: '/bank-import', icon: FileSpreadsheet },
