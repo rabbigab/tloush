@@ -26,7 +26,7 @@ const TESTIMONIALS = [
     quote: "J'ai scanne mon contrat de travail avec le scanner de documents. Il a detecte une clause de non-concurrence abusive que je n'avais meme pas remarquee. Mon avocat a confirme.",
     name: "Jonathan M.",
     location: "Herzliya",
-    plan: "Plan Pro",
+    plan: "Plan Solo",
   },
   {
     quote: "En tant que freelance, je ne savais jamais combien mettre de cote pour les impots. Le simulateur freelance m'a tout calcule : Bituach Leumi, mas akhnasa, TVA. Plus de mauvaises surprises.",
