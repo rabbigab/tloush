@@ -39,16 +39,16 @@ export default function Hero() {
           {/* Social proof */}
           <div className="flex flex-wrap justify-center gap-6 sm:gap-10 mb-10">
             <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-extrabold text-brand-600">3 000+</div>
-              <div className="text-xs text-neutral-500 dark:text-slate-400">Francophones en Israel</div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-brand-600">30 sec</div>
+              <div className="text-xs text-neutral-500 dark:text-slate-400">Pour analyser un document</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-extrabold text-brand-600">15 000+</div>
-              <div className="text-xs text-neutral-500 dark:text-slate-400">Documents analyses</div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-brand-600">15+</div>
+              <div className="text-xs text-neutral-500 dark:text-slate-400">Outils integres</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-extrabold text-brand-600">4.8/5</div>
-              <div className="text-xs text-neutral-500 dark:text-slate-400">Note utilisateurs</div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-brand-600">100%</div>
+              <div className="text-xs text-neutral-500 dark:text-slate-400">En francais</div>
             </div>
           </div>
 

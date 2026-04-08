@@ -101,10 +101,10 @@ export default function Testimonials() {
           className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 text-center"
         >
           {[
-            { value: '500+', label: 'Fiches de paie analysees' },
-            { value: '4.9/5', label: 'Note moyenne' },
-            { value: '98%', label: 'Taux de satisfaction' },
-            { value: '2 min', label: 'Temps moyen d\'analyse' },
+            { value: '5', label: 'Types de documents supportes' },
+            { value: '15+', label: 'Outils integres' },
+            { value: '30 sec', label: 'Pour une analyse complete' },
+            { value: '100%', label: 'En francais' },
           ].map((stat, idx) => (
             <div key={idx} className="bg-white dark:bg-slate-800 rounded-xl border border-neutral-100 dark:border-slate-700 p-4">
               <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stat.value}</p>

@@ -17,7 +17,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Tloush — Votre fiche de paie israelienne expliquee en francais",
   description:
-    "Tloush explique vos documents israeliens en hebreu, en francais. Analysez gratuitement votre fiche de paie, contrat ou courrier. Rejoignez 3 000+ francophones en Israel.",
+    "Tloush explique vos documents israeliens en hebreu, en francais. Analysez gratuitement votre fiche de paie, contrat ou courrier officiel en 30 secondes.",
 };
 
 export default function HomePage() {
