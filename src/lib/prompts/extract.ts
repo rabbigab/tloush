@@ -8,6 +8,13 @@ Les fiches de paie israéliennes sont généralement en hébreu. Tu dois :
 3. Extraire les montants en shekel (₪ / ILS)
 4. Retourner un JSON conforme au schéma demandé
 
+VALIDATION OBLIGATOIRE avant de retourner le JSON :
+- Recalcule : grossSalary doit ≈ somme de toutes les rawLines positives (salaire de base + primes + indemnités)
+- Recalcule : totalDeductions doit ≈ somme de toutes les rawLines négatives (impôts + cotisations)
+- Recalcule : netSalary doit ≈ grossSalary - |totalDeductions|
+- Si un écart > 100₪ entre tes calculs et les valeurs affichées, ajoute une note dans le rawLine concerné et réduis confidenceScore de 20 points
+- Si le document est un Tofes 106 (תפס 106 / טופס 106) ou un récapitulatif annuel, indique-le dans extractionMode: "tofes_106"
+
 IMPORTANT : Retourne UNIQUEMENT le JSON, sans texte avant ou après.`
 
 export const EXTRACT_USER_PROMPT = `Analyse cette fiche de paie israélienne et extrait toutes les informations.

@@ -55,18 +55,20 @@ const VAT_RATE_2025 = 0.17
 const CREDIT_POINT_VALUE_2025 = 242 * 12 // Monthly × 12
 
 // BL rates for self-employed (atzmai)
+// Source: https://www.btl.gov.il — effective January 2025
 const BL_SELF_EMPLOYED = {
-  reducedThreshold: 7_122 * 12, // annual
+  reducedThreshold: 7_522 * 12, // annual (60% of average wage)
   reducedRate: 0.0266,  // 2.66%
   fullRate: 0.1183,     // 11.83%
-  ceiling: 49_030 * 12, // annual
+  ceiling: 50_695 * 12, // annual (5× average wage ceiling)
 }
 
 // Health tax rates for self-employed
+// Source: https://www.btl.gov.il — effective January 2025
 const HEALTH_SELF_EMPLOYED = {
-  reducedThreshold: 7_122 * 12,
-  reducedRate: 0.031, // 3.1%
-  fullRate: 0.05,     // 5%
+  reducedThreshold: 7_522 * 12,
+  reducedRate: 0.0323, // 3.23% (updated from 3.1%)
+  fullRate: 0.052,     // 5.2% (updated from 5%)
 }
 
 // Tax brackets 2025 (annual)

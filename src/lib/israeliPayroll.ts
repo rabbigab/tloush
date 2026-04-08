@@ -1,5 +1,5 @@
 /**
- * Israeli Payroll Calculator 2024-2025
+ * Israeli Payroll Calculator — 2025
  *
  * Calculates gross-to-net salary with all mandatory Israeli deductions:
  * - Income tax (mas hachnasa) with progressive brackets
@@ -8,11 +8,14 @@
  * - Pension contributions
  * - Tax credit points (nekudot zikui)
  *
- * Sources: Israel Tax Authority, Bituah Leumi official rates
+ * Sources:
+ *   - Bituah Leumi official rates: https://www.btl.gov.il
+ *   - Israel Tax Authority brackets: https://www.gov.il/he/departments/israel_tax_authority
+ *   - Last verified: January 2025
  */
 
-// ─── 2024-2025 Tax Brackets (Annual Income) ───
-// Updated to reflect 2025 brackets
+// ─── 2025 Tax Brackets (Annual Income) ───
+// Source: Israel Tax Authority, effective January 2025
 const TAX_BRACKETS_2025 = [
   { from: 0, to: 84_120, rate: 0.10 },
   { from: 84_120, to: 120_720, rate: 0.14 },
@@ -28,22 +31,22 @@ const SURTAX_RATE = 0.03
 
 // ─── Bituah Leumi (National Insurance) 2025 ───
 // Employee rates - salaried workers
+// Source: https://www.btl.gov.il — effective January 2025
+// 60% of average wage (שכר ממוצע) = 12,536 × 0.6 = 7,522
 const BL_RATES_2025 = {
-  // Below 60% of average wage (threshold ~7,122₪/month in 2025)
-  reducedThresholdMonthly: 7_122,
-  reducedRate: 0.004, // 0.4% employee NI (reduced bracket)
-  normalRate: 0.07,   // 7% employee NI (normal bracket)
-  // Maximum insurable income
-  maxInsurableMonthly: 49_030,
+  reducedThresholdMonthly: 7_522,  // 60% of average wage 2025
+  reducedRate: 0.004,   // 0.4% employee NI (reduced bracket)
+  normalRate: 0.07,     // 7% employee NI (normal bracket)
+  maxInsurableMonthly: 50_695,     // 5× average wage ceiling 2025
 }
 
 // ─── Health Insurance (Mas Briut) 2025 ───
-// Health tax is collected alongside BL but at separate rates
+// Source: https://www.btl.gov.il — effective January 2025
 const HEALTH_RATES_2025 = {
-  reducedThresholdMonthly: 7_122, // Same threshold as BL
-  reducedRate: 0.031, // 3.1%
-  normalRate: 0.05,   // 5%
-  maxInsurableMonthly: 49_030,
+  reducedThresholdMonthly: 7_522,  // Same threshold as BL
+  reducedRate: 0.0323,  // 3.23% (updated from 3.1%)
+  normalRate: 0.052,    // 5.2% (updated from 5%)
+  maxInsurableMonthly: 50_695,
 }
 
 // ─── Pension 2025 ───
@@ -346,9 +349,10 @@ function calculateBituahLeumiEmployer(monthlyGross: number): number {
   const capped = Math.min(monthlyGross, BL_RATES_2025.maxInsurableMonthly)
   const threshold = BL_RATES_2025.reducedThresholdMonthly
 
-  // Employer rates: NI + health combined
-  const reducedRateEmployer = 0.038 + 0.034  // 3.8% NI + 3.4% health = 7.2%
-  const normalRateEmployer = 0.076 + 0.0345  // 7.6% NI + 3.45% health = 11.05%
+  // Employer rates: NI + health (separate, then combined)
+  // Source: Bituah Leumi employer rates 2025
+  const reducedRateEmployer = 0.0355 + 0.0323  // 3.55% NI + 3.23% health = 6.78%
+  const normalRateEmployer = 0.076 + 0.052     // 7.6% NI + 5.2% health = 12.8%
 
   if (capped <= threshold) {
     return round2(capped * reducedRateEmployer)
