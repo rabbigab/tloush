@@ -122,19 +122,19 @@ export class ComputerUseAgent {
         iteration++
 
         const response = await this.client.messages.create({
-          model: 'claude-sonnet-4-5-20241022',  // Cost-effective for visual tasks
+          model: 'claude-sonnet-4-6',  // Best for Computer Use (72.5% OSWorld)
           max_tokens: 4096,
           system: systemPrompt,
           messages,
           tools: [
             {
-              type: 'computer_20250124' as never,
+              type: 'computer_20251124' as never,
               name: 'computer',
               display_width_px: DISPLAY_WIDTH,
               display_height_px: DISPLAY_HEIGHT,
             } as never,
           ],
-          betas: ['computer-use-2025-01-24'] as never,
+          betas: ['computer-use-2025-11-24'] as never,
         } as never)
 
         // Add assistant response to conversation
