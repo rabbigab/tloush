@@ -1,20 +1,41 @@
 /**
  * Types for the Computer Use agent (Claude + Playwright)
- * Used to automate Israeli service websites on behalf of users
+ * Hybrid model: agent navigates, user assists with auth/CAPTCHA/SMS
  */
 
-export type AgentStatus = 'idle' | 'running' | 'waiting_confirmation' | 'completed' | 'error'
+export type AgentStatus = 'idle' | 'running' | 'waiting_user_input' | 'completed' | 'error'
 
 export interface AgentStep {
   id: string
   timestamp: number
-  type: 'screenshot' | 'action' | 'thinking' | 'confirmation' | 'result' | 'error'
+  type: 'screenshot' | 'action' | 'thinking' | 'user_input_needed' | 'result' | 'error'
   screenshot?: string        // base64 PNG
   action?: string            // Human-readable description of action taken
   thinking?: string          // Claude's reasoning text
-  confirmationPrompt?: string // Question for user before sensitive action
   result?: string            // Final result text
   error?: string
+  userInputRequest?: UserInputRequest  // When agent needs user help
+}
+
+/**
+ * When the agent encounters something it can't handle alone
+ * (CAPTCHA, password, SMS code, confirmation), it pauses
+ * and asks the user via this structure.
+ */
+export interface UserInputRequest {
+  requestId: string
+  inputType: 'captcha' | 'password' | 'sms_code' | 'text_input' | 'confirmation' | 'select'
+  label_fr: string           // "Entrez le code SMS reçu"
+  screenshot?: string        // Current screenshot showing what needs to be solved
+  placeholder?: string
+  sensitive?: boolean        // Mask input (passwords)
+  options?: { value: string; label: string }[]  // For select type
+}
+
+export interface UserInputResponse {
+  requestId: string
+  value: string              // User's input (CAPTCHA solution, password, SMS code)
+  cancelled?: boolean        // User wants to abort
 }
 
 export interface AgentSession {
@@ -25,7 +46,7 @@ export interface AgentSession {
   steps: AgentStep[]
   startedAt: number
   completedAt?: number
-  userInputs: Record<string, string>  // Data the user provided for the workflow
+  userInputs: Record<string, string>
 }
 
 export interface AgentWorkflow {
@@ -36,11 +57,10 @@ export interface AgentWorkflow {
   icon: string
   category: 'utilities' | 'government' | 'banking' | 'health' | 'housing'
   estimatedMinutes: number
-  estimatedCost: string      // e.g. "~2-4₪"
+  estimatedCost: string
   requiredInputs: WorkflowInput[]
   startUrl: string
   systemPrompt: string
-  confirmBeforeSubmit: boolean  // Always ask user before final submission
 }
 
 export interface WorkflowInput {
@@ -50,8 +70,8 @@ export interface WorkflowInput {
   type: 'text' | 'number' | 'date' | 'select' | 'password'
   placeholder?: string
   required: boolean
-  sensitive?: boolean  // Will be masked in UI
-  options?: { value: string; label_fr: string }[]  // For select type
+  sensitive?: boolean
+  options?: { value: string; label_fr: string }[]
 }
 
 // SSE event types streamed to the client
@@ -60,7 +80,7 @@ export type AgentEvent =
   | { type: 'screenshot'; data: string; stepIndex: number }
   | { type: 'thinking'; text: string }
   | { type: 'action'; description: string }
-  | { type: 'confirmation'; prompt: string; stepIndex: number }
+  | { type: 'user_input_needed'; request: UserInputRequest }
   | { type: 'result'; text: string }
   | { type: 'error'; message: string }
   | { type: 'done' }

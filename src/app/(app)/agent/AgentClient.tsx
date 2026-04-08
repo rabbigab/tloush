@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Bot, Play, Square, ChevronLeft, Eye, Zap, Shield, Clock, Loader2, CheckCircle2, AlertTriangle, Monitor } from 'lucide-react'
+import { Bot, Play, Square, ChevronLeft, Eye, Zap, Shield, Clock, Loader2, CheckCircle2, AlertTriangle, Monitor, Send, Lock, MessageSquare, Smartphone } from 'lucide-react'
 import { WORKFLOWS } from '@/lib/computerUse/workflows'
-import type { AgentWorkflow, AgentEvent } from '@/lib/computerUse/types'
+import type { AgentWorkflow, AgentEvent, UserInputRequest } from '@/lib/computerUse/types'
 
 type ViewState = 'list' | 'setup' | 'running' | 'done'
 
@@ -15,10 +15,12 @@ export default function AgentClient() {
   const [currentScreenshot, setCurrentScreenshot] = useState<string | null>(null)
   const [status, setStatus] = useState<string>('idle')
   const [error, setError] = useState<string | null>(null)
+  // User input state (when agent pauses and asks for help)
+  const [pendingInput, setPendingInput] = useState<UserInputRequest | null>(null)
+  const [userInputValue, setUserInputValue] = useState('')
   const abortRef = useRef<AbortController | null>(null)
   const stepsEndRef = useRef<HTMLDivElement>(null)
 
-  // Auto-scroll steps
   useEffect(() => {
     stepsEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [steps])
@@ -29,13 +31,13 @@ export default function AgentClient() {
     setSteps([])
     setCurrentScreenshot(null)
     setError(null)
+    setPendingInput(null)
     setView('setup')
   }
 
   const startAgent = useCallback(async () => {
     if (!selectedWorkflow) return
 
-    // Validate required fields
     for (const input of selectedWorkflow.requiredInputs) {
       if (input.required && !userInputs[input.id]) {
         setError(`Veuillez remplir : ${input.label_fr}`)
@@ -48,6 +50,7 @@ export default function AgentClient() {
     setCurrentScreenshot(null)
     setError(null)
     setStatus('running')
+    setPendingInput(null)
 
     const controller = new AbortController()
     abortRef.current = controller
@@ -56,10 +59,7 @@ export default function AgentClient() {
       const response = await fetch('/api/agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          workflowId: selectedWorkflow.id,
-          userInputs,
-        }),
+        body: JSON.stringify({ workflowId: selectedWorkflow.id, userInputs }),
         signal: controller.signal,
       })
 
@@ -88,7 +88,7 @@ export default function AgentClient() {
             const event: AgentEvent = JSON.parse(line.slice(6))
             handleEvent(event)
           } catch {
-            // Skip malformed events
+            // Skip malformed
           }
         }
       }
@@ -114,6 +114,13 @@ export default function AgentClient() {
       case 'status':
         setStatus(event.status)
         if (event.status === 'completed') setView('done')
+        if (event.status === 'waiting_user_input') {
+          // Agent is paused, waiting for user
+        }
+        break
+      case 'user_input_needed':
+        setPendingInput(event.request)
+        setUserInputValue('')
         break
       case 'error':
         setError(event.message)
@@ -124,7 +131,31 @@ export default function AgentClient() {
     }
   }
 
+  const sendUserInput = async (value: string, cancelled = false) => {
+    if (!pendingInput) return
+
+    try {
+      await fetch('/api/agent/respond', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requestId: pendingInput.requestId,
+          value,
+          cancelled,
+        }),
+      })
+      setPendingInput(null)
+      setUserInputValue('')
+      setStatus('running')
+    } catch {
+      setError('Erreur lors de l\'envoi de la réponse')
+    }
+  }
+
   const stopAgent = () => {
+    if (pendingInput) {
+      sendUserInput('', true)
+    }
     abortRef.current?.abort()
     setStatus('cancelled')
     setView('done')
@@ -138,9 +169,9 @@ export default function AgentClient() {
     setCurrentScreenshot(null)
     setError(null)
     setStatus('idle')
+    setPendingInput(null)
   }
 
-  // Categories for the workflow list
   const categories = [
     { id: 'utilities' as const, name: 'Factures & Services', icon: '⚡' },
     { id: 'government' as const, name: 'Gouvernement & Administration', icon: '🏛️' },
@@ -170,7 +201,7 @@ export default function AgentClient() {
           </span>
         </div>
         <p className="text-gray-600 dark:text-gray-400">
-          L&apos;IA navigue sur les sites israéliens pour vous. Vous voyez tout en temps réel.
+          L&apos;IA navigue les sites israéliens en hébreu pour vous. Vous intervenez uniquement pour les mots de passe et vérifications.
         </p>
       </div>
 
@@ -180,14 +211,14 @@ export default function AgentClient() {
           {/* How it works */}
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl p-6 border border-blue-100 dark:border-blue-900">
             <h2 className="font-semibold mb-4 text-blue-900 dark:text-blue-100">Comment ca marche ?</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               <div className="flex items-start gap-3">
                 <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg shrink-0">
                   <Monitor className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <p className="font-medium text-sm">1. Choisissez une tâche</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">Sélectionnez le service que vous voulez utiliser</p>
+                  <p className="font-medium text-sm">1. Choisissez</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Sélectionnez la tâche</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -195,23 +226,31 @@ export default function AgentClient() {
                   <Eye className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <p className="font-medium text-sm">2. L&apos;IA navigue pour vous</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">Claude lit l&apos;hébreu et remplit les formulaires</p>
+                  <p className="font-medium text-sm">2. L&apos;IA navigue</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Claude lit l&apos;hébreu et clique</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg shrink-0">
-                  <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <Lock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <p className="font-medium text-sm">3. Vous validez</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">Rien n&apos;est soumis sans votre accord</p>
+                  <p className="font-medium text-sm">3. Vous aidez</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Mots de passe, SMS, CAPTCHA</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg shrink-0">
+                  <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <p className="font-medium text-sm">4. Terminé</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Résumé en français</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Workflows by category */}
           {categories.map(cat => {
             const workflows = WORKFLOWS.filter(w => w.category === cat.id)
             if (workflows.length === 0) return null
@@ -234,12 +273,10 @@ export default function AgentClient() {
                           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{workflow.description_fr}</p>
                           <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
                             <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              ~{workflow.estimatedMinutes} min
+                              <Clock className="w-3 h-3" /> ~{workflow.estimatedMinutes} min
                             </span>
                             <span className="flex items-center gap-1">
-                              <Zap className="w-3 h-3" />
-                              {workflow.estimatedCost}
+                              <Zap className="w-3 h-3" /> {workflow.estimatedCost}
                             </span>
                           </div>
                         </div>
@@ -305,9 +342,9 @@ export default function AgentClient() {
               </div>
             )}
 
-            <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-700 dark:text-amber-400 mb-4">
+            <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-700 dark:text-blue-400 mb-4">
               <Shield className="w-5 h-5 shrink-0" />
-              <p>Vos données sont utilisées uniquement pour cette tâche et ne sont pas stockées.</p>
+              <p>L&apos;agent ne stocke pas vos mots de passe. Vous les saisissez vous-même quand le site le demande.</p>
             </div>
 
             <button
@@ -331,21 +368,23 @@ export default function AgentClient() {
                 <Monitor className="w-4 h-4" />
                 Ecran du navigateur
               </span>
-              {view === 'running' && (
-                <button
-                  onClick={stopAgent}
-                  className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg flex items-center gap-1 transition"
-                >
-                  <Square className="w-3 h-3" />
-                  Arrêter
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                <StatusBadge status={status} />
+                {view === 'running' && (
+                  <button
+                    onClick={stopAgent}
+                    className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg flex items-center gap-1 transition"
+                  >
+                    <Square className="w-3 h-3" /> Arrêter
+                  </button>
+                )}
+              </div>
             </div>
-            <div className="aspect-video bg-gray-950 flex items-center justify-center">
+            <div className="aspect-video bg-gray-950 flex items-center justify-center relative">
               {currentScreenshot ? (
                 <img
                   src={`data:image/png;base64,${currentScreenshot}`}
-                  alt="Capture d'écran du navigateur"
+                  alt="Capture du navigateur"
                   className="w-full h-full object-contain"
                 />
               ) : (
@@ -358,9 +397,24 @@ export default function AgentClient() {
                   ) : (
                     <>
                       <Monitor className="w-8 h-8" />
-                      <span>En attente de la capture</span>
+                      <span>En attente</span>
                     </>
                   )}
+                </div>
+              )}
+
+              {/* Overlay when waiting for user input */}
+              {pendingInput && (
+                <div className="absolute inset-0 bg-black/50 flex items-end justify-center p-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-4 w-full max-w-md shadow-2xl">
+                    <UserInputPanel
+                      request={pendingInput}
+                      value={userInputValue}
+                      onChange={setUserInputValue}
+                      onSubmit={(val) => sendUserInput(val)}
+                      onCancel={() => sendUserInput('', true)}
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -368,12 +422,11 @@ export default function AgentClient() {
 
           {/* Steps panel */}
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col max-h-[600px]">
-            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
               <span className="font-medium flex items-center gap-2">
                 <Bot className="w-4 h-4 text-blue-600" />
                 Activité de l&apos;agent
               </span>
-              <StatusBadge status={status} />
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {steps.filter(s => s.type !== 'screenshot' && s.type !== 'status' && s.type !== 'done').map((step, i) => (
@@ -387,6 +440,19 @@ export default function AgentClient() {
               )}
               <div ref={stepsEndRef} />
             </div>
+
+            {/* User input bar (also shown in steps panel for mobile) */}
+            {pendingInput && (
+              <div className="p-4 border-t border-gray-200 dark:border-gray-700 lg:hidden">
+                <UserInputPanel
+                  request={pendingInput}
+                  value={userInputValue}
+                  onChange={setUserInputValue}
+                  onSubmit={(val) => sendUserInput(val)}
+                  onCancel={() => sendUserInput('', true)}
+                />
+              </div>
+            )}
 
             {view === 'done' && (
               <div className="p-4 border-t border-gray-200 dark:border-gray-700">
@@ -405,19 +471,110 @@ export default function AgentClient() {
   )
 }
 
+// ─── Sub-components ───
+
 function StatusBadge({ status }: { status: string }) {
-  const config = {
+  const config: Record<string, { color: string; label: string }> = {
     idle: { color: 'bg-gray-100 text-gray-600', label: 'En attente' },
     running: { color: 'bg-blue-100 text-blue-700', label: 'En cours...' },
+    waiting_user_input: { color: 'bg-amber-100 text-amber-700', label: 'Votre aide requise' },
     completed: { color: 'bg-green-100 text-green-700', label: 'Terminé' },
     error: { color: 'bg-red-100 text-red-700', label: 'Erreur' },
     cancelled: { color: 'bg-gray-100 text-gray-600', label: 'Annulé' },
-  }[status] || { color: 'bg-gray-100 text-gray-600', label: status }
+  }
+  const { color, label } = config[status] || config.idle
 
   return (
-    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
-      {config.label}
+    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${color}`}>
+      {status === 'waiting_user_input' && <span className="inline-block w-2 h-2 bg-amber-500 rounded-full mr-1 animate-pulse" />}
+      {label}
     </span>
+  )
+}
+
+function UserInputPanel({
+  request,
+  value,
+  onChange,
+  onSubmit,
+  onCancel,
+}: {
+  request: UserInputRequest
+  value: string
+  onChange: (v: string) => void
+  onSubmit: (v: string) => void
+  onCancel: () => void
+}) {
+  const icons: Record<string, typeof Lock> = {
+    captcha: Eye,
+    password: Lock,
+    sms_code: Smartphone,
+    text_input: MessageSquare,
+    confirmation: Shield,
+  }
+  const Icon = icons[request.inputType] || MessageSquare
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (request.inputType === 'confirmation') {
+      onSubmit('confirmed')
+    } else if (value.trim()) {
+      onSubmit(value)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <div className="flex items-center gap-2">
+        <div className="p-1.5 bg-amber-100 dark:bg-amber-900 rounded-lg">
+          <Icon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+        </div>
+        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{request.label_fr}</p>
+      </div>
+
+      {request.inputType === 'confirmation' ? (
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            className="flex-1 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition"
+          >
+            Confirmer
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-sm font-medium rounded-lg transition"
+          >
+            Annuler
+          </button>
+        </div>
+      ) : (
+        <div className="flex gap-2">
+          <input
+            type={request.sensitive ? 'password' : 'text'}
+            value={value}
+            onChange={e => onChange(e.target.value)}
+            placeholder={request.placeholder || ''}
+            autoFocus
+            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+          <button
+            type="submit"
+            disabled={!value.trim()}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:dark:bg-gray-700 text-white rounded-lg transition"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-3 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-sm rounded-lg transition"
+          >
+            Annuler
+          </button>
+        </div>
+      )}
+    </form>
   )
 }
 
@@ -437,11 +594,11 @@ function StepItem({ event }: { event: AgentEvent }) {
           <p className="text-gray-700 dark:text-gray-300">{event.description}</p>
         </div>
       )
-    case 'confirmation':
+    case 'user_input_needed':
       return (
-        <div className="flex items-start gap-2 text-sm p-2 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
-          <Shield className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
-          <p className="text-amber-700 dark:text-amber-400">{event.prompt}</p>
+        <div className="flex items-start gap-2 text-sm p-2 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800 animate-pulse">
+          <Lock className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+          <p className="text-amber-700 dark:text-amber-400 font-medium">{event.request.label_fr}</p>
         </div>
       )
     case 'result':

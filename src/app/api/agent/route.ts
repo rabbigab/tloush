@@ -1,11 +1,8 @@
 /**
- * POST /api/agent — Start a Computer Use agent session
+ * POST /api/agent — Start a Computer Use agent session (SSE stream)
  *
- * Streams SSE events as Claude navigates an Israeli website.
- * Each event includes screenshots, actions, and Claude's reasoning.
- *
- * Body: { workflowId: string, userInputs: Record<string, string> }
- * Response: SSE stream of AgentEvent objects
+ * The agent streams events. When it needs user input (CAPTCHA, password, SMS),
+ * it sends 'user_input_needed' and pauses. The client responds via /api/agent/respond.
  */
 
 import { createServerClient } from '@supabase/ssr'
@@ -13,13 +10,13 @@ import { cookies } from 'next/headers'
 import { NextRequest } from 'next/server'
 import { ComputerUseAgent } from '@/lib/computerUse/agent'
 import { getWorkflow, resolveStartUrl } from '@/lib/computerUse/workflows'
-import type { AgentStep } from '@/lib/computerUse/types'
+import { waitForUserInput } from '@/lib/computerUse/sessionStore'
+import type { AgentStep, UserInputRequest } from '@/lib/computerUse/types'
 
-export const maxDuration = 300 // 5 minutes max for Vercel Pro
+export const maxDuration = 300
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
-  // Auth check
   const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,7 +24,7 @@ export async function POST(request: NextRequest) {
     {
       cookies: {
         getAll() { return cookieStore.getAll() },
-        setAll() { /* read-only in route handlers */ },
+        setAll() { /* read-only */ },
       },
     }
   )
@@ -37,7 +34,6 @@ export async function POST(request: NextRequest) {
     return new Response(JSON.stringify({ error: 'Non autorisé' }), { status: 401 })
   }
 
-  // Parse request
   const body = await request.json()
   const { workflowId, userInputs } = body as {
     workflowId: string
@@ -53,7 +49,6 @@ export async function POST(request: NextRequest) {
     return new Response(JSON.stringify({ error: `Workflow "${workflowId}" non trouvé` }), { status: 404 })
   }
 
-  // Validate required inputs
   for (const input of workflow.requiredInputs) {
     if (input.required && !userInputs[input.id]) {
       return new Response(
@@ -63,16 +58,13 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Check API key
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
     return new Response(JSON.stringify({ error: 'ANTHROPIC_API_KEY non configurée' }), { status: 500 })
   }
 
-  // Resolve the start URL based on user inputs
   const resolvedWorkflow = { ...workflow, startUrl: resolveStartUrl(workflow, userInputs) }
 
-  // Create SSE stream
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
     async start(controller) {
@@ -80,7 +72,7 @@ export async function POST(request: NextRequest) {
         try {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`))
         } catch {
-          // Stream might be closed
+          // Stream closed
         }
       }
 
@@ -92,28 +84,15 @@ export async function POST(request: NextRequest) {
         await agent.run(
           resolvedWorkflow,
           userInputs,
-          // onStep callback — stream each step to the client
           async (step: AgentStep) => {
             if (step.screenshot) {
-              // Send screenshot separately (can be large)
-              sendEvent({
-                type: 'screenshot',
-                data: step.screenshot,
-                stepIndex: parseInt(step.id.split('-')[1]) || 0,
-              })
+              sendEvent({ type: 'screenshot', data: step.screenshot, stepIndex: parseInt(step.id.split('-')[1]) || 0 })
             }
             if (step.thinking) {
               sendEvent({ type: 'thinking', text: step.thinking })
             }
             if (step.action) {
               sendEvent({ type: 'action', description: step.action })
-            }
-            if (step.confirmationPrompt) {
-              sendEvent({
-                type: 'confirmation',
-                prompt: step.confirmationPrompt,
-                stepIndex: parseInt(step.id.split('-')[1]) || 0,
-              })
             }
             if (step.result) {
               sendEvent({ type: 'result', text: step.result })
@@ -122,17 +101,10 @@ export async function POST(request: NextRequest) {
               sendEvent({ type: 'error', message: step.error })
             }
           },
-          // onConfirm callback — for MVP, auto-confirm non-payment actions
-          // In production, this would pause and wait for user input via WebSocket
-          async (prompt: string) => {
-            sendEvent({
-              type: 'confirmation',
-              prompt,
-              stepIndex: 0,
-            })
-            // For MVP: auto-confirm read-only actions, reject payment actions
-            const isPayment = /paie|pay|submit|soumett/i.test(prompt)
-            return !isPayment
+          async (inputRequest: UserInputRequest) => {
+            sendEvent({ type: 'status', status: 'waiting_user_input' })
+            sendEvent({ type: 'user_input_needed', request: inputRequest })
+            return waitForUserInput(inputRequest.requestId)
           },
         )
 
