@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
-import { Inbox, LayoutDashboard, MessageSquare, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Building2, Briefcase, Landmark, Wrench, ChevronDown, Search, HeartPulse, GitCompareArrows, FileSpreadsheet } from 'lucide-react'
+import { Inbox, LayoutDashboard, MessageSquare, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Building2, Briefcase, Landmark, Wrench, ChevronDown, Search, HeartPulse, GitCompareArrows, FileSpreadsheet, Bot } from 'lucide-react'
 
 // Desktop: core items always visible + "Outils" dropdown
 const CORE_NAV = [
@@ -12,6 +12,7 @@ const CORE_NAV = [
   { label: 'Dossiers', href: '/folders', icon: Folder },
   { label: 'Depenses', href: '/expenses', icon: Wallet },
   { label: 'Assistant', href: '/assistant', icon: MessageSquare },
+  { label: 'Agent', href: '/agent', icon: Bot },
 ]
 
 // Grouped under "Outils" dropdown on desktop — organized by category

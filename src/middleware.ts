@@ -23,6 +23,7 @@ const PROTECTED_ROUTES = [
   '/mashkanta',
   '/assurances',
   '/bank-import',
+  '/agent',
 ]
 
 // Routes publiques qui n'ont pas besoin du middleware auth
