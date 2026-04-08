@@ -8,7 +8,6 @@ import {
   TrendingDown,
   Baby,
   Briefcase,
-  Home,
   Landmark,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -71,16 +70,6 @@ const CALCULATORS = [
     color: "green",
   },
   {
-    href: "/arnona",
-    icon: Home,
-    emoji: "🏠",
-    title: "Simulateur Arnona",
-    description:
-      "Estimez votre taxe municipale (arnona) selon votre ville, surface et réductions possibles.",
-    badge: "Nouveau",
-    color: "orange",
-  },
-  {
     href: "/mashkanta",
     icon: Landmark,
     emoji: "🏗️",
@@ -105,8 +94,8 @@ export default function CalcuateursPage() {
             Calculateurs
           </h1>
           <p className="text-neutral-500 max-w-xl mx-auto text-sm">
-            Des outils de calcul précis, basés sur la législation israélienne en
-            vigueur en 2024. Gratuits et sans inscription.
+            Des outils de calcul basés sur la législation israélienne en
+            vigueur en 2025. Gratuits et sans inscription.
           </p>
         </div>
 

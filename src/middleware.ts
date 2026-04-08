@@ -20,12 +20,9 @@ const PROTECTED_ROUTES = [
   '/letters',
   '/bituach-leumi',
   '/freelance',
-  '/arnona',
   '/mashkanta',
   '/assurances',
-  '/smart-saver',
   '/bank-import',
-  '/real-estate',
 ]
 
 // Routes publiques qui n'ont pas besoin du middleware auth

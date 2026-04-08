@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
-import { Inbox, LayoutDashboard, MessageSquare, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Building2, Briefcase, Home, Landmark, Wrench, ChevronDown, Search, HeartPulse, GitCompareArrows, PiggyBank, FileSpreadsheet, Building } from 'lucide-react'
+import { Inbox, LayoutDashboard, MessageSquare, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Building2, Briefcase, Landmark, Wrench, ChevronDown, Search, HeartPulse, GitCompareArrows, FileSpreadsheet } from 'lucide-react'
 
 // Desktop: core items always visible + "Outils" dropdown
 const CORE_NAV = [
@@ -38,9 +38,6 @@ const TOOLS_SECTIONS = [
     title: 'Finances',
     items: [
       { label: 'Mashkanta', href: '/mashkanta', icon: Landmark },
-      { label: 'Arnona', href: '/arnona', icon: Home },
-      { label: 'Immobilier', href: '/real-estate', icon: Building },
-      { label: 'Smart Saver', href: '/smart-saver', icon: PiggyBank },
       { label: 'Import bancaire', href: '/bank-import', icon: FileSpreadsheet },
     ],
   },
@@ -100,9 +97,6 @@ const MOBILE_SECTIONS = [
     title: 'Finances',
     items: [
       { label: 'Mashkanta', href: '/mashkanta', icon: Landmark },
-      { label: 'Arnona', href: '/arnona', icon: Home },
-      { label: 'Immobilier', href: '/real-estate', icon: Building },
-      { label: 'Smart Saver', href: '/smart-saver', icon: PiggyBank },
       { label: 'Import bancaire', href: '/bank-import', icon: FileSpreadsheet },
     ],
   },

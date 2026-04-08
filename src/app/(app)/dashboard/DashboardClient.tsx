@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap, CalendarClock, Check, Wallet, Megaphone, Calculator, Briefcase, Home, Landmark, GitCompareArrows, PiggyBank } from 'lucide-react'
+import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap, CalendarClock, Check, Wallet, Megaphone, Calculator, Briefcase, Landmark, GitCompareArrows, FileSpreadsheet } from 'lucide-react'
 import { DOC_LABELS, DOC_ICONS } from '@/lib/docTypes'
 import { track } from '@/lib/analytics'
 import type { AppDocument } from '@/types'
@@ -168,9 +168,9 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
           { label: 'Salaire brut/net', href: '/calculator', icon: Calculator, color: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600' },
           { label: 'Freelance', href: '/freelance', icon: Briefcase, color: 'bg-green-50 dark:bg-green-950/30 text-green-600' },
           { label: 'Mashkanta', href: '/mashkanta', icon: Landmark, color: 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600' },
-          { label: 'Arnona', href: '/arnona', icon: Home, color: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600' },
+          { label: 'Mes droits', href: '/rights-check', icon: Shield, color: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600' },
           { label: 'Comparer tlushs', href: '/compare', icon: GitCompareArrows, color: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600' },
-          { label: 'Smart Saver', href: '/smart-saver', icon: PiggyBank, color: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600' },
+          { label: 'Import bancaire', href: '/bank-import', icon: FileSpreadsheet, color: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600' },
         ].map(tool => (
           <Link
             key={tool.href}
