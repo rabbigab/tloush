@@ -4,6 +4,8 @@ import { PROVIDER_CATEGORIES, getCategoryBySlug } from '@/types/directory'
 import type { Provider } from '@/types/directory'
 import type { Metadata } from 'next'
 import ProviderCard from '@/components/directory/ProviderCard'
+import { CategoryListJsonLd, FAQJsonLd } from '@/components/directory/ProviderSchema'
+import { CATEGORY_CONTENT } from '@/data/directory-content'
 import Link from 'next/link'
 import { ArrowLeft, ShieldCheck } from 'lucide-react'
 
@@ -43,6 +45,7 @@ export default async function CategoryPage({
   if (!category) notFound()
 
   const CategoryIcon = category.icon
+  const content = CATEGORY_CONTENT[categorie as keyof typeof CATEGORY_CONTENT]
 
   const { data: providers } = await supabaseAdmin
     .from('providers')
@@ -109,6 +112,67 @@ export default async function CategoryPage({
           </Link>
         </div>
       )}
+
+      {/* Editorial content + FAQ */}
+      {content && (
+        <div className="mt-12 space-y-8">
+          {/* Guide */}
+          <div>
+            <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-4">{content.guideTitle}</h2>
+            <p className="text-sm text-neutral-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">{content.guideText}</p>
+          </div>
+
+          {/* Price range */}
+          {content.priceRange && (
+            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-5">
+              <h3 className="font-semibold text-amber-800 dark:text-amber-300 mb-2">Fourchette de prix en Israel</h3>
+              <p className="text-sm text-amber-700 dark:text-amber-400">{content.priceRange}</p>
+            </div>
+          )}
+
+          {/* Hebrew glossary */}
+          {content.glossary && content.glossary.length > 0 && (
+            <div>
+              <h3 className="font-semibold text-neutral-900 dark:text-white mb-3">Vocabulaire hebreu utile</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {content.glossary.map(g => (
+                  <div key={g.hebrew} className="bg-neutral-50 dark:bg-slate-800 rounded-lg p-3 text-sm">
+                    <span className="font-medium text-neutral-700 dark:text-slate-300">{g.french}</span>
+                    <span className="block text-neutral-400 text-xs mt-0.5">{g.hebrew}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* FAQ */}
+          {content.faq && content.faq.length > 0 && (
+            <div>
+              <h3 className="font-semibold text-neutral-900 dark:text-white mb-4">Questions frequentes</h3>
+              <div className="space-y-3">
+                {content.faq.map((q, i) => (
+                  <details key={i} className="group border border-neutral-200 dark:border-slate-700 rounded-xl">
+                    <summary className="px-4 py-3 text-sm font-medium text-neutral-800 dark:text-slate-200 cursor-pointer list-none flex justify-between items-center">
+                      {q.question}
+                      <span className="text-neutral-400 group-open:rotate-180 transition-transform">▾</span>
+                    </summary>
+                    <p className="px-4 pb-3 text-sm text-neutral-500 dark:text-slate-400">{q.answer}</p>
+                  </details>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* JSON-LD Schemas */}
+      {(providers || []).length > 0 && (
+        <CategoryListJsonLd
+          categoryLabel={category.label}
+          providers={(providers as Provider[]).map(p => ({ first_name: p.first_name, last_name: p.last_name, slug: p.slug, category: p.category, average_rating: p.average_rating }))}
+        />
+      )}
+      {content?.faq && <FAQJsonLd questions={content.faq} />}
 
       {/* Disclaimer */}
       <div className="mt-12 bg-neutral-50 dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-2xl p-5 text-xs text-neutral-500 dark:text-slate-400 leading-relaxed">

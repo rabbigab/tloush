@@ -4,6 +4,7 @@ import { getCategoryBySlug } from '@/types/directory'
 import type { ProviderReviewDisplay } from '@/types/directory'
 import type { Metadata } from 'next'
 import DirectoryProviderClient from './DirectoryProviderClient'
+import { ProviderJsonLd } from '@/components/directory/ProviderSchema'
 
 export const revalidate = 1800
 
@@ -77,12 +78,19 @@ export default async function ProviderPage({
     .gte('created_at', monthStart.toISOString())
 
   return (
-    <DirectoryProviderClient
-      provider={provider}
-      reviews={(reviews || []) as ProviderReviewDisplay[]}
-      contactsThisMonth={contactsThisMonth || 0}
-      categoryLabel={category.label}
-      categorySlug={category.slug}
-    />
+    <>
+      <ProviderJsonLd
+        provider={provider}
+        categoryLabel={category.label}
+        reviews={(reviews || []).map(r => ({ rating: r.rating, comment: r.comment, created_at: r.created_at }))}
+      />
+      <DirectoryProviderClient
+        provider={provider}
+        reviews={(reviews || []) as ProviderReviewDisplay[]}
+        contactsThisMonth={contactsThisMonth || 0}
+        categoryLabel={category.label}
+        categorySlug={category.slug}
+      />
+    </>
   )
 }

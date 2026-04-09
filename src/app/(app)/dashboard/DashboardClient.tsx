@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
+import DirectoryWidget from '@/components/directory/DirectoryWidget'
 import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap, CalendarClock, Check, Wallet, Megaphone, Calculator, Briefcase, Landmark, GitCompareArrows, FileSpreadsheet } from 'lucide-react'
 import { DOC_LABELS, DOC_ICONS } from '@/lib/docTypes'
 import { track } from '@/lib/analytics'
@@ -575,6 +576,9 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
       </div>
 
       </>)}
+
+      {/* Tloush Recommande widget */}
+      <DirectoryWidget />
 
     </div>
   )

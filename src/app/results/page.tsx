@@ -10,6 +10,7 @@ import WarningCard from "@/components/report/WarningCard";
 import ReportSection from "@/components/report/ReportSection";
 import EmployerQuestionsCard from "@/components/report/EmployerQuestionsCard";
 import DisclaimerBlock from "@/components/shared/DisclaimerBlock";
+import DirectoryCrossPromo from "@/components/directory/DirectoryCrossPromo";
 import { useAnalysisStore } from "@/store/analysisStore";
 import { CheckCircle2, ArrowLeft, FileText, RefreshCw, Clock } from "lucide-react";
 import type { FinalReport } from "@/types";
@@ -189,6 +190,10 @@ export default function ResultsPage() {
             </div>
           </Section>
         )}
+
+        <div className="print:hidden">
+          <DirectoryCrossPromo context="general" />
+        </div>
 
         <Section id="disclaimer" emoji="ℹ️" title="Remarque importante">
           <DisclaimerBlock text={disclaimer} />
