@@ -8,8 +8,15 @@ const supabaseAdmin = createClient(
 )
 
 export async function POST(req: NextRequest) {
-  const body = await req.json()
-  const { token, rating, comment } = body
+  let body: Record<string, unknown>
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Corps de requete invalide' }, { status: 400 })
+  }
+  const token = body.token as string | undefined
+  const rating = body.rating as number | undefined
+  const comment = body.comment as string | undefined
 
   if (!token || !rating || rating < 1 || rating > 5) {
     return NextResponse.json({ error: 'Token et note (1-5) requis' }, { status: 400 })
@@ -18,7 +25,7 @@ export async function POST(req: NextRequest) {
   // Verify the signed review token
   let payload: { userId: string; providerId: string }
   try {
-    payload = await verifyReviewToken(token)
+    payload = await verifyReviewToken(token as string)
   } catch {
     return NextResponse.json({ error: 'Lien expire ou invalide. Demandez un nouveau lien.' }, { status: 401 })
   }

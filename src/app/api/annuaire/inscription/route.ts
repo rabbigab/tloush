@@ -7,9 +7,24 @@ const supabaseAdmin = createClient(
 )
 
 export async function POST(req: NextRequest) {
-  const body = await req.json()
+  let body: Record<string, unknown>
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Corps de requete invalide' }, { status: 400 })
+  }
 
-  const { first_name, last_name, phone, email, category, specialties, service_areas, description, osek_number, reference_name, reference_phone } = body
+  const first_name = body.first_name as string | undefined
+  const last_name = body.last_name as string | undefined
+  const phone = body.phone as string | undefined
+  const email = body.email as string | undefined
+  const category = body.category as string | undefined
+  const specialties = body.specialties as string[] | undefined
+  const service_areas = body.service_areas as string[] | undefined
+  const description = body.description as string | undefined
+  const osek_number = body.osek_number as string | undefined
+  const reference_name = body.reference_name as string | undefined
+  const reference_phone = body.reference_phone as string | undefined
 
   // Validation minimale
   if (!first_name?.trim() || !last_name?.trim() || !phone?.trim() || !category?.trim()) {
