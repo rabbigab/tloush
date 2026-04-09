@@ -153,7 +153,79 @@ export default function AdminDashboard() {
   const [planFilter, setPlanFilter] = useState<string>('all')
   const [sortBy, setSortBy] = useState<'created_at' | 'last_sign_in_at' | 'total_documents'>('created_at')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
-  const [tab, setTab] = useState<'overview' | 'users' | 'documents' | 'feedbacks'>('overview')
+  const [tab, setTab] = useState<'overview' | 'users' | 'documents' | 'feedbacks' | 'prestataires'>('overview')
+
+  // Prestataires state
+  const [providers, setProviders] = useState<any[]>([])
+  const [providerApplications, setProviderApplications] = useState<any[]>([])
+  const [pendingReviews, setPendingReviews] = useState<any[]>([])
+  const [providerTab, setProviderTab] = useState<'active' | 'pending' | 'applications' | 'reviews'>('active')
+  const [providerLoading, setProviderLoading] = useState(false)
+  const [showProviderForm, setShowProviderForm] = useState(false)
+  const [providerForm, setProviderForm] = useState({
+    first_name: '', last_name: '', phone: '', email: '', slug: '',
+    category: 'plombier', specialties: '', service_areas: '',
+    languages: 'fr,he', description: '', years_experience: '',
+    osek_number: '', is_referenced: false, status: 'active',
+  })
+
+  const fetchProviders = useCallback(async () => {
+    setProviderLoading(true)
+    try {
+      const [activeRes, pendingRes] = await Promise.all([
+        fetch('/api/admin/prestataires?status=active'),
+        fetch('/api/admin/prestataires?status=pending'),
+      ])
+      if (activeRes.ok) {
+        const data = await activeRes.json()
+        setProviders(data.providers || [])
+      }
+      if (pendingRes.ok) {
+        const data = await pendingRes.json()
+        setProviderApplications(data.providers || [])
+      }
+    } catch { /* ignore */ }
+    setProviderLoading(false)
+  }, [])
+
+  useEffect(() => {
+    if (tab === 'prestataires') fetchProviders()
+  }, [tab, fetchProviders])
+
+  const handleSaveProvider = async () => {
+    const body = {
+      ...providerForm,
+      specialties: providerForm.specialties.split(',').map(s => s.trim()).filter(Boolean),
+      service_areas: providerForm.service_areas.split(',').map(s => s.trim()).filter(Boolean),
+      languages: providerForm.languages.split(',').map(s => s.trim()).filter(Boolean),
+      years_experience: providerForm.years_experience ? parseInt(providerForm.years_experience) : null,
+    }
+    const res = await fetch('/api/admin/prestataires', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    if (res.ok) {
+      setShowProviderForm(false)
+      setProviderForm({ first_name: '', last_name: '', phone: '', email: '', slug: '', category: 'plombier', specialties: '', service_areas: '', languages: 'fr,he', description: '', years_experience: '', osek_number: '', is_referenced: false, status: 'active' })
+      fetchProviders()
+    }
+  }
+
+  const handleDelistProvider = async (id: string) => {
+    if (!confirm('Delister ce prestataire ?')) return
+    await fetch(`/api/admin/prestataires/${id}`, { method: 'DELETE' })
+    fetchProviders()
+  }
+
+  const handleToggleReferenced = async (id: string, current: boolean) => {
+    await fetch(`/api/admin/prestataires/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_referenced: !current }),
+    })
+    fetchProviders()
+  }
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
@@ -497,6 +569,10 @@ export default function AdminDashboard() {
               </span>
             )}
           </button>
+          <button onClick={() => setTab('prestataires')} className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === 'prestataires' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
+            <UserCheck size={14} className="inline mr-1.5" />
+            Prestataires ({providers.length})
+          </button>
         </div>
 
         {/* Overview Tab */}
@@ -830,6 +906,145 @@ export default function AdminDashboard() {
                     </div>
                   )
                 })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Prestataires Tab */}
+        {tab === 'prestataires' && (
+          <div className="space-y-4">
+            {/* Sub-tabs */}
+            <div className="flex gap-2 flex-wrap">
+              {([
+                { key: 'active' as const, label: `Actifs (${providers.length})` },
+                { key: 'pending' as const, label: `En attente (${providerApplications.length})` },
+              ]).map(t => (
+                <button
+                  key={t.key}
+                  onClick={() => setProviderTab(t.key)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${providerTab === t.key ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400 hover:bg-slate-200'}`}
+                >
+                  {t.label}
+                </button>
+              ))}
+              <button
+                onClick={() => setShowProviderForm(!showProviderForm)}
+                className="ml-auto px-3 py-1.5 text-xs font-medium rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
+              >
+                + Ajouter un prestataire
+              </button>
+            </div>
+
+            {/* Add provider form */}
+            {showProviderForm && (
+              <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">Nouveau prestataire</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <input placeholder="Prenom *" value={providerForm.first_name} onChange={e => setProviderForm(f => ({ ...f, first_name: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" />
+                  <input placeholder="Nom *" value={providerForm.last_name} onChange={e => setProviderForm(f => ({ ...f, last_name: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" />
+                  <input placeholder="Telephone *" value={providerForm.phone} onChange={e => setProviderForm(f => ({ ...f, phone: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" />
+                  <input placeholder="Email" value={providerForm.email} onChange={e => setProviderForm(f => ({ ...f, email: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" />
+                  <input placeholder="Slug * (ex: david-m)" value={providerForm.slug} onChange={e => setProviderForm(f => ({ ...f, slug: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" />
+                  <select value={providerForm.category} onChange={e => setProviderForm(f => ({ ...f, category: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm">
+                    <option value="plombier">Plombier</option>
+                    <option value="electricien">Electricien</option>
+                    <option value="peintre">Peintre</option>
+                    <option value="serrurier">Serrurier</option>
+                    <option value="climatisation">Climatisation</option>
+                  </select>
+                  <input placeholder="Specialites (virgules)" value={providerForm.specialties} onChange={e => setProviderForm(f => ({ ...f, specialties: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" />
+                  <input placeholder="Villes (virgules)" value={providerForm.service_areas} onChange={e => setProviderForm(f => ({ ...f, service_areas: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" />
+                  <input placeholder="Langues (virgules)" value={providerForm.languages} onChange={e => setProviderForm(f => ({ ...f, languages: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" />
+                  <input placeholder="Annees d'experience" type="number" value={providerForm.years_experience} onChange={e => setProviderForm(f => ({ ...f, years_experience: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" />
+                  <input placeholder="N° Osek" value={providerForm.osek_number} onChange={e => setProviderForm(f => ({ ...f, osek_number: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" />
+                  <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                    <input type="checkbox" checked={providerForm.is_referenced} onChange={e => setProviderForm(f => ({ ...f, is_referenced: e.target.checked }))} />
+                    Reference par Tloush
+                  </label>
+                </div>
+                <textarea placeholder="Description" value={providerForm.description} onChange={e => setProviderForm(f => ({ ...f, description: e.target.value }))} className="w-full mt-3 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" rows={3} />
+                <div className="flex gap-2 mt-4">
+                  <button onClick={handleSaveProvider} className="px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700">Enregistrer</button>
+                  <button onClick={() => setShowProviderForm(false)} className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300">Annuler</button>
+                </div>
+              </div>
+            )}
+
+            {/* Provider list */}
+            {providerLoading ? (
+              <div className="text-center py-8 text-slate-400"><RefreshCw size={20} className="animate-spin mx-auto" /></div>
+            ) : (
+              <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50 dark:bg-slate-700/50">
+                    <tr>
+                      <th className="text-left px-4 py-3 font-medium text-slate-500">Prestataire</th>
+                      <th className="text-left px-4 py-3 font-medium text-slate-500">Categorie</th>
+                      <th className="text-left px-4 py-3 font-medium text-slate-500">Villes</th>
+                      <th className="text-left px-4 py-3 font-medium text-slate-500">Note</th>
+                      <th className="text-left px-4 py-3 font-medium text-slate-500">Statut</th>
+                      <th className="text-right px-4 py-3 font-medium text-slate-500">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                    {(providerTab === 'active' ? providers : providerApplications).map((p: any) => (
+                      <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-slate-800 dark:text-white">{p.first_name} {p.last_name?.charAt(0)}.</div>
+                          <div className="text-xs text-slate-400">{p.phone}</div>
+                        </td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{p.category}</td>
+                        <td className="px-4 py-3 text-xs text-slate-500">{(p.service_areas || []).join(', ')}</td>
+                        <td className="px-4 py-3">
+                          {p.total_reviews > 0 ? (
+                            <span className="font-medium">{Number(p.average_rating).toFixed(1)} <span className="text-slate-400">({p.total_reviews})</span></span>
+                          ) : (
+                            <span className="text-xs text-slate-400">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${p.is_referenced ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : 'bg-slate-100 text-slate-600'}`}>
+                            {p.is_referenced ? 'Reference' : 'Non ref.'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => handleToggleReferenced(p.id, p.is_referenced)}
+                              className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 dark:hover:bg-blue-900/30"
+                              title={p.is_referenced ? 'Retirer le badge' : 'Ajouter le badge'}
+                            >
+                              <CheckCircle size={14} />
+                            </button>
+                            <a
+                              href={`/annuaire/${p.category}/${p.slug}`}
+                              target="_blank"
+                              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 dark:hover:bg-slate-700"
+                              title="Voir la fiche"
+                            >
+                              <Eye size={14} />
+                            </a>
+                            <button
+                              onClick={() => handleDelistProvider(p.id)}
+                              className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 dark:hover:bg-red-900/30"
+                              title="Delister"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {(providerTab === 'active' ? providers : providerApplications).length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
+                          Aucun prestataire {providerTab === 'active' ? 'actif' : 'en attente'}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
-import { Inbox, LayoutDashboard, MessageSquare, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Building2, Briefcase, Landmark, Wrench, ChevronDown, Search, HeartPulse, GitCompareArrows, FileSpreadsheet } from 'lucide-react'
+import { Inbox, LayoutDashboard, MessageSquare, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Building2, Briefcase, Landmark, Wrench, ChevronDown, Search, HeartPulse, GitCompareArrows, FileSpreadsheet, Star } from 'lucide-react'
 
 // Desktop: core items always visible + "Outils" dropdown
 const CORE_NAV = [
@@ -54,6 +54,7 @@ const TOOLS_SECTIONS = [
 const ALL_TOOLS = TOOLS_SECTIONS.flatMap(s => s.items)
 
 const SECONDARY_NAV = [
+  { label: 'Annuaire', href: '/annuaire', icon: Star },
   { label: 'Experts', href: '/experts', icon: Users },
   { label: 'Profil', href: '/profile', icon: User },
 ]
@@ -68,6 +69,12 @@ const MOBILE_MAIN = [
 
 // Mobile "Plus" menu: organized with section headers
 const MOBILE_SECTIONS = [
+  {
+    title: 'Services',
+    items: [
+      { label: 'Annuaire', href: '/annuaire', icon: Star },
+    ],
+  },
   {
     title: 'Documents',
     items: [

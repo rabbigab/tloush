@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { ShieldCheck, LayoutDashboard, Moon, Sun, CreditCard, Scale, Menu, X } from "lucide-react";
+import { ShieldCheck, LayoutDashboard, Moon, Sun, CreditCard, Scale, Menu, X, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -30,6 +30,13 @@ export default function Header() {
 
         {/* Desktop nav */}
         <nav className="hidden sm:flex items-center gap-1 lg:gap-2">
+          <Link
+            href="/annuaire"
+            className="flex items-center gap-1.5 text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors px-2 py-1.5 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-950/30"
+          >
+            <Star size={14} />
+            <span className="hidden lg:inline">Annuaire</span>
+          </Link>
           <Link
             href="/droits-olim"
             className="flex items-center gap-1.5 text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors px-2 py-1.5 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-950/30"
