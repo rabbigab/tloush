@@ -324,10 +324,10 @@ export default function DirectoryProviderClient({
             <div>
               <p className="text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Que signifie &laquo; Reference par Tloush &raquo; ?</p>
               <ul className="text-xs text-neutral-500 dark:text-slate-400 space-y-1">
-                <li>Identite verifiee (Teudat Zehut)</li>
+                <li>Identite controlee (Teudat Zehut)</li>
                 <li>Entreprise enregistree (numero Osek)</li>
                 <li>Francophone confirme (appel telephonique)</li>
-                <li>Au moins 1 reference client verifiee</li>
+                <li>Au moins 1 reference client controlee</li>
               </ul>
               <p className="text-xs text-neutral-400 dark:text-slate-500 mt-2 italic">
                 Ce badge ne garantit pas la qualite du travail. Les avis des utilisateurs completent cette verification.

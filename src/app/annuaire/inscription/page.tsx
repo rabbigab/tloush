@@ -103,7 +103,7 @@ export default function InscriptionPrestatairePage() {
         </h1>
         <p className="text-neutral-500 dark:text-slate-400">Sans commission. Sans abonnement. 100% gratuit.</p>
         <div className="flex justify-center gap-6 mt-5 text-xs text-neutral-500 dark:text-slate-400">
-          <span className="flex items-center gap-1"><Users size={14} /> Clients verifies</span>
+          <span className="flex items-center gap-1"><Users size={14} /> Clients inscrits</span>
           <span className="flex items-center gap-1"><Globe size={14} /> Visible sur Google</span>
           <span className="flex items-center gap-1"><Star size={14} /> Badge Reference</span>
         </div>

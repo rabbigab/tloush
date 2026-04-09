@@ -16,8 +16,8 @@ export interface Provider {
   slug: string
   first_name: string
   last_name: string
-  phone: string
-  email: string | null
+  phone?: string
+  email?: string | null
   photo_url: string | null
   category: ProviderCategory
   specialties: string[]
@@ -25,7 +25,7 @@ export interface Provider {
   languages: string[]
   description: string | null
   years_experience: number | null
-  osek_number: string | null
+  osek_number?: string | null
   is_referenced: boolean
   status: ProviderStatus
   average_rating: number
