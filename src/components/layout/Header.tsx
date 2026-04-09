@@ -101,6 +101,10 @@ export default function Header() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="sm:hidden bg-white dark:bg-slate-900 border-t border-neutral-100 dark:border-slate-700 px-4 py-4 space-y-1">
+          <Link href="/annuaire" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 rounded-lg">
+            <Star size={16} />
+            Annuaire
+          </Link>
           <Link href="/droits-olim" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 rounded-lg">
             <Scale size={16} />
             Droits des olim

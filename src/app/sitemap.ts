@@ -23,6 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/cgv',
     '/mentions-legales',
     '/annuaire',
+    '/annuaire/inscription',
   ]
 
   const entries: MetadataRoute.Sitemap = staticPages.map((route) => ({
