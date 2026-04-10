@@ -6,7 +6,7 @@ import {
   Users, FileText, CreditCard, TrendingUp, RefreshCw, Search,
   ArrowLeft, ChevronDown, ChevronUp, Clock, UserCheck, AlertCircle,
   Crown, UserPlus, Activity, DollarSign, BarChart3, Eye, Trash2, Phone,
-  MessageSquare, Bug, Lightbulb, HelpCircle, Archive, CheckCircle, Percent, ArrowUpRight
+  MessageSquare, Bug, Lightbulb, HelpCircle, Archive, CheckCircle, Percent, ArrowUpRight, Pencil
 } from 'lucide-react'
 
 interface UserData {
@@ -168,6 +168,7 @@ export default function AdminDashboard() {
     languages: 'fr,he', description: '', years_experience: '',
     osek_number: '', is_referenced: false, status: 'active',
   })
+  const [editingProviderId, setEditingProviderId] = useState<string | null>(null)
 
   const fetchProviders = useCallback(async () => {
     setProviderLoading(true)
@@ -217,19 +218,54 @@ export default function AdminDashboard() {
       languages: providerForm.languages.split(',').map(s => s.trim()).filter(Boolean),
       years_experience: providerForm.years_experience ? parseInt(providerForm.years_experience) : null,
     }
-    const res = await fetch('/api/admin/prestataires', {
-      method: 'POST',
+    const url = editingProviderId
+      ? `/api/admin/prestataires/${editingProviderId}`
+      : '/api/admin/prestataires'
+    const method = editingProviderId ? 'PATCH' : 'POST'
+    const res = await fetch(url, {
+      method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
     if (res.ok) {
-      setShowProviderForm(false)
-      setProviderForm({ first_name: '', last_name: '', phone: '', email: '', slug: '', category: 'plombier', specialties: '', service_areas: '', languages: 'fr,he', description: '', years_experience: '', osek_number: '', is_referenced: false, status: 'active' })
+      resetProviderForm()
       fetchProviders()
     } else {
       const data = await res.json().catch(() => ({}))
       setProviderError(data.error || 'Erreur lors de la sauvegarde')
     }
+  }
+
+  const resetProviderForm = () => {
+    setShowProviderForm(false)
+    setEditingProviderId(null)
+    setProviderError('')
+    setProviderForm({ first_name: '', last_name: '', phone: '', email: '', slug: '', category: 'plombier', specialties: '', service_areas: '', languages: 'fr,he', description: '', years_experience: '', osek_number: '', is_referenced: false, status: 'active' })
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleEditProvider = (p: any) => {
+    setEditingProviderId(p.id)
+    setProviderError('')
+    setProviderForm({
+      first_name: p.first_name || '',
+      last_name: p.last_name || '',
+      phone: p.phone || '',
+      email: p.email || '',
+      slug: p.slug || '',
+      category: p.category || 'plombier',
+      specialties: Array.isArray(p.specialties) ? p.specialties.join(', ') : '',
+      service_areas: Array.isArray(p.service_areas) ? p.service_areas.join(', ') : '',
+      languages: Array.isArray(p.languages) ? p.languages.join(', ') : 'fr,he',
+      description: p.description || '',
+      years_experience: p.years_experience ? String(p.years_experience) : '',
+      osek_number: p.osek_number || '',
+      is_referenced: !!p.is_referenced,
+      status: p.status || 'active',
+    })
+    setShowProviderForm(true)
+    // Scroll to top so the form is visible
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleDelistProvider = async (id: string) => {
@@ -949,17 +985,28 @@ export default function AdminDashboard() {
                 </button>
               ))}
               <button
-                onClick={() => setShowProviderForm(!showProviderForm)}
+                onClick={() => {
+                  if (showProviderForm) {
+                    resetProviderForm()
+                  } else {
+                    setEditingProviderId(null)
+                    setProviderError('')
+                    setProviderForm({ first_name: '', last_name: '', phone: '', email: '', slug: '', category: 'plombier', specialties: '', service_areas: '', languages: 'fr,he', description: '', years_experience: '', osek_number: '', is_referenced: false, status: 'active' })
+                    setShowProviderForm(true)
+                  }
+                }}
                 className="ml-auto px-3 py-1.5 text-xs font-medium rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
               >
                 + Ajouter un prestataire
               </button>
             </div>
 
-            {/* Add provider form */}
+            {/* Add/Edit provider form */}
             {showProviderForm && (
               <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
-                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">Nouveau prestataire</h3>
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">
+                  {editingProviderId ? 'Modifier le prestataire' : 'Nouveau prestataire'}
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <input placeholder="Prenom *" value={providerForm.first_name} onChange={e => setProviderForm(f => ({ ...f, first_name: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" />
                   <input placeholder="Nom *" value={providerForm.last_name} onChange={e => setProviderForm(f => ({ ...f, last_name: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" />
@@ -992,7 +1039,7 @@ export default function AdminDashboard() {
                 )}
                 <div className="flex gap-2 mt-4">
                   <button onClick={handleSaveProvider} className="px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700">Enregistrer</button>
-                  <button onClick={() => setShowProviderForm(false)} className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300">Annuler</button>
+                  <button onClick={resetProviderForm} className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300">Annuler</button>
                 </div>
               </div>
             )}
@@ -1036,6 +1083,13 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => handleEditProvider(p)}
+                              className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-600 dark:hover:bg-amber-900/30"
+                              title="Modifier"
+                            >
+                              <Pencil size={14} />
+                            </button>
                             <button
                               onClick={() => handleToggleReferenced(p.id, p.is_referenced)}
                               className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 dark:hover:bg-blue-900/30"
