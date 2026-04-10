@@ -1,11 +1,11 @@
-import { Wrench, Zap, Paintbrush, Key, Thermometer } from 'lucide-react'
+import { Wrench, Zap, Paintbrush, Key, Thermometer, Hammer } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 // =====================================================
 // Types
 // =====================================================
 
-export type ProviderCategory = 'plombier' | 'electricien' | 'peintre' | 'serrurier' | 'climatisation'
+export type ProviderCategory = 'plombier' | 'electricien' | 'peintre' | 'serrurier' | 'climatisation' | 'bricoleur'
 
 export type ProviderStatus = 'pending' | 'active' | 'delisted'
 export type ReviewStatus = 'pending' | 'published' | 'rejected'
@@ -149,6 +149,15 @@ export const PROVIDER_CATEGORIES: CategoryInfo[] = [
     color: 'bg-cyan-50 border-cyan-200 dark:bg-cyan-950/30 dark:border-cyan-800',
     iconColor: 'text-cyan-600 dark:text-cyan-400',
     description: 'Installation, entretien, depannage, nettoyage',
+  },
+  {
+    slug: 'bricoleur',
+    label: 'Bricoleur',
+    hebrewTerm: 'הנדימן',
+    icon: Hammer,
+    color: 'bg-orange-50 border-orange-200 dark:bg-orange-950/30 dark:border-orange-800',
+    iconColor: 'text-orange-600 dark:text-orange-400',
+    description: 'Petits travaux, montage meubles, fixations, reparations diverses',
   },
 ]
 

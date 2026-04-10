@@ -214,4 +214,46 @@ A savoir :
       },
     ],
   },
+
+  bricoleur: {
+    guideTitle: 'Comment choisir un bricoleur en Israel',
+    guideText: `En Israel, un bricoleur (handyman) est la solution ideale pour tous les petits travaux du quotidien : montage de meubles IKEA, fixation d'etageres, petites reparations, accrochage de tableaux, remplacement de poignees, etc. C'est souvent plus economique que de faire appel a un specialiste pour des taches simples.
+
+Conseils :
+- Un bon bricoleur est polyvalent : il sait faire un peu de tout (electricite legere, plomberie simple, peinture, assemblage)
+- Pour les gros travaux (electricite sur le tableau, plomberie complexe), il faudra quand meme un specialiste licencie
+- Demandez un devis au forfait pour eviter les surprises (prix a l'heure peuvent deraper)
+- Les bricoleurs les plus demandes interviennent en 24-48h pour les urgences non critiques`,
+    priceRange: "Tarif horaire : 120-200 NIS/h. Forfait montage meuble IKEA : 150-400 NIS selon la complexite. Accrochage TV murale : 200-400 NIS. Petit assortiment de reparations (2-3h) : 300-600 NIS.",
+    glossary: [
+      { french: 'Bricoleur', hebrew: 'הנדימן (handyman)' },
+      { french: 'Marteau', hebrew: 'פטיש (patish)' },
+      { french: 'Perceuse', hebrew: 'מקדחה (makdekha)' },
+      { french: 'Vis', hebrew: 'בורג (boreg)' },
+      { french: 'Cheville', hebrew: 'דיבל (dibel)' },
+      { french: 'Etagere', hebrew: 'מדף (madaf)' },
+    ],
+    faq: [
+      {
+        question: 'Quelle est la difference entre un bricoleur et un artisan specialiste ?',
+        answer: 'Un bricoleur (handyman) est polyvalent pour les petits travaux du quotidien : montage, fixation, petites reparations. Un specialiste (plombier, electricien) a une licence et gere les interventions complexes ou reglementees.',
+      },
+      {
+        question: 'Combien coute un bricoleur en Israel ?',
+        answer: "Entre 120 et 200 NIS de l'heure. Pour des taches precises, demandez un forfait : 150-400 NIS pour un meuble IKEA, 200-400 NIS pour accrocher une TV, etc.",
+      },
+      {
+        question: 'Un bricoleur peut-il faire de l\'electricite ou de la plomberie ?',
+        answer: "Pour les taches simples (remplacer une prise, un robinet), oui. Pour les travaux sur le tableau electrique ou les canalisations principales, il faut un professionnel licencie.",
+      },
+      {
+        question: 'Faut-il fournir les materiaux ou les outils ?',
+        answer: "Le bricoleur apporte ses outils. Pour les materiaux (vis, chevilles, peinture), discutez-en avant : soit il les fournit (avec une marge), soit vous les achetez vous-meme.",
+      },
+      {
+        question: 'Comment savoir si un bricoleur est fiable ?',
+        answer: "Privilegiez les avis de clients reels, demandez des photos de travaux precedents, et commencez par une petite mission pour tester la qualite avant de lui confier plus.",
+      },
+    ],
+  },
 }

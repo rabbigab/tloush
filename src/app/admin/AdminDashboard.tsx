@@ -972,6 +972,7 @@ export default function AdminDashboard() {
                     <option value="peintre">Peintre</option>
                     <option value="serrurier">Serrurier</option>
                     <option value="climatisation">Climatisation</option>
+                    <option value="bricoleur">Bricoleur</option>
                   </select>
                   <input placeholder="Specialites (virgules)" value={providerForm.specialties} onChange={e => setProviderForm(f => ({ ...f, specialties: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" />
                   <input placeholder="Villes (virgules)" value={providerForm.service_areas} onChange={e => setProviderForm(f => ({ ...f, service_areas: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" />
