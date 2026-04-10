@@ -192,7 +192,24 @@ export default function AdminDashboard() {
     if (tab === 'prestataires') fetchProviders()
   }, [tab, fetchProviders])
 
+  const [providerError, setProviderError] = useState('')
+
   const handleSaveProvider = async () => {
+    setProviderError('')
+    // Client-side validation
+    const required: Array<[string, string]> = [
+      [providerForm.first_name, 'Prenom'],
+      [providerForm.last_name, 'Nom'],
+      [providerForm.phone, 'Telephone'],
+      [providerForm.slug, 'Slug'],
+      [providerForm.category, 'Categorie'],
+    ]
+    const missing = required.filter(([v]) => !v.trim()).map(([, label]) => label)
+    if (missing.length > 0) {
+      setProviderError(`Champs obligatoires manquants : ${missing.join(', ')}`)
+      return
+    }
+
     const body = {
       ...providerForm,
       specialties: providerForm.specialties.split(',').map(s => s.trim()).filter(Boolean),
@@ -209,6 +226,9 @@ export default function AdminDashboard() {
       setShowProviderForm(false)
       setProviderForm({ first_name: '', last_name: '', phone: '', email: '', slug: '', category: 'plombier', specialties: '', service_areas: '', languages: 'fr,he', description: '', years_experience: '', osek_number: '', is_referenced: false, status: 'active' })
       fetchProviders()
+    } else {
+      const data = await res.json().catch(() => ({}))
+      setProviderError(data.error || 'Erreur lors de la sauvegarde')
     }
   }
 
@@ -964,6 +984,11 @@ export default function AdminDashboard() {
                   </label>
                 </div>
                 <textarea placeholder="Description" value={providerForm.description} onChange={e => setProviderForm(f => ({ ...f, description: e.target.value }))} className="w-full mt-3 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" rows={3} />
+                {providerError && (
+                  <div className="mt-3 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-300">
+                    {providerError}
+                  </div>
+                )}
                 <div className="flex gap-2 mt-4">
                   <button onClick={handleSaveProvider} className="px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700">Enregistrer</button>
                   <button onClick={() => setShowProviderForm(false)} className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300">Annuler</button>
