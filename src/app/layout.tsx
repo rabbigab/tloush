@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { PosthogProvider } from "@/components/providers/PosthogProvider";
+import VisitorTracker from "@/components/providers/VisitorTracker";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import CrispChat from "@/components/providers/CrispChat";
 import "./globals.css";
@@ -74,6 +75,7 @@ export default function RootLayout({
             {children}
           </PosthogProvider>
         </ThemeProvider>
+        <VisitorTracker />
         <Analytics />
         <CrispChat />
       </body>
