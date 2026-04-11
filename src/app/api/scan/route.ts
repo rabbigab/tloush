@@ -9,8 +9,8 @@ import { SCAN_SYSTEM_PROMPTS, SCAN_USER_PROMPTS } from "@/lib/prompts";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-// Allow up to 60 seconds for document analysis (Claude calls can be slow)
-export const maxDuration = 60;
+// Allow up to 5 minutes for document analysis (Claude calls can be slow)
+export const maxDuration = 300;
 const ratelimit = createRateLimit("scan", 10, "1 h");
 
 const SYSTEM_PROMPTS = SCAN_SYSTEM_PROMPTS;

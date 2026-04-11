@@ -92,11 +92,11 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
     setUploading(true)
     setUploadError('')
     setUploadStep(1)
-    // Simulate progress steps while API processes
+    // Simulate progress steps while API processes (Claude analysis can take 1-3 min)
     const stepTimers = [
-      setTimeout(() => setUploadStep(2), 2000),
-      setTimeout(() => setUploadStep(3), 5000),
-      setTimeout(() => setUploadStep(4), 9000),
+      setTimeout(() => setUploadStep(2), 3000),
+      setTimeout(() => setUploadStep(3), 10_000),
+      setTimeout(() => setUploadStep(4), 25_000),
     ]
     setPendingFile(null)
 
@@ -106,9 +106,9 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
     if (context?.employerName) formData.append('employer_name', context.employerName)
     if (context?.docPeriod) formData.append('doc_period', context.docPeriod)
 
-    // Abort the request after 90s (longer than server's 60s maxDuration to give a clear message)
+    // Abort the request after 330s (longer than server's 300s maxDuration to give a clear message)
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 90_000)
+    const timeoutId = setTimeout(() => controller.abort(), 330_000)
 
     try {
       const res = await fetch('/api/documents/upload', {

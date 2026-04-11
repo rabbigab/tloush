@@ -5,8 +5,8 @@ import { COMPARE_CONTRACT_SYSTEM_PROMPT } from '@/lib/prompts'
 
 export const dynamic = 'force-dynamic'
 
-// Allow up to 60 seconds for Claude contract analysis
-export const maxDuration = 60
+// Allow up to 5 minutes for Claude contract analysis
+export const maxDuration = 300
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 

@@ -9,8 +9,8 @@ import { EXTRACT_SYSTEM_PROMPT, EXTRACT_USER_PROMPT } from "@/lib/prompts";
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const ratelimit = createRateLimit("extract", 10, "1 h");
 
-// Allow up to 60 seconds for Claude extraction
-export const maxDuration = 60;
+// Allow up to 5 minutes for Claude extraction
+export const maxDuration = 300;
 
 const SYSTEM_PROMPT = EXTRACT_SYSTEM_PROMPT;
 const USER_PROMPT = EXTRACT_USER_PROMPT;

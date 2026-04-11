@@ -13,8 +13,8 @@ import { buildUploadSystemPrompt, UPLOAD_USER_PROMPT, COMPARE_PAYSLIPS_INLINE_SY
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const freeRateLimit = createRateLimit('upload-free', 3, '1 h')
 
-// Allow up to 60 seconds for document analysis (Claude calls can be slow)
-export const maxDuration = 60
+// Allow up to 5 minutes for document analysis (Claude calls can be slow)
+export const maxDuration = 300
 
 function buildSystemPrompt(): string {
   return buildUploadSystemPrompt()

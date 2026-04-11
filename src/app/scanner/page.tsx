@@ -64,7 +64,7 @@ function ScannerContent() {
     setLocalStep("analyzing");
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 90_000);
+    const timeoutId = setTimeout(() => controller.abort(), 330_000);
 
     try {
       const formData = new FormData();
