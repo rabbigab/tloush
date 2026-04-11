@@ -13,6 +13,9 @@ import { buildUploadSystemPrompt, UPLOAD_USER_PROMPT, COMPARE_PAYSLIPS_INLINE_SY
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const freeRateLimit = createRateLimit('upload-free', 3, '1 h')
 
+// Allow up to 60 seconds for document analysis (Claude calls can be slow)
+export const maxDuration = 60
+
 function buildSystemPrompt(): string {
   return buildUploadSystemPrompt()
 }
@@ -540,6 +543,13 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
   } catch (err) {
     console.error('[/api/documents/upload]', err)
     const message = err instanceof Error ? err.message : 'Erreur inconnue'
+    const stack = err instanceof Error ? err.stack : undefined
+    // Log to Sentry-like structure for debugging
+    console.error('[UPLOAD_ERROR]', JSON.stringify({
+      message,
+      stack,
+      name: err instanceof Error ? err.name : 'unknown',
+    }))
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
