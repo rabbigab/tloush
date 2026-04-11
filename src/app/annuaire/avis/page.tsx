@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Star, Check, AlertCircle } from 'lucide-react'
+import { track } from '@/lib/analytics'
 
 export default function AvisPage() {
   const [token, setToken] = useState('')
@@ -36,6 +37,7 @@ export default function AvisPage() {
       })
 
       if (res.ok) {
+        track('directory_review_submitted', { rating })
         setStatus('done')
       } else {
         const data = await res.json()

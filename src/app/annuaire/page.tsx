@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight, Users, Star, ShieldCheck } from 'lucide-react'
 import { PROVIDER_CATEGORIES } from '@/types/directory'
+import DirectoryPageTracker from '@/components/directory/DirectoryPageTracker'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -14,6 +15,7 @@ export const revalidate = 3600
 export default function AnnuairePage() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+      <DirectoryPageTracker event="directory_viewed" />
       {/* Hero */}
       <div className="text-center mb-12">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 text-xs font-medium mb-4">

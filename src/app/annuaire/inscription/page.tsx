@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, Check, Users, Star, Globe, ShieldCheck, Loader2 } from 'lucide-react'
 import { PROVIDER_CATEGORIES, PROVIDER_CITIES } from '@/types/directory'
+import { track } from '@/lib/analytics'
 
 const STEPS = ['Identite', 'Activite', 'Verification', 'Confirmation']
 
@@ -52,6 +53,7 @@ export default function InscriptionPrestatairePage() {
         }),
       })
       if (res.ok) {
+        track('directory_provider_signup_completed', { category: form.category })
         setDone(true)
         setStep(3)
       } else {

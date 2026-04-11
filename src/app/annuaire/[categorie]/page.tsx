@@ -5,6 +5,7 @@ import type { Provider } from '@/types/directory'
 import type { Metadata } from 'next'
 import ProviderCard from '@/components/directory/ProviderCard'
 import { CategoryListJsonLd, FAQJsonLd } from '@/components/directory/ProviderSchema'
+import DirectoryPageTracker from '@/components/directory/DirectoryPageTracker'
 import { CATEGORY_CONTENT } from '@/data/directory-content'
 import Link from 'next/link'
 import { ArrowLeft, ShieldCheck } from 'lucide-react'
@@ -57,6 +58,10 @@ export default async function CategoryPage({
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <DirectoryPageTracker
+        event="directory_category_viewed"
+        properties={{ category: categorie, provider_count: (providers || []).length }}
+      />
       {/* Breadcrumb */}
       <Link
         href="/annuaire"

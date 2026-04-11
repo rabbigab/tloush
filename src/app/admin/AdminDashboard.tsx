@@ -170,12 +170,16 @@ export default function AdminDashboard() {
   })
   const [editingProviderId, setEditingProviderId] = useState<string | null>(null)
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [annuaireStats, setAnnuaireStats] = useState<any>(null)
+
   const fetchProviders = useCallback(async () => {
     setProviderLoading(true)
     try {
-      const [activeRes, pendingRes] = await Promise.all([
+      const [activeRes, pendingRes, statsRes] = await Promise.all([
         fetch('/api/admin/prestataires?status=active'),
         fetch('/api/admin/prestataires?status=pending'),
+        fetch('/api/admin/annuaire-stats'),
       ])
       if (activeRes.ok) {
         const data = await activeRes.json()
@@ -184,6 +188,10 @@ export default function AdminDashboard() {
       if (pendingRes.ok) {
         const data = await pendingRes.json()
         setProviderApplications(data.providers || [])
+      }
+      if (statsRes.ok) {
+        const data = await statsRes.json()
+        setAnnuaireStats(data)
       }
     } catch { /* ignore */ }
     setProviderLoading(false)
@@ -970,6 +978,65 @@ export default function AdminDashboard() {
         {/* Prestataires Tab */}
         {tab === 'prestataires' && (
           <div className="space-y-4">
+            {/* Stats cards */}
+            {annuaireStats && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Prestataires actifs</p>
+                  <p className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{annuaireStats.providers.active}</p>
+                  <p className="text-xs text-slate-400 mt-1">{annuaireStats.providers.pending_applications} en attente</p>
+                </div>
+                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Contacts demandes</p>
+                  <p className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{annuaireStats.contacts.total}</p>
+                  <p className="text-xs text-slate-400 mt-1">{annuaireStats.contacts.today} aujourd&apos;hui</p>
+                </div>
+                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Ce mois-ci</p>
+                  <p className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{annuaireStats.contacts.this_month}</p>
+                  <p className="text-xs text-slate-400 mt-1">{annuaireStats.contacts.this_week} sur 7 jours</p>
+                </div>
+                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Avis publies</p>
+                  <p className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{annuaireStats.reviews.published}</p>
+                  <p className="text-xs text-slate-400 mt-1">{annuaireStats.reviews.pending} en attente · {annuaireStats.reviews.conversion_rate}% taux</p>
+                </div>
+              </div>
+            )}
+
+            {/* Top contacted this month */}
+            {annuaireStats && annuaireStats.top_contacted_this_month.length > 0 && (
+              <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">Top contactes ce mois</h3>
+                <div className="space-y-2">
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                  {annuaireStats.top_contacted_this_month.map((p: any) => (
+                    <div key={p.id} className="flex items-center justify-between text-sm">
+                      <div>
+                        <span className="font-medium text-slate-700 dark:text-slate-300">{p.first_name} {p.last_name?.charAt(0)}.</span>
+                        <span className="text-slate-400 ml-2 text-xs">({p.category})</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-300 text-xs font-medium">{p.contacts} contact{p.contacts > 1 ? 's' : ''}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Category breakdown */}
+            {annuaireStats && Object.keys(annuaireStats.providers.by_category).length > 0 && (
+              <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">Repartition par categorie</h3>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(annuaireStats.providers.by_category).map(([cat, count]) => (
+                    <span key={cat} className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300">
+                      {cat} : {count as number}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Sub-tabs */}
             <div className="flex gap-2 flex-wrap">
               {([
