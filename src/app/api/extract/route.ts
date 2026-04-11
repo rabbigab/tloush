@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
     // Cast needed: 'document' content block not yet in SDK types (v0.24)
     const message = await (client.messages.create as Function)({
       model: "claude-sonnet-4-5",
-      max_tokens: 4096,
+      max_tokens: 8192,
       system: SYSTEM_PROMPT,
       messages: [
         {

@@ -136,9 +136,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Cast needed: 'document' content block not yet in SDK types (v0.24)
+    // max_tokens: 8192 — payslips with many line items + attention_points
+    // + recommended_actions + analysis_data can exceed 4096
     const message = await (anthropic.messages.create as Function)({
       model: 'claude-sonnet-4-5',
-      max_tokens: 4096,
+      max_tokens: 8192,
       system: systemPrompt,
       messages: [{ role: 'user', content: contentBlocks }]
     }) as Anthropic.Message
@@ -147,10 +149,35 @@ export async function POST(req: NextRequest) {
     const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
 
     let analysisResult: Record<string, unknown> = {}
+    let parseError: string | null = null
     try {
       analysisResult = JSON.parse(cleaned)
-    } catch {
-      analysisResult = { summary_fr: 'Document analysé', document_type: 'other' }
+    } catch (err) {
+      parseError = err instanceof Error ? err.message : 'parse error'
+      console.error('[upload] JSON parse failed:', parseError)
+      console.error('[upload] Raw response length:', rawText.length)
+      console.error('[upload] Stop reason:', (message as Anthropic.Message).stop_reason)
+      console.error('[upload] Last 500 chars of raw:', rawText.slice(-500))
+
+      // Try to recover a partial JSON (truncated at max_tokens)
+      const lastBrace = cleaned.lastIndexOf('}')
+      if (lastBrace > 0) {
+        try {
+          const truncated = cleaned.slice(0, lastBrace + 1)
+          analysisResult = JSON.parse(truncated)
+          console.log('[upload] Recovered partial JSON after truncation')
+        } catch {
+          // Still fails — use fallback
+        }
+      }
+
+      if (Object.keys(analysisResult).length === 0) {
+        analysisResult = {
+          summary_fr: 'Document analysé mais la structure n\'a pas pu être extraite complètement. Réessayez avec une meilleure qualité ou contactez le support.',
+          document_type: 'other',
+          _parse_error: parseError,
+        }
+      }
     }
 
     // 3. Auto-compare with previous payslip if applicable
