@@ -8,6 +8,9 @@ import { buildAssistantSystemPrompt } from '@/lib/prompts'
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const ratelimit = createRateLimit('chat', 30, '1 h')
 
+// Allow up to 60 seconds for Claude chat responses
+export const maxDuration = 60
+
 export async function POST(req: NextRequest) {
   try {
     const auth = await requireAuth()

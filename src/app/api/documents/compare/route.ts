@@ -5,6 +5,9 @@ import { COMPARE_PAYSLIPS_SYSTEM_PROMPT } from '@/lib/prompts'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
+// Allow up to 60 seconds for Claude comparison
+export const maxDuration = 60
+
 export async function POST(req: NextRequest) {
   try {
     const auth = await requireAuth()
