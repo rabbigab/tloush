@@ -85,7 +85,7 @@ function ScannerContent() {
           : status === 401
           ? "Session expirée. Veuillez vous reconnecter."
           : status === 413
-          ? "Fichier trop volumineux (max 10 Mo)."
+          ? "Fichier trop volumineux (max 25 Mo)."
           : status === 504 || status === 408
           ? "L'analyse a pris trop de temps. Réessayez avec un document plus petit ou contactez le support."
           : (data.error || "Une erreur est survenue lors de l'analyse. Réessayez ou contactez le support.");

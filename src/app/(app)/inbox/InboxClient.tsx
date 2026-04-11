@@ -127,7 +127,7 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
           : res.status === 403
           ? (data.error || 'Quota dépassé. Passez à un plan supérieur.')
           : res.status === 413
-          ? 'Fichier trop volumineux (max 10 Mo).'
+          ? 'Fichier trop volumineux (max 25 Mo).'
           : res.status === 504 || res.status === 408
           ? 'L\'analyse a pris trop de temps. Réessayez avec un document plus petit ou contactez le support.'
           : (data.error || 'Une erreur est survenue lors de l\'analyse. Réessayez ou contactez le support.')

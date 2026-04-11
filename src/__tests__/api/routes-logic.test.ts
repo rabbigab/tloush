@@ -18,8 +18,8 @@ describe('validateFile (real)', () => {
     expect(await validateFile(makeFile('a.webp', 'image/webp', 1000))).toBeNull()
   })
 
-  it('rejects files over 10MB with 413', async () => {
-    const file = makeFile('big.pdf', 'application/pdf', 11 * 1024 * 1024)
+  it('rejects files over 25MB with 413', async () => {
+    const file = makeFile('big.pdf', 'application/pdf', 26 * 1024 * 1024)
     const res = await validateFile(file)
     expect(res).not.toBeNull()
     expect(res!.status).toBe(413)
