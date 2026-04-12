@@ -9,6 +9,7 @@ import { preprocessImage, buildQualityHint } from '@/lib/imagePreprocess'
 import { verifyPayslip, calculateNetSalary } from '@/lib/israeliPayroll'
 import { calculateEmployeeRights } from '@/lib/employeeRights'
 import { buildUploadSystemPrompt, UPLOAD_USER_PROMPT, COMPARE_PAYSLIPS_INLINE_SYSTEM_PROMPT } from '@/lib/prompts'
+import { extractTextFromImage, buildOcrContext } from '@/lib/ocrPreprocess'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const freeRateLimit = createRateLimit('upload-free', 3, '1 h')
@@ -86,7 +87,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Erreur lors du stockage du fichier' }, { status: 500 })
     }
 
-    // 2. Preprocess image for better OCR quality
+    // 2. Preprocess image for better quality
     const mimeType = file.type as string
     const preprocessResult = await preprocessImage(fileBuffer, mimeType)
     const analysisBuffer = preprocessResult.enhanced ? preprocessResult.buffer : fileBuffer
@@ -95,6 +96,10 @@ export async function POST(req: NextRequest) {
     if (preprocessResult.enhanced) {
       console.log(`[upload] Image enhanced: quality=${preprocessResult.quality}, fixes=[${preprocessResult.appliedFixes.join(', ')}]`)
     }
+
+    // 3. Pre-OCR with Tesseract (Hebrew + English) for cross-validation
+    const ocrResult = await extractTextFromImage(analysisBuffer, mimeType)
+    const ocrContext = buildOcrContext(ocrResult)
 
     type ImageMediaType = 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
     type ContentBlock =
@@ -133,6 +138,11 @@ export async function POST(req: NextRequest) {
     const qualityHint = buildQualityHint(preprocessResult)
     if (qualityHint) {
       systemPrompt += qualityHint
+    }
+
+    // Add pre-extracted OCR text for Claude cross-validation
+    if (ocrContext) {
+      systemPrompt += ocrContext
     }
 
     // Cast needed: 'document' content block not yet in SDK types (v0.24)

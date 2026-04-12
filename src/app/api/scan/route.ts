@@ -4,6 +4,7 @@ import { validateFile } from "@/lib/fileValidation";
 import { createRateLimit } from "@/lib/rateLimit";
 import { requireAuth } from "@/lib/apiAuth";
 import { canUseFeature, incrementUsage } from "@/lib/subscription";
+import { extractTextFromImage, buildOcrContext } from "@/lib/ocrPreprocess";
 import type { DocumentType, DocumentAnalysis } from "@/types/scanner";
 import { SCAN_SYSTEM_PROMPTS, SCAN_USER_PROMPTS } from "@/lib/prompts";
 
@@ -57,8 +58,13 @@ export async function POST(req: NextRequest) {
     }
 
     const arrayBuffer = await file.arrayBuffer();
-    const base64Data = Buffer.from(arrayBuffer).toString("base64");
+    const fileBuffer = Buffer.from(arrayBuffer);
+    const base64Data = fileBuffer.toString("base64");
     const mimeType = file.type as string;
+
+    // Pre-OCR with Tesseract (Hebrew + English) for cross-validation
+    const ocrResult = await extractTextFromImage(fileBuffer, mimeType);
+    const ocrContext = buildOcrContext(ocrResult);
 
     // Build content based on file type
     type ImageMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
@@ -100,11 +106,14 @@ export async function POST(req: NextRequest) {
 
     const startTime = Date.now();
 
+    // Build system prompt with OCR context if available
+    const systemPrompt = SYSTEM_PROMPTS[documentType] + (ocrContext || "");
+
     // Cast needed: 'document' content block not yet in SDK types (v0.24)
     const message = await (client.messages.create as Function)({
       model: "claude-sonnet-4-5",
       max_tokens: 8192,
-      system: SYSTEM_PROMPTS[documentType],
+      system: systemPrompt,
       messages: [
         {
           role: "user",
