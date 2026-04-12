@@ -88,6 +88,53 @@ function detectOlehCreditPoints(ctx: ScanContext): DetectedRight | null {
 }
 
 // =====================================================
+// REGLE 11 : NOUVEAU - Exemption totale d'impot pour olim 2026
+// =====================================================
+// Loi adoptee fin 2025 : les olim qui arrivent en 2026 beneficient
+// d'une exemption totale d'impot sur le revenu en 2026 et 2027,
+// puis rates progressives 10% (2028) / 20% (2029) / 30% (2030),
+// jusqu'a un plafond annuel de 1 million NIS.
+// Source : https://www.timesofisrael.com/israel-unveils-0-tax-rate-for-2026s-immigrants-and-returning-residents/
+function detectOleh2026Exemption(ctx: ScanContext): DetectedRight | null {
+  if (!ctx.profile.aliyah_year || ctx.profile.aliyah_year !== 2026) return null
+
+  const currentYear = ctx.now.getFullYear()
+  if (currentYear < 2026 || currentYear > 2030) return null
+
+  let rate = 0
+  let description = ''
+  if (currentYear === 2026 || currentYear === 2027) {
+    rate = 0
+    description = `En tant qu'oleh arrive en 2026, vous beneficiez d'une EXEMPTION TOTALE d'impot sur le revenu en 2026 et 2027 (jusqu'a 1M NIS/an). Verifiez que votre employeur applique bien le taux 0% sur votre tofes 101.`
+  } else if (currentYear === 2028) {
+    rate = 10
+    description = `Taux d'impot progressif 2028 : 10% (exemption partielle pour olim 2026).`
+  } else if (currentYear === 2029) {
+    rate = 20
+    description = `Taux d'impot progressif 2029 : 20% (exemption partielle pour olim 2026).`
+  } else if (currentYear === 2030) {
+    rate = 30
+    description = `Taux d'impot progressif 2030 : 30% (derniere annee d'exemption pour olim 2026).`
+  }
+
+  return {
+    slug: 'oleh_2026_tax_exemption',
+    title_fr: currentYear <= 2027 ? 'EXEMPTION TOTALE impot (olim 2026)' : `Exemption partielle impot (taux ${rate}%)`,
+    description_fr: description,
+    authority: 'Rashut HaMisim',
+    category: 'fiscal',
+    confidence_score: 0.95,
+    confidence_level: 'high',
+    estimated_value: null, // depend du salaire
+    value_unit: `taux ${rate}% au lieu de 10-50%`,
+    source: 'profile',
+    action_url: 'https://www.gov.il/en/pages/tax-reforms-for-new-olim',
+    action_label: 'Voir la loi officielle',
+    disclaimer: 'Loi adoptee fin 2025 pour les olim 2026 uniquement. Plafond 1M NIS/an. Revenu au-dela taxe au taux normal. Consultez un yoetz mas pour confirmer votre eligibilite.',
+  }
+}
+
+// =====================================================
 // REGLE 2 : Parent isole avec enfants
 // =====================================================
 function detectSingleParentBonus(ctx: ScanContext): DetectedRight | null {
@@ -155,21 +202,21 @@ function detectYoungChildrenPoints(ctx: ScanContext): DetectedRight | null {
 // =====================================================
 // REGLE 4 : Allocation enfants (kitsbat yeladim)
 // =====================================================
-// Montants 2025 officiels Bituach Leumi (geles au niveau 2024) :
-// - Enfant 1 : 169 NIS/mois
-// - Enfants 2 a 4 : 215 NIS/mois chacun
-// - Enfant 5+ : 169 NIS/mois (le tarif retombe !)
-// + 57 NIS dans le compte "Chisachon LeKol Yeled" (epargne separee)
-// Source : https://www.btl.gov.il/benefits/children/Pages/שיעורי%20הקצבה.aspx
+// Montants 2026 officiels Bituach Leumi — VERIFIE avril 2026
+// Source : https://www.btl.gov.il/About/news/Pages/hadasaidkonkitzva2026.aspx
+// - Enfant 1 : 173 NIS/mois
+// - Enfants 2 a 4 : 219 NIS/mois chacun
+// - Enfant 5+ : 173 NIS/mois (le tarif retombe — regle counter-intuitive !)
+// + 57 NIS dans le compte "Chisachon LeKol Yeled" (epargne separee, non inclus)
 function computeChildAllowance(childrenCount: number): number {
   if (childrenCount === 0) return 0
-  if (childrenCount === 1) return 169
+  if (childrenCount === 1) return 173
   if (childrenCount <= 4) {
-    // enfant 1 : 169, enfants 2-4 : 215 chacun
-    return 169 + (childrenCount - 1) * 215
+    // enfant 1 : 173, enfants 2-4 : 219 chacun
+    return 173 + (childrenCount - 1) * 219
   }
-  // enfant 1 : 169, enfants 2-4 : 215 × 3 = 645, enfants 5+ : 169 chacun
-  return 169 + 645 + (childrenCount - 4) * 169
+  // enfant 1 : 173, enfants 2-4 : 219 × 3 = 657, enfants 5+ : 173 chacun
+  return 173 + 657 + (childrenCount - 4) * 173
 }
 
 function detectKitsbatYeladim(ctx: ScanContext): DetectedRight | null {
@@ -445,6 +492,7 @@ export function scanUserRights(
 
   const detections: (DetectedRight | null)[] = [
     detectOlehCreditPoints(ctx),
+    detectOleh2026Exemption(ctx),
     detectSingleParentBonus(ctx),
     detectYoungChildrenPoints(ctx),
     detectKitsbatYeladim(ctx),

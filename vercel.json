@@ -19,6 +19,10 @@
     {
       "path": "/api/cron/scrape-listings",
       "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/legal-watch",
+      "schedule": "0 9 * * 1"
     }
   ]
 }
