@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Shield, Plus, Calendar, AlertCircle, Trash2, CheckCircle2, DollarSign, TrendingUp } from 'lucide-react'
 import type { MiluimPeriod } from '@/lib/miluim'
-import { SERVICE_TYPE_LABELS, validateMiluimLimits } from '@/lib/miluim'
+import { SERVICE_TYPE_LABELS } from '@/lib/miluim'
 import LegalDisclaimer, { BetaBadge } from '@/components/shared/LegalDisclaimer'
 
 interface MiluimSummary {
@@ -107,8 +107,6 @@ export default function MiluimClient() {
     }
   }
 
-  const limits = validateMiluimLimits(summary.totalDays3Years)
-
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -174,14 +172,9 @@ export default function MiluimClient() {
             3 derniers ans
           </div>
           <p className="text-3xl font-bold text-slate-900 dark:text-white">
-            {summary.totalDays3Years} / 270
+            {summary.totalDays3Years}
           </p>
-          <p className="text-xs text-slate-400">plafond legal</p>
-          {limits.warning && (
-            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
-              <AlertCircle size={10} /> {limits.warning}
-            </p>
-          )}
+          <p className="text-xs text-slate-400">jours cumules</p>
         </div>
 
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">

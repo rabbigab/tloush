@@ -1,11 +1,14 @@
 // =====================================================
 // Tax refund estimator (החזר מס)
 // =====================================================
-// Calcule l'estimation de remboursement d'impot israelien
-// en comparant l'impot preleve vs l'impot du selon les baremes.
-// Utilise les brackets et points de credit de israeliPayroll.ts
+// Verifie avec sources officielles (avril 2026) :
+// - Baremes d'impot Rashut HaMisim (geles 2025-2027)
+// - Nekudot Zikui : https://www.kolzchut.org.il/he/נקודות_זיכוי_ממס_הכנסה
+// - Oleh Hadash (nouveau schedule 2022+) :
+//   https://www.kolzchut.org.il/en/Income_Tax_Credit_Points_for_New_Immigrants
 
-const TAX_BRACKETS_2025 = [
+// Brackets 2025-2027 (geles)
+const TAX_BRACKETS = [
   { from: 0, to: 84_120, rate: 0.10 },
   { from: 84_120, to: 120_720, rate: 0.14 },
   { from: 120_720, to: 193_800, rate: 0.20 },
@@ -16,7 +19,7 @@ const TAX_BRACKETS_2025 = [
 ]
 const SURTAX_THRESHOLD = 721_560
 const SURTAX_RATE = 0.03
-const CREDIT_POINT_VALUE_ANNUAL = 242 * 12  // 2904 NIS/an par point
+const CREDIT_POINT_VALUE_ANNUAL = 242 * 12  // 2904 NIS/an par point (2025)
 
 export interface CreditPointsCalculation {
   residentBase: number       // 2.25 pour tout resident israelien
@@ -63,7 +66,83 @@ export interface TaxRefundResult {
 }
 
 /**
+ * Calcule le bonus olim hadashim selon le SCHEDULE OFFICIEL 2022+
+ * (loi reformee en 2022, valide pour toute alyah depuis 2022)
+ *
+ * Schedule annuel (54 mois / 4.5 ans total) :
+ *   Annee 0 (mois 1-12)  : 12 × 1 pt  = 12 points annuels
+ *   Annee 1 (mois 13-24) : 12 × 3 pts = 36 points annuels
+ *   Annee 2 (mois 25-36) : 6×3 + 6×2  = 30 points annuels
+ *   Annee 3 (mois 37-48) : 6×2 + 6×1  = 18 points annuels
+ *   Annee 4 (mois 49-54) : 6 × 1 pt   = 6 points annuels
+ *
+ * Note : ce sont des POINTS ANNUELS (= somme des points mensuels cette annee).
+ * Mais dans l'UI tax refund on veut un nombre ANNUEL equivalent.
+ *
+ * Source : https://www.kolzchut.org.il/en/Income_Tax_Credit_Points_for_New_Immigrants
+ */
+export function computeOlehBonusAnnual(aliyahYear: number, taxYear: number): number {
+  const yearsSinceAliyah = taxYear - aliyahYear
+
+  // Annee d'alyah (annee 0) : 12 mois × 1 pt = 12 pts "mensuels" cumules
+  // Pour un calcul annuel moyen, on divise : 12/12 = 1 pt annuel
+  if (yearsSinceAliyah === 0) return 1
+
+  // Annee 1 : 12 mois × 3 pts = 36 pts cumules → 3 pts annuel
+  if (yearsSinceAliyah === 1) return 3
+
+  // Annee 2 : 6 mois × 3 pts + 6 mois × 2 pts = 18+12 = 30 → 2.5 pts annuel
+  if (yearsSinceAliyah === 2) return 2.5
+
+  // Annee 3 : 6 mois × 2 pts + 6 mois × 1 pt = 12+6 = 18 → 1.5 pts annuel
+  if (yearsSinceAliyah === 3) return 1.5
+
+  // Annee 4 (uniquement 6 premiers mois) : 6 × 1 = 6 → 0.5 pt annuel
+  if (yearsSinceAliyah === 4) return 0.5
+
+  return 0
+}
+
+/**
+ * Calcule les points de credit pour enfants.
+ *
+ * TABLE OFFICIELLE (Section 66 du code des impots + directives 2022) :
+ * - Les points sont differents pour MERE et PERE
+ * - Ils varient par tranche d'age
+ * - Depuis 2022, ils ont ete augmentes de facon temporaire jusqu'en 2025
+ *
+ * Note : on simplifie en utilisant les points "mere" (plus eleves)
+ * car sans le profil du conjoint, on ne peut pas trancher.
+ * Affichage explicite du fait que c'est une estimation.
+ *
+ * Source : https://www.kolzchut.org.il/he/נקודות_זיכוי_ממס_הכנסה
+ */
+export function computeChildrenBonus(
+  birthDates: string[],
+  taxYear: number
+): number {
+  let bonus = 0
+  for (const birthDate of birthDates) {
+    const birthYear = new Date(birthDate).getFullYear()
+    const age = taxYear - birthYear
+
+    // Annee de naissance : 1.5 pts (mere qui travaille)
+    if (age === 0) bonus += 1.5
+    // Ages 1-5 : 2.5 pts (mere) — reforme 2022 pour jeunes enfants
+    else if (age >= 1 && age <= 5) bonus += 2.5
+    // Ages 6-17 : 1 pt (chaque parent) + 1 pt reforme 2022-2025 pour 6-17
+    // On cumule pour donner une estimation haute
+    else if (age >= 6 && age <= 17) bonus += 2
+  }
+  return bonus
+}
+
+/**
  * Calcule les points de credit auxquels l'utilisateur a droit selon son profil.
+ *
+ * ATTENTION : Ce calcul est une ESTIMATION INDICATIVE. La vraie table
+ * israelienne varie par parent (mere/pere), annee fiscale, et reformes
+ * temporaires. Pour un calcul exact, consulter un yoetz mas.
  */
 export function computeEligibleCreditPoints(
   profile: TaxRefundInput['profile'],
@@ -79,36 +158,28 @@ export function computeEligibleCreditPoints(
     total: 0,
   }
 
-  // Femme : +0.5 points
+  // Femme : +0.5 points → total 2.75 pour femme qui travaille
   if (profile.gender === 'female') {
     result.womanBonus = 0.5
   }
 
-  // Oleh hadash : 3 / 2 / 1 points sur les 3 premieres annees d'alyah
+  // Oleh hadash : SCHEDULE OFFICIEL 2022+ (reforme de la loi)
   if (profile.aliyahYear) {
-    const yearsSinceAliyah = taxYear - profile.aliyahYear
-    if (yearsSinceAliyah === 0) result.olehBonus = 3
-    else if (yearsSinceAliyah === 1) result.olehBonus = 2
-    else if (yearsSinceAliyah === 2) result.olehBonus = 1
+    result.olehBonus = computeOlehBonusAnnual(profile.aliyahYear, taxYear)
   }
 
-  // Enfants : 1.5 points par enfant de 0-5 ans (l'annee de naissance et les 4 suivantes)
+  // Enfants : table par age (estimation mere qui travaille)
   if (profile.childrenBirthDates && profile.childrenBirthDates.length > 0) {
-    for (const birthDate of profile.childrenBirthDates) {
-      const birthYear = new Date(birthDate).getFullYear()
-      const childAge = taxYear - birthYear
-      if (childAge >= 0 && childAge <= 5) {
-        result.childrenBonus += 1.5
-      } else if (childAge >= 6 && childAge <= 17) {
-        result.childrenBonus += 1
-      }
-    }
+    result.childrenBonus = computeChildrenBonus(profile.childrenBirthDates, taxYear)
   } else if (profile.childrenCount && profile.childrenCount > 0) {
-    // Estimation simplifiee : 1.5 points par enfant si pas de dates
-    result.childrenBonus = profile.childrenCount * 1.5
+    // Sans dates, on ne peut pas calculer precisement → on prend une
+    // estimation moyenne (2 pts par enfant) et on affiche un avertissement
+    result.childrenBonus = profile.childrenCount * 2
   }
 
-  // Parent isole : +1 point
+  // Parent isole avec enfants : +1 point (regle general)
+  // NOTE : la loi distingue "hore yachid" (monoparental) vs "gaurouch"
+  // (divorce) avec des schedules differents. +1 est une estimation basse.
   if (
     profile.maritalStatus === 'divorced' ||
     profile.maritalStatus === 'widowed' ||
@@ -132,10 +203,11 @@ export function computeEligibleCreditPoints(
 
 /**
  * Calcule l'impot du avec les brackets progressifs.
+ * Brackets 2025-2027 (geles par la loi des finances).
  */
 export function computeIncomeTax(grossAnnual: number): number {
   let tax = 0
-  for (const bracket of TAX_BRACKETS_2025) {
+  for (const bracket of TAX_BRACKETS) {
     if (grossAnnual <= bracket.from) break
     const taxableInBracket = Math.min(grossAnnual, bracket.to) - bracket.from
     tax += taxableInBracket * bracket.rate
