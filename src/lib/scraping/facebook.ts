@@ -24,9 +24,16 @@ async function launchBrowser(): Promise<Browser> {
   const executablePath = await chromium.executablePath()
 
   return pw.chromium.launch({
-    args: chromium.args,
+    args: [
+      ...chromium.args,
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+    ],
     executablePath,
-    headless: true,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    headless: (chromium as any).headless ?? true,
   })
 }
 
