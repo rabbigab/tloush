@@ -6,7 +6,7 @@ import {
   Users, FileText, CreditCard, TrendingUp, RefreshCw, Search,
   ArrowLeft, ChevronDown, ChevronUp, Clock, UserCheck, AlertCircle,
   Crown, UserPlus, Activity, DollarSign, BarChart3, Eye, Trash2, Phone,
-  MessageSquare, Bug, Lightbulb, HelpCircle, Archive, CheckCircle, Percent, ArrowUpRight, Pencil
+  MessageSquare, Bug, Lightbulb, HelpCircle, Archive, CheckCircle, Percent, ArrowUpRight, Pencil, UserX, Check
 } from 'lucide-react'
 
 interface UserData {
@@ -311,6 +311,24 @@ export default function AdminDashboard() {
     })
     fetchProviders()
   }
+  const handleApproveApplication = async (app: any) => {
+    if (!confirm(`Valider ${app.first_name} ${app.last_name} (${app.category}) ?`)) return
+    const res = await fetch(`/api/admin/applications/${app.id}`, { method: 'POST' })
+    if (res.ok) { fetchProviders() } else {
+      const d = await res.json().catch(() => ({}))
+      alert(d.error || 'Erreur lors de la validation')
+    }
+  }
+
+  const handleRejectApplication = async (app: any) => {
+    if (!confirm(`Rejeter la candidature de ${app.first_name} ${app.last_name} ?`)) return
+    const res = await fetch(`/api/admin/applications/${app.id}`, { method: 'DELETE' })
+    if (res.ok) { fetchProviders() } else {
+      const d = await res.json().catch(() => ({}))
+      alert(d.error || 'Erreur lors du rejet')
+    }
+  }
+
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
@@ -1158,6 +1176,15 @@ export default function AdminDashboard() {
                         <td className="px-4 py-3">
                           <div className="font-medium text-slate-800 dark:text-white">{p.first_name} {p.last_name?.charAt(0)}.</div>
                           <div className="text-xs text-slate-400">{p.phone}</div>
+                          {providerTab === 'pending' && p.email && (
+                            <div className="text-xs text-slate-400">{p.email}</div>
+                          )}
+                          {providerTab === 'pending' && p.description && (
+                            <div className="text-xs text-blue-500 dark:text-blue-400 mt-1 max-w-xs truncate" title={p.description}>{p.description}</div>
+                          )}
+                          {providerTab === 'pending' && p.created_at && (
+                            <div className="text-xs text-slate-300 mt-0.5">{new Date(p.created_at).toLocaleDateString('fr-FR')}</div>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{p.category}</td>
                         <td className="px-4 py-3 text-xs text-slate-500">{(p.service_areas || []).join(', ')}</td>
@@ -1175,35 +1202,19 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-1">
-                            <button
-                              onClick={() => handleEditProvider(p)}
-                              className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-600 dark:hover:bg-amber-900/30"
-                              title="Modifier"
-                            >
-                              <Pencil size={14} />
-                            </button>
-                            <button
-                              onClick={() => handleToggleReferenced(p.id, p.is_referenced)}
-                              className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 dark:hover:bg-blue-900/30"
-                              title={p.is_referenced ? 'Retirer le badge' : 'Ajouter le badge'}
-                            >
-                              <CheckCircle size={14} />
-                            </button>
-                            <a
-                              href={`/annuaire/${p.category}/${p.slug}`}
-                              target="_blank"
-                              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 dark:hover:bg-slate-700"
-                              title="Voir la fiche"
-                            >
-                              <Eye size={14} />
-                            </a>
-                            <button
-                              onClick={() => handleDelistProvider(p.id)}
-                              className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 dark:hover:bg-red-900/30"
-                              title="Delister"
-                            >
-                              <Trash2 size={14} />
-                            </button>
+                            {providerTab === 'pending' ? (
+                              <>
+                                <button onClick={() => handleApproveApplication(p)} className="px-2.5 py-1 rounded-lg bg-green-100 hover:bg-green-200 text-green-700 dark:bg-green-900/40 dark:hover:bg-green-900/60 dark:text-green-300 text-xs font-medium flex items-center gap-1" title="Valider cette candidature"><Check size={13} /> Valider</button>
+                                <button onClick={() => handleRejectApplication(p)} className="px-2.5 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-900/40 dark:hover:bg-red-900/60 dark:text-red-300 text-xs font-medium flex items-center gap-1" title="Rejeter cette candidature"><UserX size={13} /> Rejeter</button>
+                              </>
+                            ) : (
+                              <>
+                                <button onClick={() => handleEditProvider(p)} className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-600 dark:hover:bg-amber-900/30" title="Modifier"><Pencil size={14} /></button>
+                                <button onClick={() => handleToggleReferenced(p.id, p.is_referenced)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 dark:hover:bg-blue-900/30" title={p.is_referenced ? 'Retirer le badge' : 'Ajouter le badge'}><CheckCircle size={14} /></button>
+                                <a href={`/annuaire/${p.category}/${p.slug}`} target="_blank" className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 dark:hover:bg-slate-700" title="Voir la fiche"><Eye size={14} /></a>
+                                <button onClick={() => handleDelistProvider(p.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 dark:hover:bg-red-900/30" title="Delister"><Trash2 size={14} /></button>
+                              </>
+                            )}
                           </div>
                         </td>
                       </tr>
