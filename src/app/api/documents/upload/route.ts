@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { logClaudeCall, logError } from '@/lib/claudeMetrics'
 import { validateFile } from '@/lib/fileValidation'
 import { createRateLimit } from '@/lib/rateLimit'
 import { requireAuth } from '@/lib/apiAuth'
@@ -173,6 +174,7 @@ export async function POST(req: NextRequest) {
 
     // Utiliser le streaming pour des resultats plus rapides
     let rawText = ''
+    const claudeStartTime = Date.now()
     const stream = await (anthropic.messages.create as Function)({
       model: 'claude-sonnet-4-5',
       max_tokens: 8192,
@@ -183,16 +185,44 @@ export async function POST(req: NextRequest) {
     timing('stream_opened')
 
     let firstTokenTime = 0
-    for await (const event of stream as AsyncIterable<{ type: string; delta?: { text?: string } }>) {
+    let usageIn = 0
+    let usageOut = 0
+    let cacheRead = 0
+    let cacheWrite = 0
+    for await (const event of stream as AsyncIterable<{
+      type: string
+      delta?: { text?: string }
+      message?: { usage?: { input_tokens?: number; cache_read_input_tokens?: number; cache_creation_input_tokens?: number } }
+      usage?: { output_tokens?: number }
+    }>) {
       if (event.type === 'content_block_delta' && event.delta?.text) {
         if (!firstTokenTime) {
           firstTokenTime = Date.now() - t0
           timing('first_token')
         }
         rawText += event.delta.text
+      } else if (event.type === 'message_start' && event.message?.usage) {
+        usageIn = event.message.usage.input_tokens || 0
+        cacheRead = event.message.usage.cache_read_input_tokens || 0
+        cacheWrite = event.message.usage.cache_creation_input_tokens || 0
+      } else if (event.type === 'message_delta' && event.usage?.output_tokens) {
+        usageOut = event.usage.output_tokens
       }
     }
     timing(`claude_complete (${rawText.length} chars, TTFT=${firstTokenTime}ms)`)
+
+    // Logging Claude metrics (fire-and-forget)
+    logClaudeCall({
+      user_id: user.id,
+      route: '/api/documents/upload',
+      model: 'claude-sonnet-4-5',
+      tokens_in: usageIn,
+      tokens_out: usageOut,
+      cache_read_tokens: cacheRead,
+      cache_write_tokens: cacheWrite,
+      duration_ms: Date.now() - claudeStartTime,
+      success: rawText.length > 0,
+    })
     const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
 
     let analysisResult: Record<string, unknown> = {}
@@ -590,12 +620,18 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
     console.error('[/api/documents/upload]', err)
     const message = err instanceof Error ? err.message : 'Erreur inconnue'
     const stack = err instanceof Error ? err.stack : undefined
-    // Log to Sentry-like structure for debugging
-    console.error('[UPLOAD_ERROR]', JSON.stringify({
-      message,
-      stack,
-      name: err instanceof Error ? err.name : 'unknown',
-    }))
+    const errorName = err instanceof Error ? err.name : 'unknown'
+    console.error('[UPLOAD_ERROR]', JSON.stringify({ message, stack, name: errorName }))
+
+    // Log to error_log table for admin monitoring
+    logError({
+      endpoint: '/api/documents/upload',
+      error_code: errorName,
+      error_message: message,
+      stack_trace: stack,
+      severity: 'error',
+    })
+
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
