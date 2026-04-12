@@ -25,7 +25,7 @@ export default function Header() {
         <Link href="/" className="flex items-center gap-2.5 group shrink-0">
           <Image src="/icon.png" alt="Tloush" width={40} height={40} className="w-9 h-9 sm:hidden rounded-lg" unoptimized />
           <span className="font-bold text-lg text-neutral-900 dark:text-white sm:hidden">Tloush</span>
-          <Image src="/logo.png" alt="Tloush" width={1024} height={1024} className="hidden sm:block h-14 lg:h-16 w-auto group-hover:scale-105 transition-transform" priority unoptimized />
+          <Image src="/logo.png" alt="Tloush" width={200} height={200} className="hidden sm:block h-14 lg:h-16 w-auto group-hover:scale-105 transition-transform" priority unoptimized />
         </Link>
 
         {/* Desktop nav */}

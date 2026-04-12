@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   keywords: ["documents israéliens", "fiche de paie", "israël", "tloush", "hébreu", "français", "analyse", "olim", "bituah leumi", "impôts israël"],
   metadataBase: new URL("https://tloush.com"),
   alternates: {
-    canonical: "https://tloush.com",
+    canonical: undefined, // Let Next.js generate correct canonical per page
   },
   openGraph: {
     title: "Tloush — Comprenez vos documents israéliens en français",
@@ -70,9 +70,14 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Tloush" />
       </head>
       <body>
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:p-4 focus:bg-white focus:text-brand-600 focus:underline">
+          Aller au contenu principal
+        </a>
         <ThemeProvider>
           <PosthogProvider>
-            {children}
+            <div id="main-content">
+              {children}
+            </div>
           </PosthogProvider>
         </ThemeProvider>
         <VisitorTracker />
