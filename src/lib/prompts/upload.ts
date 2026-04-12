@@ -46,8 +46,7 @@ CONNAISSANCES DROIT DU TRAVAIL ISRAÉLIEN :
 - Prévoyance (קופת גמל) : variable, souvent 2.5% employé
 - Frais de transport (נסיעות) : remboursement selon trajet réel, plafond mensuel selon distance`
 
-  prompt += `\n\nIMPORTANT : Retourne UNIQUEMENT le JSON, sans texte avant ou après.
-CONCISION : Sois concis dans tes descriptions. summary_fr en 2 phrases max. attention_points: max 5 points les plus importants. recommended_actions: max 3 actions. full_analysis dans analysis_data: max 500 caracteres.`
+  prompt += `\n\nIMPORTANT : Retourne UNIQUEMENT le JSON, sans texte avant ou après.`
   return prompt
 }
 

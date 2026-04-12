@@ -92,11 +92,12 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
     setUploading(true)
     setUploadError('')
     setUploadStep(1)
-    // Simulate progress steps while API processes (Claude analysis can take 1-3 min)
+    // Etapes de progression calibrees sur les ~60s reelles d'analyse
     const stepTimers = [
-      setTimeout(() => setUploadStep(2), 3000),
-      setTimeout(() => setUploadStep(3), 10_000),
-      setTimeout(() => setUploadStep(4), 25_000),
+      setTimeout(() => setUploadStep(2), 2000),   // Envoi termine
+      setTimeout(() => setUploadStep(3), 7000),    // Lecture du document
+      setTimeout(() => setUploadStep(4), 20_000),  // Extraction des donnees
+      setTimeout(() => setUploadStep(5), 40_000),  // Analyse intelligente
     ]
     setPendingFile(null)
 
@@ -259,17 +260,18 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
                   const steps = [
                     { label: 'Envoi du fichier', done: uploadStep >= 2 },
                     { label: 'Lecture du document', done: uploadStep >= 3 },
-                    { label: 'Extraction des données', done: uploadStep >= 4 },
-                    { label: 'Analyse intelligente', done: false },
+                    { label: 'Extraction des donnees', done: uploadStep >= 4 },
+                    { label: 'Analyse intelligente', done: uploadStep >= 5 },
+                    { label: 'Verification et droits', done: false },
                   ]
-                  const activeIdx = Math.min(uploadStep - 1, 3)
+                  const activeIdx = Math.min(uploadStep - 1, 4)
                   return (
                     <>
                       <div className="w-full max-w-xs">
                         <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                           <div
                             className="h-full bg-brand-600 rounded-full transition-all duration-1000 ease-out"
-                            style={{ width: `${Math.min(uploadStep * 25, 95)}%` }}
+                            style={{ width: `${Math.min(uploadStep * 20, 95)}%` }}
                           />
                         </div>
                       </div>
