@@ -14,6 +14,17 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status') || 'active'
 
+  // Fetch form submissions from provider_applications table
+  if (status === 'applications') {
+    const { data, error } = await supabaseAdmin
+      .from('provider_applications')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ providers: data || [] })
+  }
+
   const { data, error } = await supabaseAdmin
     .from('providers')
     .select('*')
