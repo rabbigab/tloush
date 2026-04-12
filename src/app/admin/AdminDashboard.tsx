@@ -219,6 +219,10 @@ export default function AdminDashboard() {
   }, [])
 
   useEffect(() => {
+    fetchProviders()
+  }, [fetchProviders])
+
+  useEffect(() => {
     if (tab === 'prestataires') fetchProviders()
   }, [tab, fetchProviders])
 
@@ -674,7 +678,7 @@ export default function AdminDashboard() {
           </button>
           <button onClick={() => setTab('prestataires')} className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === 'prestataires' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
             <UserCheck size={14} className="inline mr-1.5" />
-            Prestataires ({providers.length})
+            Prestataires ({providers.length + providerApplications.length}){providerApplications.length > 0 && <span className="ml-1 px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300 text-[10px] font-bold">{providerApplications.length} en attente</span>}
           </button>
           <button onClick={() => setTab('visiteurs')} className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === 'visiteurs' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
             <Activity size={14} className="inline mr-1.5" />
