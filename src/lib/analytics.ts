@@ -51,27 +51,10 @@ type TloushEvent =
   | "onboarding_v2_dismissed"
   | "onboarding_v2_step"
   | "feedback_submitted"
-<<<<<<< claude/promote-tloush-feature-1NGup
-  // Annuaire
+  // Annuaire prestataires
   | "directory_provider_signup_completed"
   | "directory_provider_contacted"
   | "directory_review_submitted";
-=======
-  // Tloush Recommande (annuaire)
-  | "directory_viewed"
-  | "directory_category_viewed"
-  | "directory_provider_viewed"
-  | "directory_contact_gate_shown"
-  | "directory_contact_gate_signup_started"
-  | "directory_contact_gate_signup_completed"
-  | "directory_contact_revealed"
-  | "directory_provider_called"
-  | "directory_provider_whatsapped"
-  | "directory_review_submitted"
-  | "directory_provider_signup_started"
-  | "directory_provider_signup_completed"
-  | "directory_cross_promo_clicked";
->>>>>>> main
 
 export function track(event: TloushEvent, properties?: Record<string, unknown>) {
   try {
