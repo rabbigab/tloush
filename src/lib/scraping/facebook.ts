@@ -13,10 +13,21 @@ import type { Browser, Page } from 'playwright-core'
 import type { Listing, ScrapingResult } from '@/types/listings'
 import { geocodeAddress, geocodeCity } from './geocode'
 
-// Dynamic import pour eviter le bundling webpack
-async function getChromium() {
+// Dynamic imports pour eviter le bundling webpack
+// @sparticuz/chromium fournit un binaire Chromium compatible Vercel/Lambda
+async function launchBrowser(): Promise<Browser> {
+  const chromium = (await import('@sparticuz/chromium')).default
   const pw = await import('playwright-core')
-  return pw.chromium
+
+  // En production (Vercel), utiliser le binaire @sparticuz/chromium
+  // En local, utiliser le Chromium installe par Playwright
+  const executablePath = await chromium.executablePath()
+
+  return pw.chromium.launch({
+    args: chromium.args,
+    executablePath,
+    headless: true,
+  })
 }
 
 // Groupes Facebook publics d'immobilier en Israel
@@ -298,12 +309,8 @@ export async function scrapeFacebook(
   let browser: Browser | null = null
 
   try {
-    // Lancer le navigateur en mode headless
-    const chromium = await getChromium()
-    browser = await chromium.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    })
+    // Lancer le navigateur (compatible Vercel serverless)
+    browser = await launchBrowser()
 
     for (const group of FACEBOOK_GROUPS) {
       try {

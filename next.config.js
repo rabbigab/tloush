@@ -6,7 +6,7 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp'],
   },
   experimental: {
-    serverComponentsExternalPackages: ['playwright-core'],
+    serverComponentsExternalPackages: ['playwright-core', '@sparticuz/chromium'],
     optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
   async headers() {
