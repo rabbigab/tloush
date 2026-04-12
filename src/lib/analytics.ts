@@ -50,7 +50,11 @@ type TloushEvent =
   | "onboarding_v2_completed"
   | "onboarding_v2_dismissed"
   | "onboarding_v2_step"
-  | "feedback_submitted";
+  | "feedback_submitted"
+  // Annuaire
+  | "directory_provider_signup_completed"
+  | "directory_provider_contacted"
+  | "directory_review_submitted";
 
 export function track(event: TloushEvent, properties?: Record<string, unknown>) {
   try {
