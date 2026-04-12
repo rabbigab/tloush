@@ -24,10 +24,14 @@ function buildSystemPrompt(): string {
 const USER_PROMPT = UPLOAD_USER_PROMPT
 
 export async function POST(req: NextRequest) {
+  const t0 = Date.now()
+  const timing = (label: string) => console.log(`[TIMING] ${label}: ${Date.now() - t0}ms`)
+
   try {
     const auth = await requireAuth()
     if (auth instanceof NextResponse) return auth
     const { user, supabase } = auth
+    timing('auth')
 
     // Check subscription & quota
     const access = await canUseFeature(supabase, user.id, 'document_analysis')
@@ -52,6 +56,7 @@ export async function POST(req: NextRequest) {
         )
       }
     }
+    timing('subscription_check')
 
     const formData = await req.formData()
     const file = formData.get('file') as File | null
@@ -75,6 +80,7 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer()
     const fileBuffer = Buffer.from(arrayBuffer)
     const mimeType = file.type as string
+    timing(`file_parsed (${(fileBuffer.length / 1024 / 1024).toFixed(1)}MB, ${mimeType})`)
 
     // Lancer les 3 operations en parallele (aucune ne depend des autres)
     const [storageResult, preprocessResult, ocrResult] = await Promise.all([
@@ -88,6 +94,8 @@ export async function POST(req: NextRequest) {
       extractTextFromImage(fileBuffer, mimeType),
     ])
 
+    timing('parallel_ops (storage+preprocess+ocr)')
+
     if (storageResult.error) {
       console.error('Storage error:', storageResult.error)
       return NextResponse.json({ error: 'Erreur lors du stockage du fichier' }, { status: 500 })
@@ -96,6 +104,7 @@ export async function POST(req: NextRequest) {
     const analysisBuffer = preprocessResult.enhanced ? preprocessResult.buffer : fileBuffer
     const base64Data = analysisBuffer.toString('base64')
     const ocrContext = buildOcrContext(ocrResult)
+    timing(`base64_ready (${(base64Data.length / 1024 / 1024).toFixed(1)}MB base64, enhanced=${preprocessResult.enhanced}, ocr=${ocrResult.text.length > 0 ? 'yes' : 'no'})`)
 
     if (preprocessResult.enhanced) {
       console.log(`[upload] Image enhanced: quality=${preprocessResult.quality}, fixes=[${preprocessResult.appliedFixes.join(', ')}]`)
@@ -161,9 +170,9 @@ export async function POST(req: NextRequest) {
       systemBlocks.push({ type: 'text', text: dynamicParts })
     }
 
+    timing('prompt_built')
+
     // Utiliser le streaming pour des resultats plus rapides
-    // Le streaming reduit le TTFT (time to first token) et permet
-    // de traiter la reponse des qu'elle arrive
     let rawText = ''
     const stream = await (anthropic.messages.create as Function)({
       model: 'claude-sonnet-4-5',
@@ -172,12 +181,19 @@ export async function POST(req: NextRequest) {
       system: systemBlocks,
       messages: [{ role: 'user', content: contentBlocks }]
     })
+    timing('stream_opened')
 
+    let firstTokenTime = 0
     for await (const event of stream as AsyncIterable<{ type: string; delta?: { text?: string } }>) {
       if (event.type === 'content_block_delta' && event.delta?.text) {
+        if (!firstTokenTime) {
+          firstTokenTime = Date.now() - t0
+          timing('first_token')
+        }
         rawText += event.delta.text
       }
     }
+    timing(`claude_complete (${rawText.length} chars, TTFT=${firstTokenTime}ms)`)
     const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
 
     let analysisResult: Record<string, unknown> = {}
@@ -324,6 +340,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    timing('verification_done')
+
     // 4. Parse deadline into DATE format
     const rawDeadline = (analysisResult.key_info as Record<string, unknown>)?.deadline
     const deadlineDate = parseDeadline(rawDeadline)
@@ -384,9 +402,12 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    timing('db_insert')
+
     // Increment usage counter (rapide, Redis)
     await incrementUsage(supabase, user.id, 'documents_analyzed')
 
+    timing('TOTAL_RESPONSE')
     // =====================================================
     // REPONSE IMMEDIATE — on renvoie le document au client
     // Les taches secondaires tournent en fire-and-forget
