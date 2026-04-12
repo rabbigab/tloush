@@ -17,7 +17,7 @@ type TloushEvent =
   | "page_viewed"
   | "error_boundary_hit"
   | "profile_updated"
-  // Funnel: signup → paywall → checkout
+  // Funnel: signup â paywall â checkout
   | "signup_started"
   | "signup_completed"
   | "signup_failed"
@@ -54,7 +54,12 @@ type TloushEvent =
   // Annuaire prestataires
   | "directory_provider_signup_completed"
   | "directory_provider_contacted"
-  | "directory_review_submitted";
+  | "directory_review_submitted"
+  | "directory_provider_viewed"
+  | "directory_contact_revealed"
+  | "directory_contact_gate_shown"
+  | "directory_provider_called"
+  | "directory_provider_whatsapped";
 
 export function track(event: TloushEvent, properties?: Record<string, unknown>) {
   try {
