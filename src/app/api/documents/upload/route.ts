@@ -124,9 +124,8 @@ export async function POST(req: NextRequest) {
         { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64Data } }
       ]
     } else {
-      // Enhanced images are always PNG, originals keep their type
-      const outputMime = preprocessResult.enhanced ? 'image/png' : mimeType
-      const imageMediaType = (outputMime === 'image/png' ? 'image/png' : 'image/jpeg') as ImageMediaType
+      // Enhanced images are JPEG, originals keep their type
+      const imageMediaType = (mimeType === 'image/png' && !preprocessResult.enhanced ? 'image/png' : 'image/jpeg') as ImageMediaType
       contentBlocks = [
         { type: 'text', text: USER_PROMPT },
         { type: 'image', source: { type: 'base64', media_type: imageMediaType, data: base64Data } }

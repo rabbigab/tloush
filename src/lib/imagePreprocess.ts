@@ -42,7 +42,7 @@ export async function preprocessImage(inputBuffer: Buffer, mimeType: string): Pr
     const enhanced = await sharp(inputBuffer)
       .normalize()
       .sharpen({ sigma: 0.8, m1: 0.5, m2: 1.5 })
-      .png({ quality: 95 })
+      .jpeg({ quality: 90 })
       .toBuffer()
     return { buffer: enhanced, enhanced: true, quality, appliedFixes: ['normalize', 'sharpen'] }
   }
@@ -96,8 +96,8 @@ export async function preprocessImage(inputBuffer: Buffer, mimeType: string): Pr
     appliedFixes.push('contrast_boost')
   }
 
-  // 9. Output as high-quality PNG for best text clarity
-  const outputBuffer = await img.png({ quality: 95 }).toBuffer()
+  // 9. Output as JPEG (plus leger que PNG pour les photos)
+  const outputBuffer = await img.jpeg({ quality: 90 }).toBuffer()
 
   return {
     buffer: outputBuffer,
