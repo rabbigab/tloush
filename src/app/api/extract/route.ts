@@ -91,10 +91,17 @@ export async function POST(req: NextRequest) {
     }
 
     // Cast needed: 'document' content block not yet in SDK types (v0.24)
+    // Prompt caching : le system prompt est cache cote Anthropic
     const message = await (client.messages.create as Function)({
       model: "claude-sonnet-4-5",
-      max_tokens: 8192,
-      system: SYSTEM_PROMPT,
+      max_tokens: 4096,
+      system: [
+        {
+          type: "text",
+          text: SYSTEM_PROMPT,
+          cache_control: { type: "ephemeral" },
+        },
+      ],
       messages: [
         {
           role: "user",

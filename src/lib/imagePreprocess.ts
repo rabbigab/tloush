@@ -24,7 +24,17 @@ export async function preprocessImage(inputBuffer: Buffer, mimeType: string): Pr
   // 1. Assess image quality
   const quality = assessQuality(metadata, inputBuffer.length)
 
-  // If image looks fine, just do minimal processing
+  // Meme pour les images "good", downscaler si trop grande
+  // (les photos smartphone font 3000-4000px → 2-5MB base64 → tres lent pour l'API)
+  if (quality === 'good' && metadata.width && metadata.width > 2000) {
+    const resized = await sharp(inputBuffer)
+      .resize({ width: 2000, fit: 'inside', kernel: 'lanczos3' })
+      .jpeg({ quality: 90 })
+      .toBuffer()
+    return { buffer: resized, enhanced: true, quality, appliedFixes: ['downscale_large'] }
+  }
+
+  // If image looks fine and small enough, return as-is
   if (quality === 'good') {
     return { buffer: inputBuffer, enhanced: false, quality, appliedFixes: [] }
   }
@@ -46,10 +56,11 @@ export async function preprocessImage(inputBuffer: Buffer, mimeType: string): Pr
     appliedFixes.push('upscale')
   }
 
-  // 4. Resize if image is too large (> 4000px) — reduce to save tokens & improve speed
-  if (metadata.width && metadata.width > 4000) {
+  // 4. Resize if image is too large (> 2000px) — reduce for faster API calls
+  //    Claude Vision fonctionne tres bien a 1500-2000px. Au-dela, ca ralentit sans gain.
+  if (metadata.width && metadata.width > 2000) {
     img = img.resize({
-      width: 3000,
+      width: 2000,
       fit: 'inside',
       kernel: 'lanczos3',
     })

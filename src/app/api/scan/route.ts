@@ -106,14 +106,24 @@ export async function POST(req: NextRequest) {
 
     const startTime = Date.now();
 
-    // Build system prompt with OCR context if available
-    const systemPrompt = SYSTEM_PROMPTS[documentType] + (ocrContext || "");
+    // Build system prompt with cache_control pour prompt caching
+    const basePrompt = SYSTEM_PROMPTS[documentType];
+    const systemBlocks: Array<{ type: "text"; text: string; cache_control?: { type: "ephemeral" } }> = [
+      {
+        type: "text",
+        text: basePrompt,
+        cache_control: { type: "ephemeral" },  // Cache le prompt de base
+      },
+    ];
+    if (ocrContext) {
+      systemBlocks.push({ type: "text", text: ocrContext });
+    }
 
     // Cast needed: 'document' content block not yet in SDK types (v0.24)
     const message = await (client.messages.create as Function)({
       model: "claude-sonnet-4-5",
-      max_tokens: 8192,
-      system: systemPrompt,
+      max_tokens: 4096,
+      system: systemBlocks,
       messages: [
         {
           role: "user",

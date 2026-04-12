@@ -140,22 +140,44 @@ export async function POST(req: NextRequest) {
       systemPrompt += qualityHint
     }
 
-    // Add pre-extracted OCR text for Claude cross-validation
+    // Add pre-extracted OCR text for Claude cross-validation (seulement si OCR a marche)
     if (ocrContext) {
       systemPrompt += ocrContext
     }
 
-    // Cast needed: 'document' content block not yet in SDK types (v0.24)
-    // max_tokens: 8192 — payslips with many line items + attention_points
-    // + recommended_actions + analysis_data can exceed 4096
-    const message = await (anthropic.messages.create as Function)({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 8192,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: contentBlocks }]
-    }) as Anthropic.Message
+    // Construire le system prompt avec cache_control pour le prompt caching
+    // Le prompt de base est identique entre les requetes → cache Anthropic (~3-5s gagnes)
+    const baseSystemPrompt = buildSystemPrompt()
+    const dynamicParts = systemPrompt.slice(baseSystemPrompt.length)
 
-    const rawText = message.content[0].type === 'text' ? message.content[0].text : ''
+    const systemBlocks: Array<{ type: 'text'; text: string; cache_control?: { type: 'ephemeral' } }> = [
+      {
+        type: 'text',
+        text: baseSystemPrompt,
+        cache_control: { type: 'ephemeral' },  // Cache la partie statique du prompt
+      },
+    ]
+    if (dynamicParts) {
+      systemBlocks.push({ type: 'text', text: dynamicParts })
+    }
+
+    // Utiliser le streaming pour des resultats plus rapides
+    // Le streaming reduit le TTFT (time to first token) et permet
+    // de traiter la reponse des qu'elle arrive
+    let rawText = ''
+    const stream = await (anthropic.messages.create as Function)({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 4096,
+      stream: true,
+      system: systemBlocks,
+      messages: [{ role: 'user', content: contentBlocks }]
+    })
+
+    for await (const event of stream as AsyncIterable<{ type: string; delta?: { text?: string } }>) {
+      if (event.type === 'content_block_delta' && event.delta?.text) {
+        rawText += event.delta.text
+      }
+    }
     const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
 
     let analysisResult: Record<string, unknown> = {}
@@ -166,7 +188,6 @@ export async function POST(req: NextRequest) {
       parseError = err instanceof Error ? err.message : 'parse error'
       console.error('[upload] JSON parse failed:', parseError)
       console.error('[upload] Raw response length:', rawText.length)
-      console.error('[upload] Stop reason:', (message as Anthropic.Message).stop_reason)
       console.error('[upload] Last 500 chars of raw:', rawText.slice(-500))
 
       // Try to recover a partial JSON (truncated at max_tokens)
