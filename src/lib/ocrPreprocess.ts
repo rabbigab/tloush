@@ -64,6 +64,13 @@ export async function extractTextFromImage(
     return EMPTY_RESULT
   }
 
+  // Skip OCR on Vercel serverless — Tesseract.js worker threads
+  // ne fonctionnent pas (module worker-script manquant).
+  // Claude Vision lit tres bien l'hebreu sans OCR.
+  if (process.env.VERCEL) {
+    return EMPTY_RESULT
+  }
+
   try {
     const startTime = Date.now()
 
