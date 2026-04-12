@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowLeft, Shield, Plus, Calendar, AlertCircle, Trash2, CheckCircle2, DollarSign, TrendingUp } from 'lucide-react'
 import type { MiluimPeriod } from '@/lib/miluim'
 import { SERVICE_TYPE_LABELS, validateMiluimLimits } from '@/lib/miluim'
+import LegalDisclaimer, { BetaBadge } from '@/components/shared/LegalDisclaimer'
 
 interface MiluimSummary {
   totalDaysAllTime: number
@@ -133,12 +134,21 @@ export default function MiluimClient() {
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Shield size={22} className="text-green-600" /> Miluim
+            <BetaBadge />
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             Suivez vos periodes de reserve et estimez votre compensation Bituach Leumi.
           </p>
         </div>
       </div>
+
+      <LegalDisclaimer
+        level="beta"
+        topic="du miluim en Israel"
+        official_url="https://www.btl.gov.il/benefits/Reserves/"
+        official_label="Bituach Leumi (officiel)"
+        expert_label="Consulter un expert"
+      />
 
       {error && (
         <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-3 text-sm text-red-700 dark:text-red-300 flex items-center gap-2">

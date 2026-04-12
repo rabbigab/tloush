@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Sparkles, AlertCircle, CheckCircle2, XCircle, ExternalLink, Loader2, TrendingUp, Shield, Users, Heart, DollarSign, Briefcase, Building2, UserPlus, Info } from 'lucide-react'
+import LegalDisclaimer, { BetaBadge } from '@/components/shared/LegalDisclaimer'
 
 interface DetectedRight {
   id: string
@@ -167,6 +168,7 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Sparkles size={22} className="text-purple-600" /> Mes droits detectes
+            <BetaBadge />
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             Scan de votre profil et de vos documents pour trouver les droits non reclames.
@@ -182,13 +184,12 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
         </button>
       </div>
 
-      {/* Disclaimer */}
-      <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-sm text-amber-700 dark:text-amber-300 flex items-start gap-2">
-        <Info size={16} className="shrink-0 mt-0.5" />
-        <p>
-          <strong>Detection indicative.</strong> Ces resultats sont bases sur les regles courantes. Chaque droit doit etre verifie aupres de l'autorite concernee. Tloush ne se substitue pas a un avis juridique.
-        </p>
-      </div>
+      {/* Disclaimer legal force */}
+      <LegalDisclaimer
+        level="legal_advice"
+        topic="des droits et aides en Israel"
+        expert_label="Consulter un expert"
+      />
 
       {error && (
         <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-3 text-sm text-red-700 dark:text-red-300 flex items-center gap-2">

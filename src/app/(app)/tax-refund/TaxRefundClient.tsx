@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, DollarSign, Calculator, AlertCircle, CheckCircle2, TrendingUp, ExternalLink, FileText, UserPlus } from 'lucide-react'
+import LegalDisclaimer, { BetaBadge } from '@/components/shared/LegalDisclaimer'
 
 interface TaxRefundResult {
   taxYear: number
@@ -109,6 +110,7 @@ export default function TaxRefundClient({ profileComplete }: { profileComplete: 
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <DollarSign size={22} className="text-green-600" /> Remboursement d'impots
+            <BetaBadge />
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             Estimez votre החזר מס en quelques clics grace au bareme 2025.
@@ -116,14 +118,14 @@ export default function TaxRefundClient({ profileComplete }: { profileComplete: 
         </div>
       </div>
 
-      {/* Disclaimer */}
-      <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-sm text-amber-700 dark:text-amber-300 flex items-start gap-2">
-        <AlertCircle size={16} className="shrink-0 mt-0.5" />
-        <p>
-          <strong>Estimation indicative uniquement.</strong> Pour un avis fiscal officiel, consultez un yoetz mas.
-          Cette estimation ne prend pas en compte tous les cas complexes (multi-employeurs, deductions speciales, etc.).
-        </p>
-      </div>
+      {/* Disclaimer force */}
+      <LegalDisclaimer
+        level="estimate"
+        topic="de l'impot sur le revenu israelien"
+        official_url="https://www.gov.il/he/departments/israel_tax_authority"
+        official_label="Rashut HaMisim (officiel)"
+        expert_label="Consulter un yoetz mas"
+      />
 
       {/* Form */}
       {!result && (
