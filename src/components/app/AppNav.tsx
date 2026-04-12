@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
-import { LayoutDashboard, MessageSquare, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Building2, Briefcase, Landmark, Wrench, ChevronDown, Search, HeartPulse, GitCompareArrows, FileSpreadsheet, Star } from 'lucide-react'
+import { LayoutDashboard, MessageSquare, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Building2, Briefcase, Landmark, Wrench, ChevronDown, Search, HeartPulse, GitCompareArrows, FileSpreadsheet, Star, ShieldCheck } from 'lucide-react'
 
 // Desktop: core items always visible + "Outils" dropdown
 const CORE_NAV = [
@@ -28,6 +28,7 @@ const TOOLS_SECTIONS = [
     items: [
       { label: 'Mes droits', href: '/rights-check', icon: Shield },
       { label: 'Droits olim', href: '/droits-olim', icon: Scale },
+      { label: 'Miluim', href: '/miluim', icon: ShieldCheck },
       { label: 'Bituach Leumi', href: '/bituach-leumi', icon: Building2 },
       { label: 'Guide assurances', href: '/assurances', icon: HeartPulse },
       { label: 'Courriers', href: '/letters', icon: FileText },
