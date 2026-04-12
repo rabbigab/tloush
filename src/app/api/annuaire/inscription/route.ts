@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
   const osek_number = body.osek_number as string | undefined
   const reference_name = body.reference_name as string | undefined
   const reference_phone = body.reference_phone as string | undefined
+  const years_experience = body.years_experience as number | undefined
 
   // Validation minimale
   if (!first_name?.trim() || !last_name?.trim() || !phone?.trim() || !category?.trim()) {
@@ -45,6 +46,7 @@ export async function POST(req: NextRequest) {
       osek_number: osek_number?.trim() || null,
       reference_name: reference_name?.trim() || null,
       reference_phone: reference_phone?.trim() || null,
+      years_experience: years_experience || null,
     })
 
   if (error) {

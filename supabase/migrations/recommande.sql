@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS provider_applications (
   tz_photo_url TEXT,
   reference_name TEXT,
   reference_phone TEXT,
+  years_experience INTEGER,
   status TEXT DEFAULT 'pending'
     CHECK (status IN ('pending', 'contacted', 'referenced', 'rejected')),
   admin_notes TEXT,

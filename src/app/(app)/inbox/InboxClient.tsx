@@ -160,10 +160,15 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
 
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (file) {
-      setPendingFile(file)
-      setUploadContext({ employeeName: '', employerName: '', docPeriod: '' })
+    if (!file) return
+    // Client-side size check — avoid uploading 100MB+ just to get a server 413
+    if (file.size > 25 * 1024 * 1024) {
+      setUploadError('Fichier trop volumineux (max 25 Mo). Reduisez la taille ou scannez en resolution plus basse.')
+      if (inputRef.current) inputRef.current.value = ''
+      return
     }
+    setPendingFile(file)
+    setUploadContext({ employeeName: '', employerName: '', docPeriod: '' })
   }
 
   function formatDate(iso: string) {
@@ -236,7 +241,7 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
           <input
             ref={inputRef}
             type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
+            accept=".pdf,.jpg,.jpeg,.png,.webp"
             className="hidden"
             onChange={onFileChange}
             aria-label="Televerser un document"

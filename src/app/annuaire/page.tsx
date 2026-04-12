@@ -93,6 +93,20 @@ export default function AnnuairePage() {
         </div>
       </div>
 
+      {/* CTA prestataire */}
+      <div className="text-center mb-12 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-2xl p-8">
+        <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Vous etes prestataire francophone ?</h2>
+        <p className="text-sm text-neutral-500 dark:text-slate-400 mb-4">
+          Rejoignez l&apos;annuaire gratuitement et recevez des clients qualifies. Sans commission.
+        </p>
+        <Link
+          href="/annuaire/inscription"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-green-600 text-white font-medium text-sm hover:bg-green-700 transition-colors"
+        >
+          Devenir prestataire <ArrowRight size={16} />
+        </Link>
+      </div>
+
       {/* Disclaimer */}
       <div className="bg-neutral-50 dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-2xl p-5 text-xs text-neutral-500 dark:text-slate-400 leading-relaxed">
         <p>
