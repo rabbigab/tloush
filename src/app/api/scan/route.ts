@@ -18,11 +18,15 @@ const SYSTEM_PROMPTS = SCAN_SYSTEM_PROMPTS;
 const USER_PROMPTS = SCAN_USER_PROMPTS;
 
 export async function POST(req: NextRequest) {
+  const t0 = Date.now();
+  const timing = (label: string) => console.log(`[TIMING][scan] ${label}: ${Date.now() - t0}ms`);
+
   try {
     // Auth check
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
     const { user, supabase } = auth;
+    timing("auth");
 
     // Rate limiting
     if (ratelimit) {
@@ -37,6 +41,7 @@ export async function POST(req: NextRequest) {
     if (!access.allowed) {
       return NextResponse.json({ error: access.reason, code: 'QUOTA_EXCEEDED' }, { status: 403 });
     }
+    timing("checks");
 
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
@@ -61,10 +66,12 @@ export async function POST(req: NextRequest) {
     const fileBuffer = Buffer.from(arrayBuffer);
     const base64Data = fileBuffer.toString("base64");
     const mimeType = file.type as string;
+    timing(`file_parsed (${(fileBuffer.length / 1024 / 1024).toFixed(1)}MB, ${mimeType})`);
 
     // Pre-OCR with Tesseract (Hebrew + English) for cross-validation
     const ocrResult = await extractTextFromImage(fileBuffer, mimeType);
     const ocrContext = buildOcrContext(ocrResult);
+    timing(`ocr_done (${ocrResult.text.length} chars)`);
 
     // Build content based on file type
     type ImageMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
@@ -119,6 +126,8 @@ export async function POST(req: NextRequest) {
       systemBlocks.push({ type: "text", text: ocrContext });
     }
 
+    timing("prompt_built");
+
     // Cast needed: 'document' content block not yet in SDK types (v0.24)
     const message = await (client.messages.create as Function)({
       model: "claude-sonnet-4-5",
@@ -133,6 +142,7 @@ export async function POST(req: NextRequest) {
     }) as Anthropic.Message;
 
     const processingTime = Date.now() - startTime;
+    timing(`claude_complete (${processingTime}ms)`);
 
     const rawText =
       message.content[0].type === "text" ? message.content[0].text : "";
@@ -162,6 +172,7 @@ export async function POST(req: NextRequest) {
 
     // Increment usage counter
     await incrementUsage(supabase, user.id, 'documents_analyzed');
+    timing("TOTAL_RESPONSE");
 
     return NextResponse.json({
       documentType,

@@ -16,11 +16,15 @@ const SYSTEM_PROMPT = EXTRACT_SYSTEM_PROMPT;
 const USER_PROMPT = EXTRACT_USER_PROMPT;
 
 export async function POST(req: NextRequest) {
+  const t0 = Date.now();
+  const timing = (label: string) => console.log(`[TIMING][extract] ${label}: ${Date.now() - t0}ms`);
+
   try {
     // Auth check
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
     const { user, supabase } = auth;
+    timing("auth");
 
     // Check subscription & quota
     const access = await canUseFeature(supabase, user.id, 'document_analysis');
@@ -50,6 +54,7 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const base64Data = Buffer.from(arrayBuffer).toString("base64");
     const mimeType = file.type as string;
+    timing(`file_parsed (${(arrayBuffer.byteLength / 1024 / 1024).toFixed(1)}MB, ${mimeType})`);
 
     // Build content based on file type
     type ImageMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
@@ -90,6 +95,7 @@ export async function POST(req: NextRequest) {
       ];
     }
 
+    timing("prompt_ready");
     // Cast needed: 'document' content block not yet in SDK types (v0.24)
     // Prompt caching : le system prompt est cache cote Anthropic
     const message = await (client.messages.create as Function)({
@@ -109,6 +115,7 @@ export async function POST(req: NextRequest) {
         },
       ],
     }) as Anthropic.Message;
+    timing("claude_complete");
 
     const rawText =
       message.content[0].type === "text" ? message.content[0].text : "";
