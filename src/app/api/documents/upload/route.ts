@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
     let rawText = ''
     const stream = await (anthropic.messages.create as Function)({
       model: 'claude-sonnet-4-5',
-      max_tokens: 4096,
+      max_tokens: 8192,
       stream: true,
       system: systemBlocks,
       messages: [{ role: 'user', content: contentBlocks }]
