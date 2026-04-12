@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import DirectoryWidget from '@/components/directory/DirectoryWidget'
-import { FileText, AlertCircle, CheckCircle, Clock, Inbox, MessageSquare, TrendingUp, Shield, ArrowRight, Zap, CalendarClock, Check, Wallet, Megaphone, Calculator, Briefcase, Landmark, GitCompareArrows, FileSpreadsheet } from 'lucide-react'
+import DocumentUploadWidget from '@/components/app/DocumentUploadWidget'
+import { FileText, AlertCircle, CheckCircle, Clock, MessageSquare, TrendingUp, Shield, ArrowRight, Zap, CalendarClock, Check, Wallet, Megaphone, Calculator, Briefcase, Landmark, GitCompareArrows, FileSpreadsheet, Folder } from 'lucide-react'
 import { DOC_LABELS, DOC_ICONS } from '@/lib/docTypes'
 import { track } from '@/lib/analytics'
 import type { AppDocument } from '@/types'
@@ -123,11 +124,14 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4" />
         <div className="relative">
           <h1 className="text-2xl sm:text-3xl font-bold mb-1">{greeting} !</h1>
-          <p className="text-blue-100 dark:text-blue-300 text-sm sm:text-base">
+          <p className="text-blue-100 dark:text-blue-300 text-sm sm:text-base mb-5">
             {documents.length === 0
               ? 'Uploadez votre premier document pour commencer.'
               : `Vous avez ${documents.length} document${documents.length > 1 ? 's' : ''} dans votre espace.`}
           </p>
+
+          {/* Upload widget integre */}
+          <DocumentUploadWidget />
 
           {/* Inline stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
@@ -316,7 +320,7 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
             </div>
             <h2 className="font-bold text-slate-800 dark:text-slate-200">Documents recents</h2>
           </div>
-          <Link href="/inbox" className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1">
+          <Link href="/folders" className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1">
             Voir tout <ArrowRight size={12} />
           </Link>
         </div>
@@ -325,11 +329,7 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
             <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <FileText size={28} className="text-slate-300 dark:text-slate-500" />
             </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">Aucun document encore</p>
-            <Link href="/inbox" className="inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors">
-              <Inbox size={15} />
-              Uploader un document
-            </Link>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Uploadez votre premier document ci-dessus pour commencer.</p>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 gap-3">
@@ -360,25 +360,6 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
           </div>
         )}
       </div>
-
-      {/* CTA si pas de documents */}
-      {documents.length === 0 && (
-        <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-100 dark:border-blue-900 rounded-3xl p-8 sm:p-10 text-center">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-blue-100/50 dark:bg-blue-900/20 rounded-full -translate-y-1/2 translate-x-1/3" />
-          <FileText size={40} className="text-blue-300 dark:text-blue-700 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">Commencez par uploader un document</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-5 max-w-md mx-auto">
-            Fiche de paie, courrier officiel, contrat... Tloush vous l&apos;explique en francais en quelques secondes.
-          </p>
-          <Link
-            href="/inbox"
-            className="inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/25 active:scale-95"
-          >
-            <Inbox size={16} />
-            Aller a l&apos;inbox
-          </Link>
-        </div>
-      )}
 
       </>)}
 

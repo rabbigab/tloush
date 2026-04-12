@@ -34,7 +34,7 @@ export default function RegisterPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/inbox`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
       },
     })
     if (error) {
@@ -91,8 +91,8 @@ export default function RegisterPage() {
 
     track('signup_completed', { method: 'email' })
     setRedirecting(true)
-    // Redirect directly to inbox — no email verification needed
-    window.location.href = '/inbox'
+    // Redirect directly to dashboard — no email verification needed
+    window.location.href = '/dashboard'
   }
 
   if (redirecting) {

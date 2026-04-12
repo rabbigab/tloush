@@ -15,7 +15,7 @@ function LoginForm() {
   const [googleLoading, setGoogleLoading] = useState(false)
   const [redirecting, setRedirecting] = useState(false)
   const searchParams = useSearchParams()
-  const rawRedirect = searchParams.get('redirect') || '/inbox'
+  const rawRedirect = searchParams.get('redirect') || '/dashboard'
   const redirect = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/dashboard'
   const urlError = searchParams.get('error')
 

@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
  * (e.g. returning from Google OAuth redirect) and redirects to the app.
  * Place this on public pages where OAuth might redirect to.
  */
-export default function AuthRedirect({ to = '/inbox' }: { to?: string }) {
+export default function AuthRedirect({ to = '/dashboard' }: { to?: string }) {
   useEffect(() => {
     const supabase = createClient()
 

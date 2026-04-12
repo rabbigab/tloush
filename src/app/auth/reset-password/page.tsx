@@ -49,7 +49,7 @@ export default function ResetPasswordPage() {
 
     setSuccess(true)
     setTimeout(() => {
-      router.push('/inbox')
+      router.push('/dashboard')
     }, 2000)
   }
 

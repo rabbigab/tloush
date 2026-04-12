@@ -3,13 +3,12 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
-import { Inbox, LayoutDashboard, MessageSquare, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Building2, Briefcase, Landmark, Wrench, ChevronDown, Search, HeartPulse, GitCompareArrows, FileSpreadsheet, Star } from 'lucide-react'
+import { LayoutDashboard, MessageSquare, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Building2, Briefcase, Landmark, Wrench, ChevronDown, Search, HeartPulse, GitCompareArrows, FileSpreadsheet, Star } from 'lucide-react'
 
 // Desktop: core items always visible + "Outils" dropdown
 const CORE_NAV = [
-  { label: 'Inbox', href: '/inbox', icon: Inbox },
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Dossiers', href: '/folders', icon: Folder },
+  { label: 'Mes documents', href: '/folders', icon: Folder },
   { label: 'Depenses', href: '/expenses', icon: Wallet },
   { label: 'Assistant', href: '/assistant', icon: MessageSquare },
 ]
@@ -61,8 +60,8 @@ const SECONDARY_NAV = [
 
 // Mobile: show 4 main items + "Plus" for the rest
 const MOBILE_MAIN = [
-  { label: 'Inbox', href: '/inbox', icon: Inbox },
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Mes documents', href: '/folders', icon: Folder },
   { label: 'Assistant', href: '/assistant', icon: MessageSquare },
   { label: 'Profil', href: '/profile', icon: User },
 ]
@@ -78,7 +77,6 @@ const MOBILE_SECTIONS = [
   {
     title: 'Documents',
     items: [
-      { label: 'Dossiers', href: '/folders', icon: Folder },
       { label: 'Depenses', href: '/expenses', icon: Wallet },
     ],
   },

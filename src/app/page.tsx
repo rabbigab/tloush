@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <main className="min-h-screen flex flex-col bg-white dark:bg-slate-950">
-      <AuthRedirect />
+      <AuthRedirect to="/dashboard" />
       <Header />
       <div className="flex-1">
         {/* 1. Hero — accroche + social proof + CTA */}
