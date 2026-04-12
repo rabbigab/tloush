@@ -232,7 +232,7 @@ export default function AdminDashboard() {
       [providerForm.last_name, 'Nom'],
       [providerForm.phone, 'Telephone'],
       [providerForm.slug, 'Slug'],
-      [providerForm.category, 'Categorie'],
+      [providerForm.category, 'Catégorie'],
     ]
     const missing = required.filter(([v]) => !v.trim()).map(([, label]) => label)
     if (missing.length > 0) {
@@ -572,7 +572,7 @@ export default function AdminDashboard() {
           <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
             <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-2">
               <FileText size={16} />
-              Documents analyses (30j)
+              Documents analysés (30j)
             </h2>
             <p className="text-xs text-slate-400 mb-3">Total: {docs_trend.reduce((a, d) => a + d.count, 0)}</p>
             <MiniChart data={docs_trend} color="indigo" />
@@ -588,7 +588,7 @@ export default function AdminDashboard() {
           <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
             <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
               <BarChart3 size={16} />
-              Repartition des plans
+              Répartition des plans
             </h2>
             <div className="flex gap-4 items-end h-28">
               {(['free', 'solo', 'family'] as const).map(plan => {
@@ -667,7 +667,7 @@ export default function AdminDashboard() {
         {/* Overview Tab */}
         {tab === 'overview' && (
           <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
-            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">Feedback par categorie</h3>
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">Feedback par catégorie</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {(['bug', 'suggestion', 'question', 'other'] as const).map(cat => {
                 const Icon = CATEGORY_ICONS[cat]
@@ -1012,7 +1012,7 @@ export default function AdminDashboard() {
                   <p className="text-xs text-slate-400 mt-1">{annuaireStats.providers.pending_applications} en attente</p>
                 </div>
                 <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Contacts demandes</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Contacts demandés</p>
                   <p className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{annuaireStats.contacts.total}</p>
                   <p className="text-xs text-slate-400 mt-1">{annuaireStats.contacts.today} aujourd&apos;hui</p>
                 </div>
@@ -1022,7 +1022,7 @@ export default function AdminDashboard() {
                   <p className="text-xs text-slate-400 mt-1">{annuaireStats.contacts.this_week} sur 7 jours</p>
                 </div>
                 <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Avis publies</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Avis publiés</p>
                   <p className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{annuaireStats.reviews.published}</p>
                   <p className="text-xs text-slate-400 mt-1">{annuaireStats.reviews.pending} en attente · {annuaireStats.reviews.conversion_rate}% taux</p>
                 </div>
@@ -1051,7 +1051,7 @@ export default function AdminDashboard() {
             {/* Category breakdown */}
             {annuaireStats && Object.keys(annuaireStats.providers.by_category).length > 0 && (
               <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
-                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">Repartition par categorie</h3>
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">Répartition par catégorie</h3>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(annuaireStats.providers.by_category).map(([cat, count]) => (
                     <span key={cat} className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300">
@@ -1145,7 +1145,7 @@ export default function AdminDashboard() {
                   <thead className="bg-slate-50 dark:bg-slate-700/50">
                     <tr>
                       <th className="text-left px-4 py-3 font-medium text-slate-500">Prestataire</th>
-                      <th className="text-left px-4 py-3 font-medium text-slate-500">Categorie</th>
+                      <th className="text-left px-4 py-3 font-medium text-slate-500">Catégorie</th>
                       <th className="text-left px-4 py-3 font-medium text-slate-500">Villes</th>
                       <th className="text-left px-4 py-3 font-medium text-slate-500">Note</th>
                       <th className="text-left px-4 py-3 font-medium text-slate-500">Statut</th>
@@ -1266,7 +1266,7 @@ export default function AdminDashboard() {
                 {/* Daily trend chart (simple bars) */}
                 {visitorStats.daily_trend.length > 0 && (
                   <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
-                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">Evolution (30 derniers jours)</h3>
+                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">Évolution (30 derniers jours)</h3>
                     <div className="flex items-end gap-1 h-32">
                       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {visitorStats.daily_trend.map((d: any) => {
@@ -1292,7 +1292,7 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {/* Top pages */}
                   <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
-                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">Pages les plus visitees</h3>
+                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">Pages les plus visitées</h3>
                     <div className="space-y-2">
                       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {visitorStats.top_pages.slice(0, 10).map((p: any) => (
