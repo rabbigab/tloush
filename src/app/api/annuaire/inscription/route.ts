@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
 
   // Validation minimale
   if (!first_name?.trim() || !last_name?.trim() || !phone?.trim() || !category?.trim()) {
-    return NextResponse.json({ error: 'Prenom, nom, telephone et categorie sont requis' }, { status: 400 })
+    return NextResponse.json({ error: 'Prénom, nom, téléphone et corps de métier sont requis' }, { status: 400 })
   }
 
   const { error } = await supabaseAdmin
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       osek_number: osek_number?.trim() || null,
       reference_name: reference_name?.trim() || null,
       reference_phone: reference_phone?.trim() || null,
-      years_experience: years_experience || null,
+      years_experience: years_experience ?? null,
     })
 
   if (error) {

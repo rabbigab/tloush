@@ -24,7 +24,7 @@ export default function InscriptionPrestatairePage() {
 
   const [form, setForm] = useState({
     first_name: '', last_name: '', phone: '', email: '',
-    category: '', specialties: [] as string[], service_areas: [] as string[],
+    categories: [] as string[], specialties: [] as string[], service_areas: [] as string[],
     description: '', years_experience: '',
     osek_number: '', reference_name: '', reference_phone: '',
   })
@@ -34,12 +34,13 @@ export default function InscriptionPrestatairePage() {
     setTouched(t => ({ ...t, [field]: true }))
   }
 
-  function toggleArray(field: 'specialties' | 'service_areas', value: string) {
+  function toggleArray(field: 'categories' | 'specialties' | 'service_areas', value: string) {
+    const maxItems = field === 'specialties' ? 5 : 10
     setForm(f => ({
       ...f,
       [field]: f[field].includes(value)
         ? f[field].filter(v => v !== value)
-        : f[field].length < (field === 'specialties' ? 5 : 10) ? [...f[field], value] : f[field],
+        : f[field].length < maxItems ? [...f[field], value] : f[field],
     }))
     setTouched(t => ({ ...t, [field]: true }))
   }
@@ -54,7 +55,7 @@ export default function InscriptionPrestatairePage() {
       else if (!isValidPhone(form.phone)) errors.push('Format de téléphone invalide (ex: 054-1234567 ou +972541234567)')
     }
     if (step === 1) {
-      if (!form.category) errors.push('Catégorie requise')
+      if (form.categories.length === 0) errors.push('Sélectionnez au moins un corps de métier')
       if (form.service_areas.length === 0) errors.push('Sélectionnez au moins une ville')
     }
     return errors
@@ -65,7 +66,7 @@ export default function InscriptionPrestatairePage() {
     if (field === 'first_name') return !form.first_name.trim()
     if (field === 'last_name') return !form.last_name.trim()
     if (field === 'phone') return !form.phone.trim() || !isValidPhone(form.phone)
-    if (field === 'category') return !form.category
+    if (field === 'categories') return form.categories.length === 0
     if (field === 'service_areas') return form.service_areas.length === 0
     return false
   }
@@ -94,11 +95,12 @@ export default function InscriptionPrestatairePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          category: form.categories.join(','),
           years_experience: form.years_experience ? parseInt(form.years_experience) : null,
         }),
       })
       if (res.ok) {
-        track('directory_provider_signup_completed', { category: form.category })
+        track('directory_provider_signup_completed', { categories: form.categories.join(',') })
         setDone(true)
         setStep(3)
       } else {
@@ -229,19 +231,21 @@ export default function InscriptionPrestatairePage() {
         <div className="space-y-5">
           <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Votre activité</h2>
           <div>
-            <label className="text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2 block">Catégorie *</label>
+            <label className="text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2 block">Corps de métier * (plusieurs choix possibles)</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {PROVIDER_CATEGORIES.map(cat => {
                 const Icon = cat.icon
+                const selected = form.categories.includes(cat.slug)
                 return (
-                  <button key={cat.slug} onClick={() => update('category', cat.slug)} className={`flex items-center gap-2 p-3 rounded-xl border text-sm transition-all ${form.category === cat.slug ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/30 text-brand-700' : isFieldInvalid('category') ? 'border-red-300 dark:border-red-700' : 'border-neutral-200 dark:border-slate-700 hover:border-neutral-300'}`}>
+                  <button key={cat.slug} onClick={() => toggleArray('categories', cat.slug)} className={`flex items-center gap-2 p-3 rounded-xl border text-sm transition-all ${selected ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/30 text-brand-700' : isFieldInvalid('categories') ? 'border-red-300 dark:border-red-700' : 'border-neutral-200 dark:border-slate-700 hover:border-neutral-300'}`}>
+                    {selected && <Check size={14} className="text-brand-600 shrink-0" />}
                     <Icon size={16} className={cat.iconColor} />
                     {cat.label}
                   </button>
                 )
               })}
             </div>
-            {isFieldInvalid('category') && <p className="text-xs text-red-500 mt-2">Sélectionnez une catégorie</p>}
+            {isFieldInvalid('categories') && <p className="text-xs text-red-500 mt-2">Sélectionnez au moins un corps de métier</p>}
           </div>
           <div>
             <label className="text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2 block">Zones d&apos;intervention * (sélectionnez vos villes)</label>

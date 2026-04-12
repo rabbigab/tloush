@@ -157,7 +157,7 @@ export const PROVIDER_CATEGORIES: CategoryInfo[] = [
     icon: Hammer,
     color: 'bg-orange-50 border-orange-200 dark:bg-orange-950/30 dark:border-orange-800',
     iconColor: 'text-orange-600 dark:text-orange-400',
-    description: 'Petits travaux, montage meubles, fixations, reparations diverses',
+    description: 'Petits travaux, montage, réparations, multi-services',
   },
 ]
 
