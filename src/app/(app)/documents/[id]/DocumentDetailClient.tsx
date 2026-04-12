@@ -100,6 +100,34 @@ const STATUS_CONFIG = {
   critical: { icon: AlertCircle, color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-200 dark:border-red-800', label: 'Problème' },
 }
 
+/**
+ * Rend les URLs dans un texte cliquables.
+ */
+function Linkify({ text }: { text: string }) {
+  const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g
+  const parts = text.split(urlRegex)
+
+  return (
+    <>
+      {parts.map((part, i) =>
+        urlRegex.test(part) ? (
+          <a
+            key={i}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-300 break-all"
+          >
+            {part}
+          </a>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  )
+}
+
 export default function DocumentDetailClient({ document: doc, originalUrl }: { document: DocumentData; originalUrl: string | null }) {
   const [actionDone, setActionDone] = useState(!!doc.action_completed_at)
   const [showOriginal, setShowOriginal] = useState(false)
@@ -369,7 +397,7 @@ export default function DocumentDetailClient({ document: doc, originalUrl }: { d
       {doc.summary_fr && (
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
           <h2 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Résumé</h2>
-          <p className="text-base text-slate-800 dark:text-slate-200 leading-relaxed">{doc.summary_fr}</p>
+          <p className="text-base text-slate-800 dark:text-slate-200 leading-relaxed"><Linkify text={doc.summary_fr} /></p>
         </div>
       )}
 
@@ -437,7 +465,7 @@ export default function DocumentDetailClient({ document: doc, originalUrl }: { d
                       <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{point.title}</p>
                       <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${config.bg} ${config.color}`}>{config.label}</span>
                     </div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">{point.description}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400"><Linkify text={point.description} /></p>
                   </div>
                 </div>
               )
@@ -634,7 +662,7 @@ export default function DocumentDetailClient({ document: doc, originalUrl }: { d
           </summary>
           <div className="px-6 pb-6">
             <div className="prose prose-sm dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
-              {analysis.full_analysis}
+              <Linkify text={analysis.full_analysis} />
             </div>
           </div>
         </details>

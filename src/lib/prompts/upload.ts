@@ -257,13 +257,66 @@ Si le montant brut ne correspond pas à la somme des lignes, signale-le en warni
 - Extraire : revenus déclarés, impôts payés, crédits d'impôt, solde dû ou remboursement
 - Vérifier les délais de recours/paiement
 
+=== GUIDE SPÉCIFIQUE AMENDES / CONTRAVENTIONS (דו"ח / קנס) ===
+document_type: utilise "official_letter" pour les amendes/contraventions.
+Pour TOUTE amende ou contravention (routière, municipale, etc.), tu DOIS extraire :
+- Le montant de l'amende (סכום הקנס) — MONTANT EXACT tel qu'écrit
+- La vitesse mesurée vs la vitesse autorisée (si amende routière) — CHIFFRES EXACTS lus sur le document
+- Le nombre de POINTS DE PÉNALITÉ (נקודות) — c'est CRITIQUE, le signaler dans attention_points comme "critical" si > 0
+- Le lieu et la date de l'infraction
+- Le numéro du véhicule (מספר רכב)
+- Le numéro du rapport/PV (מספר דו"ח)
+- La date limite de paiement (מועד אחרון לתשלום)
+- Le lien/URL de paiement en ligne s'il est visible
+- Le QR code : s'il y a un QR code sur le document, indique sa présence et essaie d'extraire l'URL associée
+- Les possibilités de recours/contestation (ערעור) et les délais
+
+ATTENTION POINTS obligatoires pour les amendes :
+- Si des points de permis sont retirés → attention_point "critical" : "X points de pénalité retirés — vérifiez votre solde de points"
+- Si la date limite de paiement est proche → attention_point "warning"
+- Si la vitesse mesurée dépasse largement la limite → attention_point "warning"
+- Toujours mentionner la possibilité de contester dans recommended_actions
+
+Ajoute un objet "fine_details" dans analysis_data :
+{
+  "fine_details": {
+    "fine_number": "numéro du PV/rapport",
+    "fine_amount": nombre en shekels,
+    "infraction_type": "excès de vitesse" | "stationnement" | "feu rouge" | "autre",
+    "infraction_date": "date de l'infraction",
+    "infraction_location": "lieu de l'infraction",
+    "vehicle_number": "numéro du véhicule",
+    "measured_speed": nombre ou null,
+    "allowed_speed": nombre ou null,
+    "penalty_points": nombre ou null (נקודות — TOUJOURS extraire si mentionné),
+    "payment_deadline": "date limite de paiement",
+    "appeal_deadline": "date limite de contestation ou null",
+    "discount_deadline": "date limite pour paiement réduit ou null",
+    "discount_amount": nombre ou null
+  }
+}
+
+Termes hébreux courants pour les amendes :
+- דו"ח / דוח = rapport/PV/contravention
+- קנס = amende
+- נקודות = points (de pénalité sur le permis)
+- מהירות = vitesse
+- מהירות מותרת = vitesse autorisée
+- מהירות נמדדה / מהירות שנמדדה = vitesse mesurée
+- עבירת תנועה = infraction routière
+- רישיון נהיגה = permis de conduire
+- מספר רכב = numéro de véhicule
+- ערעור = recours/contestation
+- הנחה = réduction (pour paiement rapide)
+
 Pour les factures/tickets (invoice, receipt, utility_bill, insurance) :
 - Extraire le fournisseur, le montant TTC, la date de la facture
 - Indiquer si c'est une dépense récurrente probable (mensuelle, bimestrielle, etc.)
 - Ajouter un champ "recurring_info" dans analysis_data: {"is_recurring": true/false, "frequency": "monthly"|"bimonthly"|"quarterly"|"annual"|"one_time", "provider": "nom du fournisseur", "amount": nombre}
 
-=== EXTRACTION DES INFORMATIONS DE PAIEMENT (CRITIQUE pour les factures) ===
-Pour TOUTE facture (invoice, utility_bill, insurance, receipt), tu DOIS chercher et extraire les informations de paiement.
+=== EXTRACTION DES INFORMATIONS DE PAIEMENT (CRITIQUE pour les factures ET amendes) ===
+Pour TOUTE facture (invoice, utility_bill, insurance, receipt) ET TOUTE amende/contravention (official_letter avec קנס/דו"ח), tu DOIS chercher et extraire les informations de paiement.
+Si un QR code est visible sur le document, mentionne-le dans payment_code et essaie d'extraire l'URL qu'il encode dans payment_url.
 Ajoute OBLIGATOIREMENT un objet "payment_info" dans analysis_data :
 {
   "payment_info": {
