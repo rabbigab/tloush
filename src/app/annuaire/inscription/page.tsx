@@ -6,7 +6,7 @@ import { ArrowLeft, ArrowRight, Check, Users, Star, Globe, ShieldCheck, Loader2,
 import { PROVIDER_CATEGORIES, PROVIDER_CITIES } from '@/types/directory'
 import { track } from '@/lib/analytics'
 
-const STEPS = ['Identit\u00e9', 'Activit\u00e9', 'V\u00e9rification', 'Confirmation']
+const STEPS = ['Identité', 'Activité', 'Vérification', 'Confirmation']
 
 function isValidPhone(phone: string): boolean {
   // Accept Israeli formats: 05X, +972, 972, or international
@@ -48,14 +48,14 @@ export default function InscriptionPrestatairePage() {
   function getStepErrors(): string[] {
     const errors: string[] = []
     if (step === 0) {
-      if (!form.first_name.trim()) errors.push('Pr\u00e9nom requis')
+      if (!form.first_name.trim()) errors.push('Prénom requis')
       if (!form.last_name.trim()) errors.push('Nom requis')
-      if (!form.phone.trim()) errors.push('T\u00e9l\u00e9phone requis')
-      else if (!isValidPhone(form.phone)) errors.push('Format de t\u00e9l\u00e9phone invalide (ex: 054-1234567 ou +972541234567)')
+      if (!form.phone.trim()) errors.push('Téléphone requis')
+      else if (!isValidPhone(form.phone)) errors.push('Format de téléphone invalide (ex: 054-1234567 ou +972541234567)')
     }
     if (step === 1) {
-      if (!form.category) errors.push('Cat\u00e9gorie requise')
-      if (form.service_areas.length === 0) errors.push('S\u00e9lectionnez au moins une ville')
+      if (!form.category) errors.push('Catégorie requise')
+      if (form.service_areas.length === 0) errors.push('Sélectionnez au moins une ville')
     }
     return errors
   }
@@ -106,7 +106,7 @@ export default function InscriptionPrestatairePage() {
         setError(data.error || 'Une erreur est survenue')
       }
     } catch {
-      setError('Erreur r\u00e9seau. R\u00e9essayez.')
+      setError('Erreur réseau. Réessayez.')
     }
     setLoading(false)
   }
@@ -119,19 +119,19 @@ export default function InscriptionPrestatairePage() {
         </div>
         <h1 className="text-2xl font-extrabold text-neutral-900 dark:text-white mb-3">Merci !</h1>
         <p className="text-neutral-500 dark:text-slate-400 mb-8">
-          Votre demande est en cours de v\u00e9rification. Notre \u00e9quipe vous contactera sous 48h pour un bref appel en fran\u00e7ais.
+          Votre demande est en cours de vérification. Notre équipe vous contactera sous 48h pour un bref appel en français.
         </p>
         <div className="bg-neutral-50 dark:bg-slate-900 rounded-2xl p-5 text-left text-sm text-neutral-600 dark:text-slate-300 space-y-2 mb-8">
           <p className="font-medium">Que se passe-t-il ensuite ?</p>
           <ol className="list-decimal list-inside space-y-1 text-neutral-500 dark:text-slate-400">
-            <li>V\u00e9rification de vos documents (24-48h)</li>
-            <li>Appel t\u00e9l\u00e9phonique en fran\u00e7ais (~5 min)</li>
+            <li>Vérification de vos documents (24-48h)</li>
+            <li>Appel téléphonique en français (~5 min)</li>
             <li>Publication de votre fiche sur l&apos;annuaire</li>
             <li>Vous recevez vos premiers contacts !</li>
           </ol>
         </div>
         <Link href="/annuaire" className="text-brand-600 hover:underline text-sm">
-          Retour \u00e0 l&apos;annuaire
+          Retour à l&apos;annuaire
         </Link>
       </div>
     )
@@ -142,19 +142,19 @@ export default function InscriptionPrestatairePage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12">
       <Link href="/annuaire" className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-brand-600 mb-8">
-        <ArrowLeft size={14} /> Retour \u00e0 l&apos;annuaire
+        <ArrowLeft size={14} /> Retour à l&apos;annuaire
       </Link>
 
       {/* Hero */}
       <div className="text-center mb-10">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-white mb-3">
-          Recevez des clients francophones qualifi\u00e9s
+          Recevez des clients francophones qualifiés
         </h1>
         <p className="text-neutral-500 dark:text-slate-400">Sans commission. Sans abonnement. 100% gratuit.</p>
         <div className="flex justify-center gap-6 mt-5 text-xs text-neutral-500 dark:text-slate-400">
           <span className="flex items-center gap-1"><Users size={14} /> Clients inscrits</span>
           <span className="flex items-center gap-1"><Globe size={14} /> Visible sur Google</span>
-          <span className="flex items-center gap-1"><Star size={14} /> Badge R\u00e9f\u00e9renc\u00e9</span>
+          <span className="flex items-center gap-1"><Star size={14} /> Badge Référencé</span>
         </div>
       </div>
 
@@ -174,18 +174,18 @@ export default function InscriptionPrestatairePage() {
       {/* Step 0: Identity */}
       {step === 0 && (
         <div className="space-y-4">
-          <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Vos coordonn\u00e9es</h2>
+          <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Vos coordonnées</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <input
-                placeholder="Pr\u00e9nom *"
+                placeholder="Prénom *"
                 required
                 value={form.first_name}
                 onChange={e => update('first_name', e.target.value)}
                 className={inputClass('first_name')}
                 style={{ width: '100%' }}
               />
-              {isFieldInvalid('first_name') && <p className="text-xs text-red-500 mt-1">Pr\u00e9nom requis</p>}
+              {isFieldInvalid('first_name') && <p className="text-xs text-red-500 mt-1">Prénom requis</p>}
             </div>
             <div>
               <input
@@ -201,7 +201,7 @@ export default function InscriptionPrestatairePage() {
           </div>
           <div>
             <input
-              placeholder="T\u00e9l\u00e9phone * (+972...)"
+              placeholder="Téléphone * (+972...)"
               required
               type="tel"
               value={form.phone}
@@ -210,7 +210,7 @@ export default function InscriptionPrestatairePage() {
             />
             {isFieldInvalid('phone') && (
               <p className="text-xs text-red-500 mt-1">
-                {!form.phone.trim() ? 'T\u00e9l\u00e9phone requis' : 'Format invalide (ex: 054-1234567 ou +972541234567)'}
+                {!form.phone.trim() ? 'Téléphone requis' : 'Format invalide (ex: 054-1234567 ou +972541234567)'}
               </p>
             )}
           </div>
@@ -227,9 +227,9 @@ export default function InscriptionPrestatairePage() {
       {/* Step 1: Activity */}
       {step === 1 && (
         <div className="space-y-5">
-          <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Votre activit\u00e9</h2>
+          <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Votre activité</h2>
           <div>
-            <label className="text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2 block">Cat\u00e9gorie *</label>
+            <label className="text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2 block">Catégorie *</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {PROVIDER_CATEGORIES.map(cat => {
                 const Icon = cat.icon
@@ -241,10 +241,10 @@ export default function InscriptionPrestatairePage() {
                 )
               })}
             </div>
-            {isFieldInvalid('category') && <p className="text-xs text-red-500 mt-2">S\u00e9lectionnez une cat\u00e9gorie</p>}
+            {isFieldInvalid('category') && <p className="text-xs text-red-500 mt-2">Sélectionnez une catégorie</p>}
           </div>
           <div>
-            <label className="text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2 block">Zones d&apos;intervention * (s\u00e9lectionnez vos villes)</label>
+            <label className="text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2 block">Zones d&apos;intervention * (sélectionnez vos villes)</label>
             <div className="flex flex-wrap gap-2">
               {PROVIDER_CITIES.map(city => (
                 <button key={city.slug} onClick={() => toggleArray('service_areas', city.label)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${form.service_areas.includes(city.label) ? 'bg-brand-100 text-brand-700 dark:bg-brand-900 dark:text-brand-300' : 'bg-neutral-100 dark:bg-slate-800 text-neutral-600 dark:text-slate-400 hover:bg-neutral-200'}`}>
@@ -252,25 +252,25 @@ export default function InscriptionPrestatairePage() {
                 </button>
               ))}
             </div>
-            {isFieldInvalid('service_areas') && <p className="text-xs text-red-500 mt-2">S\u00e9lectionnez au moins une ville</p>}
+            {isFieldInvalid('service_areas') && <p className="text-xs text-red-500 mt-2">Sélectionnez au moins une ville</p>}
           </div>
-          <textarea placeholder="Pr\u00e9sentez votre activit\u00e9 en quelques mots (500 car. max)" maxLength={500} value={form.description} onChange={e => update('description', e.target.value)} rows={3} className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none" />
-          <input placeholder="Ann\u00e9es d&apos;exp\u00e9rience" type="number" value={form.years_experience} onChange={e => update('years_experience', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none" />
+          <textarea placeholder="Présentez votre activité en quelques mots (500 car. max)" maxLength={500} value={form.description} onChange={e => update('description', e.target.value)} rows={3} className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none" />
+          <input placeholder="Années d'expérience" type="number" value={form.years_experience} onChange={e => update('years_experience', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none" />
         </div>
       )}
 
       {/* Step 2: Verification */}
       {step === 2 && (
         <div className="space-y-4">
-          <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">V\u00e9rification</h2>
-          <p className="text-sm text-neutral-500 dark:text-slate-400 mb-4">Ces informations nous aident \u00e0 r\u00e9f\u00e9rencer votre profil. Elles ne sont pas affich\u00e9es publiquement.</p>
-          <input placeholder="Num\u00e9ro d&apos;Osek (osek patur ou murshe)" value={form.osek_number} onChange={e => update('osek_number', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none" />
+          <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Vérification</h2>
+          <p className="text-sm text-neutral-500 dark:text-slate-400 mb-4">Ces informations nous aident à référencer votre profil. Elles ne sont pas affichées publiquement.</p>
+          <input placeholder="Numéro d'Osek (osek patur ou murshe)" value={form.osek_number} onChange={e => update('osek_number', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none" />
           <div className="bg-neutral-50 dark:bg-slate-900 rounded-xl p-4">
-            <p className="text-sm font-medium text-neutral-700 dark:text-slate-300 mb-3">R\u00e9f\u00e9rence client (optionnel)</p>
+            <p className="text-sm font-medium text-neutral-700 dark:text-slate-300 mb-3">Référence client (optionnel)</p>
             <p className="text-xs text-neutral-400 mb-3">Donnez-nous le contact d&apos;un ancien client satisfait. Nous l&apos;appellerons pour confirmer.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <input placeholder="Nom du client" value={form.reference_name} onChange={e => update('reference_name', e.target.value)} className="px-4 py-3 rounded-xl border border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none" />
-              <input placeholder="T\u00e9l\u00e9phone du client" value={form.reference_phone} onChange={e => update('reference_phone', e.target.value)} className="px-4 py-3 rounded-xl border border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none" />
+              <input placeholder="Téléphone du client" value={form.reference_phone} onChange={e => update('reference_phone', e.target.value)} className="px-4 py-3 rounded-xl border border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none" />
             </div>
           </div>
         </div>
