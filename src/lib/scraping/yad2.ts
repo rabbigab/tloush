@@ -1,14 +1,33 @@
 // =====================================================
 // Scraper Yad2 — Annonces immobilieres
 // =====================================================
-// Yad2 a une API JSON interne qu'on peut interroger directement.
-// Plus fiable que du scraping HTML et moins fragile.
+// Yad2 utilise DataDome (protection anti-bot) qui bloque les requetes HTTP
+// directes depuis les IP de datacenter. On utilise donc Playwright pour
+// naviguer sur le vrai site Yad2 avec un vrai fingerprint navigateur,
+// et on intercepte les reponses JSON de l'API en arriere-plan.
 
+import type { Browser } from 'playwright-core'
 import type { Listing, ListingType, PropertyType, ScrapingResult } from '@/types/listings'
 import { geocodeAddress, geocodeCity } from './geocode'
 
-const YAD2_API_BASE = 'https://gw.yad2.co.il/feed-search-legacy/realestate'
-
+// Dynamic imports pour eviter le bundling webpack (meme pattern que facebook.ts)
+async function launchBrowser(): Promise<Browser> {
+  const chromium = (await import('@sparticuz/chromium')).default
+  const pw = await import('playwright-core')
+  const executablePath = await chromium.executablePath()
+  return pw.chromium.launch({
+    args: [
+      ...chromium.args,
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+    ],
+    executablePath,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    headless: (chromium as any).headless ?? true,
+  })
+}
 // Mapping des types de propriete Yad2 -> nos types
 const PROPERTY_TYPE_MAP: Record<string, PropertyType> = {
   'דירה': 'apartment',
@@ -70,7 +89,6 @@ interface Yad2ApiResponse {
     }
   }
 }
-
 function parsePrice(priceStr?: string): number | null {
   if (!priceStr) return null
   const cleaned = priceStr.replace(/[^\d]/g, '')
@@ -124,9 +142,90 @@ function extractFieldValue(
   }
   return undefined
 }
-
 /**
- * Scrape les annonces Yad2 pour une ville et un type donne.
+ * Traite les items Yad2 en listings normalises.
+ */
+async function processYad2Items(
+  items: Yad2FeedItem[],
+  listingType: ListingType
+): Promise<Partial<Listing>[]> {
+  const listings: Partial<Listing>[] = []
+
+  for (const item of items) {
+    if (!item.id) continue
+
+    const rows = [item.row_1, item.row_2, item.row_3, item.row_4]
+    const roomsText = item.Rooms_text || extractFieldValue(rows, 'rooms')
+    const sqmText = item.SquareMeter_text || extractFieldValue(rows, 'square_meters')
+    const floorText = item.Floor_text || extractFieldValue(rows, 'floor')
+
+    // Geocoding: utiliser les coordonnees Yad2 si disponibles, sinon geocoder
+    let latitude = item.coordinates?.latitude ?? null
+    let longitude = item.coordinates?.longitude ?? null
+
+    if (!latitude || !longitude) {
+      const address = item.street || item.address || ''
+      const city = item.city || ''
+      if (address && city) {
+        const coords = await geocodeAddress(address, city)
+        if (coords) {
+          latitude = coords.lat
+          longitude = coords.lng
+        }
+      } else if (city) {
+        const coords = geocodeCity(city)
+        if (coords) {
+          latitude = coords.lat
+          longitude = coords.lng
+        }
+      }
+    }
+
+    listings.push({
+      source: 'yad2',
+      source_id: String(item.id),
+      source_url: `https://www.yad2.co.il/item/${item.link_token || item.id}`,
+      listing_type: listingType,
+      property_type: mapPropertyType(item.PropertyType_text),
+
+      city: item.city || 'Inconnu',
+      neighborhood: item.neighborhood || null,
+      street: item.street || null,
+      address_full: [item.street, item.neighborhood, item.city].filter(Boolean).join(', ') || null,
+      latitude,
+      longitude,
+
+      price: parsePrice(item.price),
+      currency: 'ILS',
+      rooms: parseRooms(roomsText),
+      floor: parseFloor(floorText),
+      total_floors: parseFloor(item.TotalFloor_text),
+      size_sqm: parseSqm(sqmText),
+      balcony_sqm: parseSqm(item.Balcony_text),
+      parking: hasBooleanFeature(item.Parking_text),
+      elevator: hasBooleanFeature(item.Elevator_text),
+      air_conditioning: hasBooleanFeature(item.AirConditioner_text),
+      furnished: hasBooleanFeature(item.Furniture_text),
+
+      entry_date: item.EntranceDate_text || null,
+      published_at: item.date_added || item.date || null,
+      scraped_at: new Date().toISOString(),
+
+      title: [item.title_1, item.title_2].filter(Boolean).join(' — ') || null,
+      description: item.info_text || null,
+      images: (item.images || []).map(img => img.src).filter(Boolean) as string[],
+      contact_name: item.contact_name || null,
+
+      is_active: true,
+    })
+  }
+
+  return listings
+}
+/**
+ * Scrape les annonces Yad2 via Playwright pour contourner DataDome.
+ * On navigue sur la vraie page Yad2 (fingerprint navigateur reel)
+ * et on intercepte les reponses JSON de l'API en arriere-plan.
  */
 export async function scrapeYad2(
   listingType: ListingType = 'rent',
@@ -135,120 +234,77 @@ export async function scrapeYad2(
 ): Promise<{ listings: Partial<Listing>[]; errors: string[] }> {
   const listings: Partial<Listing>[] = []
   const errors: string[] = []
+  let browser: Browser | null = null
 
   const endpoint = listingType === 'rent' ? 'rent' : 'forsale'
 
-  for (let page = 1; page <= maxPages; page++) {
-    try {
-      const params = new URLSearchParams({
-        page: String(page),
-      })
+  try {
+    browser = await launchBrowser()
+    const page = await browser.newPage()
 
-      if (cityName) {
-        params.set('city', cityName)
-      }
+    // Intercepter les reponses de l'API Yad2 (gw.yad2.co.il)
+    // Yad2 fait des appels internes depuis le navigateur vers son API
+    const capturedItems: Yad2FeedItem[] = []
 
-      const url = `${YAD2_API_BASE}/${endpoint}?${params}`
-
-      const res = await fetch(url, {
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept-Language': 'he-IL,he;q=0.9,en-US;q=0.8',
-        },
-      })
-
-      if (!res.ok) {
-        errors.push(`Yad2 page ${page}: HTTP ${res.status}`)
-        continue
-      }
-
-      const data: Yad2ApiResponse = await res.json()
-      const items = data?.data?.feed?.feed_items ?? []
-
-      for (const item of items) {
-        if (!item.id) continue
-
-        const rows = [item.row_1, item.row_2, item.row_3, item.row_4]
-        const roomsText = item.Rooms_text || extractFieldValue(rows, 'rooms')
-        const sqmText = item.SquareMeter_text || extractFieldValue(rows, 'square_meters')
-        const floorText = item.Floor_text || extractFieldValue(rows, 'floor')
-
-        // Geocoding: utiliser les coordonnees Yad2 si disponibles, sinon geocoder
-        let latitude = item.coordinates?.latitude ?? null
-        let longitude = item.coordinates?.longitude ?? null
-
-        if (!latitude || !longitude) {
-          const address = item.street || item.address || ''
-          const city = item.city || ''
-          if (address && city) {
-            const coords = await geocodeAddress(address, city)
-            if (coords) {
-              latitude = coords.lat
-              longitude = coords.lng
-            }
-          } else if (city) {
-            const coords = geocodeCity(city)
-            if (coords) {
-              latitude = coords.lat
-              longitude = coords.lng
-            }
+    page.on('response', async (response) => {
+      try {
+        const url = response.url()
+        // L'API Yad2 est appelee en fond quand on navigue sur le site
+        if (url.includes('gw.yad2.co.il') && url.includes('realestate')) {
+          const contentType = response.headers()['content-type'] || ''
+          if (contentType.includes('application/json')) {
+            const json: Yad2ApiResponse = await response.json()
+            const items = json?.data?.feed?.feed_items ?? []
+            capturedItems.push(...items)
           }
         }
+      } catch {
+        // Reponse non-JSON ou erreur de parsing, ignorer
+      }
+    })
 
-        const listing: Partial<Listing> = {
-          source: 'yad2',
-          source_id: String(item.id),
-          source_url: `https://www.yad2.co.il/item/${item.link_token || item.id}`,
-          listing_type: listingType,
-          property_type: mapPropertyType(item.PropertyType_text),
+    for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+      try {
+        // Vider les items captures avant chaque page
+        capturedItems.length = 0
 
-          city: item.city || 'Inconnu',
-          neighborhood: item.neighborhood || null,
-          street: item.street || null,
-          address_full: [item.street, item.neighborhood, item.city].filter(Boolean).join(', ') || null,
-          latitude,
-          longitude,
+        // Construire l'URL de la page Yad2
+        const params = new URLSearchParams({ page: String(pageNum) })
+        if (cityName) params.set('city', cityName)
+        const url = `https://www.yad2.co.il/realestate/${endpoint}?${params}`
 
-          price: parsePrice(item.price),
-          currency: 'ILS',
-          rooms: parseRooms(roomsText),
-          floor: parseFloor(floorText),
-          total_floors: parseFloor(item.TotalFloor_text),
-          size_sqm: parseSqm(sqmText),
-          balcony_sqm: parseSqm(item.Balcony_text),
-          parking: hasBooleanFeature(item.Parking_text),
-          elevator: hasBooleanFeature(item.Elevator_text),
-          air_conditioning: hasBooleanFeature(item.AirConditioner_text),
-          furnished: hasBooleanFeature(item.Furniture_text),
+        // Naviguer — DataDome voit un vrai fingerprint Chromium
+        await page.goto(url, { waitUntil: 'networkidle', timeout: 45000 })
 
-          entry_date: item.EntranceDate_text || null,
-          published_at: item.date_added || item.date || null,
-          scraped_at: new Date().toISOString(),
+        // Attendre que les appels API se completent
+        await page.waitForTimeout(3000)
 
-          title: [item.title_1, item.title_2].filter(Boolean).join(' — ') || null,
-          description: item.info_text || null,
-          images: (item.images || []).map(img => img.src).filter(Boolean) as string[],
-          contact_name: item.contact_name || null,
-
-          is_active: true,
+        if (capturedItems.length === 0) {
+          errors.push(`Yad2 page ${pageNum}: aucune donnee interceptee (possible blocage)`)
+          continue
         }
 
-        listings.push(listing)
-      }
+        const pageListings = await processYad2Items(capturedItems, listingType)
+        listings.push(...pageListings)
 
-      // Respecter le rate limit
-      if (page < maxPages) {
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        // Pause entre pages
+        if (pageNum < maxPages) {
+          await page.waitForTimeout(2000)
+        }
+      } catch (err) {
+        errors.push(`Yad2 page ${pageNum}: ${err instanceof Error ? err.message : 'Unknown error'}`)
       }
-    } catch (err) {
-      errors.push(`Yad2 page ${page}: ${err instanceof Error ? err.message : 'Unknown error'}`)
     }
+
+    await page.close()
+  } catch (err) {
+    errors.push(`Yad2 browser: ${err instanceof Error ? err.message : 'Unknown error'}`)
+  } finally {
+    if (browser) await browser.close()
   }
 
   return { listings, errors }
 }
-
 /**
  * Scrape Yad2 pour toutes les villes principales.
  */
