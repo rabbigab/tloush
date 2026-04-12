@@ -15,6 +15,10 @@
     {
       "path": "/api/cron/annuaire-followup",
       "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/cron/scrape-listings",
+      "schedule": "0 5 * * *"
     }
   ]
 }
