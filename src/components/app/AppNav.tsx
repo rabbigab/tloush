@@ -37,6 +37,7 @@ const TOOLS_SECTIONS = [
   {
     title: 'Finances',
     items: [
+      { label: 'Remboursement impots', href: '/tax-refund', icon: Calculator },
       { label: 'Mashkanta', href: '/mashkanta', icon: Landmark },
       { label: 'Import bancaire', href: '/bank-import', icon: FileSpreadsheet },
     ],
@@ -103,6 +104,7 @@ const MOBILE_SECTIONS = [
   {
     title: 'Finances',
     items: [
+      { label: 'Remboursement impots', href: '/tax-refund', icon: Calculator },
       { label: 'Mashkanta', href: '/mashkanta', icon: Landmark },
       { label: 'Import bancaire', href: '/bank-import', icon: FileSpreadsheet },
     ],
