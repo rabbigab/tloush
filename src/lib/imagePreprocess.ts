@@ -29,14 +29,22 @@ export async function preprocessImage(inputBuffer: Buffer, mimeType: string): Pr
   if (quality === 'good' && metadata.width && metadata.width > 2000) {
     const resized = await sharp(inputBuffer)
       .resize({ width: 2000, fit: 'inside', kernel: 'lanczos3' })
+      .normalize()
+      .sharpen({ sigma: 0.8, m1: 0.5, m2: 1.5 })
       .jpeg({ quality: 90 })
       .toBuffer()
-    return { buffer: resized, enhanced: true, quality, appliedFixes: ['downscale_large'] }
+    return { buffer: resized, enhanced: true, quality, appliedFixes: ['downscale_large', 'normalize', 'sharpen'] }
   }
 
-  // If image looks fine and small enough, return as-is
+  // Pour les images "good" de taille normale, appliquer quand meme
+  // normalize + sharpen pour ameliorer la lisibilite de l'hebreu
   if (quality === 'good') {
-    return { buffer: inputBuffer, enhanced: false, quality, appliedFixes: [] }
+    const enhanced = await sharp(inputBuffer)
+      .normalize()
+      .sharpen({ sigma: 0.8, m1: 0.5, m2: 1.5 })
+      .png({ quality: 95 })
+      .toBuffer()
+    return { buffer: enhanced, enhanced: true, quality, appliedFixes: ['normalize', 'sharpen'] }
   }
 
   // 2. Convert to sRGB colorspace if needed (some scans use CMYK)
