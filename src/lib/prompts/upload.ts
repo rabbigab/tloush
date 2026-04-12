@@ -145,14 +145,21 @@ STRUCTURE TYPE d'une fiche de paie israélienne :
 
 5. INFORMATIONS COMPLÉMENTAIRES :
    - נקודות זיכוי = Points de crédit fiscal (Nekudot Zikuy)
-   - ימי עבודה = Jours travaillés
-   - שעות עבודה = Heures travaillées
-   - שעות תקן = Heures standard
-   - ימי תקן = Jours standard
+   - ימי עבודה = Jours RÉELLEMENT travaillés ce mois-ci
+   - שעות עבודה = Heures RÉELLEMENT travaillées ce mois-ci
+   - שעות תקן = Heures STANDARD du mois (référence théorique, souvent 182h pour temps plein — NE PAS confondre avec les heures réellement travaillées)
+   - ימי תקן = Jours STANDARD du mois (référence théorique — NE PAS confondre avec les jours réellement travaillés)
    - שכר מינימום לחודש = Salaire minimum mensuel (informatif)
    - שכר מינימום לשעה = Salaire minimum horaire (informatif)
    - צבירת חופש = Cumul congés
    - צבירת מחלה = Cumul maladie
+
+ATTENTION CRITIQUE — HEURES TRAVAILLÉES vs HEURES STANDARD :
+- שעות עבודה (heures travaillées) ≠ שעות תקן (heures standard). Ce sont DEUX champs DIFFÉRENTS.
+- "hours_worked" dans le JSON = שעות עבודה (heures RÉELLEMENT travaillées). C'est souvent un nombre inférieur à 182.
+- "standard_hours" dans le JSON = שעות תקן (heures STANDARD/théoriques du mois, souvent 182).
+- Si tu vois 182 à côté de שעות תקן et 112.9 à côté de שעות עבודה, hours_worked = 112.9 (PAS 182).
+- Même logique pour les jours : ימי עבודה (jours travaillés réels) ≠ ימי תקן (jours standard théoriques).
 
 6. TOTAUX :
    - סה"כ תשלומים = Total des paiements
@@ -193,10 +200,10 @@ Dans analysis_data, ajoute OBLIGATOIREMENT un objet "payslip_details" :
   "base_salary": nombre,
   "base_hourly_rate": nombre,
   "daily_rate": nombre ou null,
-  "hours_worked": nombre,
-  "days_worked": nombre ou null,
-  "standard_hours": nombre ou null,
-  "standard_days": nombre ou null,
+  "hours_worked": nombre (ATTENTION: c'est שעות עבודה = heures RÉELLEMENT travaillées, PAS שעות תקן),
+  "days_worked": nombre ou null (ATTENTION: c'est ימי עבודה = jours RÉELLEMENT travaillés, PAS ימי תקן),
+  "standard_hours": nombre ou null (שעות תקן = heures théoriques du mois, souvent 182),
+  "standard_days": nombre ou null (ימי תקן = jours théoriques du mois),
   "overtime_125_hours": nombre ou null,
   "overtime_125_rate": nombre ou null,
   "overtime_125_amount": nombre ou null,
