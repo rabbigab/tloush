@@ -78,6 +78,7 @@ const MOBILE_SECTIONS = [
     title: 'Documents',
     items: [
       { label: 'Depenses', href: '/expenses', icon: Wallet },
+      { label: 'Ma famille', href: '/family', icon: Users },
     ],
   },
   {
