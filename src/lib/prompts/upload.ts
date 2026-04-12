@@ -246,16 +246,24 @@ Si le montant brut ne correspond pas à la somme des lignes, signale-le en warni
 - Extraire les montants d'allocation, dates de paiement, périodes couvertes
 - Vérifier si un délai de réponse/recours est mentionné → action_required = true
 - Termes clés : קצבה (allocation), תביעה (demande), זכאות (éligibilité), ערעור (appel), מועד אחרון (date limite)
+- Types d'allocations : קצבת ילדים (allocations familiales), קצבת זקנה (retraite), דמי אבטלה (chômage), דמי לידה (congé maternité), נכות (invalidité), שאירים (survivants)
+- Extraire : numéro de dossier (מספר תיק), dates de versement, montants mensuels
+- Si convocation (הזמנה) → action_required = true, extraire date et lieu du RDV
 
 === GUIDE SPÉCIFIQUE CONTRATS DE TRAVAIL (חוזה עבודה) ===
-- Vérifier que le salaire proposé ≥ salaire minimum
+- Vérifier que le salaire proposé ≥ salaire minimum (5 880₪/mois, 32.3₪/h)
 - Identifier : période d'essai, préavis, clause de non-concurrence, heures de travail
-- Termes clés : תקופת ניסיון (période d'essai), הודעה מוקדמת (préavis), שעות עבודה (heures), חופשה שנתית (congé annuel)
+- Extraire dans analysis_data un objet "contract_details" : salaire convenu, horaires, avantages, date de début, durée
+- Termes clés : תקופת ניסיון (période d'essai), הודעה מוקדמת (préavis), שעות עבודה (heures), חופשה שנתית (congé annuel), שכר (salaire), תנאים סוציאליים (conditions sociales)
+- Vérifications : pension mentionnée ? Keren Hishtalmut ? Jours de congé ≥ minimum légal ?
 
 === GUIDE SPÉCIFIQUE DOCUMENTS FISCAUX (מס הכנסה) ===
-- Identifier le type : avis d'imposition (שומה), formulaire annuel (106), demande de remboursement, confirmation
-- Extraire : revenus déclarés, impôts payés, crédits d'impôt, solde dû ou remboursement
+- Identifier le type : avis d'imposition (שומה), formulaire annuel (106), formulaire 101, demande de remboursement, confirmation
+- Extraire : revenus déclarés, impôts payés, crédits d'impôt (נקודות זיכוי), solde dû ou remboursement
 - Vérifier les délais de recours/paiement
+- Formulaire 106 (טופס 106) : résumé annuel employeur → extraire total brut annuel, total retenues, total net
+- Formulaire 101 (טופס 101) : données personnelles pour l'employeur → vérifier points de crédit, situation familiale
+- Termes : שומה (avis), החזר מס (remboursement), ניכוי במקור (retenue à la source), הכנסה חייבת (revenu imposable)
 
 === GUIDE SPÉCIFIQUE AMENDES / CONTRAVENTIONS (דו"ח / קנס) ===
 document_type: utilise "official_letter" pour les amendes/contraventions.
@@ -308,6 +316,69 @@ Termes hébreux courants pour les amendes :
 - מספר רכב = numéro de véhicule
 - ערעור = recours/contestation
 - הנחה = réduction (pour paiement rapide)
+
+=== GUIDE SPÉCIFIQUE CONTRAT DE BAIL (חוזה שכירות) ===
+document_type: "rental"
+Extraire dans analysis_data un objet "rental_details" :
+- Loyer mensuel (שכר דירה), charges incluses ou non
+- Montant de la caution/dépôt (פיקדון / ערבות)
+- Durée du bail, dates de début et fin
+- Option de renouvellement (אופציה)
+- Conditions de résiliation, préavis requis
+- Indexation du loyer (הצמדה למדד)
+- Qui paie : ועד בית (charges copropriété), ארנונה (taxe municipale), חשמל (électricité), מים (eau), גז (gaz)
+- Vérifications : préavis raisonnable ? Caution ≤ 3 mois ? Conditions abusives ?
+
+=== GUIDE SPÉCIFIQUE ARNONA (ארנונה) — Taxe municipale ===
+document_type: "invoice" ou "utility_bill"
+- Extraire : montant, période, surface du bien (מ"ר), taux par m², réductions applicables
+- Réductions courantes : olim (עולים חדשים — réduction 1ère année), étudiant, retraité, famille nombreuse, handicap
+- Termes : עירייה / מועצה (mairie/conseil), חיוב (facturation), הנחה (réduction), שטח (surface)
+- Toujours extraire le lien de paiement en ligne et le numéro de compte (מספר נכס)
+
+=== GUIDE SPÉCIFIQUE FACTURES SERVICES (חשמל, מים, גז, אינטרנט) ===
+document_type: "utility_bill"
+- Extraire : fournisseur, montant, période de consommation, consommation (kWh, m³)
+- Comparer la consommation au mois précédent si indiqué
+- Fournisseurs courants : חברת החשמל (IEC), מקורות/עין נטפים (eau), סופרגז/אמישראגז (gaz), בזק/פרטנר/הוט (télécom)
+- Toujours extraire payment_info avec lien de paiement
+
+=== GUIDE SPÉCIFIQUE ASSURANCE (ביטוח) ===
+document_type: "insurance"
+- Types : ביטוח רכב (auto), ביטוח דירה (habitation), ביטוח בריאות (santé complémentaire), ביטוח חיים (vie), ביטוח נסיעות (voyage)
+- Extraire : compagnie, numéro de police (מספר פוליסה), couvertures, franchises (השתתפות עצמית), primes mensuelles/annuelles
+- Date d'expiration de la police → attention_point si proche
+- Termes : פוליסה (police), כיסוי (couverture), פרמיה (prime), תביעה (réclamation)
+
+=== GUIDE SPÉCIFIQUE PENSION / RETRAITE (פנסיה) ===
+document_type: "pension"
+- Types de caisses : קרן פנסיה (caisse de retraite), ביטוח מנהלים (assurance dirigeants), קרן השתלמות (formation), קופת גמל (épargne)
+- Extraire : nom de la caisse, solde accumulé, cotisations mensuelles (employé + employeur), rendements
+- Caisses courantes : מגדל, הראל, כלל, מנורה, אלטשולר שחם, מיטב דש
+- Vérifier : frais de gestion (דמי ניהול) — normal ≤ 1.5% sur l'épargne, ≤ 4% sur les cotisations
+- attention_point si frais de gestion élevés
+
+=== GUIDE SPÉCIFIQUE RELEVÉ BANCAIRE (דף חשבון) ===
+document_type: "bank"
+- Extraire : banque, numéro de compte, solde d'ouverture et de clôture, période
+- Banques : לאומי, הפועלים, דיסקונט, מזרחי טפחות, בינלאומי (FIBI)
+- Identifier les mouvements récurrents (salaire, loyer, prélèvements)
+- Alerter si découvert (יתרה שלילית / חריגה ממסגרת אשראי) → attention_point "warning"
+
+=== GUIDE SPÉCIFIQUE LETTRE DE LICENCIEMENT (מכתב פיטורין) ===
+document_type: "official_letter"
+- CRITIQUE : is_urgent = true, action_required = true
+- Extraire : date de notification, date effective de fin, motif invoqué, indemnités mentionnées
+- Vérifier : préavis légal respecté ? (1 jour/mois les 6 premiers mois, puis progressif, 1 mois complet après 1 an)
+- Droits du salarié : indemnités de licenciement (פיצויי פיטורין = 1 mois de salaire par année d'ancienneté), libération de la pension (שחרור כספי פיצויים)
+- Recommander de consulter un avocat en droit du travail → should_consult_pro = true
+- Termes : פיטורין (licenciement), שימוע (audience préalable), פיצויים (indemnités), הודעה מוקדמת (préavis)
+
+=== GUIDE SPÉCIFIQUE KUPAT HOLIM / SANTÉ (קופת חולים) ===
+document_type: "health_insurance"
+- Caisses : כללית, מכבי, מאוחדת, לאומית
+- Types de documents : relevé de cotisation, confirmation d'affiliation, résultats d'examens, ordonnance
+- Extraire : caisse, niveau de couverture (בסיסי/כסף/זהב/פלטינום), cotisation mensuelle complémentaire
 
 Pour les factures/tickets (invoice, receipt, utility_bill, insurance) :
 - Extraire le fournisseur, le montant TTC, la date de la facture
