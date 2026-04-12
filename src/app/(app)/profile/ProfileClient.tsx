@@ -152,6 +152,29 @@ export default function ProfileClient({
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 w-full">
 
+        {/* CTA profil enrichi */}
+        <Link
+          href="/profile/edit"
+          className="block bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200 dark:border-blue-800 rounded-2xl p-5 hover:shadow-md transition-all group"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center shrink-0">
+              <Pencil size={20} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-slate-900 dark:text-white">Completer mon profil</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Situation familiale, alyah, emploi, sante... Pour des analyses personnalisees.
+              </p>
+            </div>
+            <div className="text-blue-600 group-hover:translate-x-1 transition-transform">
+              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+        </Link>
+
         {/* Infos compte */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
           <h2 className="section-heading mb-4 flex items-center gap-2">
