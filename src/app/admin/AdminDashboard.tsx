@@ -199,7 +199,7 @@ export default function AdminDashboard() {
     try {
       const [activeRes, pendingRes, statsRes] = await Promise.all([
         fetch('/api/admin/prestataires?status=active'),
-        fetch('/api/admin/prestataires?status=pending'),
+        fetch('/api/admin/prestataires?status=applications'),
         fetch('/api/admin/annuaire-stats'),
       ])
       if (activeRes.ok) {
