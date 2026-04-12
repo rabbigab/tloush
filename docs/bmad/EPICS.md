@@ -542,4 +542,417 @@
 | 6. Dashboard ameliore | 3 | ~8h | P1 |
 | 7. Comparaison documents | 3 | ~9h | P2 |
 
-**Total estime : ~70h de developpement**
+**Total estime V3 : ~70h de developpement**
+
+---
+
+# Tloush V4 — Epics & User Stories
+
+> Version: 4.0
+> Date: 2026-04-12
+> Voir aussi: `v4-FEASIBILITY.md`, `v4-ARCHITECTURE.md`, `v4-SPRINT-PLAN.md`
+
+---
+
+## EPIC 9 : Profil utilisateur enrichi (PREREQUIS)
+**Objectif :** Collecter les donnees necessaires pour personnaliser les calculs fiscaux, droits et miluim
+**Sprint :** 0 (V4)
+**Priorite :** P0 — Bloquant pour EPIC 11, 12, 14
+
+### Stories
+
+#### 9.1 — Migration profil + champs enrichis
+**En tant que** developpeur,
+**Je dois** enrichir la table profiles avec les champs necessaires,
+**Pour** debloquer les features fiscales et droits.
+
+**Criteres d'acceptation :**
+- [ ] Migration SQL : `marital_status`, `aliyah_year`, `children_count`, `children_birth_dates[]`, `disability_level`, `employment_status`, `spouse_profile_id`
+- [ ] Validation Zod cote API (enums stricts)
+- [ ] RLS: chaque user ne peut lire/modifier que son propre profil
+- [ ] Seed optionnel pour tests
+
+**Effort :** 1h
+**Impact :** Bloquant
+
+#### 9.2 — Page profil edition
+**En tant que** utilisateur,
+**Je veux** completer mon profil avec mes informations personnelles,
+**Pour** que Tloush personnalise son analyse pour moi.
+
+**Criteres d'acceptation :**
+- [ ] Page `/profile/edit` avec sections : situation familiale, alyah, enfants, sante, emploi
+- [ ] Formulaire reactif avec validation en temps reel
+- [ ] Progress bar "Profil rempli a X%"
+- [ ] Auto-save apres chaque modification
+- [ ] Toast de confirmation
+- [ ] Onboarding post-inscription qui pousse a remplir
+
+**Effort :** 2h
+**Impact :** Tres eleve (conversion + qualite des analyses)
+
+---
+
+## EPIC 10 : Monitoring administrateur
+**Objectif :** Suivre la sante technique et financiere de Tloush en temps reel
+**Sprint :** 1 (V4)
+**Priorite :** P1
+
+### Stories
+
+#### 10.1 — Dashboard metriques de performance
+**En tant que** administrateur Tloush,
+**Je veux** voir les metriques de performance d'analyse en temps reel,
+**Pour** detecter rapidement les degradations de service.
+
+**Criteres d'acceptation :**
+- [ ] Page admin `/admin/metrics` accessible aux roles `admin` uniquement (RLS)
+- [ ] Affichage du temps moyen d'analyse par type de document (24h, 7j, 30j)
+- [ ] Taux d'erreur global et par endpoint (`/api/extract`, `/api/upload`)
+- [ ] Nombre de documents analyses par heure (graphique ligne)
+- [ ] Temps de reponse P50 / P95 / P99 pour chaque appel Claude
+- [ ] Filtres : periode, type de document, plan utilisateur
+- [ ] Auto-refresh toutes les 60 secondes
+
+**Effort :** 5h
+**Impact :** Eleve (qualite de service)
+
+#### 10.2 — Suivi des couts Claude API
+**En tant que** administrateur,
+**Je veux** voir les couts Claude par utilisateur et par jour,
+**Pour** identifier les abus et controler la marge.
+
+**Criteres d'acceptation :**
+- [ ] Migration : `documents` + `tokens_in, tokens_out, duration_ms, error_code, model`
+- [ ] Wrapper centralise autour de `anthropic.messages.create` qui logge tout
+- [ ] Vue admin : cout total quotidien / hebdo / mensuel
+- [ ] Top 10 utilisateurs les plus couteux
+- [ ] Cout moyen par document analyse (par type)
+- [ ] Alerte email si cout journalier > seuil configurable
+
+**Effort :** 4h
+**Impact :** Tres eleve (rentabilite)
+
+#### 10.3 — Journal d'erreurs centralise
+**En tant que** administrateur,
+**Je veux** consulter les erreurs survenues sur le produit,
+**Pour** corriger les bugs avant qu'ils n'impactent trop d'utilisateurs.
+
+**Criteres d'acceptation :**
+- [ ] Table `error_log` : id, user_id, endpoint, error_message, stack_trace, severity, resolved, created_at
+- [ ] Capture automatique des erreurs serveur 5xx
+- [ ] Vue admin avec filtres severite (info / warning / error / critical)
+- [ ] Bouton "marquer comme resolu" avec note
+- [ ] Compteur d'occurrences pour erreurs identiques
+- [ ] Export CSV des erreurs sur une periode
+
+**Effort :** 3h
+**Impact :** Moyen
+
+---
+
+## EPIC 11 : Module famille UI
+**Objectif :** Permettre la gestion partagee des documents au sein du foyer
+**Sprint :** 2 (V4)
+**Priorite :** P1 — Debloque EPIC 12 et 14
+
+### Stories
+
+#### 11.1 — Gestion des membres de la famille
+**En tant que** parent abonne au plan Famille,
+**Je veux** ajouter et gerer les membres de mon foyer,
+**Pour** centraliser les documents de toute la famille.
+
+**Criteres d'acceptation :**
+- [ ] Page `/family` accessible aux abonnes Famille uniquement (gate via subscription.ts)
+- [ ] Formulaire d'ajout : prenom, lien (conjoint, enfant, parent), date de naissance
+- [ ] Limite de 6 membres par foyer
+- [ ] Edition et suppression avec confirmation
+- [ ] Avatar genere automatiquement (initiales + couleur)
+- [ ] RLS: seul le proprietaire peut modifier
+
+**Effort :** 3h
+**Impact :** Eleve
+
+#### 11.2 — Partage selectif de documents
+**En tant que** utilisateur,
+**Je veux** choisir quels documents partager avec ma famille,
+**Pour** garder mes papiers prives prives.
+
+**Criteres d'acceptation :**
+- [ ] Table `family_shared_documents` avec RLS bidirectionnelle
+- [ ] Toggle "Partager avec la famille" sur la page detail document
+- [ ] Tests pgTAP RLS obligatoires avant deploiement
+- [ ] Revocation immediate si un membre est retire du foyer
+- [ ] Indicateur visuel (badge) sur les docs partages dans l'inbox
+
+**Effort :** 4h
+**Impact :** Tres eleve (differenciateur plan Famille)
+
+#### 11.3 — Vue foyer consolidee
+**En tant que** parent,
+**Je veux** une vue d'ensemble des documents et echeances de toute la famille,
+**Pour** ne rien manquer pour personne.
+
+**Criteres d'acceptation :**
+- [ ] Page `/family/dashboard` avec une colonne par membre
+- [ ] Pour chaque membre : nombre de docs, prochaine echeance, derniere alerte
+- [ ] Section "Echeances de la semaine du foyer"
+- [ ] Section "Documents partages du foyer"
+- [ ] Notifications regroupees par membre dans le digest hebdo
+
+**Effort :** 3h
+**Impact :** Tres eleve
+
+---
+
+## EPIC 12 : Suivi miluim
+**Objectif :** Simplifier la gestion administrative des periodes de reserve
+**Sprint :** 3 (V4)
+**Priorite :** P1
+
+### Stories
+
+#### 12.1 — Saisie des periodes de miluim
+**En tant que** olim reserviste,
+**Je veux** enregistrer mes periodes de miluim,
+**Pour** suivre mon historique et mes droits.
+
+**Criteres d'acceptation :**
+- [ ] Table `miluim_periods` : id, user_id, start_date, end_date, days_count, unit, type, document_ids
+- [ ] Formulaire de saisie avec validation des dates
+- [ ] Upload du tzav 8 (PDF) avec extraction auto des dates
+- [ ] Calcul automatique du nombre de jours
+- [ ] Liste chronologique (annee en cours et anterieures)
+- [ ] Total cumule sur 12 mois et 3 ans
+- [ ] Plafond legal : max 270 jours/3 ans
+
+**Effort :** 4h
+**Impact :** Eleve
+
+#### 12.2 — Calcul de l'indemnisation
+**En tant que** reserviste salarie,
+**Je veux** estimer mon indemnisation Bituah Leumi,
+**Pour** verifier que mon employeur me verse le bon montant.
+
+**Criteres d'acceptation :**
+- [ ] Calcul base sur le salaire moyen des 3 derniers mois (extraits des fiches de paie)
+- [ ] Application du plafond et plancher Bituah Leumi en vigueur (versionnes)
+- [ ] Affichage : montant brut estime, jours indemnises, taux journalier
+- [ ] Comparaison avec ce que l'employeur a verse
+- [ ] Alerte si difference > 5%
+- [ ] Lien vers le formulaire de reclamation Bituah Leumi
+
+**Effort :** 4h
+**Impact :** Tres eleve
+
+#### 12.3 — Generation lettre employeur
+**En tant que** reserviste,
+**Je veux** generer automatiquement une lettre pour mon employeur,
+**Pour** l'informer de mes obligations sans avoir a la rediger.
+
+**Criteres d'acceptation :**
+- [ ] Template bilingue francais / hebreu dans letterTemplates.ts
+- [ ] Pre-rempli : nom, dates, unite, references (article 41 loi Hok Hayalim)
+- [ ] Telechargement en PDF via pdfGenerator.ts
+- [ ] Historique des lettres generees
+- [ ] Variante "lettre de reclamation" si l'employeur refuse
+
+**Effort :** 3h
+**Impact :** Eleve
+
+---
+
+## EPIC 13 : Estimateur de remboursement d'impots
+**Objectif :** Aider l'olim francophone a recuperer ses החזר מס sans comptable
+**Sprint :** 4 (V4)
+**Priorite :** P0
+
+### Stories
+
+#### 13.1 — Analyse formulaire 106
+**En tant que** olim qui recoit son tofes 106,
+**Je veux** que Tloush extraie automatiquement les donnees fiscales,
+**Pour** comprendre ma situation sans lire l'hebreu.
+
+**Criteres d'acceptation :**
+- [ ] Nouveau type de document `tax_form_106`
+- [ ] Prompt Claude dedie qui extrait : salaire brut annuel, impot preleve, bituah leumi, mas briout, points de credit utilises
+- [ ] Traduction automatique des champs cles en francais
+- [ ] Stockage structure
+- [ ] Gestion des cas multi-employeurs
+- [ ] Validation parser sur au moins 5 vrais Tofes 106
+
+**Effort :** 4h
+**Impact :** Tres eleve
+
+#### 13.2 — Detection des points de credit
+**En tant que** olim,
+**Je veux** que Tloush detecte les points de credit auxquels j'ai droit,
+**Pour** ne pas en oublier dans ma declaration.
+
+**Criteres d'acceptation :**
+- [ ] Utilise le profil enrichi (EPIC 9)
+- [ ] Calcul automatique : olim hadash (3 ans), parent isole, enfants < 5 ans
+- [ ] Comparaison entre points utilises (extraits du 106) et points dus
+- [ ] Affichage des points manquants avec equivalent en shekels
+- [ ] Lien vers la documentation officielle Rashut HaMisim
+- [ ] Avertissement "consultez un comptable" si situation complexe
+
+**Effort :** 5h
+**Impact :** Tres eleve
+
+#### 13.3 — Estimation du remboursement
+**En tant que** olim,
+**Je veux** voir une estimation chiffree de mon remboursement potentiel,
+**Pour** decider si je lance une demande החזר מס.
+
+**Criteres d'acceptation :**
+- [ ] Calcul base sur les brackets 2025 de israeliPayroll.ts
+- [ ] Affichage du montant estime en NIS et EUR
+- [ ] Detail du calcul etape par etape
+- [ ] Disclaimer juridique "estimation indicative, pas un avis fiscal"
+- [ ] Export PDF "Brouillon Tofes 135"
+- [ ] Historique des estimations par annee fiscale
+- [ ] Lien vers expertMatcher.ts pour yoetz mas francophone
+
+**Effort :** 4h
+**Impact :** Tres eleve (conversion premium)
+
+---
+
+## EPIC 14 : Comparateur annuel de fiches de paie
+**Objectif :** Donner une vision longitudinale de l'evolution salariale
+**Sprint :** 5 (V4)
+**Priorite :** P1
+
+### Stories
+
+#### 14.1 — Vue 12 mois consolidee
+**En tant que** salarie utilisant Tloush,
+**Je veux** voir mes 12 dernieres fiches de paie sur un seul ecran,
+**Pour** comprendre l'evolution de ma remuneration.
+
+**Criteres d'acceptation :**
+- [ ] Page `/payslips/annual` accessible depuis le dossier "Fiches de paie"
+- [ ] Tableau : 1 ligne par mois, colonnes brut/net/impot/BL/primes
+- [ ] Detection automatique des mois manquants
+- [ ] Total annuel cumule en pied de tableau
+- [ ] Export CSV / PDF pour comptable
+- [ ] Empty state si < 3 fiches
+
+**Effort :** 4h
+**Impact :** Eleve
+
+#### 14.2 — Detection des augmentations et variations
+**En tant que** salarie,
+**Je veux** etre alerte des variations de mon salaire,
+**Pour** poser les bonnes questions a mon employeur.
+
+**Criteres d'acceptation :**
+- [ ] Detection automatique des hausses / baisses > 3% mois sur mois
+- [ ] Detection des nouvelles lignes (prime, indemnite) jamais vues avant
+- [ ] Detection des lignes disparues
+- [ ] Badge sur le mois concerne avec resume du changement
+- [ ] Explication claire en francais
+- [ ] Alerte rouge si retenue suspecte
+
+**Effort :** 4h
+**Impact :** Tres eleve
+
+#### 14.3 — Graphiques d'evolution
+**En tant que** utilisateur visuel,
+**Je veux** voir des graphiques clairs de mes revenus dans le temps,
+**Pour** suivre ma trajectoire financiere.
+
+**Criteres d'acceptation :**
+- [ ] Graphique en barres empilees : brut / net / impot par mois (Recharts)
+- [ ] Graphique ligne : net cumule sur 12 mois
+- [ ] Graphique camembert : repartition moyenne
+- [ ] Toggle annee N vs annee N-1 si dispo
+- [ ] Responsive mobile
+
+**Effort :** 3h
+**Impact :** Moyen
+
+---
+
+## EPIC 15 : Detecteur automatique de droits (MVP)
+**Objectif :** Reveler a l'utilisateur les aides non reclamees — MVP avec 10 regles a forte confiance
+**Sprint :** 6 (V4)
+**Priorite :** P0
+
+### Stories
+
+#### 15.1 — Base de connaissance des 10 droits MVP
+**En tant que** developpeur,
+**Je dois** modeliser un catalogue de 10 droits a forte confiance,
+**Pour** eviter les faux positifs catastrophiques.
+
+**Criteres d'acceptation :**
+- [ ] Table `rights_catalog` : id, slug, title_fr, description_fr, conditions (JSONB), authority, average_amount, application_url, confidence_level
+- [ ] 10 droits MVP documentes et valides :
+  1. Points de credit oleh (3 ans)
+  2. Points de credit parent isole
+  3. Points de credit enfants < 5 ans
+  4. Allocation enfants (kitsbat yeladim)
+  5. Exemption BL freelance debut activite
+  6. Remboursement miluim non reclame (lien EPIC 12)
+  7. Remboursement mas hachnasa (lien EPIC 13)
+  8. Droits licenciement non verses
+  9. Conges non pris au-dela du plafond legal
+  10. Convalescence (havraa) non versee
+- [ ] Validation legale par professionnel avant mise en prod
+- [ ] Chaque regle a une `confidence_level` (high/medium/low) et un disclaimer
+
+**Effort :** 5h
+**Impact :** Tres eleve (fondation feature)
+
+#### 15.2 — Moteur de matching profil / droits
+**En tant que** olim,
+**Je veux** que Tloush analyse mon profil et mes documents pour detecter les droits,
+**Pour** ne rien laisser sur la table.
+
+**Criteres d'acceptation :**
+- [ ] `src/lib/rightsDetector.ts` avec fonction `detectRights(profile, documents)`
+- [ ] Regles exprimees en JSON, pas en hardcode
+- [ ] Score de confiance par droit (0-100%)
+- [ ] Table `detected_rights` avec status (suggested/claimed/dismissed)
+- [ ] Re-scan automatique apres chaque nouveau document
+- [ ] Consent RGPD explicite pour l'utilisation des donnees sensibles
+
+**Effort :** 5h
+**Impact :** Tres eleve
+
+#### 15.3 — Page "Mes droits detectes"
+**En tant que** utilisateur,
+**Je veux** voir la liste des droits auxquels j'ai potentiellement droit,
+**Pour** decider lesquels reclamer.
+
+**Criteres d'acceptation :**
+- [ ] Onglet "Detectes pour vous" dans `/rights-check`
+- [ ] Cartes par droit : titre, description, montant moyen, confiance
+- [ ] Filtres : autorite, montant, confiance
+- [ ] Bouton "voir comment reclamer" avec guide pas a pas
+- [ ] Boutons "deja reclame" / "pas concerne"
+- [ ] Notification dashboard si nouveaux droits detectes
+- [ ] UI claire distinguant "probable" vs "a verifier"
+
+**Effort :** 4h
+**Impact :** Tres eleve
+
+---
+
+## Resume des Epics V4
+
+| Epic | Sprint V4 | Effort | Priorite |
+|------|-----------|--------|----------|
+| 9. Profil enrichi (prerequis) | 0 | 3h | P0 |
+| 10. Monitoring administrateur | 1 | ~12h | P1 |
+| 11. Module famille UI | 2 | ~10h | P1 |
+| 12. Suivi miluim | 3 | ~11h | P1 |
+| 13. Estimateur remboursement impots | 4 | ~13h | P0 |
+| 14. Comparateur annuel fiches paie | 5 | ~11h | P1 |
+| 15. Detecteur droits MVP | 6 | ~14h | P0 |
+
+**Total estime V4 : ~74h de developpement**
