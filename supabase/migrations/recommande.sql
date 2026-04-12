@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS provider_reviews (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   provider_id UUID REFERENCES providers(id) ON DELETE CASCADE NOT NULL,
-  contact_id UUID REFERENCES provider_contacts(id) NOT NULL,
+  contact_id UUID REFERENCES provider_contacts(id) ON DELETE CASCADE NOT NULL,
   rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
   comment TEXT,
   provider_response TEXT,
@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS provider_applications (
   tz_photo_url TEXT,
   reference_name TEXT,
   reference_phone TEXT,
+  years_experience INTEGER,
   status TEXT DEFAULT 'pending'
     CHECK (status IN ('pending', 'contacted', 'referenced', 'rejected')),
   admin_notes TEXT,

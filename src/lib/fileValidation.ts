@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+const MAX_FILE_SIZE = 25 * 1024 * 1024 // 25MB
 
 const ALLOWED_MIME_TYPES = [
   'application/pdf',
@@ -15,6 +15,7 @@ const MAGIC_BYTES: Record<string, number[][]> = {
   'application/pdf': [[0x25, 0x50, 0x44, 0x46]],
   'image/jpeg': [[0xFF, 0xD8, 0xFF]],
   'image/png': [[0x89, 0x50, 0x4E, 0x47]],
+  'image/webp': [[0x52, 0x49, 0x46, 0x46]], // RIFF header
 }
 
 function matchesMagicBytes(buffer: ArrayBuffer, mime: string): boolean {
@@ -27,7 +28,7 @@ function matchesMagicBytes(buffer: ArrayBuffer, mime: string): boolean {
 export async function validateFile(file: File): Promise<NextResponse | null> {
   if (file.size > MAX_FILE_SIZE) {
     return NextResponse.json(
-      { error: 'Fichier trop volumineux (max 10 Mo)' },
+      { error: 'Fichier trop volumineux (max 25 Mo)' },
       { status: 413 }
     )
   }

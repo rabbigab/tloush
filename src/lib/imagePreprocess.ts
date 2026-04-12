@@ -56,25 +56,24 @@ export async function preprocessImage(inputBuffer: Buffer, mimeType: string): Pr
     appliedFixes.push('downscale')
   }
 
-  // 5. Convert to grayscale — better contrast for document text
-  img = img.grayscale()
-  appliedFixes.push('grayscale')
-
-  // 6. Normalize (auto-level) — stretches contrast across full range
+  // 5. Normalize (auto-level) — stretches contrast across full range
+  //    Keep color: many Israeli payslips use colored sections that help
+  //    Claude Vision distinguish payments/deductions/totals.
   img = img.normalize()
   appliedFixes.push('normalize')
 
-  // 7. Sharpen — makes text edges crisper
+  // 6. Gentle sharpening — makes text edges crisper without creating
+  //    halos. More aggressive sharpening hurts Claude Vision accuracy.
   img = img.sharpen({
-    sigma: 1.5,
-    m1: 1.0,  // flat areas sharpening
-    m2: 2.0,  // jagged areas sharpening
+    sigma: 0.8,
+    m1: 0.5,  // flat areas sharpening (gentle)
+    m2: 1.5,  // jagged areas sharpening (moderate)
   })
   appliedFixes.push('sharpen')
 
-  // 8. Increase contrast slightly for washed-out scans
+  // 7. Increase contrast slightly for washed-out scans
   if (quality === 'poor') {
-    img = img.linear(1.3, -30) // contrast boost + brightness adjust
+    img = img.linear(1.2, -15) // lighter contrast boost
     appliedFixes.push('contrast_boost')
   }
 

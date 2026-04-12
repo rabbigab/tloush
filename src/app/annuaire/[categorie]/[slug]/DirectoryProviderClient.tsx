@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { getProviderDisplayName, formatRating } from '@/types/directory'
 import { createClient } from '@/lib/supabase/client'
+import { track } from '@/lib/analytics'
 import type { Provider, ProviderReviewDisplay } from '@/types/directory'
 
 interface Props {
@@ -42,12 +43,18 @@ export default function DirectoryProviderClient({
   const displayName = getProviderDisplayName(provider)
 
   useEffect(() => {
+    track('directory_provider_viewed', {
+      provider_id: provider.id,
+      category: provider.category,
+      has_reviews: provider.total_reviews > 0,
+    })
     const supabase = createClient()
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
         setUser({ id: data.user.id, phone: data.user.user_metadata?.phone })
       }
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function revealContact() {
@@ -65,6 +72,11 @@ export default function DirectoryProviderClient({
         const data = await res.json()
         setRevealedPhone(data.phone)
         setContactRevealed(true)
+        track('directory_contact_revealed', {
+          provider_id: provider.id,
+          category: provider.category,
+          whatsapp_opted_in: whatsappOptIn,
+        })
       }
     } catch {
       // silently fail — user can retry
@@ -74,12 +86,13 @@ export default function DirectoryProviderClient({
   }
 
   function handleCTAClick() {
-    if (!user) {
+    if (!user || !user.phone) {
       setShowGate(true)
-      return
-    }
-    if (!user.phone) {
-      setShowGate(true)
+      track('directory_contact_gate_shown', {
+        provider_id: provider.id,
+        category: provider.category,
+        user_state: !user ? 'anonymous' : 'missing_phone',
+      })
       return
     }
     revealContact()
@@ -231,6 +244,7 @@ export default function DirectoryProviderClient({
           <div className="flex gap-3">
             <a
               href={`tel:${revealedPhone}`}
+              onClick={() => track('directory_provider_called', { provider_id: provider.id, category: provider.category })}
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-neutral-800 dark:bg-white text-white dark:text-neutral-900 font-medium text-sm hover:opacity-90 transition-opacity"
             >
               <Phone size={16} /> Appeler
@@ -239,6 +253,7 @@ export default function DirectoryProviderClient({
               href={whatsappLink}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => track('directory_provider_whatsapped', { provider_id: provider.id, category: provider.category })}
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-green-600 text-white font-medium text-sm hover:bg-green-700 transition-colors"
             >
               <MessageCircle size={16} /> WhatsApp
@@ -324,10 +339,10 @@ export default function DirectoryProviderClient({
             <div>
               <p className="text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Que signifie &laquo; Reference par Tloush &raquo; ?</p>
               <ul className="text-xs text-neutral-500 dark:text-slate-400 space-y-1">
-                <li>Identite verifiee (Teudat Zehut)</li>
+                <li>Identite controlee (Teudat Zehut)</li>
                 <li>Entreprise enregistree (numero Osek)</li>
                 <li>Francophone confirme (appel telephonique)</li>
-                <li>Au moins 1 reference client verifiee</li>
+                <li>Au moins 1 reference client controlee</li>
               </ul>
               <p className="text-xs text-neutral-400 dark:text-slate-500 mt-2 italic">
                 Ce badge ne garantit pas la qualite du travail. Les avis des utilisateurs completent cette verification.

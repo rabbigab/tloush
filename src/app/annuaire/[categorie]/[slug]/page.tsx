@@ -50,7 +50,7 @@ export default async function ProviderPage({
   // Fetch provider
   const { data: provider } = await supabaseAdmin
     .from('providers')
-    .select('*')
+    .select('id, slug, first_name, last_name, photo_url, category, specialties, service_areas, languages, description, years_experience, is_referenced, status, average_rating, total_reviews, created_at, updated_at')
     .eq('slug', slug)
     .eq('status', 'active')
     .single()

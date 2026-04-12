@@ -12,7 +12,12 @@ export async function POST(req: NextRequest) {
   if (auth instanceof NextResponse) return auth
   const { user } = auth
 
-  const body = await req.json()
+  let body: Record<string, unknown>
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Corps de requete invalide' }, { status: 400 })
+  }
   const { provider_id, whatsapp_opted_in } = body
 
   if (!provider_id) {

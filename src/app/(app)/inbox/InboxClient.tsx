@@ -92,11 +92,11 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
     setUploading(true)
     setUploadError('')
     setUploadStep(1)
-    // Simulate progress steps while API processes
+    // Simulate progress steps while API processes (Claude analysis can take 1-3 min)
     const stepTimers = [
-      setTimeout(() => setUploadStep(2), 2000),
-      setTimeout(() => setUploadStep(3), 5000),
-      setTimeout(() => setUploadStep(4), 9000),
+      setTimeout(() => setUploadStep(2), 3000),
+      setTimeout(() => setUploadStep(3), 10_000),
+      setTimeout(() => setUploadStep(4), 25_000),
     ]
     setPendingFile(null)
 
@@ -106,13 +106,18 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
     if (context?.employerName) formData.append('employer_name', context.employerName)
     if (context?.docPeriod) formData.append('doc_period', context.docPeriod)
 
+    // Abort the request after 330s (longer than server's 300s maxDuration to give a clear message)
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 330_000)
+
     try {
       const res = await fetch('/api/documents/upload', {
         method: 'POST',
-        body: formData
+        body: formData,
+        signal: controller.signal,
       })
 
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
 
       if (!res.ok) {
         const userMsg = res.status === 429
@@ -121,6 +126,10 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
           ? 'Session expirée. Veuillez vous reconnecter.'
           : res.status === 403
           ? (data.error || 'Quota dépassé. Passez à un plan supérieur.')
+          : res.status === 413
+          ? 'Fichier trop volumineux (max 25 Mo).'
+          : res.status === 504 || res.status === 408
+          ? 'L\'analyse a pris trop de temps. Réessayez avec un document plus petit ou contactez le support.'
           : (data.error || 'Une erreur est survenue lors de l\'analyse. Réessayez ou contactez le support.')
         setUploadError(userMsg)
         track('extraction_failed', { error: data.error, status: res.status })
@@ -130,9 +139,18 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
       setDocs(prev => [data.document, ...prev])
       toast('Document analysé avec succès !')
       track('file_uploaded', { document_type: data.document?.document_type, is_urgent: data.document?.is_urgent })
-    } catch {
-      setUploadError('Erreur de connexion. Reessayez.')
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        setUploadError('Le délai d\'analyse a été dépassé. Réessayez avec un document plus petit ou contactez le support.')
+      } else if (err instanceof TypeError && err.message.includes('fetch')) {
+        setUploadError('Erreur de connexion réseau. Vérifiez votre connexion internet.')
+      } else {
+        const msg = err instanceof Error ? err.message : 'Erreur inconnue'
+        setUploadError(`Erreur : ${msg}. Réessayez ou contactez le support.`)
+      }
+      track('extraction_failed', { error: err instanceof Error ? err.message : 'unknown', client_side: true })
     } finally {
+      clearTimeout(timeoutId)
       stepTimers.forEach(clearTimeout)
       setUploadStep(0)
       setUploading(false)
@@ -142,10 +160,15 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
 
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (file) {
-      setPendingFile(file)
-      setUploadContext({ employeeName: '', employerName: '', docPeriod: '' })
+    if (!file) return
+    // Client-side size check — avoid uploading 100MB+ just to get a server 413
+    if (file.size > 25 * 1024 * 1024) {
+      setUploadError('Fichier trop volumineux (max 25 Mo). Reduisez la taille ou scannez en resolution plus basse.')
+      if (inputRef.current) inputRef.current.value = ''
+      return
     }
+    setPendingFile(file)
+    setUploadContext({ employeeName: '', employerName: '', docPeriod: '' })
   }
 
   function formatDate(iso: string) {
@@ -218,7 +241,7 @@ export default function InboxClient({ documents, folders = [], userEmail }: { do
           <input
             ref={inputRef}
             type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
+            accept=".pdf,.jpg,.jpeg,.png,.webp"
             className="hidden"
             onChange={onFileChange}
             aria-label="Televerser un document"

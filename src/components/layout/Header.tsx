@@ -25,7 +25,7 @@ export default function Header() {
         <Link href="/" className="flex items-center gap-2.5 group shrink-0">
           <Image src="/icon.png" alt="Tloush" width={40} height={40} className="w-9 h-9 sm:hidden rounded-lg" unoptimized />
           <span className="font-bold text-lg text-neutral-900 dark:text-white sm:hidden">Tloush</span>
-          <Image src="/logo.png" alt="Tloush" width={1024} height={1024} className="hidden sm:block h-14 lg:h-16 w-auto group-hover:scale-105 transition-transform" priority unoptimized />
+          <Image src="/logo.png" alt="Tloush" width={200} height={200} className="hidden sm:block h-14 lg:h-16 w-auto group-hover:scale-105 transition-transform" priority unoptimized />
         </Link>
 
         {/* Desktop nav */}
@@ -101,6 +101,10 @@ export default function Header() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="sm:hidden bg-white dark:bg-slate-900 border-t border-neutral-100 dark:border-slate-700 px-4 py-4 space-y-1">
+          <Link href="/annuaire" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 rounded-lg">
+            <Star size={16} />
+            Annuaire
+          </Link>
           <Link href="/droits-olim" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 rounded-lg">
             <Scale size={16} />
             Droits des olim

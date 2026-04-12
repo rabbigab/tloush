@@ -6,7 +6,7 @@ import {
   Users, FileText, CreditCard, TrendingUp, RefreshCw, Search,
   ArrowLeft, ChevronDown, ChevronUp, Clock, UserCheck, AlertCircle,
   Crown, UserPlus, Activity, DollarSign, BarChart3, Eye, Trash2, Phone,
-  MessageSquare, Bug, Lightbulb, HelpCircle, Archive, CheckCircle, Percent, ArrowUpRight
+  MessageSquare, Bug, Lightbulb, HelpCircle, Archive, CheckCircle, Percent, ArrowUpRight, Pencil
 } from 'lucide-react'
 
 interface UserData {
@@ -153,7 +153,28 @@ export default function AdminDashboard() {
   const [planFilter, setPlanFilter] = useState<string>('all')
   const [sortBy, setSortBy] = useState<'created_at' | 'last_sign_in_at' | 'total_documents'>('created_at')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
-  const [tab, setTab] = useState<'overview' | 'users' | 'documents' | 'feedbacks' | 'prestataires'>('overview')
+  const [tab, setTab] = useState<'overview' | 'users' | 'documents' | 'feedbacks' | 'prestataires' | 'visiteurs'>('overview')
+
+  // Visitor stats state
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [visitorStats, setVisitorStats] = useState<any>(null)
+  const [visitorLoading, setVisitorLoading] = useState(false)
+
+  const fetchVisitorStats = useCallback(async () => {
+    setVisitorLoading(true)
+    try {
+      const res = await fetch('/api/admin/visitor-stats')
+      if (res.ok) {
+        const data = await res.json()
+        setVisitorStats(data)
+      }
+    } catch { /* ignore */ }
+    setVisitorLoading(false)
+  }, [])
+
+  useEffect(() => {
+    if (tab === 'visiteurs') fetchVisitorStats()
+  }, [tab, fetchVisitorStats])
 
   // Prestataires state
   const [providers, setProviders] = useState<any[]>([])
@@ -168,13 +189,18 @@ export default function AdminDashboard() {
     languages: 'fr,he', description: '', years_experience: '',
     osek_number: '', is_referenced: false, status: 'active',
   })
+  const [editingProviderId, setEditingProviderId] = useState<string | null>(null)
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [annuaireStats, setAnnuaireStats] = useState<any>(null)
 
   const fetchProviders = useCallback(async () => {
     setProviderLoading(true)
     try {
-      const [activeRes, pendingRes] = await Promise.all([
+      const [activeRes, pendingRes, statsRes] = await Promise.all([
         fetch('/api/admin/prestataires?status=active'),
         fetch('/api/admin/prestataires?status=pending'),
+        fetch('/api/admin/annuaire-stats'),
       ])
       if (activeRes.ok) {
         const data = await activeRes.json()
@@ -184,6 +210,10 @@ export default function AdminDashboard() {
         const data = await pendingRes.json()
         setProviderApplications(data.providers || [])
       }
+      if (statsRes.ok) {
+        const data = await statsRes.json()
+        setAnnuaireStats(data)
+      }
     } catch { /* ignore */ }
     setProviderLoading(false)
   }, [])
@@ -192,7 +222,24 @@ export default function AdminDashboard() {
     if (tab === 'prestataires') fetchProviders()
   }, [tab, fetchProviders])
 
+  const [providerError, setProviderError] = useState('')
+
   const handleSaveProvider = async () => {
+    setProviderError('')
+    // Client-side validation
+    const required: Array<[string, string]> = [
+      [providerForm.first_name, 'Prenom'],
+      [providerForm.last_name, 'Nom'],
+      [providerForm.phone, 'Telephone'],
+      [providerForm.slug, 'Slug'],
+      [providerForm.category, 'Categorie'],
+    ]
+    const missing = required.filter(([v]) => !v.trim()).map(([, label]) => label)
+    if (missing.length > 0) {
+      setProviderError(`Champs obligatoires manquants : ${missing.join(', ')}`)
+      return
+    }
+
     const body = {
       ...providerForm,
       specialties: providerForm.specialties.split(',').map(s => s.trim()).filter(Boolean),
@@ -200,16 +247,54 @@ export default function AdminDashboard() {
       languages: providerForm.languages.split(',').map(s => s.trim()).filter(Boolean),
       years_experience: providerForm.years_experience ? parseInt(providerForm.years_experience) : null,
     }
-    const res = await fetch('/api/admin/prestataires', {
-      method: 'POST',
+    const url = editingProviderId
+      ? `/api/admin/prestataires/${editingProviderId}`
+      : '/api/admin/prestataires'
+    const method = editingProviderId ? 'PATCH' : 'POST'
+    const res = await fetch(url, {
+      method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
     if (res.ok) {
-      setShowProviderForm(false)
-      setProviderForm({ first_name: '', last_name: '', phone: '', email: '', slug: '', category: 'plombier', specialties: '', service_areas: '', languages: 'fr,he', description: '', years_experience: '', osek_number: '', is_referenced: false, status: 'active' })
+      resetProviderForm()
       fetchProviders()
+    } else {
+      const data = await res.json().catch(() => ({}))
+      setProviderError(data.error || 'Erreur lors de la sauvegarde')
     }
+  }
+
+  const resetProviderForm = () => {
+    setShowProviderForm(false)
+    setEditingProviderId(null)
+    setProviderError('')
+    setProviderForm({ first_name: '', last_name: '', phone: '', email: '', slug: '', category: 'plombier', specialties: '', service_areas: '', languages: 'fr,he', description: '', years_experience: '', osek_number: '', is_referenced: false, status: 'active' })
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleEditProvider = (p: any) => {
+    setEditingProviderId(p.id)
+    setProviderError('')
+    setProviderForm({
+      first_name: p.first_name || '',
+      last_name: p.last_name || '',
+      phone: p.phone || '',
+      email: p.email || '',
+      slug: p.slug || '',
+      category: p.category || 'plombier',
+      specialties: Array.isArray(p.specialties) ? p.specialties.join(', ') : '',
+      service_areas: Array.isArray(p.service_areas) ? p.service_areas.join(', ') : '',
+      languages: Array.isArray(p.languages) ? p.languages.join(', ') : 'fr,he',
+      description: p.description || '',
+      years_experience: p.years_experience ? String(p.years_experience) : '',
+      osek_number: p.osek_number || '',
+      is_referenced: !!p.is_referenced,
+      status: p.status || 'active',
+    })
+    setShowProviderForm(true)
+    // Scroll to top so the form is visible
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleDelistProvider = async (id: string) => {
@@ -573,6 +658,10 @@ export default function AdminDashboard() {
             <UserCheck size={14} className="inline mr-1.5" />
             Prestataires ({providers.length})
           </button>
+          <button onClick={() => setTab('visiteurs')} className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === 'visiteurs' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
+            <Activity size={14} className="inline mr-1.5" />
+            Visiteurs
+          </button>
         </div>
 
         {/* Overview Tab */}
@@ -914,6 +1003,65 @@ export default function AdminDashboard() {
         {/* Prestataires Tab */}
         {tab === 'prestataires' && (
           <div className="space-y-4">
+            {/* Stats cards */}
+            {annuaireStats && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Prestataires actifs</p>
+                  <p className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{annuaireStats.providers.active}</p>
+                  <p className="text-xs text-slate-400 mt-1">{annuaireStats.providers.pending_applications} en attente</p>
+                </div>
+                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Contacts demandes</p>
+                  <p className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{annuaireStats.contacts.total}</p>
+                  <p className="text-xs text-slate-400 mt-1">{annuaireStats.contacts.today} aujourd&apos;hui</p>
+                </div>
+                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Ce mois-ci</p>
+                  <p className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{annuaireStats.contacts.this_month}</p>
+                  <p className="text-xs text-slate-400 mt-1">{annuaireStats.contacts.this_week} sur 7 jours</p>
+                </div>
+                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Avis publies</p>
+                  <p className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{annuaireStats.reviews.published}</p>
+                  <p className="text-xs text-slate-400 mt-1">{annuaireStats.reviews.pending} en attente · {annuaireStats.reviews.conversion_rate}% taux</p>
+                </div>
+              </div>
+            )}
+
+            {/* Top contacted this month */}
+            {annuaireStats && annuaireStats.top_contacted_this_month.length > 0 && (
+              <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">Top contactes ce mois</h3>
+                <div className="space-y-2">
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                  {annuaireStats.top_contacted_this_month.map((p: any) => (
+                    <div key={p.id} className="flex items-center justify-between text-sm">
+                      <div>
+                        <span className="font-medium text-slate-700 dark:text-slate-300">{p.first_name} {p.last_name?.charAt(0)}.</span>
+                        <span className="text-slate-400 ml-2 text-xs">({p.category})</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-300 text-xs font-medium">{p.contacts} contact{p.contacts > 1 ? 's' : ''}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Category breakdown */}
+            {annuaireStats && Object.keys(annuaireStats.providers.by_category).length > 0 && (
+              <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">Repartition par categorie</h3>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(annuaireStats.providers.by_category).map(([cat, count]) => (
+                    <span key={cat} className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300">
+                      {cat} : {count as number}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Sub-tabs */}
             <div className="flex gap-2 flex-wrap">
               {([
@@ -929,17 +1077,28 @@ export default function AdminDashboard() {
                 </button>
               ))}
               <button
-                onClick={() => setShowProviderForm(!showProviderForm)}
+                onClick={() => {
+                  if (showProviderForm) {
+                    resetProviderForm()
+                  } else {
+                    setEditingProviderId(null)
+                    setProviderError('')
+                    setProviderForm({ first_name: '', last_name: '', phone: '', email: '', slug: '', category: 'plombier', specialties: '', service_areas: '', languages: 'fr,he', description: '', years_experience: '', osek_number: '', is_referenced: false, status: 'active' })
+                    setShowProviderForm(true)
+                  }
+                }}
                 className="ml-auto px-3 py-1.5 text-xs font-medium rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
               >
                 + Ajouter un prestataire
               </button>
             </div>
 
-            {/* Add provider form */}
+            {/* Add/Edit provider form */}
             {showProviderForm && (
               <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
-                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">Nouveau prestataire</h3>
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">
+                  {editingProviderId ? 'Modifier le prestataire' : 'Nouveau prestataire'}
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <input placeholder="Prenom *" value={providerForm.first_name} onChange={e => setProviderForm(f => ({ ...f, first_name: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" />
                   <input placeholder="Nom *" value={providerForm.last_name} onChange={e => setProviderForm(f => ({ ...f, last_name: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" />
@@ -952,6 +1111,7 @@ export default function AdminDashboard() {
                     <option value="peintre">Peintre</option>
                     <option value="serrurier">Serrurier</option>
                     <option value="climatisation">Climatisation</option>
+                    <option value="bricoleur">Bricoleur</option>
                   </select>
                   <input placeholder="Specialites (virgules)" value={providerForm.specialties} onChange={e => setProviderForm(f => ({ ...f, specialties: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" />
                   <input placeholder="Villes (virgules)" value={providerForm.service_areas} onChange={e => setProviderForm(f => ({ ...f, service_areas: e.target.value }))} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" />
@@ -964,9 +1124,14 @@ export default function AdminDashboard() {
                   </label>
                 </div>
                 <textarea placeholder="Description" value={providerForm.description} onChange={e => setProviderForm(f => ({ ...f, description: e.target.value }))} className="w-full mt-3 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm" rows={3} />
+                {providerError && (
+                  <div className="mt-3 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-300">
+                    {providerError}
+                  </div>
+                )}
                 <div className="flex gap-2 mt-4">
                   <button onClick={handleSaveProvider} className="px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700">Enregistrer</button>
-                  <button onClick={() => setShowProviderForm(false)} className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300">Annuler</button>
+                  <button onClick={resetProviderForm} className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300">Annuler</button>
                 </div>
               </div>
             )}
@@ -1011,6 +1176,13 @@ export default function AdminDashboard() {
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-1">
                             <button
+                              onClick={() => handleEditProvider(p)}
+                              className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-600 dark:hover:bg-amber-900/30"
+                              title="Modifier"
+                            >
+                              <Pencil size={14} />
+                            </button>
+                            <button
                               onClick={() => handleToggleReferenced(p.id, p.is_referenced)}
                               className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 dark:hover:bg-blue-900/30"
                               title={p.is_referenced ? 'Retirer le badge' : 'Ajouter le badge'}
@@ -1046,6 +1218,128 @@ export default function AdminDashboard() {
                   </tbody>
                 </table>
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Visiteurs Tab */}
+        {tab === 'visiteurs' && (
+          <div className="space-y-4">
+            {visitorLoading && !visitorStats ? (
+              <div className="text-center py-16 text-slate-400">
+                <RefreshCw size={24} className="animate-spin mx-auto mb-3" />
+                <p className="text-sm">Chargement des statistiques...</p>
+              </div>
+            ) : !visitorStats ? (
+              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-5">
+                <p className="text-sm text-amber-800 dark:text-amber-300 font-medium mb-2">Aucune donnee de visiteur</p>
+                <p className="text-xs text-amber-700 dark:text-amber-400">
+                  Assurez-vous que la table <code>page_views</code> a ete creee dans Supabase (migration <code>analytics.sql</code>).
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* KPI cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Visiteurs aujourd&apos;hui</p>
+                    <p className="text-3xl font-bold text-slate-800 dark:text-white mt-1">{visitorStats.totals.today_visitors}</p>
+                    <p className="text-xs text-slate-400 mt-1">{visitorStats.totals.today_views} pages vues</p>
+                  </div>
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Visiteurs 7 jours</p>
+                    <p className="text-3xl font-bold text-slate-800 dark:text-white mt-1">{visitorStats.totals.week_visitors}</p>
+                    <p className="text-xs text-slate-400 mt-1">{visitorStats.totals.week_views} pages vues</p>
+                  </div>
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Visiteurs ce mois</p>
+                    <p className="text-3xl font-bold text-slate-800 dark:text-white mt-1">{visitorStats.totals.month_visitors}</p>
+                    <p className="text-xs text-slate-400 mt-1">{visitorStats.totals.month_views} pages vues</p>
+                  </div>
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Total (depuis le debut)</p>
+                    <p className="text-3xl font-bold text-slate-800 dark:text-white mt-1">{visitorStats.totals.all_time_views}</p>
+                    <p className="text-xs text-slate-400 mt-1">pages vues</p>
+                  </div>
+                </div>
+
+                {/* Daily trend chart (simple bars) */}
+                {visitorStats.daily_trend.length > 0 && (
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">Evolution (30 derniers jours)</h3>
+                    <div className="flex items-end gap-1 h-32">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      {visitorStats.daily_trend.map((d: any) => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const maxViews = Math.max(...visitorStats.daily_trend.map((x: any) => x.views), 1)
+                        const height = (d.views / maxViews) * 100
+                        return (
+                          <div key={d.date} className="flex-1 flex flex-col items-center group relative">
+                            <div
+                              className="w-full bg-blue-500 dark:bg-blue-600 rounded-t hover:bg-blue-600 dark:hover:bg-blue-500 transition-colors"
+                              style={{ height: `${height}%` }}
+                            />
+                            <div className="absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-xs rounded px-2 py-1 whitespace-nowrap pointer-events-none">
+                              {new Date(d.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}: {d.views} vues / {d.visitors} visiteurs
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* Top pages */}
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">Pages les plus visitees</h3>
+                    <div className="space-y-2">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      {visitorStats.top_pages.slice(0, 10).map((p: any) => (
+                        <div key={p.path} className="flex items-center justify-between text-sm">
+                          <span className="text-slate-600 dark:text-slate-300 truncate max-w-[70%]" title={p.path}>{p.path}</span>
+                          <span className="font-medium text-slate-700 dark:text-slate-200 ml-2">{p.count}</span>
+                        </div>
+                      ))}
+                      {visitorStats.top_pages.length === 0 && (
+                        <p className="text-xs text-slate-400 text-center py-4">Aucune donnee</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Top sources */}
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">Sources de trafic</h3>
+                    <div className="space-y-2">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      {visitorStats.top_referrers.slice(0, 10).map((r: any) => (
+                        <div key={r.source} className="flex items-center justify-between text-sm">
+                          <span className="text-slate-600 dark:text-slate-300">{r.source}</span>
+                          <span className="font-medium text-slate-700 dark:text-slate-200">{r.count}</span>
+                        </div>
+                      ))}
+                      {visitorStats.top_referrers.length === 0 && (
+                        <p className="text-xs text-slate-400 text-center py-4">Aucune donnee</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Countries */}
+                {visitorStats.top_countries.length > 0 && (
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">Top pays</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      {visitorStats.top_countries.map((c: any) => (
+                        <span key={c.country} className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300">
+                          {c.country} : {c.count}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

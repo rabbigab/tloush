@@ -9,6 +9,9 @@ import { EXTRACT_SYSTEM_PROMPT, EXTRACT_USER_PROMPT } from "@/lib/prompts";
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const ratelimit = createRateLimit("extract", 10, "1 h");
 
+// Allow up to 5 minutes for Claude extraction
+export const maxDuration = 300;
+
 const SYSTEM_PROMPT = EXTRACT_SYSTEM_PROMPT;
 const USER_PROMPT = EXTRACT_USER_PROMPT;
 
@@ -90,7 +93,7 @@ export async function POST(req: NextRequest) {
     // Cast needed: 'document' content block not yet in SDK types (v0.24)
     const message = await (client.messages.create as Function)({
       model: "claude-sonnet-4-5",
-      max_tokens: 4096,
+      max_tokens: 8192,
       system: SYSTEM_PROMPT,
       messages: [
         {

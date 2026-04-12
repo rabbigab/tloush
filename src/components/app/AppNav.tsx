@@ -147,9 +147,9 @@ export default function AppNav() {
   return (
     <>
       {/* Desktop: pill-style nav */}
-      <nav aria-label="Navigation principale" className="hidden md:block bg-slate-50 dark:bg-slate-950 py-2">
+      <nav aria-label="Navigation principale" className="hidden md:block bg-slate-50 dark:bg-slate-950 py-2 relative z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="flex gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-1.5 shadow-sm">
+          <div className="flex gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-1.5 shadow-sm overflow-visible">
             {CORE_NAV.map(item => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
               return (

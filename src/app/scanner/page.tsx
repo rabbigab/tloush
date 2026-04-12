@@ -63,6 +63,9 @@ function ScannerContent() {
     setIsAnalyzing(true);
     setLocalStep("analyzing");
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 330_000);
+
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -71,15 +74,21 @@ function ScannerContent() {
       const response = await fetch("/api/scan", {
         method: "POST",
         body: formData,
+        signal: controller.signal,
       });
 
       if (!response.ok) {
         const status = response.status;
+        const data = await response.json().catch(() => ({}));
         const msg = status === 429
           ? "Limite atteinte : 10 analyses par heure. Réessayez plus tard."
           : status === 401
           ? "Session expirée. Veuillez vous reconnecter."
-          : "Une erreur est survenue lors de l'analyse. Réessayez ou contactez le support.";
+          : status === 413
+          ? "Fichier trop volumineux (max 25 Mo)."
+          : status === 504 || status === 408
+          ? "L'analyse a pris trop de temps. Réessayez avec un document plus petit ou contactez le support."
+          : (data.error || "Une erreur est survenue lors de l'analyse. Réessayez ou contactez le support.");
         throw new Error(msg);
       }
 
@@ -87,13 +96,20 @@ function ScannerContent() {
       setAnalysisResult(result);
       setLocalStep("results");
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Une erreur est survenue lors de l'analyse du document."
-      );
+      if (err instanceof Error && err.name === "AbortError") {
+        setError("Le délai d'analyse a été dépassé. Réessayez avec un document plus petit ou contactez le support.");
+      } else if (err instanceof TypeError && err.message.includes("fetch")) {
+        setError("Erreur de connexion réseau. Vérifiez votre connexion internet.");
+      } else {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Une erreur est survenue lors de l'analyse du document."
+        );
+      }
       setLocalStep("upload");
     } finally {
+      clearTimeout(timeoutId);
       setIsAnalyzing(false);
     }
   };

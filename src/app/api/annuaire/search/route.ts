@@ -30,7 +30,11 @@ export async function GET(req: NextRequest) {
   }
 
   if (q) {
-    query = query.or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%,description.ilike.%${q}%`)
+    // Sanitize input: remove PostgREST special characters to prevent filter injection
+    const sanitized = q.replace(/[,().]/g, ' ').trim()
+    if (sanitized) {
+      query = query.or(`first_name.ilike.%${sanitized}%,last_name.ilike.%${sanitized}%,description.ilike.%${sanitized}%`)
+    }
   }
 
   const { data, error } = await query

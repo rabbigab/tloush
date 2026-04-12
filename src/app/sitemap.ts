@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 import { createClient } from '@supabase/supabase-js'
 
-const PROVIDER_CATEGORY_SLUGS = ['plombier', 'electricien', 'peintre', 'serrurier', 'climatisation']
+const PROVIDER_CATEGORY_SLUGS = ['plombier', 'electricien', 'peintre', 'serrurier', 'climatisation', 'bricoleur']
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://tloush.com'
@@ -23,6 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/cgv',
     '/mentions-legales',
     '/annuaire',
+    '/annuaire/inscription',
   ]
 
   const entries: MetadataRoute.Sitemap = staticPages.map((route) => ({

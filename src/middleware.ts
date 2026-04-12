@@ -26,7 +26,7 @@ const PROTECTED_ROUTES = [
 ]
 
 // Routes publiques qui n'ont pas besoin du middleware auth
-const PUBLIC_ROUTES = ['/', '/auth', '/pricing', '/droits-olim', '/droits', '/privacy', '/calculateurs', '/modeles', '/scanner', '/results', '/experts', '/annuaire', '/api/stripe/webhook', '/api/annuaire/prestataires', '/api/annuaire/search', '/api/annuaire/inscription', '/api/annuaire/avis']
+const PUBLIC_ROUTES = ['/', '/auth', '/pricing', '/droits-olim', '/droits', '/privacy', '/calculateurs', '/modeles', '/scanner', '/results', '/experts', '/annuaire', '/api/stripe/webhook', '/api/annuaire/prestataires', '/api/annuaire/search', '/api/annuaire/inscription', '/api/annuaire/avis', '/api/track']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl

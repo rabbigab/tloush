@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest'
 
 const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png']
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
+const MAX_FILE_SIZE = 25 * 1024 * 1024 // 25 MB
 
 function validateFile(file: { type: string; size: number; name: string }) {
   if (!ALLOWED_TYPES.includes(file.type)) {
     return { valid: false, error: 'Type de fichier non supporté' }
   }
   if (file.size > MAX_FILE_SIZE) {
-    return { valid: false, error: 'Fichier trop volumineux (max 10 Mo)' }
+    return { valid: false, error: 'Fichier trop volumineux (max 25 Mo)' }
   }
   if (!file.name || file.name.trim() === '') {
     return { valid: false, error: 'Nom de fichier manquant' }
@@ -47,8 +47,8 @@ describe('Upload validation', () => {
     expect(result.error).toContain('non supporté')
   })
 
-  it('rejects files over 10MB', () => {
-    const result = validateFile({ type: 'application/pdf', size: 11 * 1024 * 1024, name: 'big.pdf' })
+  it('rejects files over 25MB', () => {
+    const result = validateFile({ type: 'application/pdf', size: 26 * 1024 * 1024, name: 'big.pdf' })
     expect(result.valid).toBe(false)
     expect(result.error).toContain('volumineux')
   })

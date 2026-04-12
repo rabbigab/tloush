@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight, Users, Star, ShieldCheck } from 'lucide-react'
 import { PROVIDER_CATEGORIES } from '@/types/directory'
+import DirectoryPageTracker from '@/components/directory/DirectoryPageTracker'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -14,6 +15,7 @@ export const revalidate = 3600
 export default function AnnuairePage() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+      <DirectoryPageTracker event="directory_viewed" />
       {/* Hero */}
       <div className="text-center mb-12">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 text-xs font-medium mb-4">
@@ -89,6 +91,20 @@ export default function AnnuairePage() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* CTA prestataire */}
+      <div className="text-center mb-12 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-2xl p-8">
+        <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Vous etes prestataire francophone ?</h2>
+        <p className="text-sm text-neutral-500 dark:text-slate-400 mb-4">
+          Rejoignez l&apos;annuaire gratuitement et recevez des clients qualifies. Sans commission.
+        </p>
+        <Link
+          href="/annuaire/inscription"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-green-600 text-white font-medium text-sm hover:bg-green-700 transition-colors"
+        >
+          Devenir prestataire <ArrowRight size={16} />
+        </Link>
       </div>
 
       {/* Disclaimer */}

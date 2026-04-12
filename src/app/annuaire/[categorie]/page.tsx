@@ -5,6 +5,7 @@ import type { Provider } from '@/types/directory'
 import type { Metadata } from 'next'
 import ProviderCard from '@/components/directory/ProviderCard'
 import { CategoryListJsonLd, FAQJsonLd } from '@/components/directory/ProviderSchema'
+import DirectoryPageTracker from '@/components/directory/DirectoryPageTracker'
 import { CATEGORY_CONTENT } from '@/data/directory-content'
 import Link from 'next/link'
 import { ArrowLeft, ShieldCheck } from 'lucide-react'
@@ -30,8 +31,8 @@ export async function generateMetadata({
   if (!cat) return {}
 
   return {
-    title: `${cat.label} francophone en Israel — References | Tloush Recommande`,
-    description: `Trouvez un ${cat.label.toLowerCase()} francophone et reference en Israel. Avis clients, notes, contact direct. Gratuit.`,
+    title: `${cat.label === 'Climatisation' ? 'Technicien climatisation' : cat.label} francophone en Israel — References | Tloush Recommande`,
+    description: `Trouvez un ${cat.label === 'Climatisation' ? 'technicien climatisation' : cat.label.toLowerCase()} francophone et reference en Israel. Avis clients, notes, contact direct. Gratuit.`,
   }
 }
 
@@ -49,7 +50,7 @@ export default async function CategoryPage({
 
   const { data: providers } = await supabaseAdmin
     .from('providers')
-    .select('*')
+    .select('id, slug, first_name, last_name, photo_url, category, specialties, service_areas, languages, description, years_experience, is_referenced, average_rating, total_reviews, created_at, updated_at')
     .eq('category', categorie)
     .eq('status', 'active')
     .order('average_rating', { ascending: false })
@@ -57,6 +58,10 @@ export default async function CategoryPage({
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <DirectoryPageTracker
+        event="directory_category_viewed"
+        properties={{ category: categorie, provider_count: (providers || []).length }}
+      />
       {/* Breadcrumb */}
       <Link
         href="/annuaire"

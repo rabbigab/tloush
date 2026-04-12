@@ -1,7 +1,11 @@
 import { SignJWT, jwtVerify } from 'jose'
 
+if (!process.env.REVIEW_TOKEN_SECRET) {
+  console.warn('[reviewTokens] REVIEW_TOKEN_SECRET is not set — review links will not work')
+}
+
 const SECRET = new TextEncoder().encode(
-  process.env.REVIEW_TOKEN_SECRET || 'dev-review-token-secret-change-in-production'
+  process.env.REVIEW_TOKEN_SECRET || ''
 )
 
 interface ReviewTokenPayload {
