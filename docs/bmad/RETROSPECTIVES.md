@@ -1,6 +1,74 @@
-# Rétrospectives Tloush V3
+# Rétrospectives Tloush
 
 Document vivant — une rétro par sprint livré.
+
+---
+
+## V4 — 7 sprints livres en une session (BMAD task force)
+
+### Livre
+
+**Sprint 0 — EPIC 9 : Profil utilisateur enrichi (prerequis)**
+- Migration `user_profiles` (14 champs : famille, alyah, emploi, sante, logement)
+- Page `/profile/edit` avec auto-save, progress bar, 6 sections
+- Lib `profileCompletion.ts`, API PATCH validation Zod
+
+**Sprint 1 — EPIC 10 : Admin monitoring**
+- Migrations : `claude_usage`, `error_log`, colonnes tokens/cost sur documents
+- Libs `claudePricing.ts` + `claudeMetrics.ts` (fire-and-forget, dedup)
+- Page `/admin/monitoring` : stats, bar chart, top users, erreurs, auto-refresh 60s
+- Integration dans `/api/documents/upload` (capture stream events)
+
+**Sprint 2 — EPIC 11 : Family module UI**
+- Migration `family_shared_documents` + RLS etendue sur documents
+- API GET/POST/DELETE `/api/family/documents`
+- Page `/family` : gestion membres + partage doc selectif + CTA upgrade plan
+
+**Sprint 3 — EPIC 12 : Miluim tracker**
+- Migration `miluim_periods` (colonne generee days_count)
+- Lib `miluim.ts` : constantes 2025/2026 versionnees, calcul compensation, plafond 270j/3ans
+- Page `/miluim` : 3 stats, form ajout, historique avec compensation estimee
+
+**Sprint 4 — EPIC 13 : Tax refund estimator**
+- Lib `taxRefund.ts` : brackets 2025, points credit (resident + olim + enfants + parent isole)
+- API POST `/api/tax-refund/estimate` (requiert profil complet)
+- Page `/tax-refund` : wizard, result card, detection points manquants
+
+**Sprint 5 — EPIC 14 : Annual payslip comparator**
+- Lib `payslipTimeline.ts` : parsePeriod multi-format, normalize, buildTimeline, detectAnomalies
+- API GET `/api/payslips/annual?year=`
+- Page `/payslips/annual` : 4 summary cards, bar chart mensuel, anomalies, table
+
+**Sprint 6 — EPIC 15 : Rights detector MVP (9 regles)**
+- Migration `detected_rights`
+- Lib `rightsDetector.ts` avec 9 regles a forte confiance :
+  oleh points / parent isole / enfants < 5 / kitsbat yeladim /
+  refund mas / havraa absente / pension absente / freelance BL / invalidite
+- API GET/POST/PATCH `/api/rights-detector`
+- Page `/rights-detector` avec scan, filtres, actions par droit
+
+### Ce qui a bien marche
+- **BMAD en parallele** : 4 sous-agents (analyst, architect, PM, scrum master) ont produit toute la doc V4 en 1 seule session
+- **Reutilisation massive** : `israeliPayroll.ts`, `bituachLeumi.ts`, `kolzchutRights.ts` deja la
+- **Identification du prerequis** par l'analyst : profil user bloquant pour 3 features
+- **Scope reduit #10** : MVP 9 regles au lieu d'un detecteur universel
+- **TypeScript strict** : zero `any`, tous les types exportes
+- **~7000 lignes de code** livrees en une session
+
+### Ce qui a coince
+- Le wrapper Claude centralise n'est pas fait : logging integre uniquement dans upload (minimal)
+- La detection miluim non rembourse dans rightsDetector n'est pas implementee (necessite query async)
+- Constantes miluim 2026 approximatives — a verifier avec baremes officiels
+- Tests pgTAP RLS pour family_shared_documents non executes
+
+### Actions pour V5
+- [ ] Executer les 6 migrations SQL sur Supabase prod
+- [ ] Tester avec 1-2 cas reels chaque feature
+- [ ] Ecrire les tests pgTAP RLS pour family_shared_documents
+- [ ] Etendre le logging Claude a scan/extract/assistant/compare
+- [ ] Ajouter detection miluim non rembourse dans rightsDetector
+- [ ] Validation legale des 10 regles rights detector par un yoetz mas
+- [ ] Monitoring alertes email si cout Claude > seuil
 
 ---
 

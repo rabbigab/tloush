@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
-import { LayoutDashboard, MessageSquare, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Building2, Briefcase, Landmark, Wrench, ChevronDown, Search, HeartPulse, GitCompareArrows, FileSpreadsheet, Star, ShieldCheck } from 'lucide-react'
+import { LayoutDashboard, MessageSquare, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Building2, Briefcase, Landmark, Wrench, ChevronDown, Search, HeartPulse, GitCompareArrows, FileSpreadsheet, Star, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react'
 
 // Desktop: core items always visible + "Outils" dropdown
 const CORE_NAV = [
@@ -21,11 +21,13 @@ const TOOLS_SECTIONS = [
       { label: 'Simulateur salaire', href: '/calculator', icon: Calculator },
       { label: 'Freelance', href: '/freelance', icon: Briefcase },
       { label: 'Comparer tlushs', href: '/compare', icon: GitCompareArrows },
+      { label: 'Evolution annuelle', href: '/payslips/annual', icon: TrendingUp },
     ],
   },
   {
     title: 'Droits & Infos',
     items: [
+      { label: 'Detecter mes droits', href: '/rights-detector', icon: Sparkles },
       { label: 'Mes droits', href: '/rights-check', icon: Shield },
       { label: 'Droits olim', href: '/droits-olim', icon: Scale },
       { label: 'Miluim', href: '/miluim', icon: ShieldCheck },
@@ -89,6 +91,7 @@ const MOBILE_SECTIONS = [
       { label: 'Simulateur salaire', href: '/calculator', icon: Calculator },
       { label: 'Freelance', href: '/freelance', icon: Briefcase },
       { label: 'Comparer tlushs', href: '/compare', icon: GitCompareArrows },
+      { label: 'Evolution annuelle', href: '/payslips/annual', icon: TrendingUp },
     ],
   },
   {
