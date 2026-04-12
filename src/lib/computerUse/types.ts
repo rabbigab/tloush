@@ -72,6 +72,9 @@ export interface WorkflowInput {
   required: boolean
   sensitive?: boolean
   options?: { value: string; label_fr: string }[]
+  helpText?: string          // "Vous trouverez ce numéro sur votre facture..."
+  helpImage?: string         // Path to helper image showing where to find the info
+  allowSkip?: boolean        // Show "Je ne sais pas" — agent will try without it
 }
 
 // SSE event types streamed to the client
