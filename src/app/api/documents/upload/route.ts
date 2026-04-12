@@ -67,39 +67,39 @@ export async function POST(req: NextRequest) {
     const validationError = await validateFile(file)
     if (validationError) return validationError
 
-    // 1. Upload vers Supabase Storage
+    // 1-3. Storage + Preprocessing + OCR — EN PARALLELE
     const fileExt = file.name.split('.').pop()
     const fileName = `${Date.now()}.${fileExt}`
     const storagePath = `${user.id}/${fileName}`
 
     const arrayBuffer = await file.arrayBuffer()
     const fileBuffer = Buffer.from(arrayBuffer)
+    const mimeType = file.type as string
 
-    const { error: storageError } = await supabase.storage
-      .from('documents')
-      .upload(storagePath, fileBuffer, {
-        contentType: file.type,
-        upsert: false
-      })
+    // Lancer les 3 operations en parallele (aucune ne depend des autres)
+    const [storageResult, preprocessResult, ocrResult] = await Promise.all([
+      // 1. Upload vers Supabase Storage
+      supabase.storage
+        .from('documents')
+        .upload(storagePath, fileBuffer, { contentType: file.type, upsert: false }),
+      // 2. Preprocess image for better quality
+      preprocessImage(fileBuffer, mimeType),
+      // 3. Pre-OCR with Tesseract (Hebrew + English) — timeout integre
+      extractTextFromImage(fileBuffer, mimeType),
+    ])
 
-    if (storageError) {
-      console.error('Storage error:', storageError)
+    if (storageResult.error) {
+      console.error('Storage error:', storageResult.error)
       return NextResponse.json({ error: 'Erreur lors du stockage du fichier' }, { status: 500 })
     }
 
-    // 2. Preprocess image for better quality
-    const mimeType = file.type as string
-    const preprocessResult = await preprocessImage(fileBuffer, mimeType)
     const analysisBuffer = preprocessResult.enhanced ? preprocessResult.buffer : fileBuffer
     const base64Data = analysisBuffer.toString('base64')
+    const ocrContext = buildOcrContext(ocrResult)
 
     if (preprocessResult.enhanced) {
       console.log(`[upload] Image enhanced: quality=${preprocessResult.quality}, fixes=[${preprocessResult.appliedFixes.join(', ')}]`)
     }
-
-    // 3. Pre-OCR with Tesseract (Hebrew + English) for cross-validation
-    const ocrResult = await extractTextFromImage(analysisBuffer, mimeType)
-    const ocrContext = buildOcrContext(ocrResult)
 
     type ImageMediaType = 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
     type ContentBlock =
@@ -140,22 +140,44 @@ export async function POST(req: NextRequest) {
       systemPrompt += qualityHint
     }
 
-    // Add pre-extracted OCR text for Claude cross-validation
+    // Add pre-extracted OCR text for Claude cross-validation (seulement si OCR a marche)
     if (ocrContext) {
       systemPrompt += ocrContext
     }
 
-    // Cast needed: 'document' content block not yet in SDK types (v0.24)
-    // max_tokens: 8192 — payslips with many line items + attention_points
-    // + recommended_actions + analysis_data can exceed 4096
-    const message = await (anthropic.messages.create as Function)({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 8192,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: contentBlocks }]
-    }) as Anthropic.Message
+    // Construire le system prompt avec cache_control pour le prompt caching
+    // Le prompt de base est identique entre les requetes → cache Anthropic (~3-5s gagnes)
+    const baseSystemPrompt = buildSystemPrompt()
+    const dynamicParts = systemPrompt.slice(baseSystemPrompt.length)
 
-    const rawText = message.content[0].type === 'text' ? message.content[0].text : ''
+    const systemBlocks: Array<{ type: 'text'; text: string; cache_control?: { type: 'ephemeral' } }> = [
+      {
+        type: 'text',
+        text: baseSystemPrompt,
+        cache_control: { type: 'ephemeral' },  // Cache la partie statique du prompt
+      },
+    ]
+    if (dynamicParts) {
+      systemBlocks.push({ type: 'text', text: dynamicParts })
+    }
+
+    // Utiliser le streaming pour des resultats plus rapides
+    // Le streaming reduit le TTFT (time to first token) et permet
+    // de traiter la reponse des qu'elle arrive
+    let rawText = ''
+    const stream = await (anthropic.messages.create as Function)({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 4096,
+      stream: true,
+      system: systemBlocks,
+      messages: [{ role: 'user', content: contentBlocks }]
+    })
+
+    for await (const event of stream as AsyncIterable<{ type: string; delta?: { text?: string } }>) {
+      if (event.type === 'content_block_delta' && event.delta?.text) {
+        rawText += event.delta.text
+      }
+    }
     const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
 
     let analysisResult: Record<string, unknown> = {}
@@ -166,7 +188,6 @@ export async function POST(req: NextRequest) {
       parseError = err instanceof Error ? err.message : 'parse error'
       console.error('[upload] JSON parse failed:', parseError)
       console.error('[upload] Raw response length:', rawText.length)
-      console.error('[upload] Stop reason:', (message as Anthropic.Message).stop_reason)
       console.error('[upload] Last 500 chars of raw:', rawText.slice(-500))
 
       // Try to recover a partial JSON (truncated at max_tokens)
@@ -190,50 +211,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 3. Auto-compare with previous payslip if applicable
-    if (analysisResult.document_type === 'payslip') {
-      const { data: previousPayslip } = await supabase
-        .from('documents')
-        .select('period, analysis_data, summary_fr')
-        .eq('user_id', user.id)
-        .eq('document_type', 'payslip')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
-
-      if (previousPayslip) {
-        try {
-          const compareResponse = await anthropic.messages.create({
-            model: 'claude-sonnet-4-5',
-            max_tokens: 512,
-            system: COMPARE_PAYSLIPS_INLINE_SYSTEM_PROMPT,
-            messages: [{
-              role: 'user',
-              content: `Compare brièvement ces 2 fiches de paie. Retourne UNIQUEMENT ce JSON :
-{"has_significant_change": true/false, "change_summary": "Résumé en 1 phrase des changements vs mois précédent, ou null si stable", "change_percent": number ou null}
-
-FICHE PRÉCÉDENTE (${previousPayslip.period || '?'}) : ${JSON.stringify(previousPayslip.analysis_data)}
-FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResult)}`
-            }]
-          })
-          const compareRaw = compareResponse.content[0].type === 'text' ? compareResponse.content[0].text : ''
-          const compareCleaned = compareRaw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
-          const compareResult = JSON.parse(compareCleaned)
-
-          if (compareResult.has_significant_change && compareResult.change_summary) {
-            analysisResult.comparison_note = compareResult.change_summary
-            analysisResult.comparison_change_percent = compareResult.change_percent
-            // Append comparison note to summary
-            const currentSummary = (analysisResult.summary_fr as string) || ''
-            analysisResult.summary_fr = `${currentSummary} [vs ${previousPayslip.period || 'mois précédent'} : ${compareResult.change_summary}]`
-          }
-        } catch (compareErr) {
-          console.error('[Auto-compare] Error:', compareErr)
-          // Non-blocking: continue without comparison
-        }
-      }
-    }
-
+    // 3. Payslip verification + rights (CPU, rapide — on garde synchrone)
+    //    La comparaison Claude est deplacee en async apres la reponse
     // 3b. Payslip verification with Israeli payroll calculator
     if (analysisResult.document_type === 'payslip') {
       try {
@@ -405,178 +384,188 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
       )
     }
 
-    // Track recurring expense if detected
-    if (document) {
-      const recurringInfo = (analysisResult.analysis_data as Record<string, unknown>)?.recurring_info as
-        | { is_recurring?: boolean; frequency?: string; provider?: string; amount?: number }
-        | undefined
-      const providerName = recurringInfo?.provider || (analysisResult.key_info as Record<string, unknown>)?.emitter as string | undefined
-      if (recurringInfo?.is_recurring && providerName) {
-        try {
-          const amount = recurringInfo.amount ?? null
-          const frequency = recurringInfo.frequency || 'monthly'
-          const today = new Date().toISOString().split('T')[0]
+    // Increment usage counter (rapide, Redis)
+    await incrementUsage(supabase, user.id, 'documents_analyzed')
 
-          // Check if similar recurring expense exists for this user
-          const { data: existing } = await supabase
-            .from('recurring_expenses')
-            .select('id, document_ids, amount')
-            .eq('user_id', user.id)
-            .ilike('provider_name', providerName)
-            .maybeSingle()
+    // =====================================================
+    // REPONSE IMMEDIATE — on renvoie le document au client
+    // Les taches secondaires tournent en fire-and-forget
+    // =====================================================
+    const response = NextResponse.json({ document })
 
-          if (existing) {
-            // Anomaly detection: compare new amount vs previous tracked amount
-            const anomaly = amount ? detectAmountAnomaly(amount, existing.amount || 0) : null
-            if (anomaly) {
-              const { pct, level, direction: dir } = anomaly
-              const direction = dir === 'up' ? 'augmenté' : 'diminué'
-              {
+    // --- Taches async fire-and-forget (ne bloquent PAS la reponse) ---
+    const asyncTasks = async () => {
+      try {
+        const docId = document!.id
+
+        // A. Auto-compare avec fiche precedente (2eme appel Claude)
+        if (analysisResult.document_type === 'payslip') {
+          try {
+            const { data: previousPayslip } = await supabase
+              .from('documents')
+              .select('period, analysis_data, summary_fr')
+              .eq('user_id', user.id)
+              .eq('document_type', 'payslip')
+              .neq('id', docId)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .single()
+
+            if (previousPayslip) {
+              const compareResponse = await anthropic.messages.create({
+                model: 'claude-sonnet-4-5',
+                max_tokens: 512,
+                system: COMPARE_PAYSLIPS_INLINE_SYSTEM_PROMPT,
+                messages: [{
+                  role: 'user',
+                  content: `Compare brièvement ces 2 fiches de paie. Retourne UNIQUEMENT ce JSON :
+{"has_significant_change": true/false, "change_summary": "Résumé en 1 phrase des changements vs mois précédent, ou null si stable", "change_percent": number ou null}
+
+FICHE PRÉCÉDENTE (${previousPayslip.period || '?'}) : ${JSON.stringify(previousPayslip.analysis_data)}
+FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResult)}`
+                }]
+              })
+              const compareRaw = compareResponse.content[0].type === 'text' ? compareResponse.content[0].text : ''
+              const compareCleaned = compareRaw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
+              const compareResult = JSON.parse(compareCleaned)
+
+              if (compareResult.has_significant_change && compareResult.change_summary) {
+                analysisResult.comparison_note = compareResult.change_summary
+                analysisResult.comparison_change_percent = compareResult.change_percent
+                const currentSummary = (analysisResult.summary_fr as string) || ''
+                analysisResult.summary_fr = `${currentSummary} [vs ${previousPayslip.period || 'mois précédent'} : ${compareResult.change_summary}]`
+                await supabase
+                  .from('documents')
+                  .update({ analysis_data: analysisResult, summary_fr: analysisResult.summary_fr })
+                  .eq('id', docId)
+              }
+            }
+          } catch (compareErr) {
+            console.error('[Auto-compare] Error:', compareErr)
+          }
+        }
+
+        // B. Recurring expense tracking
+        const recurringInfo = (analysisResult.analysis_data as Record<string, unknown>)?.recurring_info as
+          | { is_recurring?: boolean; frequency?: string; provider?: string; amount?: number }
+          | undefined
+        const providerName = recurringInfo?.provider || (analysisResult.key_info as Record<string, unknown>)?.emitter as string | undefined
+        if (recurringInfo?.is_recurring && providerName) {
+          try {
+            const amount = recurringInfo.amount ?? null
+            const frequency = recurringInfo.frequency || 'monthly'
+            const today = new Date().toISOString().split('T')[0]
+
+            const { data: existing } = await supabase
+              .from('recurring_expenses')
+              .select('id, document_ids, amount')
+              .eq('user_id', user.id)
+              .ilike('provider_name', providerName)
+              .maybeSingle()
+
+            if (existing) {
+              const anomaly = amount ? detectAmountAnomaly(amount, existing.amount || 0) : null
+              if (anomaly) {
+                const { pct, level, direction: dir } = anomaly
+                const direction = dir === 'up' ? 'augmenté' : 'diminué'
                 const anomalyPoint = {
                   level,
                   title: `Montant ${direction} de ${pct.toFixed(0)}%`,
                   description: `Cette facture ${providerName} est à ${amount}₪ contre ${existing.amount}₪ habituellement. Vérifiez que c'est normal.`,
                 }
-                const existingPoints = Array.isArray((analysisResult.attention_points as unknown[]))
+                const existingPoints = Array.isArray(analysisResult.attention_points)
                   ? (analysisResult.attention_points as Array<Record<string, unknown>>)
                   : []
                 analysisResult.attention_points = [anomalyPoint, ...existingPoints]
-                // Persist updated analysis
                 await supabase
                   .from('documents')
                   .update({ analysis_data: analysisResult })
-                  .eq('id', document.id)
+                  .eq('id', docId)
 
-                // Fire-and-forget email notification for significant anomalies
                 if (pct >= 30 && process.env.CRON_SECRET) {
                   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL
                     ? `https://${process.env.VERCEL_URL}`
                     : 'http://localhost:3000')
                   fetch(`${baseUrl}/api/alerts/anomaly`, {
                     method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': `Bearer ${process.env.CRON_SECRET}`,
-                    },
-                    body: JSON.stringify({
-                      userId: user.id,
-                      documentId: document.id,
-                      provider: providerName,
-                      newAmount: amount,
-                      previousAmount: existing.amount,
-                      pct,
-                    }),
-                  }).catch(err => console.error('[Anomaly Alert] Fire-and-forget error:', err))
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.CRON_SECRET}` },
+                    body: JSON.stringify({ userId: user.id, documentId: docId, provider: providerName, newAmount: amount, previousAmount: existing.amount, pct }),
+                  }).catch(err => console.error('[Anomaly Alert] Error:', err))
                 }
               }
-            }
-            const docIds = Array.isArray(existing.document_ids) ? existing.document_ids : []
-            if (!docIds.includes(document.id)) docIds.push(document.id)
-            await supabase
-              .from('recurring_expenses')
-              .update({
-                document_ids: docIds,
-                last_seen_date: today,
-                amount: amount ?? existing.amount,
-                updated_at: new Date().toISOString(),
+              const docIds = Array.isArray(existing.document_ids) ? existing.document_ids : []
+              if (!docIds.includes(docId)) docIds.push(docId)
+              await supabase
+                .from('recurring_expenses')
+                .update({ document_ids: docIds, last_seen_date: today, amount: amount ?? existing.amount, updated_at: new Date().toISOString() })
+                .eq('id', existing.id)
+            } else {
+              await supabase.from('recurring_expenses').insert({
+                user_id: user.id, provider_name: providerName,
+                category: (analysisResult.category as string) || null,
+                amount, frequency, last_seen_date: today, document_ids: [docId], status: 'active',
               })
-              .eq('id', existing.id)
-          } else {
-            await supabase.from('recurring_expenses').insert({
-              user_id: user.id,
-              provider_name: providerName,
-              category: (analysisResult.category as string) || null,
-              amount,
-              frequency,
-              last_seen_date: today,
-              document_ids: [document.id],
-              status: 'active',
-            })
+            }
+          } catch (recurErr) {
+            console.error('[Recurring] Error:', recurErr)
           }
-        } catch (recurErr) {
-          console.error('[Recurring] Error tracking recurring expense:', recurErr)
         }
-      }
 
-      // Auto-group into folder by document type (e.g. "Fiches de paie", "Factures")
-      const docType = (analysisResult.document_type as string) || 'other'
-      const FOLDER_NAMES: Record<string, string> = {
-        payslip: 'Fiches de paie',
-        bituah_leumi: 'Bituah Leumi',
-        tax_notice: 'Documents fiscaux',
-        work_contract: 'Contrats de travail',
-        pension: 'Retraite',
-        health_insurance: 'Assurance santé',
-        rental: 'Logement',
-        bank: 'Documents bancaires',
-        official_letter: 'Courriers officiels',
-        contract: 'Contrats',
-        invoice: 'Factures',
-        receipt: 'Tickets de caisse',
-        utility_bill: 'Factures services',
-        insurance: 'Assurances',
-        other: 'Autres documents',
-      }
-      const folderName = FOLDER_NAMES[docType] || FOLDER_NAMES.other
-      try {
-        const { data: existingFolder } = await supabase
-          .from('folders')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('name', folderName)
-          .maybeSingle()
-
-        let folderId = existingFolder?.id
-        if (!folderId) {
-          const { data: newFolder } = await supabase
+        // C. Auto-group into folder
+        const docType = (analysisResult.document_type as string) || 'other'
+        const FOLDER_NAMES: Record<string, string> = {
+          payslip: 'Fiches de paie', bituah_leumi: 'Bituah Leumi', tax_notice: 'Documents fiscaux',
+          work_contract: 'Contrats de travail', pension: 'Retraite', health_insurance: 'Assurance santé',
+          rental: 'Logement', bank: 'Documents bancaires', official_letter: 'Courriers officiels',
+          contract: 'Contrats', invoice: 'Factures', receipt: 'Tickets de caisse',
+          utility_bill: 'Factures services', insurance: 'Assurances', other: 'Autres documents',
+        }
+        const folderName = FOLDER_NAMES[docType] || FOLDER_NAMES.other
+        try {
+          const { data: existingFolder } = await supabase
             .from('folders')
-            .insert({
-              user_id: user.id,
-              name: folderName,
-              category: (analysisResult.category as string) || null,
-              auto_generated: true,
-              status: 'active',
-            })
             .select('id')
-            .single()
-          folderId = newFolder?.id
+            .eq('user_id', user.id)
+            .eq('name', folderName)
+            .maybeSingle()
+
+          let folderId = existingFolder?.id
+          if (!folderId) {
+            const { data: newFolder } = await supabase
+              .from('folders')
+              .insert({ user_id: user.id, name: folderName, category: (analysisResult.category as string) || null, auto_generated: true, status: 'active' })
+              .select('id')
+              .single()
+            folderId = newFolder?.id
+          }
+          if (folderId) {
+            await supabase.from('documents').update({ folder_id: folderId }).eq('id', docId)
+          }
+        } catch (folderErr) {
+          console.error('[Folder] Auto-group error:', folderErr)
         }
 
-        if (folderId) {
-          await supabase.from('documents').update({ folder_id: folderId }).eq('id', document.id)
+        // D. Emails
+        if (process.env.CRON_SECRET) {
+          const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+            ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+          const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.CRON_SECRET}` }
+          const body = JSON.stringify({ userId: user.id, documentId: docId })
+
+          if (Boolean(analysisResult.is_urgent)) {
+            fetch(`${baseUrl}/api/alerts/urgent`, { method: 'POST', headers, body }).catch(() => {})
+          }
+          fetch(`${baseUrl}/api/alerts/analysis-complete`, { method: 'POST', headers, body }).catch(() => {})
         }
-      } catch (folderErr) {
-        console.error('[Folder] Auto-group error:', folderErr)
+      } catch (asyncErr) {
+        console.error('[Async post-analysis] Error:', asyncErr)
       }
     }
 
-    // Fire-and-forget emails (don't block response)
-    if (document && process.env.CRON_SECRET) {
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
-        ?? (process.env.VERCEL_URL
-          ? `https://${process.env.VERCEL_URL}`
-          : 'http://localhost:3000')
-      const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.CRON_SECRET}`,
-      }
-      const body = JSON.stringify({ userId: user.id, documentId: document.id })
+    // Lancer les taches async SANS attendre (fire-and-forget)
+    asyncTasks()
 
-      // Urgent alert email
-      if (Boolean(analysisResult.is_urgent)) {
-        fetch(`${baseUrl}/api/alerts/urgent`, { method: 'POST', headers, body })
-          .catch(err => console.error('[Urgent Alert] Fire-and-forget error:', err))
-      }
-
-      // Post-analysis summary email
-      fetch(`${baseUrl}/api/alerts/analysis-complete`, { method: 'POST', headers, body })
-        .catch(err => console.error('[Analysis Email] Fire-and-forget error:', err))
-    }
-
-    // Increment usage counter after successful analysis
-    await incrementUsage(supabase, user.id, 'documents_analyzed')
-
-    return NextResponse.json({ document })
+    return response
   } catch (err) {
     console.error('[/api/documents/upload]', err)
     const message = err instanceof Error ? err.message : 'Erreur inconnue'
