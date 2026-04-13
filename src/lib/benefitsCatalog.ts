@@ -137,6 +137,96 @@ export interface BenefitDefinition {
 }
 
 // =====================================================
+// SECTION 2 — Kitsbat Yeladim (allocation enfants) 2026
+// =====================================================
+// Source : https://www.btl.gov.il/About/news/Pages/hadasaidkonkitzva2026.aspx
+// Confirme via recherche web avril 2026.
+//
+// Structure 2026 (indexee sur CPI) :
+// - 1er enfant : 173 NIS/mois
+// - 2e, 3e, 4e enfant : 219 NIS/mois chacun
+// - 5e enfant et + : 173 NIS/mois (retombe au tarif du 1er — regle
+//   counter-intuitive specifique a Israel)
+// + Epargne "Chisachon LeKol Yeled" : 57 NIS/mois dans un compte separe
+//   pour chaque enfant (automatiquement ouvert a la naissance)
+
+/**
+ * Calcule l'allocation mensuelle cumulee pour N enfants.
+ * Applique la regle BL 2026 : 173/219/219/219/173...
+ */
+export function computeKitsbatYeladim2026(childrenCount: number): number {
+  if (childrenCount <= 0) return 0
+  if (childrenCount === 1) return 173
+  if (childrenCount <= 4) return 173 + (childrenCount - 1) * 219
+  // 5+ : les 4 premiers suivent la regle, puis retour au tarif 1er
+  return 173 + 3 * 219 + (childrenCount - 4) * 173
+}
+
+// Benefits entries pour la Section 2
+const KITSBAT_YELADIM_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'kitsbat_yeladim',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Allocation enfants (Kitsbat Yeladim)',
+    title_he: 'קצבת ילדים',
+    description_fr:
+      'Allocation mensuelle versee par Bituach Leumi a toutes les familles resident en Israel, pour chaque enfant de moins de 18 ans.',
+    full_description_fr:
+      'En 2026 : 173 NIS/mois pour le 1er enfant, 219 NIS/mois pour les 2e, 3e et 4e enfants, puis retour a 173 NIS/mois a partir du 5e enfant. ' +
+      'L\'allocation est normalement automatique a la naissance mais peut necessiter une mise a jour pour les olim recents. ' +
+      'Elle est versee sur le compte bancaire du parent declare a BL.',
+    conditions: {
+      min_children: 1,
+      requires_resident: true,
+    },
+    estimated_annual_value: 173 * 12,  // minimum pour 1 enfant
+    value_unit: 'NIS/an (minimum)',
+    typical_monthly_amount: 173,
+    application_url: 'https://www.btl.gov.il/benefits/children/Pages/default.aspx',
+    action_label: 'Verifier mon allocation enfants',
+    info_url: 'https://www.kolzchut.org.il/en/Child_Allowance',
+    disclaimer:
+      'L\'allocation est normalement versee automatiquement. Si vous etes oleh recent ou venez de changer de situation, verifiez votre espace BL personnel ou contactez leur service client.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+    notes: 'Chiffres officiels BL 2026 confirmes via recherche web. Structure "5+ retombe au tarif 1er" est une regle counter-intuitive : a double-verifier en cas de doute.',
+  },
+  {
+    slug: 'chisachon_lekol_yeled',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Epargne enfant (Chisachon LeKol Yeled)',
+    title_he: 'חיסכון לכל ילד',
+    description_fr:
+      'Bituach Leumi depose automatiquement 57 NIS/mois dans un compte d\'epargne dedie pour chaque enfant, accessible a ses 18 ans (ou ses 21 ans avec bonus).',
+    full_description_fr:
+      'Programme lance en 2017. Tous les enfants israeliens ont un compte d\'epargne automatique a BL. ' +
+      'Les parents peuvent choisir d\'ajouter 57 NIS/mois supplementaires de leur poche (deduits de l\'allocation enfants). ' +
+      'A 18 ans, l\'enfant peut retirer le capital. A 21 ans, il y a un bonus gouvernemental.',
+    conditions: {
+      min_children: 1,
+      requires_resident: true,
+    },
+    estimated_annual_value: 57 * 12,  // par enfant
+    value_unit: 'NIS/an/enfant',
+    typical_monthly_amount: 57,
+    application_url: 'https://www.btl.gov.il/benefits/children/HisahoLayeled/Pages/default.aspx',
+    action_label: 'Configurer le compte epargne',
+    disclaimer:
+      'Programme automatique. Vous pouvez choisir le fonds (banque ou kupat gemel) et doubler la contribution.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+  },
+]
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
-export const BENEFITS_CATALOG: BenefitDefinition[] = []
+export const BENEFITS_CATALOG: BenefitDefinition[] = [
+  ...KITSBAT_YELADIM_BENEFITS,
+]
