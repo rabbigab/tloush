@@ -1619,6 +1619,72 @@ const COMBAT_RESERVIST_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION 19 — Helper functions
+// =====================================================
+
+/**
+ * Recupere un benefice par son slug.
+ */
+export function getBenefitBySlug(slug: string): BenefitDefinition | undefined {
+  return BENEFITS_CATALOG.find(b => b.slug === slug)
+}
+
+/**
+ * Filtre les benefices par categorie.
+ */
+export function getBenefitsByCategory(category: BenefitCategory): BenefitDefinition[] {
+  return BENEFITS_CATALOG.filter(b => b.category === category)
+}
+
+/**
+ * Filtre les benefices par autorite emettrice.
+ */
+export function getBenefitsByAuthority(authority: BenefitAuthority): BenefitDefinition[] {
+  return BENEFITS_CATALOG.filter(b => b.authority === authority)
+}
+
+/**
+ * Retourne uniquement les benefices a haute confiance (pour prod).
+ */
+export function getVerifiedBenefits(): BenefitDefinition[] {
+  return BENEFITS_CATALOG.filter(b => b.confidence === 'high' && b.status === 'verified')
+}
+
+/**
+ * Retourne les benefices qui necessitent une revue legale.
+ */
+export function getBenefitsNeedingVerification(): BenefitDefinition[] {
+  return BENEFITS_CATALOG.filter(
+    b => b.status === 'needs_verification' || b.confidence === 'low'
+  )
+}
+
+/**
+ * Stats globales du catalogue.
+ */
+export function getCatalogStats() {
+  const byCategory: Record<string, number> = {}
+  const byAuthority: Record<string, number> = {}
+  const byConfidence = { high: 0, medium: 0, low: 0 }
+  const byStatus = { verified: 0, needs_verification: 0, estimated: 0 }
+
+  for (const b of BENEFITS_CATALOG) {
+    byCategory[b.category] = (byCategory[b.category] || 0) + 1
+    byAuthority[b.authority] = (byAuthority[b.authority] || 0) + 1
+    byConfidence[b.confidence]++
+    byStatus[b.status]++
+  }
+
+  return {
+    total: BENEFITS_CATALOG.length,
+    byCategory,
+    byAuthority,
+    byConfidence,
+    byStatus,
+  }
+}
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
 export const BENEFITS_CATALOG: BenefitDefinition[] = [
