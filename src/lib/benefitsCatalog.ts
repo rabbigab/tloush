@@ -1207,6 +1207,101 @@ const KLITA_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION 14 — Housing for Olim (Aide loyer + Mashkanta)
+// =====================================================
+
+const HOUSING_OLIM_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'rental_assistance_olim',
+    category: 'housing',
+    authority: 'misrad_hashikun',
+    title_fr: 'Aide au loyer olim (Siuah Sechar Dira)',
+    title_he: 'סיוע בשכר דירה לעולים',
+    description_fr:
+      'Aide mensuelle au loyer pour les nouveaux olim, commencant apres la fin du Sal Klita (mois 7-8 apres l\'alyah).',
+    full_description_fr:
+      'Montant 2025-2026 : 1 000 a 3 000 NIS/mois selon ville, taille famille et niveau de besoin. ' +
+      'Duree : jusqu\'a 4-5 ans (olim avant mars 2024) ou 30 mois (olim apres mars 2024). ' +
+      'Conditions : etre oleh chadash, avoir un bail signe, ne pas etre proprietaire. ' +
+      'La demande se fait aupres de Misrad HaShikun avec une copie du bail et du teudat oleh.',
+    conditions: {
+      requires_oleh: true,
+      aliyah_years_range: [0, 4],
+      required_marital_status: ['single', 'married', 'divorced', 'widowed', 'separated'],
+    },
+    estimated_annual_value: 2000 * 12,
+    value_unit: 'NIS/an (moyenne)',
+    typical_monthly_amount: 2000,
+    application_url: 'https://www.gov.il/en/life-events/immigration-and-assimilation/housing-for-immigrants',
+    action_label: 'Demande aide au loyer',
+    info_url: 'https://www.nbn.org.il/life-in-israel/government-services/rights-and-benefits/rental-assistance/',
+    disclaimer:
+      'Depend de la ville (peripherie = plus d\'aide), de la taille famille, et de votre revenu. Consultez Misrad HaShikun pour le calcul exact.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+  },
+  {
+    slug: 'mashkanta_olim',
+    category: 'housing',
+    authority: 'misrad_hashikun',
+    title_fr: 'Mashkanta Le\'Ole (pret immobilier olim)',
+    title_he: 'משכנתא לעולה חדש',
+    description_fr:
+      'Programme de pret hypothecaire a taux reduit pour les olim chadashim, avec apport personnel reduit a 5-15%.',
+    full_description_fr:
+      'Conditions : etre oleh dans les 15 premieres annees d\'alyah. ' +
+      'Avantages : taux d\'interet reduit vs marche, apport personnel 5-15% (vs 25-40% standard), ' +
+      'pret specifique jusqu\'a ~300 000 NIS a taux preferentiel, approbation facilitee. ' +
+      'Conditions plus avantageuses pendant les 15 premieres annees. ' +
+      'Necessite un Teudat Zakaut delivre par Misrad HaShikun.',
+    conditions: {
+      requires_oleh: true,
+      aliyah_years_range: [0, 14],
+    },
+    estimated_annual_value: 30000,  // economie estimee sur la duree
+    value_unit: 'NIS (economie vs pret standard)',
+    application_url: 'https://www.gov.il/en/life-events/immigration-and-assimilation/housing-for-immigrants',
+    action_label: 'Obtenir le Teudat Zakaut',
+    info_url: 'https://www.easyaliyah.com/aliyah-benefits-mortgage-discount',
+    disclaimer:
+      'Le Teudat Zakaut doit etre obtenu AVANT de chercher un pret bancaire. Consultez Misrad HaShikun et un conseiller en immobilier.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-12',
+  },
+  {
+    slug: 'olim_purchase_tax_reduction',
+    category: 'housing',
+    authority: 'tax_authority',
+    title_fr: 'Reduction purchase tax olim',
+    title_he: 'מס רכישה מופחת לעולים',
+    description_fr:
+      'Les olim beneficient d\'une reduction sur le purchase tax (mas rechisha) lors de l\'achat de leur premiere residence en Israel.',
+    full_description_fr:
+      'Exemption sur les premiers 2 000 000 NIS d\'achat. ' +
+      'Taux reduit de 0.5% entre 2 000 000 et 6 000 000 NIS. ' +
+      'Taux normal au-dela. ' +
+      'Applicable une seule fois pendant les 7 ans suivant l\'alyah. ' +
+      'Exclut les appartements de plus de 20 000 000 NIS.',
+    conditions: {
+      requires_oleh: true,
+      aliyah_years_range: [0, 6],
+    },
+    estimated_annual_value: 50000,  // economie typique
+    value_unit: 'NIS (economie sur achat)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Infos mas rechisha',
+    disclaimer:
+      'Valable une seule fois et uniquement dans les 7 ans suivant l\'alyah. Consultez un yoetz mas ou un avocat immobilier.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+  },
+]
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
 export const BENEFITS_CATALOG: BenefitDefinition[] = [
@@ -1222,4 +1317,5 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...TAX_CREDIT_BENEFITS,
   ...OLEH_2026_BENEFITS,
   ...KLITA_BENEFITS,
+  ...HOUSING_OLIM_BENEFITS,
 ]
