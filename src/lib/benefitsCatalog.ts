@@ -1302,6 +1302,102 @@ const HOUSING_OLIM_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION 15 — Arnona reductions (mairies)
+// =====================================================
+// Source : https://www.kolzchut.org.il/he/הנחה_בארנונה
+// Chaque mairie a ses propres baremes — valeurs approximatives.
+
+const ARNONA_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'arnona_olim',
+    category: 'housing',
+    authority: 'municipality',
+    title_fr: 'Reduction Arnona olim (70-90%)',
+    title_he: 'הנחה בארנונה לעולים חדשים',
+    description_fr:
+      'Les nouveaux olim beneficient de 70-90% de reduction d\'arnona pendant 12 mois (sur 100 m² maximum).',
+    full_description_fr:
+      'Applicable sur les 100 premiers m² du logement. ' +
+      'Periode : un seul cycle de 12 mois consecutifs, a choisir dans les 24 premiers mois apres l\'alyah. ' +
+      'Demande aupres de la mairie, avec copie du Teudat Oleh.',
+    conditions: {
+      requires_oleh: true,
+      aliyah_years_range: [0, 1],
+    },
+    estimated_annual_value: 4000,
+    value_unit: 'NIS/an (variable selon ville)',
+    application_url: 'https://www.gov.il/en/service/arnona-discount',
+    action_label: 'Demande arnona olim',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-12',
+  },
+  {
+    slug: 'arnona_disability',
+    category: 'housing',
+    authority: 'municipality',
+    title_fr: 'Reduction Arnona personnes handicapees',
+    description_fr: 'Reduction d\'arnona pour les personnes avec taux d\'invalidite reconnu (varie 25-80% selon taux).',
+    conditions: { min_disability: 50 },
+    estimated_annual_value: 3000,
+    value_unit: 'NIS/an (variable)',
+    application_url: 'https://www.kolzchut.org.il/he/הנחה_בארנונה',
+    action_label: 'Infos reduction handicap',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+  },
+  {
+    slug: 'arnona_retiree',
+    category: 'housing',
+    authority: 'municipality',
+    title_fr: 'Reduction Arnona retraites',
+    description_fr: 'Reduction d\'arnona pour les retraites recevant la pension vieillesse (taux 25-100% selon revenu).',
+    conditions: { min_age: 67 },
+    estimated_annual_value: 2000,
+    value_unit: 'NIS/an (variable)',
+    application_url: 'https://www.kolzchut.org.il/he/הנחה_בארנונה',
+    action_label: 'Demande reduction retraite',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+  },
+  {
+    slug: 'arnona_single_parent',
+    category: 'housing',
+    authority: 'municipality',
+    title_fr: 'Reduction Arnona parents isoles',
+    description_fr: 'Reduction d\'arnona pour les parents isoles avec enfants (variable par mairie).',
+    conditions: {
+      required_marital_status: ['divorced', 'widowed', 'separated', 'single'],
+      min_children: 1,
+    },
+    estimated_annual_value: 1500,
+    value_unit: 'NIS/an (variable)',
+    application_url: 'https://www.kolzchut.org.il/he/הנחה_בארנונה',
+    action_label: 'Infos reduction parent isole',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+  },
+  {
+    slug: 'arnona_student',
+    category: 'housing',
+    authority: 'municipality',
+    title_fr: 'Reduction Arnona etudiants',
+    description_fr: 'Reduction d\'arnona pour les etudiants (variable par ville, souvent 10-30%).',
+    conditions: { requires_student: true },
+    estimated_annual_value: 1000,
+    value_unit: 'NIS/an (variable)',
+    application_url: 'https://www.kolzchut.org.il/he/הנחה_בארנונה',
+    action_label: 'Demande reduction etudiant',
+    confidence: 'low',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+  },
+]
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
 export const BENEFITS_CATALOG: BenefitDefinition[] = [
@@ -1318,4 +1414,5 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...OLEH_2026_BENEFITS,
   ...KLITA_BENEFITS,
   ...HOUSING_OLIM_BENEFITS,
+  ...ARNONA_BENEFITS,
 ]
