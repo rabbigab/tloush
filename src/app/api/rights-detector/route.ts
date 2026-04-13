@@ -18,7 +18,17 @@ export async function GET() {
     .order('confidence_score', { ascending: false })
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('[rights-detector GET] fetch failed:', error)
+    if (error.message?.includes('does not exist') || error.code === '42P01') {
+      return NextResponse.json(
+        {
+          error: 'La table detected_rights n\'existe pas. Appliquez la migration 20260417_rights_detector.sql via Supabase SQL Editor.',
+          db_error: error.message,
+        },
+        { status: 500 }
+      )
+    }
+    return NextResponse.json({ error: error.message, db_error: error.message }, { status: 500 })
   }
 
   return NextResponse.json({ rights: data || [] })
@@ -33,71 +43,137 @@ export async function POST() {
   if (auth instanceof NextResponse) return auth
   const { user, supabase } = auth
 
-  // Recuperer le profil enrichi
-  const { data: profile } = await supabase
+  // 1. Recuperer le profil enrichi — avec check d'erreur explicite
+  const { data: profile, error: profileError } = await supabase
     .from('user_profiles')
     .select('*')
     .eq('user_id', user.id)
     .maybeSingle()
 
+  if (profileError) {
+    console.error('[rights-detector POST] profile fetch failed:', profileError)
+    return NextResponse.json(
+      {
+        error: `Impossible de lire le profil : ${profileError.message}. La migration 20260418_profile_enrichment_v2.sql est peut-etre manquante.`,
+        db_error: profileError.message,
+        db_code: profileError.code,
+      },
+      { status: 500 }
+    )
+  }
+
   if (!profile) {
     return NextResponse.json(
-      { error: 'Vous devez d\'abord completer votre profil.', needs_profile: true },
+      { error: 'Vous devez d\'abord sauvegarder votre profil (au moins un champ).', needs_profile: true },
       { status: 400 }
     )
   }
 
-  // Scan avec le detecteur V2 (base sur benefitsCatalog.ts)
-  // On filtre les benefices deja declares comme recus par l'utilisateur.
+  // 2. Scan avec le detecteur V2 (base sur benefitsCatalog.ts)
   const detected: DetectedBenefit[] = scanUnclaimedBenefits(profile)
 
-  // Upsert dans detected_rights (preserve les status existants)
-  const now = new Date().toISOString()
-  for (const benefit of detected) {
-    // Verifier si deja detecte (pour preserver le status)
-    const { data: existing } = await supabase
-      .from('detected_rights')
-      .select('id, status')
-      .eq('user_id', user.id)
-      .eq('right_slug', benefit.slug)
-      .maybeSingle()
-
-    await supabase
-      .from('detected_rights')
-      .upsert(
-        {
-          user_id: user.id,
-          right_slug: benefit.slug,
-          right_title_fr: benefit.title_fr,
-          right_description_fr: benefit.description_fr,
-          authority: benefit.authority,
-          category: benefit.category,
-          confidence_score: benefit.confidence_score,
-          confidence_level: benefit.confidence_level,
-          estimated_value: benefit.estimated_value,
-          value_unit: benefit.value_unit,
-          source: 'profile',  // V2 scanne essentiellement le profil
-          source_doc_id: null,
-          action_url: benefit.action_url,
-          action_label: benefit.action_label,
-          disclaimer: benefit.disclaimer || null,
-          // Preserve existing status if any
-          status: existing?.status || 'suggested',
-          detected_at: now,
-          updated_at: now,
-        },
-        { onConflict: 'user_id,right_slug' }
-      )
+  if (detected.length === 0) {
+    // Aucun match — on vide la table et on retourne vide
+    console.log('[rights-detector POST] no benefits matched for user', user.id)
+    return NextResponse.json({
+      rights: [],
+      detected_count: 0,
+      total_estimated_annual_value: 0,
+      engine_version: 'v2',
+      message: 'Aucun droit detecte pour votre profil actuel. Completez plus de champs (alyah, enfants, emploi, sante) pour debloquer plus de resultats.',
+    })
   }
 
-  // Retourner la liste a jour
-  const { data: final } = await supabase
+  // 3. Recuperer les status existants en 1 seule query (preserve claimed/dismissed)
+  const { data: existingRows, error: existingError } = await supabase
+    .from('detected_rights')
+    .select('right_slug, status')
+    .eq('user_id', user.id)
+
+  if (existingError) {
+    console.error('[rights-detector POST] existing rights fetch failed:', existingError)
+    // Erreur probablement due a migration manquante
+    if (existingError.message?.includes('does not exist') || existingError.code === '42P01') {
+      return NextResponse.json(
+        {
+          error: 'La table detected_rights n\'existe pas. Appliquez la migration 20260417_rights_detector.sql via Supabase SQL Editor.',
+          db_error: existingError.message,
+        },
+        { status: 500 }
+      )
+    }
+    return NextResponse.json(
+      { error: existingError.message, db_error: existingError.message },
+      { status: 500 }
+    )
+  }
+
+  const existingMap = new Map(
+    (existingRows || []).map(r => [r.right_slug, r.status])
+  )
+
+  // 4. Upsert en BATCH (1 seule query au lieu de 33)
+  const now = new Date().toISOString()
+  const rowsToUpsert = detected.map(benefit => ({
+    user_id: user.id,
+    right_slug: benefit.slug,
+    right_title_fr: benefit.title_fr,
+    right_description_fr: benefit.description_fr,
+    authority: benefit.authority,
+    category: benefit.category,
+    // Round a 2 decimales pour garantir NUMERIC(3,2) safe
+    confidence_score: Math.min(1, Math.max(0, Math.round(benefit.confidence_score * 100) / 100)),
+    confidence_level: benefit.confidence_level,
+    estimated_value: benefit.estimated_value,
+    value_unit: benefit.value_unit,
+    source: 'profile' as const,
+    source_doc_id: null,
+    action_url: benefit.action_url,
+    action_label: benefit.action_label,
+    disclaimer: benefit.disclaimer || null,
+    status: existingMap.get(benefit.slug) || 'suggested',
+    detected_at: now,
+    updated_at: now,
+  }))
+
+  const { error: upsertError } = await supabase
+    .from('detected_rights')
+    .upsert(rowsToUpsert, { onConflict: 'user_id,right_slug' })
+
+  if (upsertError) {
+    console.error('[rights-detector POST] batch upsert failed:', {
+      code: upsertError.code,
+      message: upsertError.message,
+      details: upsertError.details,
+      hint: upsertError.hint,
+      rowCount: rowsToUpsert.length,
+      firstRow: rowsToUpsert[0],
+    })
+    return NextResponse.json(
+      {
+        error: `Echec de la sauvegarde des droits : ${upsertError.message}`,
+        db_error: upsertError.message,
+        db_code: upsertError.code,
+      },
+      { status: 500 }
+    )
+  }
+
+  // 5. Retourner la liste a jour
+  const { data: final, error: finalError } = await supabase
     .from('detected_rights')
     .select('*')
     .eq('user_id', user.id)
     .order('confidence_score', { ascending: false })
 
-  // Calculer la valeur totale potentielle
+  if (finalError) {
+    console.error('[rights-detector POST] final fetch failed:', finalError)
+    return NextResponse.json(
+      { error: finalError.message },
+      { status: 500 }
+    )
+  }
+
   const totalValue = detected.reduce((sum, b) => sum + (b.estimated_value || 0), 0)
 
   return NextResponse.json({

@@ -85,7 +85,8 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
       } else {
         const data = await res.json().catch(() => ({}))
         console.error('[rights-detector fetch] failed:', { status: res.status, data })
-        setError(data.error || `Erreur de chargement (HTTP ${res.status})`)
+        const msg = data.error || `Erreur de chargement (HTTP ${res.status})`
+        setError(data.db_error ? `${msg}\nDetail DB : ${data.db_error}` : msg)
       }
     } catch (err) {
       console.error('[rights-detector fetch] network error:', err)
@@ -100,19 +101,23 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
   }, [fetchRights])
 
   async function scan() {
+    console.log('[rights-detector] scan started')
     setScanning(true)
     setError('')
     try {
       const res = await fetch('/api/rights-detector', { method: 'POST' })
-      const data = await res.json()
+      console.log('[rights-detector] scan response:', res.status)
+      const data = await res.json().catch(() => ({}))
+      console.log('[rights-detector] scan data:', data)
       if (!res.ok) {
         console.error('[rights-detector scan] failed:', { status: res.status, data })
-        setError(data.error || `Erreur lors du scan (HTTP ${res.status})`)
+        const msg = data.error || `Erreur lors du scan (HTTP ${res.status})`
+        setError(data.db_error ? `${msg}\nDetail DB : ${data.db_error}` : msg)
         return
       }
       setRights(data.rights || [])
       if ((data.rights || []).length === 0 && data.detected_count === 0) {
-        setError('Aucun droit detecte pour votre profil actuel. Completez plus de champs pour debloquer plus de resultats.')
+        setError(data.message || 'Aucun droit detecte pour votre profil actuel. Completez plus de champs pour debloquer plus de resultats.')
       }
     } catch (err) {
       console.error('[rights-detector scan] network error:', err)
@@ -226,9 +231,14 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
       />
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-3 text-sm text-red-700 dark:text-red-300 flex items-center gap-2">
-          <AlertCircle size={14} />
-          {error}
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-4 text-sm text-red-700 dark:text-red-300">
+          <div className="flex items-start gap-2">
+            <AlertCircle size={16} className="shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold mb-1">Echec du scan</p>
+              <pre className="text-xs whitespace-pre-wrap break-words font-mono">{error}</pre>
+            </div>
+          </div>
         </div>
       )}
 
