@@ -850,6 +850,116 @@ const MATERNITY_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION 10 — Miluim (reserve militaire) 2026
+// =====================================================
+// Sources :
+// https://www.btl.gov.il/benefits/Reserve_Service/Pages/default.aspx
+// https://www.kolzchut.org.il/he/תשלום_עבור_שירות_מילואים
+//
+// Tagmulei Miluim : compensation versee par BL aux reservistes qui
+// accomplissent leur service de reserve militaire. L'employeur paie
+// le salaire normal, BL rembourse l'employeur.
+//
+// Baremes officiels BL 2026 (VERIFIES avril 2026) :
+// - Plafond journalier : 1 730.33 NIS
+// - Plancher journalier : 328.76 NIS
+// - Formule : (salaire brut des 3 mois precedents) / 90
+// - Plafond mensuel : 51 910 NIS
+// - Plancher mensuel : 9 863 NIS
+
+const MILUIM_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'tagmulei_miluim',
+    category: 'military',
+    authority: 'bituach_leumi',
+    title_fr: 'Compensation miluim (Tagmulei Miluim)',
+    title_he: 'תגמולי מילואים',
+    description_fr:
+      'Compensation versee par Bituach Leumi aux reservistes : l\'employeur continue de payer le salaire normal et BL lui rembourse, sur la base du salaire moyen des 3 mois precedents.',
+    full_description_fr:
+      'Formule officielle 2026 : (salaire brut des 3 mois precedents) / 90 jours. ' +
+      'Plafond journalier : 1 730.33 NIS (max 51 910 NIS/mois). ' +
+      'Plancher journalier : 328.76 NIS (min 9 863 NIS/mois). ' +
+      'L\'employeur doit continuer de verser le salaire normal pendant le miluim, puis se faire rembourser par BL via le formulaire 3010 de Tsahal. ' +
+      'Les independants demandent directement a BL. ' +
+      'Si votre employeur refuse de payer, vous pouvez porter plainte au Misrad HaAvoda (Ministere du Travail).',
+    conditions: {
+      requires_active_reservist: true,
+      required_employment: ['employed', 'self_employed', 'reservist'],
+      requires_resident: true,
+    },
+    estimated_annual_value: 1730.33 * 30,  // 30 jours typique
+    value_unit: 'NIS (par periode de service)',
+    application_url: 'https://www.btl.gov.il/benefits/Reserve_Service/Pages/default.aspx',
+    action_label: 'Verifier ma compensation miluim',
+    info_url: 'https://www.kolzchut.org.il/he/תשלום_עבור_שירות_מילואים',
+    disclaimer:
+      'Votre employeur doit deposer le formulaire 3010 dans les 60 jours apres la fin du miluim. Si ce n\'est pas fait, contactez BL directement.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+    notes: 'Chiffres 2026 officiels BL (1730.33 plafond, 328.76 plancher) verifies via recherche web avril 2026.',
+  },
+  {
+    slug: 'miluim_tax_credit_combat',
+    category: 'military',
+    authority: 'tax_authority',
+    title_fr: 'Points credit impot combat reservistes (nouveau 2026)',
+    title_he: 'נקודות זיכוי ללוחמי מילואים',
+    description_fr:
+      'NOUVELLE loi 2026 : credit d\'impot pour les reservistes combattants, base sur le nombre de jours de service en role combat.',
+    full_description_fr:
+      'Loi adoptee fin 2025 : les reservistes combattants (lohamim) beneficient de points de credit fiscal bases sur leur nombre de jours de service en role combat durant l\'annee fiscale precedente. ' +
+      'Maximum : jusqu\'a 4 points de credit fiscal supplementaires (= jusqu\'a 968 NIS de deduction mensuelle). ' +
+      'Ces points sont specifiquement pour les reservistes servant en unite combat, pas pour ceux en unites non-combat ou administratives.',
+    conditions: {
+      requires_active_reservist: true,
+      requires_combat: true,
+    },
+    estimated_annual_value: 4 * 2904,  // 4 points max
+    value_unit: 'NIS/an (jusqu\'a 4 points)',
+    application_url: 'https://www.gov.il/en/departments/israel_tax_authority',
+    action_label: 'Declarer mes jours miluim',
+    info_url: 'https://www.ynetnews.com/article/rkvvxazqex',
+    disclaimer:
+      'Nouveaute 2026. Verifiez avec Rashut HaMisim ou un yoetz mas pour appliquer correctement.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+    notes: 'Nouveau credit specifique au combat. A valider avec un yoetz mas en 2026.',
+  },
+  {
+    slug: 'miluim_low_income_supplement',
+    category: 'military',
+    authority: 'misrad_habitahon',
+    title_fr: 'Supplement mensuel reservistes bas revenu (2026)',
+    title_he: 'תוספת חודשית למשרתי מילואים בעלי הכנסה נמוכה',
+    description_fr:
+      'Supplement mensuel pour les reservistes dont le salaire est sous un seuil : ~3 000 NIS/mois par mois de miluim, jusqu\'a 9 800 NIS/mois de revenu total.',
+    full_description_fr:
+      'Les reservistes ayant un revenu inferieur au seuil d\'imposition recoivent un supplement mensuel moyen de ~3 000 NIS par mois de service, ' +
+      'complete leur revenu mensuel jusqu\'a atteindre ~9 800 NIS/mois. ' +
+      'Cumulable avec les Tagmulei Miluim standard.',
+    conditions: {
+      requires_active_reservist: true,
+      max_monthly_income: 9800,
+    },
+    estimated_annual_value: 3000 * 2,  // pour 2 mois miluim typique
+    value_unit: 'NIS/mois (pour periodes de service)',
+    application_url: 'https://www.gov.il/en/pages/specialbenefits',
+    action_label: 'Infos supplement miluim',
+    disclaimer:
+      'Verifie via Misrad HaBitachon. Les conditions exactes 2026 doivent etre confirmees.',
+    confidence: 'low',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+  },
+]
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
 export const BENEFITS_CATALOG: BenefitDefinition[] = [
@@ -861,4 +971,5 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...UNEMPLOYMENT_BENEFITS,
   ...INCOME_SUPPORT_BENEFITS,
   ...MATERNITY_BENEFITS,
+  ...MILUIM_BENEFITS,
 ]
