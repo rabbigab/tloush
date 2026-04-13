@@ -1,10 +1,12 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, Loader2, Users, Plane, Briefcase, Heart, Home, AlertCircle, Shield, GraduationCap, UserCheck, Baby } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Loader2, Users, Plane, Briefcase, Heart, Home, AlertCircle, Shield, GraduationCap, UserCheck, Baby, Save, Sparkles } from 'lucide-react'
 import type {
   UserProfile,
+  UserProfileUpdate,
   Gender,
   MaritalStatus,
   EmploymentStatus,
@@ -28,10 +30,32 @@ const CURRENT_YEAR = new Date().getFullYear()
 const ALIYAH_YEARS = Array.from({ length: CURRENT_YEAR - 1948 + 1 }, (_, i) => CURRENT_YEAR - i)
 const DISCHARGE_YEARS = Array.from({ length: CURRENT_YEAR - 1980 + 1 }, (_, i) => CURRENT_YEAR - i)
 
+// Liste des champs editables — sert au "Sauvegarder tout" pour envoyer
+// l'integralite du profil en un seul PATCH (ne contient pas user_id,
+// created_at, updated_at, profile_completion_pct qui sont geres par l'API).
+const EDITABLE_FIELDS: (keyof UserProfileUpdate)[] = [
+  'gender', 'birth_date', 'marital_status',
+  'children_count', 'children_with_disabilities', 'children_in_daycare',
+  'aliyah_year', 'country_of_origin', 'israeli_citizen',
+  'employment_status', 'employer_sector', 'monthly_income', 'household_income_monthly',
+  'served_in_idf', 'military_discharge_year', 'is_combat_veteran',
+  'is_active_reservist', 'is_bereaved_family',
+  'education_level', 'is_current_student', 'institution_name',
+  'kupat_holim', 'disability_level',
+  'is_holocaust_survivor', 'is_caregiver', 'chronic_illness',
+  'has_mobility_limitation', 'has_disabled_child',
+  'city', 'municipality', 'housing_status', 'home_size_sqm', 'has_mortgage',
+  'receives_kitsbat_yeladim', 'receives_old_age_pension', 'receives_disability_pension',
+  'receives_income_support', 'receives_rental_assistance', 'receives_ulpan',
+  'receives_shoah_benefits',
+]
+
 export default function ProfileEditClient({ initialProfile }: { initialProfile: UserProfile }) {
+  const router = useRouter()
   const [profile, setProfile] = useState<UserProfile>(initialProfile)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [fullySaved, setFullySaved] = useState(false)  // apres bouton "Sauvegarder tout"
   const [error, setError] = useState('')
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -49,7 +73,7 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
         const msg = data.error || `Erreur ${res.status} lors de la sauvegarde`
         console.error('[profile save] failed:', { status: res.status, data, patch })
         setError(data.db_error ? `${msg}\nDetail DB : ${data.db_error}` : msg)
-        return
+        return false
       }
       const data = await res.json()
       if (data.profile) {
@@ -57,17 +81,63 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
       }
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
+      return true
     } catch (err) {
       console.error('[profile save] network error:', err)
       setError(`Erreur reseau : ${err instanceof Error ? err.message : String(err)}`)
+      return false
     } finally {
       setSaving(false)
     }
   }, [])
 
+  // Sauvegarde complete : envoie TOUS les champs editables d'un coup
+  // (au cas ou l'auto-save aurait rate quelque chose ou que l'utilisateur
+  // veuille une confirmation explicite avant de quitter la page).
+  const saveAll = useCallback(async () => {
+    // Cancel auto-save en cours pour eviter race condition
+    if (saveTimer.current) {
+      clearTimeout(saveTimer.current)
+      saveTimer.current = null
+    }
+    const fullPatch: Partial<UserProfile> = {}
+    for (const field of EDITABLE_FIELDS) {
+      const value = profile[field as keyof UserProfile]
+      if (value !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(fullPatch as any)[field] = value
+      }
+    }
+    const ok = await save(fullPatch)
+    if (ok) {
+      setFullySaved(true)
+      setTimeout(() => setFullySaved(false), 3500)
+    }
+  }, [profile, save])
+
+  const saveAndGoToRights = useCallback(async () => {
+    if (saveTimer.current) {
+      clearTimeout(saveTimer.current)
+      saveTimer.current = null
+    }
+    const fullPatch: Partial<UserProfile> = {}
+    for (const field of EDITABLE_FIELDS) {
+      const value = profile[field as keyof UserProfile]
+      if (value !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(fullPatch as any)[field] = value
+      }
+    }
+    const ok = await save(fullPatch)
+    if (ok) {
+      router.push('/rights-detector')
+    }
+  }, [profile, save, router])
+
   const update = useCallback(<K extends keyof UserProfile>(key: K, value: UserProfile[K]) => {
     setProfile(prev => ({ ...prev, [key]: value }))
     setSaved(false)
+    setFullySaved(false)
 
     if (saveTimer.current) clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(() => {
@@ -603,6 +673,44 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
           ))}
         </div>
       </Section>
+
+      {/* Confirmation "tout sauvegarde" */}
+      {fullySaved && (
+        <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-xl p-4 text-sm text-green-700 dark:text-green-300 flex items-center gap-2">
+          <CheckCircle2 size={16} className="shrink-0" />
+          <div className="flex-1">
+            <p className="font-semibold">Profil sauvegarde integralement !</p>
+            <p className="text-xs mt-0.5 text-green-600 dark:text-green-400">
+              Vous pouvez maintenant aller voir vos droits detectes.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Actions finales */}
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 space-y-3">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={saveAll}
+            disabled={saving}
+            className="flex-1 inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-700 border-2 border-blue-600 text-blue-600 dark:text-blue-400 font-semibold px-6 py-3 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-600 disabled:opacity-50 transition-colors"
+          >
+            {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+            {saving ? 'Sauvegarde...' : 'Sauvegarder tout'}
+          </button>
+          <button
+            onClick={saveAndGoToRights}
+            disabled={saving}
+            className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-6 py-3 rounded-xl disabled:opacity-50 transition-all shadow-md hover:shadow-lg"
+          >
+            {saving ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
+            {saving ? 'Sauvegarde...' : 'Sauvegarder & voir mes droits'}
+          </button>
+        </div>
+        <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
+          Les modifications sont aussi sauvegardees automatiquement apres chaque champ.
+        </p>
+      </div>
 
       <p className="text-xs text-slate-400 dark:text-slate-500 text-center pt-4 pb-6">
         Vos donnees sont privees et stockees de maniere securisee.
