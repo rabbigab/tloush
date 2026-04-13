@@ -2,25 +2,31 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, Loader2, Users, Plane, Briefcase, Heart, Home, AlertCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Loader2, Users, Plane, Briefcase, Heart, Home, AlertCircle, Shield, GraduationCap, UserCheck, Baby } from 'lucide-react'
 import type {
   UserProfile,
+  Gender,
   MaritalStatus,
   EmploymentStatus,
   KupatHolim,
   HousingStatus,
+  EducationLevel,
 } from '@/types/userProfile'
 import {
+  GENDER_LABELS,
   MARITAL_STATUS_LABELS,
   EMPLOYMENT_STATUS_LABELS,
   KUPAT_HOLIM_LABELS,
   HOUSING_STATUS_LABELS,
+  EDUCATION_LEVEL_LABELS,
 } from '@/types/userProfile'
 
 const INPUT_CLS = 'w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+const CHECKBOX_LABEL_CLS = 'flex items-center gap-2 cursor-pointer p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg'
 
 const CURRENT_YEAR = new Date().getFullYear()
 const ALIYAH_YEARS = Array.from({ length: CURRENT_YEAR - 1948 + 1 }, (_, i) => CURRENT_YEAR - i)
+const DISCHARGE_YEARS = Array.from({ length: CURRENT_YEAR - 1980 + 1 }, (_, i) => CURRENT_YEAR - i)
 
 export default function ProfileEditClient({ initialProfile }: { initialProfile: UserProfile }) {
   const [profile, setProfile] = useState<UserProfile>(initialProfile)
@@ -33,7 +39,6 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
     setProfile(prev => ({ ...prev, [key]: value }))
     setSaved(false)
 
-    // Auto-save avec debounce de 800ms
     if (saveTimer.current) clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(() => {
       save({ [key]: value })
@@ -67,7 +72,6 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
     }
   }
 
-  // Cleanup timer
   useEffect(() => {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current)
@@ -87,13 +91,13 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Completer mon profil</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            Plus votre profil est complet, plus Tloush peut personnaliser ses analyses.
+            Plus votre profil est complet, plus Tloush peut detecter d'aides auxquelles vous avez droit.
           </p>
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
             Profil rempli a {profile.profile_completion_pct}%
@@ -112,10 +116,10 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
             style={{ width: `${profile.profile_completion_pct}%` }}
           />
         </div>
-        {profile.profile_completion_pct < 60 && (
+        {profile.profile_completion_pct < 70 && (
           <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 flex items-center gap-1.5">
             <AlertCircle size={12} />
-            Completez au moins 60% pour debloquer l'estimateur de remboursement d'impots et le detecteur de droits.
+            Completez au moins 70% pour debloquer toutes les detections de droits.
           </p>
         )}
       </div>
@@ -126,6 +130,37 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
           {error}
         </div>
       )}
+
+      {/* Section: Identite de base */}
+      <Section icon={<UserCheck size={18} className="text-slate-600" />} title="Identite de base">
+        <Field label="Genre (affecte les points de credit fiscaux)">
+          <select
+            value={profile.gender || ''}
+            onChange={(e) => update('gender', (e.target.value || null) as Gender | null)}
+            className={INPUT_CLS}
+          >
+            <option value="">Non precise</option>
+            {Object.entries(GENDER_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+          <p className="text-xs text-slate-400 mt-1">
+            Important : une femme beneficie de 0.5 point de credit supplementaire.
+          </p>
+        </Field>
+
+        <Field label="Date de naissance">
+          <input
+            type="date"
+            value={profile.birth_date || ''}
+            onChange={(e) => update('birth_date', e.target.value || null)}
+            className={INPUT_CLS}
+          />
+          <p className="text-xs text-slate-400 mt-1">
+            Utilise pour detecter votre eligibilite a la retraite (67 ans H / 62-65 F).
+          </p>
+        </Field>
+      </Section>
 
       {/* Section: Situation familiale */}
       <Section icon={<Users size={18} className="text-pink-500" />} title="Situation familiale">
@@ -151,7 +186,39 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
             onChange={(e) => update('children_count', Math.max(0, Math.min(20, Number(e.target.value))))}
             className={INPUT_CLS}
           />
+          <p className="text-xs text-slate-400 mt-1">
+            Debloque : allocation enfants BL, points credit enfants, aides garderie.
+          </p>
         </Field>
+
+        {profile.children_count > 0 && (
+          <>
+            <Field label="Enfants en situation de handicap">
+              <input
+                type="number"
+                min={0}
+                max={profile.children_count}
+                value={profile.children_with_disabilities || 0}
+                onChange={(e) => update('children_with_disabilities', Math.max(0, Number(e.target.value)))}
+                className={INPUT_CLS}
+              />
+              <p className="text-xs text-slate-400 mt-1">
+                Chaque enfant handicape ouvre droit a +2 points de credit + allocation speciale BL.
+              </p>
+            </Field>
+
+            <Field label="Enfants en creche / garderie agreee">
+              <input
+                type="number"
+                min={0}
+                max={profile.children_count}
+                value={profile.children_in_daycare || 0}
+                onChange={(e) => update('children_in_daycare', Math.max(0, Number(e.target.value)))}
+                className={INPUT_CLS}
+              />
+            </Field>
+          </>
+        )}
       </Section>
 
       {/* Section: Alyah */}
@@ -167,6 +234,9 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
               <option key={year} value={year}>{year}</option>
             ))}
           </select>
+          <p className="text-xs text-slate-400 mt-1">
+            Debloque : sal klita, ulpan, points credit oleh, reduction arnona 70-90%, mashkanta olim.
+          </p>
         </Field>
 
         <Field label="Pays d'origine">
@@ -180,7 +250,7 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
         </Field>
 
         <Field label="Citoyennete israelienne">
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className={CHECKBOX_LABEL_CLS}>
             <input
               type="checkbox"
               checked={profile.israeli_citizen}
@@ -190,6 +260,70 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
             <span className="text-sm text-slate-700 dark:text-slate-300">Oui, j'ai la citoyennete israelienne</span>
           </label>
         </Field>
+      </Section>
+
+      {/* Section: Service militaire */}
+      <Section icon={<Shield size={18} className="text-green-600" />} title="Service militaire">
+        <Field label="J'ai servi dans Tsahal">
+          <label className={CHECKBOX_LABEL_CLS}>
+            <input
+              type="checkbox"
+              checked={profile.served_in_idf}
+              onChange={(e) => update('served_in_idf', e.target.checked)}
+              className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm text-slate-700 dark:text-slate-300">Oui, j'ai fait mon service militaire</span>
+          </label>
+        </Field>
+
+        {profile.served_in_idf && (
+          <>
+            <Field label="Annee de liberation">
+              <select
+                value={profile.military_discharge_year || ''}
+                onChange={(e) => update('military_discharge_year', e.target.value ? Number(e.target.value) : null)}
+                className={INPUT_CLS}
+              >
+                <option value="">Non precise</option>
+                {DISCHARGE_YEARS.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Situations particulieres">
+              <div className="space-y-1">
+                <label className={CHECKBOX_LABEL_CLS}>
+                  <input
+                    type="checkbox"
+                    checked={profile.is_combat_veteran}
+                    onChange={(e) => update('is_combat_veteran', e.target.checked)}
+                    className="w-4 h-4 rounded"
+                  />
+                  <span className="text-sm text-slate-700 dark:text-slate-300">J'ai ete combattant (lohem)</span>
+                </label>
+                <label className={CHECKBOX_LABEL_CLS}>
+                  <input
+                    type="checkbox"
+                    checked={profile.is_active_reservist}
+                    onChange={(e) => update('is_active_reservist', e.target.checked)}
+                    className="w-4 h-4 rounded"
+                  />
+                  <span className="text-sm text-slate-700 dark:text-slate-300">Je suis actuellement reserviste (miluim)</span>
+                </label>
+                <label className={CHECKBOX_LABEL_CLS}>
+                  <input
+                    type="checkbox"
+                    checked={profile.is_bereaved_family}
+                    onChange={(e) => update('is_bereaved_family', e.target.checked)}
+                    className="w-4 h-4 rounded"
+                  />
+                  <span className="text-sm text-slate-700 dark:text-slate-300">Famille endeuillee (IDF/terrorisme)</span>
+                </label>
+              </div>
+            </Field>
+          </>
+        )}
       </Section>
 
       {/* Section: Situation professionnelle */}
@@ -217,7 +351,7 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
           />
         </Field>
 
-        <Field label="Revenu mensuel approximatif (NIS, optionnel)">
+        <Field label="Revenu mensuel approximatif (NIS brut, optionnel)">
           <input
             type="number"
             min={0}
@@ -226,11 +360,71 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
             placeholder="0"
             className={INPUT_CLS}
           />
+          <p className="text-xs text-slate-400 mt-1">
+            Utilise pour detecter : remboursement impot, exemption BL freelance, hashlamat hachnasa.
+          </p>
+        </Field>
+
+        <Field label="Revenu mensuel total du foyer (NIS, optionnel)">
+          <input
+            type="number"
+            min={0}
+            value={profile.household_income_monthly || ''}
+            onChange={(e) => update('household_income_monthly', e.target.value ? Number(e.target.value) : null)}
+            placeholder="0"
+            className={INPUT_CLS}
+          />
+          <p className="text-xs text-slate-400 mt-1">
+            Permet de detecter les aides conditionnees au revenu (hashlamat hachnasa, arnona, etc.).
+          </p>
         </Field>
       </Section>
 
+      {/* Section: Education */}
+      <Section icon={<GraduationCap size={18} className="text-purple-500" />} title="Education">
+        <Field label="Niveau d'etudes">
+          <select
+            value={profile.education_level || ''}
+            onChange={(e) => update('education_level', (e.target.value || null) as EducationLevel | null)}
+            className={INPUT_CLS}
+          >
+            <option value="">Non precise</option>
+            {Object.entries(EDUCATION_LEVEL_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+          <p className="text-xs text-slate-400 mt-1">
+            Un diplome BA/MA ouvre droit a 1 point de credit fiscal pendant plusieurs annees.
+          </p>
+        </Field>
+
+        <Field label="Je suis etudiant actuellement">
+          <label className={CHECKBOX_LABEL_CLS}>
+            <input
+              type="checkbox"
+              checked={profile.is_current_student}
+              onChange={(e) => update('is_current_student', e.target.checked)}
+              className="w-4 h-4 rounded"
+            />
+            <span className="text-sm text-slate-700 dark:text-slate-300">Oui, inscrit dans un etablissement superieur</span>
+          </label>
+        </Field>
+
+        {profile.is_current_student && (
+          <Field label="Etablissement">
+            <input
+              type="text"
+              value={profile.institution_name || ''}
+              onChange={(e) => update('institution_name', e.target.value || null)}
+              placeholder="Ex: Universite hebraique de Jerusalem"
+              className={INPUT_CLS}
+            />
+          </Field>
+        )}
+      </Section>
+
       {/* Section: Sante */}
-      <Section icon={<Heart size={18} className="text-red-500" />} title="Sante">
+      <Section icon={<Heart size={18} className="text-red-500" />} title="Sante et situations speciales">
         <Field label="Caisse maladie (Kupat Holim)">
           <select
             value={profile.kupat_holim || ''}
@@ -254,9 +448,59 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
             placeholder="0"
             className={INPUT_CLS}
           />
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-            Utilise uniquement pour detecter les droits aux aides. Laissez vide si non concerne.
+          <p className="text-xs text-slate-400 mt-1">
+            Confidentiel. Debloque : allocation invalidite BL, reduction arnona, exemption mas, mobilite.
           </p>
+        </Field>
+
+        <Field label="Situations particulieres">
+          <div className="space-y-1">
+            <label className={CHECKBOX_LABEL_CLS}>
+              <input
+                type="checkbox"
+                checked={profile.is_holocaust_survivor}
+                onChange={(e) => update('is_holocaust_survivor', e.target.checked)}
+                className="w-4 h-4 rounded"
+              />
+              <span className="text-sm text-slate-700 dark:text-slate-300">Survivant de la Shoah (ou conjoint)</span>
+            </label>
+            <label className={CHECKBOX_LABEL_CLS}>
+              <input
+                type="checkbox"
+                checked={profile.is_caregiver}
+                onChange={(e) => update('is_caregiver', e.target.checked)}
+                className="w-4 h-4 rounded"
+              />
+              <span className="text-sm text-slate-700 dark:text-slate-300">Je m'occupe d'un proche dependant</span>
+            </label>
+            <label className={CHECKBOX_LABEL_CLS}>
+              <input
+                type="checkbox"
+                checked={profile.chronic_illness}
+                onChange={(e) => update('chronic_illness', e.target.checked)}
+                className="w-4 h-4 rounded"
+              />
+              <span className="text-sm text-slate-700 dark:text-slate-300">Maladie chronique reconnue</span>
+            </label>
+            <label className={CHECKBOX_LABEL_CLS}>
+              <input
+                type="checkbox"
+                checked={profile.has_mobility_limitation}
+                onChange={(e) => update('has_mobility_limitation', e.target.checked)}
+                className="w-4 h-4 rounded"
+              />
+              <span className="text-sm text-slate-700 dark:text-slate-300">Limitation de mobilite</span>
+            </label>
+            <label className={CHECKBOX_LABEL_CLS}>
+              <input
+                type="checkbox"
+                checked={profile.has_disabled_child}
+                onChange={(e) => update('has_disabled_child', e.target.checked)}
+                className="w-4 h-4 rounded"
+              />
+              <span className="text-sm text-slate-700 dark:text-slate-300">J'ai un enfant handicape</span>
+            </label>
+          </div>
         </Field>
       </Section>
 
@@ -272,6 +516,19 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
           />
         </Field>
 
+        <Field label="Mairie / Municipalite (si differente)">
+          <input
+            type="text"
+            value={profile.municipality || ''}
+            onChange={(e) => update('municipality', e.target.value || null)}
+            placeholder="Ex: Iria de Tel Aviv-Yafo"
+            className={INPUT_CLS}
+          />
+          <p className="text-xs text-slate-400 mt-1">
+            Chaque commune a ses propres baremes de reduction d'arnona.
+          </p>
+        </Field>
+
         <Field label="Statut d'occupation">
           <select
             value={profile.housing_status || ''}
@@ -284,10 +541,64 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
             ))}
           </select>
         </Field>
+
+        <Field label="Surface du logement (m², pour calcul arnona)">
+          <input
+            type="number"
+            min={0}
+            value={profile.home_size_sqm || ''}
+            onChange={(e) => update('home_size_sqm', e.target.value ? Number(e.target.value) : null)}
+            placeholder="0"
+            className={INPUT_CLS}
+          />
+        </Field>
+
+        <Field label="Financier">
+          <div className="space-y-1">
+            <label className={CHECKBOX_LABEL_CLS}>
+              <input
+                type="checkbox"
+                checked={profile.has_mortgage}
+                onChange={(e) => update('has_mortgage', e.target.checked)}
+                className="w-4 h-4 rounded"
+              />
+              <span className="text-sm text-slate-700 dark:text-slate-300">J'ai un mashkanta (pret immobilier)</span>
+            </label>
+          </div>
+        </Field>
       </Section>
 
-      <p className="text-xs text-slate-400 dark:text-slate-500 text-center">
-        Vos donnees sont privees et stockees de maniere securisee. Elles ne sont jamais partagees.
+      {/* Section: Allocations en cours */}
+      <Section icon={<Baby size={18} className="text-indigo-500" />} title="Allocations deja percues">
+        <p className="text-xs text-slate-400 mb-2">
+          Indiquez ce que vous recevez deja pour eviter les doublons dans le detecteur.
+        </p>
+        <div className="space-y-1">
+          {([
+            { key: 'receives_kitsbat_yeladim', label: 'Allocation enfants (kitsbat yeladim)' },
+            { key: 'receives_old_age_pension', label: 'Pension vieillesse (zikna)' },
+            { key: 'receives_disability_pension', label: 'Allocation invalidite (nekhout)' },
+            { key: 'receives_income_support', label: 'Complement de revenu (hashlamat hachnasa)' },
+            { key: 'receives_rental_assistance', label: 'Aide au loyer (siuah sechar dira)' },
+            { key: 'receives_ulpan', label: 'Ulpan en cours' },
+            { key: 'receives_shoah_benefits', label: 'Aide aux survivants de la Shoah' },
+          ] as const).map(item => (
+            <label key={item.key} className={CHECKBOX_LABEL_CLS}>
+              <input
+                type="checkbox"
+                checked={profile[item.key] === true}
+                onChange={(e) => update(item.key, e.target.checked)}
+                className="w-4 h-4 rounded"
+              />
+              <span className="text-sm text-slate-700 dark:text-slate-300">{item.label}</span>
+            </label>
+          ))}
+        </div>
+      </Section>
+
+      <p className="text-xs text-slate-400 dark:text-slate-500 text-center pt-4 pb-6">
+        Vos donnees sont privees et stockees de maniere securisee.
+        Elles ne sont jamais partagees et servent uniquement a detecter vos droits.
       </p>
     </div>
   )

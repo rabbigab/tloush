@@ -1,20 +1,33 @@
 // =====================================================
-// Types — Profil utilisateur enrichi
+// Types — Profil utilisateur enrichi V2
 // =====================================================
+// Base sur recherche web des aides israeliennes avril 2026
 
+export type Gender = 'male' | 'female' | 'other'
 export type MaritalStatus = 'single' | 'married' | 'divorced' | 'widowed' | 'separated'
 export type EmploymentStatus = 'employed' | 'self_employed' | 'unemployed' | 'student' | 'retired' | 'reservist' | 'parental_leave'
 export type KupatHolim = 'clalit' | 'maccabi' | 'meuhedet' | 'leumit'
-export type HousingStatus = 'renter' | 'owner' | 'living_with_family' | 'other'
+export type HousingStatus = 'renter' | 'owner' | 'living_with_family' | 'public_housing' | 'other'
+export type EducationLevel = 'none' | 'high_school' | 'vocational' | 'ba' | 'ma' | 'phd' | 'other'
 
 export interface UserProfile {
   user_id: string
 
+  // Identite de base
+  gender: Gender | null
+  birth_date: string | null
+
   // Situation familiale
   marital_status: MaritalStatus | null
   spouse_user_id: string | null
+  spouse_gender: Gender | null
+  spouse_aliyah_year: number | null
+  spouse_monthly_income: number | null
+  spouse_employment_status: EmploymentStatus | null
   children_count: number
-  children_birth_dates: string[] // ISO dates
+  children_birth_dates: string[]
+  children_with_disabilities: number
+  children_in_daycare: number
 
   // Alyah / immigration
   aliyah_year: number | null
@@ -25,14 +38,49 @@ export interface UserProfile {
   employment_status: EmploymentStatus | null
   employer_sector: string | null
   monthly_income: number | null
+  household_income_monthly: number | null
 
-  // Sante
+  // Service militaire / reserviste
+  served_in_idf: boolean
+  military_discharge_year: number | null
+  is_combat_veteran: boolean
+  is_active_reservist: boolean
+  miluim_days_current_year: number
+
+  // Education
+  education_level: EducationLevel | null
+  is_current_student: boolean
+  institution_name: string | null
+
+  // Sante / situations speciales
   disability_level: number | null
   kupat_holim: KupatHolim | null
+  is_holocaust_survivor: boolean
+  is_caregiver: boolean
+  chronic_illness: boolean
+  has_mobility_limitation: boolean
+  has_disabled_child: boolean
+  is_bereaved_family: boolean
+
+  // Financier
+  is_income_supplement_eligible: boolean
+  has_mortgage: boolean
+  has_public_housing: boolean
 
   // Logement
   city: string | null
+  municipality: string | null
   housing_status: HousingStatus | null
+  home_size_sqm: number | null
+
+  // Allocations en cours (pour eviter de re-detecter)
+  receives_kitsbat_yeladim: boolean | null
+  receives_old_age_pension: boolean | null
+  receives_disability_pension: boolean | null
+  receives_income_support: boolean | null
+  receives_rental_assistance: boolean | null
+  receives_ulpan: boolean | null
+  receives_shoah_benefits: boolean | null
 
   // Meta
   profile_completion_pct: number
@@ -42,7 +90,16 @@ export interface UserProfile {
 
 export type UserProfileUpdate = Partial<Omit<UserProfile, 'user_id' | 'created_at' | 'updated_at' | 'profile_completion_pct'>>
 
-// Labels FR pour l'UI
+// =====================================================
+// Labels FR
+// =====================================================
+
+export const GENDER_LABELS: Record<Gender, string> = {
+  male: 'Homme',
+  female: 'Femme',
+  other: 'Autre / prefere ne pas dire',
+}
+
 export const MARITAL_STATUS_LABELS: Record<MaritalStatus, string> = {
   single: 'Celibataire',
   married: 'Marie(e)',
@@ -72,5 +129,16 @@ export const HOUSING_STATUS_LABELS: Record<HousingStatus, string> = {
   renter: 'Locataire',
   owner: 'Proprietaire',
   living_with_family: 'Heberge famille',
+  public_housing: 'Diur tziburi (logement social)',
+  other: 'Autre',
+}
+
+export const EDUCATION_LEVEL_LABELS: Record<EducationLevel, string> = {
+  none: 'Pas de diplome',
+  high_school: 'Bac / Bagrut',
+  vocational: 'Formation pro',
+  ba: 'Licence / BA',
+  ma: 'Master / MA',
+  phd: 'Doctorat / PhD',
   other: 'Autre',
 }

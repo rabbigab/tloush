@@ -1,30 +1,57 @@
 // =====================================================
 // Profile completion calculator
 // =====================================================
-// Calcule le pourcentage de completion du profil utilisateur
-// en fonction des champs remplis.
+// Calcule le pourcentage de completion du profil utilisateur.
+// Les champs critiques pour le rights detector ont plus de poids.
 
 import type { UserProfile } from '@/types/userProfile'
 
-// Poids de chaque champ (total = 100)
-// Les champs critiques pour les features (alyah, enfants, emploi) ont plus de poids
+// Poids de chaque champ. Total ~100.
+// Les champs "critiques" (genre, alyah, enfants, emploi) ont plus de poids.
 const FIELD_WEIGHTS: Record<string, number> = {
-  marital_status: 15,
-  children_count: 10,
-  aliyah_year: 15,
-  employment_status: 15,
-  monthly_income: 10,
-  city: 10,
-  housing_status: 5,
-  kupat_holim: 5,
+  // Identite de base (critique)
+  gender: 8,
+  birth_date: 6,
+
+  // Famille (critique pour beaucoup de droits)
+  marital_status: 8,
+  children_count: 6,
+  children_birth_dates: 4,  // bonus si fourni
+
+  // Immigration (critique pour 30% des regles)
+  aliyah_year: 10,
+  country_of_origin: 2,
+
+  // Professionnel (critique pour droits travail)
+  employment_status: 10,
+  monthly_income: 5,
+
+  // Logement (critique pour arnona)
+  city: 6,
+  housing_status: 3,
+  home_size_sqm: 2,
+
+  // Sante (critique pour invalidite)
+  kupat_holim: 2,
   disability_level: 5,
-  country_of_origin: 5,
-  employer_sector: 5,
+
+  // Service militaire
+  served_in_idf: 4,
+
+  // Education
+  education_level: 3,
+
+  // Situations speciales (bonus high-value)
+  is_holocaust_survivor: 3,
+  is_caregiver: 2,
+  is_bereaved_family: 2,
+  is_current_student: 3,
+  is_active_reservist: 3,
+  has_disabled_child: 3,
 }
 
 /**
  * Calcule le pourcentage de completion du profil.
- * Retourne 0-100.
  */
 export function computeProfileCompletion(profile: Partial<UserProfile>): number {
   if (!profile) return 0
@@ -34,9 +61,17 @@ export function computeProfileCompletion(profile: Partial<UserProfile>): number 
   for (const [field, weight] of Object.entries(FIELD_WEIGHTS)) {
     const value = profile[field as keyof UserProfile]
 
-    if (value !== null && value !== undefined && value !== '') {
-      // Pour les nombres, 0 compte comme rempli si explicitement defini
-      // Pour les strings, on verifie qu'ils ne sont pas vides
+    // Pour les booleans, TRUE/FALSE explicitement defini compte
+    if (typeof value === 'boolean') {
+      // Boolean true compte toujours, false compte aussi (on a pris une decision)
+      totalScore += weight
+    }
+    // Pour les arrays
+    else if (Array.isArray(value)) {
+      if (value.length > 0) totalScore += weight
+    }
+    // Pour les nombres/strings
+    else if (value !== null && value !== undefined && value !== '' && value !== 0) {
       totalScore += weight
     }
   }
@@ -45,10 +80,10 @@ export function computeProfileCompletion(profile: Partial<UserProfile>): number 
 }
 
 /**
- * Retourne les champs manquants les plus importants.
+ * Retourne les champs critiques manquants.
  */
 export function getMissingCriticalFields(profile: Partial<UserProfile>): string[] {
-  const critical = ['marital_status', 'aliyah_year', 'employment_status', 'city']
+  const critical = ['gender', 'marital_status', 'aliyah_year', 'employment_status', 'city']
   const missing: string[] = []
 
   for (const field of critical) {
