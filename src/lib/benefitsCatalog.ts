@@ -578,6 +578,99 @@ const DISABILITY_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION 7 — Unemployment Benefits (Dmei Avtala) 2026
+// =====================================================
+// Source : https://www.btl.gov.il/benefits/Unemployment/Pages/default.aspx
+// https://www.kolzchut.org.il/he/דמי_אבטלה
+//
+// Prestations chomage versees par BL aux salaries ayant perdu leur emploi
+// (licenciement ou demission avec conditions).
+//
+// Conditions d'eligibilite :
+// - Age 20-67
+// - Resident israelien
+// - Avoir travaille au moins 12 mois sur les 18 derniers mois
+// - Etre licencie (pas demission) OU demission justifiee
+// - S'inscrire a la Lishkat Ta'asuka (service emploi) dans les 30 jours
+// - Repondre aux offres d'emploi proposees
+//
+// Duree maximale (varie selon age + dependants) :
+// - Moins de 35 ans : 100 jours
+// - 35-45 ans : 138 jours
+// - 45+ ans : 175 jours maximum (+ supplements selon charges famille)
+//
+// Montants 2026 (officiels BL) :
+// - Jours 1-125 : 550.76 NIS/jour (= salaire moyen economie)
+// - Jours 126+ : 367.17 NIS/jour (= 2/3 du salaire moyen)
+
+const UNEMPLOYMENT_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'dmei_avtala',
+    category: 'welfare',
+    authority: 'bituach_leumi',
+    title_fr: 'Allocation chomage (Dmei Avtala)',
+    title_he: 'דמי אבטלה',
+    description_fr:
+      'Allocation chomage versee par Bituach Leumi aux salaries licencies ayant travaille au moins 12 mois sur les 18 derniers mois.',
+    full_description_fr:
+      'Conditions : age 20-67, resident israelien, avoir travaille min 12 mois sur 18, licenciement (ou demission justifiee), ' +
+      'inscription a la Lishkat Ta\'asuka (service emploi) sous 30 jours. ' +
+      'Duree : 100 jours (moins de 35 ans), 138 jours (35-45 ans), 175 jours (45+ ans). ' +
+      'Montants 2026 : 550.76 NIS/jour pour les 125 premiers jours, puis 367.17 NIS/jour ensuite. ' +
+      'L\'allocation est versee tous les jours sauf shabbat et jours feries. ' +
+      'Obligation de repondre aux offres d\'emploi : refus sans motif valable = suspension.',
+    conditions: {
+      min_age: 20,
+      max_age: 67,
+      required_employment: ['unemployed'],
+      requires_resident: true,
+    },
+    estimated_annual_value: 550.76 * 125,  // pour 125 jours au taux plein
+    value_unit: 'NIS (sur duree max)',
+    typical_monthly_amount: 550.76 * 22,  // ~22 jours ouvres/mois
+    application_url: 'https://www.btl.gov.il/benefits/Unemployment/Pages/default.aspx',
+    action_label: 'Faire ma demande de chomage',
+    info_url: 'https://www.kolzchut.org.il/he/דמי_אבטלה',
+    disclaimer:
+      'Demander le plus tot possible apres la fin de l\'emploi. Inscription obligatoire a la Lishkat Ta\'asuka dans les 30 jours pour ne pas perdre de droits.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+    notes: 'Montants 2026 officiels BL, confirmes via recherche web (550.76 NIS jours 1-125, 367.17 NIS ensuite).',
+  },
+  {
+    slug: 'oleh_unemployment_extended',
+    category: 'welfare',
+    authority: 'bituach_leumi',
+    title_fr: 'Chomage etendu pour nouveaux olim',
+    title_he: 'דמי אבטלה מורחבים לעולים חדשים',
+    description_fr:
+      'Les olim chadashim beneficient de conditions assouplies : pas besoin des 12 mois de travail, possibilite de toucher pendant la recherche du premier emploi.',
+    full_description_fr:
+      'Pendant les 12 premiers mois suivant l\'alyah, les nouveaux olim peuvent beneficier de Dmei Avtala meme sans avoir cotise. ' +
+      'Ils doivent etre inscrits a la Lishkat Ta\'asuka et rechercher activement un emploi. ' +
+      'Le montant peut etre reduit par rapport au plein regime. ' +
+      'Cumulable avec Sal Klita pendant les 6 premiers mois.',
+    conditions: {
+      requires_oleh: true,
+      aliyah_years_range: [0, 1],
+      required_employment: ['unemployed'],
+    },
+    estimated_annual_value: 367.17 * 100,
+    value_unit: 'NIS (reduit pour olim)',
+    application_url: 'https://www.nbn.org.il/life-in-israel/employment/employee-rights-and-benefits/unemployment-benefits-for-new-olim/',
+    action_label: 'Infos chomage pour olim',
+    disclaimer:
+      'Conditions specifiques aux olim. Consultez un conseiller Nefesh B\'Nefesh ou Misrad HaKlita pour votre situation.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+  },
+]
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
 export const BENEFITS_CATALOG: BenefitDefinition[] = [
@@ -586,4 +679,5 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...OLD_AGE_BENEFITS,
   ...SURVIVOR_BENEFITS,
   ...DISABILITY_BENEFITS,
+  ...UNEMPLOYMENT_BENEFITS,
 ]
