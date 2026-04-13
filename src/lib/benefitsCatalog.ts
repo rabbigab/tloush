@@ -960,6 +960,104 @@ const MILUIM_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION 11 — Tax Credit Points (Nekudot Zikui)
+// =====================================================
+// Sources :
+// https://www.gov.il/en/departments/israel_tax_authority
+// https://www.kolzchut.org.il/he/נקודות_זיכוי_ממס_הכנסה
+//
+// Chaque point de credit = 242 NIS/mois (2 904 NIS/an) en 2025
+// Brackets geles 2025-2027 (loi des finances).
+
+const TAX_CREDIT_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'credit_woman',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Point de credit femme (+0.5 pts)',
+    title_he: 'נקודת זיכוי לאישה',
+    description_fr: 'Les femmes beneficient automatiquement de 0.5 point de credit fiscal supplementaire (= ~1 452 NIS/an).',
+    full_description_fr:
+      'Toute femme resident israelien a droit a 2.75 points de credit fiscal (2.25 base + 0.5 bonus femme). ' +
+      'Les hommes ont 2.25 points. Verifiez votre tofes 101.',
+    conditions: { required_gender: 'female', requires_resident: true },
+    estimated_annual_value: 0.5 * 2904,
+    value_unit: 'NIS/an',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Verifier mon tofes 101',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-12',
+  },
+  {
+    slug: 'credit_academic_degree',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Point de credit diplome academique (+1 pt)',
+    title_he: 'נקודת זיכוי תואר אקדמי',
+    description_fr: 'Un point de credit fiscal pendant plusieurs annees pour les titulaires d\'un diplome academique (BA/MA/PhD).',
+    full_description_fr:
+      'Apres l\'obtention d\'un diplome BA, MA ou PhD, vous beneficiez d\'un point de credit fiscal supplementaire (+2 904 NIS/an) pour une duree definie : ' +
+      '1 an pour BA, 2 ans pour MA, 3 ans pour PhD. ' +
+      'Valable meme si vous avez obtenu votre diplome a l\'etranger. ' +
+      'La demande se fait aupres du Rashut HaMisim avec copie du diplome traduite en hebreu.',
+    conditions: { requires_resident: true },
+    estimated_annual_value: 2904,
+    value_unit: 'NIS/an',
+    application_url: 'https://www.gov.il/en/service/tax-credit',
+    action_label: 'Declarer mon diplome',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-12',
+    notes: 'Trop peu d\'olim declarent ce droit. A bien expliquer.',
+  },
+  {
+    slug: 'credit_young_child',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Points credit enfants jeunes (naissance-5 ans)',
+    title_he: 'נקודות זיכוי לילדים צעירים',
+    description_fr:
+      'Les meres beneficient de points credit supplementaires pour chaque enfant de moins de 6 ans (annee de naissance : 1.5 pt, ages 1-5 : 2.5 pts).',
+    full_description_fr:
+      'Table officielle (Section 66 du code des impots + reforme 2022) : ' +
+      'Annee de naissance : mere +1.5 pts (+4 356 NIS/an), pere +1 pt. ' +
+      'Ages 1-5 : mere +2.5 pts (+7 260 NIS/an), pere +1 pt. ' +
+      'Ages 6-17 : chaque parent +1 pt (bonus temporaire 2022-2025 ajoutait +1 pt). ' +
+      'Cumulable : si vous avez 2 enfants de 3 ans, vous avez 5 points d\'enfants (en plus de votre base).',
+    conditions: { required_gender: 'female', min_children: 1 },
+    estimated_annual_value: 2.5 * 2904,
+    value_unit: 'NIS/an/enfant',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Declarer mes enfants sur tofes 101',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+    notes: 'Tableau exact varie par parent (mere/pere). Version presentee = mere qui travaille. A verifier avec yoetz mas.',
+  },
+  {
+    slug: 'credit_disabled_child',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Point credit enfant handicape (+2 pts par enfant)',
+    title_he: 'נקודות זיכוי לילד נכה',
+    description_fr: 'Chaque enfant handicape ouvre droit a 2 points de credit fiscal supplementaires par parent.',
+    full_description_fr:
+      'Pour chaque enfant reconnu handicape (medical ou BL), chaque parent beneficie de 2 points de credit fiscal supplementaires. ' +
+      'Cumulable avec les points enfants standards. ' +
+      'Le dossier medical doit etre fourni a Rashut HaMisim.',
+    conditions: { requires_disabled_child: true },
+    estimated_annual_value: 2 * 2904,
+    value_unit: 'NIS/an/enfant/parent',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Declarer mon enfant handicape',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-12',
+  },
+]
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
 export const BENEFITS_CATALOG: BenefitDefinition[] = [
@@ -972,4 +1070,5 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...INCOME_SUPPORT_BENEFITS,
   ...MATERNITY_BENEFITS,
   ...MILUIM_BENEFITS,
+  ...TAX_CREDIT_BENEFITS,
 ]
