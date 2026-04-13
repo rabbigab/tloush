@@ -1685,6 +1685,52 @@ export function getCatalogStats() {
 }
 
 // =====================================================
+// SECTION 20 — Metadata & Exports finaux
+// =====================================================
+
+/**
+ * Metadata du catalogue pour le dashboard admin.
+ */
+export const CATALOG_METADATA = {
+  version: '1.0.0',
+  last_updated: '2026-04-12',
+  total_benefits: 35,  // mis a jour a chaque ajout
+  data_sources: [
+    'https://www.btl.gov.il/',
+    'https://www.kolzchut.org.il/',
+    'https://www.gov.il/he/departments/israel_tax_authority',
+    'https://www.nbn.org.il/',
+    'https://www.cwsisrael.com/',
+    'https://www.claimscon.org/',
+    'https://www.gov.il/en/life-events/immigration-and-assimilation',
+  ],
+  disclaimer_global:
+    'Ce catalogue est a titre indicatif. Les valeurs et conditions sont basees sur les sources officielles verifiees a la date du dernier update, mais peuvent changer. Consultez toujours un professionnel (yoetz mas, avocat, travailleur social) avant toute demarche officielle.',
+}
+
+/**
+ * Version statistiques utilisee par /admin/legal-watch.
+ */
+export const CATALOG_SUMMARY = {
+  total: 35,
+  high_confidence: 0,  // Sera calcule dynamiquement
+  needs_verification: 0,
+  by_category: {
+    family: 0,
+    fiscal: 0,
+    employment: 0,
+    immigration: 0,
+    housing: 0,
+    health: 0,
+    retirement: 0,
+    military: 0,
+    welfare: 0,
+    education: 0,
+    special: 0,
+  },
+}
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
 export const BENEFITS_CATALOG: BenefitDefinition[] = [
@@ -1706,3 +1752,13 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...STUDENT_BENEFITS,
   ...COMBAT_RESERVIST_BENEFITS,
 ]
+
+// Calcul dynamique des stats au chargement
+for (const b of BENEFITS_CATALOG) {
+  if (b.confidence === 'high') CATALOG_SUMMARY.high_confidence++
+  if (b.status === 'needs_verification') CATALOG_SUMMARY.needs_verification++
+  if (CATALOG_SUMMARY.by_category[b.category] !== undefined) {
+    CATALOG_SUMMARY.by_category[b.category]++
+  }
+}
+CATALOG_SUMMARY.total = BENEFITS_CATALOG.length
