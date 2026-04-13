@@ -147,7 +147,7 @@ export interface BenefitDefinition {
 // - 2e, 3e, 4e enfant : 219 NIS/mois chacun
 // - 5e enfant et + : 173 NIS/mois (retombe au tarif du 1er — regle
 //   counter-intuitive specifique a Israel)
-// + Epargne "Chisachon LeKol Yeled" : 57 NIS/mois dans un compte separe
+// + Epargne "Chisachon LeKol Yeled" : 58 NIS/mois dans un compte separe
 //   pour chaque enfant (automatiquement ouvert a la naissance)
 
 /**
@@ -201,18 +201,18 @@ const KITSBAT_YELADIM_BENEFITS: BenefitDefinition[] = [
     title_fr: 'Epargne enfant (Chisachon LeKol Yeled)',
     title_he: 'חיסכון לכל ילד',
     description_fr:
-      'Bituach Leumi depose automatiquement 57 NIS/mois dans un compte d\'epargne dedie pour chaque enfant, accessible a ses 18 ans (ou ses 21 ans avec bonus).',
+      'Bituach Leumi depose automatiquement 58 NIS/mois dans un compte d\'epargne dedie pour chaque enfant, accessible a ses 18 ans (ou ses 21 ans avec bonus).',
     full_description_fr:
       'Programme lance en 2017. Tous les enfants israeliens ont un compte d\'epargne automatique a BL. ' +
-      'Les parents peuvent choisir d\'ajouter 57 NIS/mois supplementaires de leur poche (deduits de l\'allocation enfants). ' +
+      'Les parents peuvent choisir d\'ajouter 58 NIS/mois supplementaires de leur poche (deduits de l\'allocation enfants). ' +
       'A 18 ans, l\'enfant peut retirer le capital. A 21 ans, il y a un bonus gouvernemental.',
     conditions: {
       min_children: 1,
       requires_resident: true,
     },
-    estimated_annual_value: 57 * 12,  // par enfant
+    estimated_annual_value: 58 * 12,  // par enfant
     value_unit: 'NIS/an/enfant',
-    typical_monthly_amount: 57,
+    typical_monthly_amount: 58,
     application_url: 'https://www.btl.gov.il/benefits/children/HisahoLayeled/Pages/default.aspx',
     action_label: 'Configurer le compte epargne',
     disclaimer:
@@ -304,11 +304,11 @@ const MAANAK_LEIDA_BENEFITS: BenefitDefinition[] = [
 // - Femmes : 62-65 ans selon date de naissance (progressivement jusqu'a 65)
 // - Age universel (sans test de revenu) : 70 ans pour tous
 //
-// Montants 2026 (approximatifs, indexes sur CPI) :
-// - Individu : ~1 879 NIS/mois
-// - Couple : ~2 824 NIS/mois (si 2 pensions)
-// - Supplement anciennete : ~2% par annee au-dela de 10 ans d'anciennete
-// - Supplement si age > 80 : ~50 NIS/mois
+// Montants officiels 2026 (verifies avril 2026) :
+// - Individu de base : 1 795 NIS/mois
+// - Couple : 2 762 NIS/mois (si 2 pensions)
+// - Supplement anciennete : 2% par annee au-dela de 10 ans d'anciennete
+// - Supplement si age >= 80 : ~103 NIS/mois (etait ~50 auparavant)
 //
 // Important : il faut tester l'income test AVANT 70 ans (le revenu
 // du travail peut reduire ou annuler la pension entre 67 et 70 ans).
@@ -321,10 +321,10 @@ const OLD_AGE_BENEFITS: BenefitDefinition[] = [
     title_fr: 'Pension vieillesse (Kitsbat Zikna)',
     title_he: 'קצבת זקנה',
     description_fr:
-      'Pension mensuelle versee par Bituach Leumi aux residents israeliens ayant atteint l\'age de la retraite (67 ans H, 62-65 F).',
+      'Pension mensuelle versee par Bituach Leumi aux residents israeliens ayant atteint l\'age de la retraite (67 ans H, 62-65 F). Base 2026 : 1 795 NIS/mois individu, 2 762 NIS/mois couple.',
     full_description_fr:
-      'Pension de base : environ 1 879 NIS/mois pour un individu, 2 824 NIS/mois pour un couple en 2026. ' +
-      'Supplements possibles : anciennete (2%/an au-dela de 10 ans), age > 80 ans (+50 NIS/mois). ' +
+      'Pension de base 2026 (montants officiels verifies) : 1 795 NIS/mois pour un individu, 2 762 NIS/mois pour un couple. ' +
+      'Supplements possibles : anciennete (2%/an au-dela de 10 ans), age >= 80 ans (+103 NIS/mois). ' +
       'Entre 67 et 70 ans, un test de revenu est applique (les revenus du travail peuvent reduire la pension). ' +
       'A partir de 70 ans, la pension est versee sans condition de revenu. ' +
       'Il faut faire la demande dans les 12 mois suivant l\'age d\'eligibilite pour ne pas perdre de droits retroactifs.',
@@ -332,19 +332,19 @@ const OLD_AGE_BENEFITS: BenefitDefinition[] = [
       min_age: 62,  // age minimum femme
       requires_resident: true,
     },
-    estimated_annual_value: 1879 * 12,
+    estimated_annual_value: 1795 * 12,
     value_unit: 'NIS/an (individu de base)',
-    typical_monthly_amount: 1879,
+    typical_monthly_amount: 1795,
     application_url: 'https://www.btl.gov.il/benefits/Old_age/Pages/default.aspx',
     action_label: 'Faire ma demande de pension',
     info_url: 'https://www.kolzchut.org.il/he/קצבת_זקנה',
     disclaimer:
       'Les montants peuvent varier selon votre situation (anciennete, conjoint, age). Entre 67 et 70 ans, vos revenus du travail peuvent reduire la pension. A 70 ans, elle devient automatique sans test de revenu.',
-    confidence: 'medium',
-    status: 'needs_verification',
-    verified_at: '2026-04-12',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-13',
     tax_year: 2026,
-    notes: 'Montants 2026 approximatifs — a verifier sur la page BL officielle pour avoir les chiffres exacts indexes sur CPI 2026.',
+    notes: 'Chiffres officiels BL 2026 confirmes par audit manuel 13/04/2026 : 1 795 individu, 2 762 couple, 103 NIS supplement 80+.',
   },
   {
     slug: 'old_age_income_supplement',
@@ -468,12 +468,13 @@ const SURVIVOR_BENEFITS: BenefitDefinition[] = [
 // 2. Sheirutei Cheirut / Attendance Allowance — besoin d'aide quotidienne
 // 3. Nekhout Meyuchedet (invalidite speciale) — pour deficits severes
 //
-// Montants 2026 (indexes sur salaire moyen apres reforme 2021) :
-// - Nekhout klalit pleine (100%) : ~4 480 NIS/mois
+// Montants officiels 2026 (verifies avril 2026) :
+// - Nekhout klalit pleine (100%) : 4 771 NIS/mois
 // - Nekhout klalit partielle : proportionnelle au taux (75%, 60%, 50%)
-// - Attendance allowance (sheirutei cheirut) : 50% / 112% / 188% taux de base
+// - Attendance allowance (sheirutei cheirut) : 1 943 / 4 501 / 7 181 NIS selon niveau (50% / 112% / 188%)
 // - Minimum taux d'invalidite pour eligibilite : 40% (nekhout),
 //   100% avec besoin d'assistance (sheirutei cheirut)
+// - Supplement conjoint invalide : montant fixe ~1 458 NIS (etait mal formule en "+20%")
 
 const DISABILITY_BENEFITS: BenefitDefinition[] = [
   {
@@ -486,8 +487,8 @@ const DISABILITY_BENEFITS: BenefitDefinition[] = [
       'Pension mensuelle versee aux personnes dont la capacite a gagner leur vie est reduite d\'au moins 50% en raison d\'une deficience medicale.',
     full_description_fr:
       'Condition : perte de capacite de gain d\'au moins 50% reconnue par une commission medicale de BL. ' +
-      'Montants 2026 : environ 4 480 NIS/mois pour une invalidite pleine (100%), proportionnel pour les taux partiels. ' +
-      'Supplements possibles : conjoint (+20%), enfants (+10% par enfant jusqu\'a 4), aide au logement. ' +
+      'Montants officiels 2026 : 4 771 NIS/mois pour une invalidite pleine (100%), proportionnel pour les taux partiels. ' +
+      'Supplements possibles : conjoint (montant fixe ~1 458 NIS/mois), enfants (+10% par enfant jusqu\'a 4), aide au logement. ' +
       'La demande necessite un dossier medical complet et passe par une commission medicale BL. ' +
       'Les delais d\'instruction peuvent etre longs (3-6 mois).',
     conditions: {
@@ -496,19 +497,19 @@ const DISABILITY_BENEFITS: BenefitDefinition[] = [
       max_age: 67,  // apres 67, c'est la pension vieillesse qui prend le relais
       requires_resident: true,
     },
-    estimated_annual_value: 4480 * 12,
+    estimated_annual_value: 4771 * 12,
     value_unit: 'NIS/an (pour 100% invalidite)',
-    typical_monthly_amount: 4480,
+    typical_monthly_amount: 4771,
     application_url: 'https://www.btl.gov.il/benefits/Disability/Pages/default.aspx',
     action_label: 'Faire ma demande d\'invalidite',
     info_url: 'https://www.kolzchut.org.il/he/נכות_כללית',
     disclaimer:
       'La demande necessite un dossier medical complet et une commission medicale BL. Un avocat specialise ou un travailleur social peut vous aider a constituer le dossier.',
-    confidence: 'medium',
-    status: 'needs_verification',
-    verified_at: '2026-04-12',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-13',
     tax_year: 2026,
-    notes: 'Montants 2026 approximatifs — a verifier exactement apres publication des taux BL 2026 bases sur le salaire moyen.',
+    notes: 'Chiffres officiels BL 2026 confirmes par audit manuel 13/04/2026 : 4 771 NIS/mois pour 100% invalidite. Supplement conjoint : montant fixe ~1 458 NIS (pas un %).',
   },
   {
     slug: 'attendance_allowance',
@@ -521,27 +522,28 @@ const DISABILITY_BENEFITS: BenefitDefinition[] = [
     full_description_fr:
       'Conditions : etre reconnu avec un taux d\'invalidite de 100% ET avoir besoin d\'aide permanente pour s\'habiller, manger, ' +
       'se laver, ou se deplacer dans son domicile. ' +
-      'Trois niveaux en 2026 : ' +
-      '50% (~2 240 NIS/mois) — aide importante, ' +
-      '112% (~5 017 NIS/mois) — aide majoritaire, ' +
-      '188% (~8 422 NIS/mois) — aide permanente. ' +
+      'Trois niveaux officiels 2026 : ' +
+      '50% (1 943 NIS/mois) — aide importante, ' +
+      '112% (4 501 NIS/mois) — aide majoritaire, ' +
+      '188% (7 181 NIS/mois) — aide permanente. ' +
       'L\'evaluation est faite par un travailleur social BL a votre domicile.',
     conditions: {
       min_disability: 100,
       requires_resident: true,
     },
-    estimated_annual_value: 2240 * 12,  // niveau de base
+    estimated_annual_value: 1943 * 12,  // niveau de base
     value_unit: 'NIS/an (50% base)',
-    typical_monthly_amount: 2240,
+    typical_monthly_amount: 1943,
     application_url: 'https://www.btl.gov.il/benefits/Disability/attendance_allowance/Pages/default.aspx',
     action_label: 'Demande allocation tierce personne',
     info_url: 'https://www.kolzchut.org.il/he/קצבת_שירותים_מיוחדים',
     disclaimer:
       'Necessite une reconnaissance d\'invalidite 100% prealable et une evaluation par un travailleur social BL a domicile.',
-    confidence: 'medium',
-    status: 'needs_verification',
-    verified_at: '2026-04-12',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-13',
     tax_year: 2026,
+    notes: 'Chiffres officiels BL 2026 confirmes par audit manuel 13/04/2026 : 1 943 / 4 501 / 7 181 NIS pour niveaux 50% / 112% / 188%.',
   },
   {
     slug: 'mobility_allowance',
@@ -738,54 +740,60 @@ const INCOME_SUPPORT_BENEFITS: BenefitDefinition[] = [
 // https://www.gov.il/en/pages/workers-rights-during-maternity-leave
 // https://www.kolzchut.org.il/he/דמי_לידה
 //
-// Droit a un conge de maternite paye par Bituach Leumi pour toute
+// Droit a un conge de maternite par Bituach Leumi pour toute
 // femme salariee ou independante ayant cotise.
 //
-// Duree du conge en 2026 :
-// - 26 semaines si anciennete >= 12 mois chez le meme employeur
-// - 15 semaines si anciennete < 12 mois
+// IMPORTANT (corrige 13/04/2026) :
+// - La mere a droit jusqu'a 26 semaines de CONGE au total
+// - Mais BL ne paye que 15 semaines de Dmei Leida maximum
+// - Les 11 semaines restantes sont sans solde
+// - Condition : 10 mois de cotisation sur les 14 derniers (ou 15/22)
 // - Jusqu'a 7 semaines peuvent etre prises AVANT l'accouchement
 //
-// Montant :
+// Montant des 15 semaines payees :
 // - Calcul base sur le salaire moyen des 3 derniers mois
 // - Plafond : le salaire moyen economie (~12 550 NIS/mois en 2026)
 // - Minimum : calcul prorata du salaire minimum
 //
 // Paternite (nouveaute post-2017) :
-// - Le pere peut prendre jusqu'a 20 semaines si la mere a droit a 26
-// - Duree minimum : 21 jours consecutifs, a partir de la 7e semaine apres l'accouchement
+// - Le pere peut prendre jusqu'a 20 semaines si la mere a droit au conge complet
+// - Duree minimum : 21 jours consecutifs, a partir de la 6e semaine apres l'accouchement
+//   (apres les 6 semaines minimum que la mere doit prendre)
 
 const MATERNITY_BENEFITS: BenefitDefinition[] = [
   {
     slug: 'dmei_leida_full',
     category: 'family',
     authority: 'bituach_leumi',
-    title_fr: 'Conge maternite paye 26 semaines (Dmei Leida)',
-    title_he: 'דמי לידה מלאים',
+    title_fr: 'Conge maternite (Dmei Leida) — 26 semaines de conge / 15 payees',
+    title_he: 'דמי לידה',
     description_fr:
-      'Conge maternite de 26 semaines entierement paye par Bituach Leumi pour les salariees ayant au moins 12 mois d\'anciennete chez le meme employeur.',
+      'Conge maternite pouvant aller jusqu\'a 26 semaines au total, dont SEULEMENT 15 semaines sont payees par Bituach Leumi. Les 11 semaines restantes sont sans solde.',
     full_description_fr:
-      'Duree : 26 semaines, dont jusqu\'a 7 semaines peuvent etre prises avant l\'accouchement. ' +
+      'Duree du conge : jusqu\'a 26 semaines au total, dont jusqu\'a 7 semaines peuvent etre prises avant l\'accouchement. ' +
+      'ATTENTION : Bituach Leumi ne paye que 15 semaines maximum (Dmei Leida). Les 11 semaines supplementaires sont sans solde. ' +
       'Montant : base sur le salaire moyen des 3 derniers mois, plafonne au salaire moyen de l\'economie (~12 550 NIS/mois en 2026). ' +
       'Le paiement est fait directement par BL a la mere (pas par l\'employeur). ' +
       'La demande doit etre faite dans les 12 mois suivant la naissance. ' +
-      'Les 14 premieres semaines sont obligatoires, les 12 semaines restantes sont optionnelles mais recommandees.',
+      'Condition : 10 mois de cotisation BL sur les 14 derniers (ou 15/22). ' +
+      'Les 6 premieres semaines sont obligatoires (protection du pere et du nouveau-ne).',
     conditions: {
       required_gender: 'female',
       required_employment: ['employed'],
       requires_resident: true,
     },
-    estimated_annual_value: 12550 * 6,  // ~6 mois
-    value_unit: 'NIS (sur 26 semaines)',
+    estimated_annual_value: 12550 * 3.5,  // 15 semaines payees (~3.5 mois)
+    value_unit: 'NIS (sur 15 semaines payees)',
     application_url: 'https://www.btl.gov.il/benefits/Maternity/Pages/default.aspx',
     action_label: 'Demande conge maternite',
     info_url: 'https://www.kolzchut.org.il/he/דמי_לידה',
     disclaimer:
-      'Condition : anciennete >= 12 mois chez le meme employeur. Sinon duree reduite a 15 semaines.',
+      'IMPORTANT : BL ne paye que 15 semaines de Dmei Leida. Le conge peut aller jusqu\'a 26 semaines au total mais les 11 semaines au-dela sont sans solde.',
     confidence: 'high',
     status: 'verified',
-    verified_at: '2026-04-12',
+    verified_at: '2026-04-13',
     tax_year: 2026,
+    notes: 'Wording corrige apres audit 13/04/2026. Realite : 26 semaines de conge total dont seulement 15 payees par BL (pas 26 payees comme mentionne auparavant).',
   },
   {
     slug: 'dmei_leida_short',
@@ -825,9 +833,10 @@ const MATERNITY_BENEFITS: BenefitDefinition[] = [
       'Le pere peut prendre jusqu\'a 20 semaines de conge paternite paye (partage du conge de 26 semaines de la mere).',
     full_description_fr:
       'Conditions : le pere doit avoir 12+ mois d\'anciennete chez son employeur, ' +
-      'la mere doit aussi avoir droit a 26 semaines. ' +
-      'Duree minimum : 21 jours consecutifs, a prendre a partir de la 7e semaine apres la naissance. ' +
-      'Maximum : 20 semaines (la mere garde les 6 premieres semaines minimum). ' +
+      'la mere doit aussi avoir droit au conge complet. ' +
+      'Duree minimum : 21 jours consecutifs, a prendre a partir de la 6e semaine apres la naissance ' +
+      '(apres les 6 semaines minimum obligatoires pour la mere). ' +
+      'Maximum : 20 semaines (la mere garde les 6 premieres semaines). ' +
       'Le pere recoit Dmei Leida pendant sa portion de conge, calcule sur son propre salaire.',
     conditions: {
       required_gender: 'male',
@@ -842,10 +851,11 @@ const MATERNITY_BENEFITS: BenefitDefinition[] = [
     info_url: 'https://familylawisrael.com/en/paternity-leave-in-israel/',
     disclaimer:
       'Reforme relativement recente (post-2017). Beaucoup d\'employeurs ignorent encore ce droit. Verifiez avec votre RH et BL.',
-    confidence: 'medium',
-    status: 'needs_verification',
-    verified_at: '2026-04-12',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-13',
     tax_year: 2026,
+    notes: 'Wording corrige apres audit 13/04/2026 : debut du conge paternite a la 6e semaine (pas 7e).',
   },
 ]
 
@@ -860,12 +870,12 @@ const MATERNITY_BENEFITS: BenefitDefinition[] = [
 // accomplissent leur service de reserve militaire. L'employeur paie
 // le salaire normal, BL rembourse l'employeur.
 //
-// Baremes officiels BL 2026 (VERIFIES avril 2026) :
-// - Plafond journalier : 1 730.33 NIS
-// - Plancher journalier : 328.76 NIS
+// Baremes officiels BL 2026 (verifies avril 2026) :
+// - Plafond journalier : 1 730.33 NIS (methodologie confirmee, chiffre exact a confirmer)
+// - Plancher journalier : 310.52 NIS (corrige apres audit 13/04/2026 — etait 328.76)
 // - Formule : (salaire brut des 3 mois precedents) / 90
-// - Plafond mensuel : 51 910 NIS
-// - Plancher mensuel : 9 863 NIS
+// - Plafond mensuel : 51 910 NIS (a confirmer manuellement)
+// - Plancher mensuel : 9 316 NIS (corrige apres audit 13/04/2026 — etait 9 863)
 
 const MILUIM_BENEFITS: BenefitDefinition[] = [
   {
@@ -879,7 +889,7 @@ const MILUIM_BENEFITS: BenefitDefinition[] = [
     full_description_fr:
       'Formule officielle 2026 : (salaire brut des 3 mois precedents) / 90 jours. ' +
       'Plafond journalier : 1 730.33 NIS (max 51 910 NIS/mois). ' +
-      'Plancher journalier : 328.76 NIS (min 9 863 NIS/mois). ' +
+      'Plancher journalier : 310.52 NIS (min 9 316 NIS/mois). ' +
       'L\'employeur doit continuer de verser le salaire normal pendant le miluim, puis se faire rembourser par BL via le formulaire 3010 de Tsahal. ' +
       'Les independants demandent directement a BL. ' +
       'Si votre employeur refuse de payer, vous pouvez porter plainte au Misrad HaAvoda (Ministere du Travail).',
@@ -899,7 +909,7 @@ const MILUIM_BENEFITS: BenefitDefinition[] = [
     status: 'verified',
     verified_at: '2026-04-12',
     tax_year: 2026,
-    notes: 'Chiffres 2026 officiels BL (1730.33 plafond, 328.76 plancher) verifies via recherche web avril 2026.',
+    notes: 'Chiffres 2026 officiels BL. Planchers corriges apres audit 13/04/2026 : journalier 310.52 (etait 328.76), mensuel 9 316 (etait 9 863). Plafond journalier 1 730.33 a confirmer manuellement.',
   },
   {
     slug: 'miluim_tax_credit_combat',
@@ -924,11 +934,11 @@ const MILUIM_BENEFITS: BenefitDefinition[] = [
     info_url: 'https://www.ynetnews.com/article/rkvvxazqex',
     disclaimer:
       'Nouveaute 2026. Verifiez avec Rashut HaMisim ou un yoetz mas pour appliquer correctement.',
-    confidence: 'medium',
-    status: 'needs_verification',
-    verified_at: '2026-04-12',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-13',
     tax_year: 2026,
-    notes: 'Nouveau credit specifique au combat. A valider avec un yoetz mas en 2026.',
+    notes: 'UPGRADE apres audit 13/04/2026 : jusqu\'a 4 points confirmes, role combat uniquement (pas les roles admin/support), valeur point 242 NIS/mois.',
   },
   {
     slug: 'miluim_low_income_supplement',
@@ -1087,7 +1097,14 @@ const OLEH_2026_BENEFITS: BenefitDefinition[] = [
       'Puis taux normal israelien (jusqu\'a 50%). ' +
       'Plafond annuel : 1 000 000 NIS. Au-dela, taux normal applique. ' +
       'C\'est la loi fiscale la plus genereuse jamais accordee aux olim en Israel. ' +
-      'IMPORTANT : applicable uniquement aux personnes qui deviennent olim chadashim OU residents qui reviennent (toshav chozer) a partir du 1er janvier 2026.',
+      'Applicable uniquement aux personnes qui deviennent olim chadashim OU residents qui reviennent (toshav chozer) a partir du 1er janvier 2026. ' +
+      '\n\n' +
+      'PIEGE JURIDIQUE MAJEUR (corrige 13/04/2026) : ' +
+      'A partir de 2026, l\'exemption de 10 ans de DECLARATION des revenus et actifs etrangers a ete SUPPRIMEE. ' +
+      'Les olim 2026+ beneficient toujours de l\'exemption d\'IMPOT (10 ans sur les revenus etrangers), ' +
+      'MAIS ils doivent DECLARER tous leurs revenus et actifs mondiaux des le jour 1 a Rashut HaMisim. ' +
+      'Ne pas declarer = risque de sanctions fiscales severes. ' +
+      'Consultez imperativement un yoetz mas specialise olim avant d\'arriver en Israel.',
     conditions: {
       requires_oleh: true,
       aliyah_years_range: [0, 4],
@@ -1098,12 +1115,12 @@ const OLEH_2026_BENEFITS: BenefitDefinition[] = [
     action_label: 'Voir loi officielle',
     info_url: 'https://www.timesofisrael.com/israel-unveils-0-tax-rate-for-2026s-immigrants-and-returning-residents/',
     disclaimer:
-      'Applicable uniquement aux olim arrivant a partir du 1er janvier 2026. Confirmez votre eligibilite avec un yoetz mas. Plafond 1M NIS/an.',
+      'ATTENTION : l\'exemption d\'impot est maintenue (10 ans) mais l\'exemption de DECLARATION des revenus/actifs mondiaux a ete supprimee pour les olim 2026+. Il faut tout declarer des le jour 1. Consultez un yoetz mas specialise avant l\'alyah.',
     confidence: 'high',
     status: 'verified',
-    verified_at: '2026-04-12',
+    verified_at: '2026-04-13',
     tax_year: 2026,
-    notes: 'Loi adoptee fin 2025. Specifique aux olim 2026+.',
+    notes: 'Loi adoptee fin 2025. Piege reporting ajoute apres audit 13/04/2026 : declaration obligatoire des revenus/actifs mondiaux des 2026 malgre l\'exemption d\'impot.',
   },
   {
     slug: 'oleh_bituach_leumi_exemption_us',
@@ -1129,10 +1146,11 @@ const OLEH_2026_BENEFITS: BenefitDefinition[] = [
     info_url: 'https://www.pstein.com/blog/this-is-the-best-time-to-make-aliyah/',
     disclaimer:
       'Specifique aux olim americains payant aux US. Consultez un yoetz mas specialise US-Israel.',
-    confidence: 'medium',
-    status: 'needs_verification',
-    verified_at: '2026-04-12',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-13',
     tax_year: 2026,
+    notes: 'UPGRADE apres audit 13/04/2026 : conditions (citoyennete US + paiement SS continu) + duree 5 ans confirmees.',
   },
 ]
 
@@ -1155,25 +1173,25 @@ const KLITA_BENEFITS: BenefitDefinition[] = [
     full_description_fr:
       'Versement initial en cash a Ben Gurion, puis 6 mensualites virees sur le compte bancaire israelien. ' +
       'Montants varient selon l\'age, le statut familial et le nombre d\'enfants. ' +
-      'Exemples typiques (2026) : celibataire 25-45 ans ~4 500 NIS/mois, couple ~6 500 NIS/mois, couple + 2 enfants ~8 500 NIS/mois. ' +
+      'La structure (6 mensualites) est confirmee mais les MONTANTS exacts 2026 doivent etre verifies avec Misrad HaKlita ' +
+      'ou le calculateur NBN officiel (des sources tierces donnent 1 200-4 400 NIS/mois, d\'autres 4 500-8 500 NIS/mois — ecart important). ' +
       'Versements mensuels entre le 1er et le 15 du mois. ' +
       'Cumulable avec Dmei Avtala reduits (regime olim).',
     conditions: {
       requires_oleh: true,
       aliyah_years_range: [0, 0],  // premiere annee uniquement
     },
-    estimated_annual_value: 4500 * 6,
-    value_unit: 'NIS (sur 6 mois)',
-    typical_monthly_amount: 4500,
+    value_unit: 'NIS (sur 6 mois — montants a verifier)',
     application_url: 'https://www.gov.il/en/life-events/immigration-and-assimilation',
     action_label: 'Infos Sal Klita',
     info_url: 'https://www.nbn.org.il/aliyah-rights-and-benefits/',
     disclaimer:
-      'Versement automatique pour les olim reconnus. Verifiez avec Misrad HaKlita ou votre conseiller Nefesh B\'Nefesh.',
-    confidence: 'high',
-    status: 'verified',
-    verified_at: '2026-04-12',
+      'Montants NON confirmes dans le catalogue — demandez le calcul exact a Misrad HaKlita ou a votre conseiller Nefesh B\'Nefesh. Les chiffres varient beaucoup selon les sources.',
+    confidence: 'low',
+    status: 'needs_verification',
+    verified_at: '2026-04-13',
     tax_year: 2026,
+    notes: 'DOWNGRADE apres audit 13/04/2026 : ecart significatif entre les sources sur les montants mensuels (1 200-4 400 vs 4 500-8 500). A verifier via calculateur NBN officiel.',
   },
   {
     slug: 'ulpan_free',
@@ -1220,27 +1238,27 @@ const HOUSING_OLIM_BENEFITS: BenefitDefinition[] = [
     description_fr:
       'Aide mensuelle au loyer pour les nouveaux olim, commencant apres la fin du Sal Klita (mois 7-8 apres l\'alyah).',
     full_description_fr:
-      'Montant 2025-2026 : 1 000 a 3 000 NIS/mois selon ville, taille famille et niveau de besoin. ' +
+      'Structure : aide mensuelle au loyer pour les olim chadashim, generalement entre 1 000 et 3 000 NIS/mois selon ville, taille famille et niveau de besoin. ' +
       'Duree : jusqu\'a 4-5 ans (olim avant mars 2024) ou 30 mois (olim apres mars 2024). ' +
       'Conditions : etre oleh chadash, avoir un bail signe, ne pas etre proprietaire. ' +
-      'La demande se fait aupres de Misrad HaShikun avec une copie du bail et du teudat oleh.',
+      'La demande se fait aupres de Misrad HaShikun avec une copie du bail et du teudat oleh. ' +
+      'Les montants exacts par profil en 2026 n\'ont pas pu etre confirmes — consultez Misrad HaShikun.',
     conditions: {
       requires_oleh: true,
       aliyah_years_range: [0, 4],
       required_marital_status: ['single', 'married', 'divorced', 'widowed', 'separated'],
     },
-    estimated_annual_value: 2000 * 12,
-    value_unit: 'NIS/an (moyenne)',
-    typical_monthly_amount: 2000,
+    value_unit: 'NIS/mois (variable — a confirmer)',
     application_url: 'https://www.gov.il/en/life-events/immigration-and-assimilation/housing-for-immigrants',
     action_label: 'Demande aide au loyer',
     info_url: 'https://www.nbn.org.il/life-in-israel/government-services/rights-and-benefits/rental-assistance/',
     disclaimer:
-      'Depend de la ville (peripherie = plus d\'aide), de la taille famille, et de votre revenu. Consultez Misrad HaShikun pour le calcul exact.',
-    confidence: 'high',
-    status: 'verified',
-    verified_at: '2026-04-12',
+      'Depend de la ville (peripherie = plus d\'aide), de la taille famille, et de votre revenu. Montants exacts 2026 non confirmes — consultez Misrad HaShikun pour votre calcul specifique.',
+    confidence: 'low',
+    status: 'needs_verification',
+    verified_at: '2026-04-13',
     tax_year: 2026,
+    notes: 'DOWNGRADE apres audit 13/04/2026 : montants exacts par profil non confirmes. Les plages (1 000-3 000 NIS) sont indicatives.',
   },
   {
     slug: 'mashkanta_olim',
@@ -1252,24 +1270,25 @@ const HOUSING_OLIM_BENEFITS: BenefitDefinition[] = [
       'Programme de pret hypothecaire a taux reduit pour les olim chadashim, avec apport personnel reduit a 5-15%.',
     full_description_fr:
       'Conditions : etre oleh dans les 15 premieres annees d\'alyah. ' +
-      'Avantages : taux d\'interet reduit vs marche, apport personnel 5-15% (vs 25-40% standard), ' +
-      'pret specifique jusqu\'a ~300 000 NIS a taux preferentiel, approbation facilitee. ' +
+      'Avantages : taux d\'interet reduit vs marche, apport personnel reduit (vs 25-40% standard), ' +
+      'pret specifique a taux preferentiel (montant a confirmer : sources divergent entre 200 000 et 300 000 NIS selon annee), ' +
+      'approbation facilitee. ' +
       'Conditions plus avantageuses pendant les 15 premieres annees. ' +
       'Necessite un Teudat Zakaut delivre par Misrad HaShikun.',
     conditions: {
       requires_oleh: true,
       aliyah_years_range: [0, 14],
     },
-    estimated_annual_value: 30000,  // economie estimee sur la duree
-    value_unit: 'NIS (economie vs pret standard)',
+    value_unit: 'NIS (economie vs pret standard — a confirmer)',
     application_url: 'https://www.gov.il/en/life-events/immigration-and-assimilation/housing-for-immigrants',
     action_label: 'Obtenir le Teudat Zakaut',
     info_url: 'https://www.easyaliyah.com/aliyah-benefits-mortgage-discount',
     disclaimer:
-      'Le Teudat Zakaut doit etre obtenu AVANT de chercher un pret bancaire. Consultez Misrad HaShikun et un conseiller en immobilier.',
-    confidence: 'high',
-    status: 'verified',
-    verified_at: '2026-04-12',
+      'Le Teudat Zakaut doit etre obtenu AVANT de chercher un pret bancaire. Montants exacts a confirmer avec Misrad HaShikun — divergence entre sources (200k vs 300k NIS).',
+    confidence: 'low',
+    status: 'needs_verification',
+    verified_at: '2026-04-13',
+    notes: 'DOWNGRADE apres audit 13/04/2026 : divergence entre sources sur le montant du pret preferentiel (200 000 vs 300 000 NIS). A verifier avec Misrad HaShikun 2026.',
   },
   {
     slug: 'olim_purchase_tax_reduction',
@@ -1312,14 +1331,19 @@ const ARNONA_BENEFITS: BenefitDefinition[] = [
     slug: 'arnona_olim',
     category: 'housing',
     authority: 'municipality',
-    title_fr: 'Reduction Arnona olim (70-90%)',
+    title_fr: 'Reduction Arnona olim (jusqu\'a 90%)',
     title_he: 'הנחה בארנונה לעולים חדשים',
     description_fr:
-      'Les nouveaux olim beneficient de 70-90% de reduction d\'arnona pendant 12 mois (sur 100 m² maximum).',
+      'Les nouveaux olim beneficient d\'une reduction d\'arnona pendant 12 mois consecutifs sur 100 m² maximum. A Tel Aviv et Jerusalem : 90% de reduction confirmee.',
     full_description_fr:
       'Applicable sur les 100 premiers m² du logement. ' +
       'Periode : un seul cycle de 12 mois consecutifs, a choisir dans les 24 premiers mois apres l\'alyah. ' +
-      'Demande aupres de la mairie, avec copie du Teudat Oleh.',
+      'Demande aupres de la mairie, avec copie du Teudat Oleh. ' +
+      'Taux confirmes 2026 : ' +
+      '- Tel Aviv : 90% ' +
+      '- Jerusalem : 90% ' +
+      'Autres villes (Haifa, Netanya, Ra\'anana, Ashdod, Herzliya, Be\'er Sheva, etc.) : taux non confirme, ' +
+      'verifier directement avec votre mairie locale (ecarts possibles de 70% a 90%).',
     conditions: {
       requires_oleh: true,
       aliyah_years_range: [0, 1],
@@ -1328,9 +1352,12 @@ const ARNONA_BENEFITS: BenefitDefinition[] = [
     value_unit: 'NIS/an (variable selon ville)',
     application_url: 'https://www.gov.il/en/service/arnona-discount',
     action_label: 'Demande arnona olim',
+    disclaimer:
+      'Taux exact verifie uniquement pour Tel Aviv et Jerusalem (90%). Pour les autres villes, contactez votre mairie locale.',
     confidence: 'high',
     status: 'verified',
-    verified_at: '2026-04-12',
+    verified_at: '2026-04-13',
+    notes: 'Audit 13/04/2026 : TLV et JM confirmes a 90% sur 100 m² pour 12 mois. Taux pour les autres villes non confirme manuellement.',
   },
   {
     slug: 'arnona_disability',
@@ -1499,24 +1526,30 @@ const STUDENT_BENEFITS: BenefitDefinition[] = [
     title_fr: 'Etudes superieures gratuites pour olim (Student Authority)',
     title_he: 'מנהל הסטודנטים לעולים',
     description_fr:
-      'Les olim chadashim peuvent beneficier d\'etudes superieures gratuites (licence ou master) grace au Minhal HaStudentim.',
+      'Les olim chadashim peuvent beneficier d\'etudes superieures gratuites (licence ou master) grace au Minhal HaStudentim. ATTENTION : il faut commencer les etudes dans les 36 mois apres l\'alyah.',
     full_description_fr:
       'Couvre les frais de scolarite complets dans la plupart des universites et colleges israeliens. ' +
       'Inclut aussi : guidance pedagogique, programmes de preparation (Mechinat Olim, TAKA), bourses d\'aide. ' +
       'Condition : etre oleh chadash et s\'inscrire dans une institution academique reconnue. ' +
-      'Duree : couvre les 10 annees suivant l\'alyah.',
+      'REGLE IMPORTANTE (corrigee 13/04/2026) : l\'oleh doit commencer ses etudes dans les 36 mois (3 ans) suivant son alyah. ' +
+      'Une fois inscrit, le benefice couvre toute la duree du diplome. ' +
+      'Les olim qui commencent apres 36 mois ne sont PAS eligibles (sauf exceptions). ' +
+      'C\'est l\'erreur la plus frequente — beaucoup d\'olim pensent avoir 10 ans pour s\'inscrire, c\'est faux.',
     conditions: {
       requires_oleh: true,
       requires_student: true,
-      aliyah_years_range: [0, 9],
+      aliyah_years_range: [0, 3],  // doit commencer dans les 36 mois
     },
     estimated_annual_value: 15000,
     value_unit: 'NIS/an (frais scolarite)',
     application_url: 'https://www.nbn.org.il/life-in-israel/government-services/rights-and-benefits/student-authority-tuition-benefits/',
     action_label: 'Infos Student Authority',
+    disclaimer:
+      'URGENT : il faut s\'inscrire dans les 36 mois suivant l\'alyah. Passe ce delai, le benefice est perdu (sauf cas exceptionnel).',
     confidence: 'high',
     status: 'verified',
-    verified_at: '2026-04-12',
+    verified_at: '2026-04-13',
+    notes: 'Condition eligibilite corrigee apres audit 13/04/2026 : 36 mois apres alyah (pas 10 ans comme ecrit auparavant).',
   },
   {
     slug: 'student_scholarships_general',

@@ -339,15 +339,28 @@ function toDetected(
 // =====================================================
 
 /**
- * Scan le profil utilisateur contre TOUS les benefices du catalogue
+ * Scan le profil utilisateur contre les benefices VERIFIES du catalogue
  * et retourne ceux auxquels l'utilisateur est potentiellement eligible.
+ *
+ * IMPORTANT : seules les entrees avec status === 'verified' sont exposees
+ * aux utilisateurs en production. Les entrees 'needs_verification' ou
+ * 'estimated' sont exclues pour garantir la fiabilite juridique.
+ * Passer { includeUnverified: true } pour un audit interne.
  *
  * Trie par confidence_score decroissant.
  */
-export function scanBenefits(profile: UserProfile, now: Date = new Date()): DetectedBenefit[] {
+export function scanBenefits(
+  profile: UserProfile,
+  now: Date = new Date(),
+  options: { includeUnverified?: boolean } = {}
+): DetectedBenefit[] {
   const results: DetectedBenefit[] = []
 
   for (const benefit of BENEFITS_CATALOG) {
+    // Filtre production : on ne montre que les entrees verifiees
+    if (!options.includeUnverified && benefit.status !== 'verified') {
+      continue
+    }
     const match = matchProfile(profile, benefit.conditions, now)
     if (match.matches) {
       results.push(toDetected(benefit, match, profile))
@@ -368,8 +381,12 @@ export function scanBenefits(profile: UserProfile, now: Date = new Date()): Dete
 /**
  * Filtre les benefices deja declares comme recus.
  */
-export function scanUnclaimedBenefits(profile: UserProfile, now: Date = new Date()): DetectedBenefit[] {
-  return scanBenefits(profile, now).filter(b => !b.already_receiving)
+export function scanUnclaimedBenefits(
+  profile: UserProfile,
+  now: Date = new Date(),
+  options: { includeUnverified?: boolean } = {}
+): DetectedBenefit[] {
+  return scanBenefits(profile, now, options).filter(b => !b.already_receiving)
 }
 
 /**
