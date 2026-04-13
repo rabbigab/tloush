@@ -1,12 +1,51 @@
-# Tloush V4 — A verifier manuellement (Partie 2/2 : PRIORITES 2 et 3)
+# Tloush V4 — A verifier manuellement (Partie 2/2 : PRIORITES 2 et 3) — ✅ LARGEMENT RESOLU
 
 > **Date** : 13/04/2026
-> **Duree estimee** : ~1h30
-> **Prerequis** : avoir complete la Partie 1 (P1 items urgents)
+> **Statut** : ✅ **LA PLUPART DES ITEMS P2/P3 ONT ETE VERIFIES ET APPLIQUES**
+>
+> Claude cowork a verifie les items via navigateur reel sur les sites officiels
+> (kolzchut.org.il, btl.gov.il, gov.il, che.org.il, ynetnews, cpa-dray.com)
+> et transmis les valeurs en clair dans le chat.
+> Les corrections ont ete appliquees au catalogue le 13/04/2026.
+>
+> Voir `docs/bmad/v4-COWORK-REPORT.md` pour le rapport source complet.
 
-## 📋 Contexte
+## Resolution detaillee
 
-Ces entrees sont **masquees en production** (moins critiques que la Partie 1).
+### ✅ RESOLUS
+- **Hashlamat Hachnasa** : seuils 4 375 / 6 912 NIS + plafonds patrimoine
+  → appliques dans `old_age_income_supplement`
+- **Survivor spouse** : 1 381 / 1 838 / 1 941 (sans enfant par age) + 2 700 / 3 562 (avec enfants)
+  → appliques dans `survivor_pension_spouse`
+- **Survivor orphan** : 1 142 (seul) / 862 (multi) / 2 284 (double orphelin)
+  → appliques dans `survivor_pension_orphan`
+- **Mobility allowance** : 1 807-6 493 NIS/mois + pret 90 000 NIS
+  → appliques dans `mobility_allowance`
+- **Arnona olim** : TLV/JM/Haifa/BS/Rishon 90%, Netanya 81%, Ashdod 70-90% selon zone
+  → appliques dans `arnona_olim`
+- **Bereaved families** : 10 525-18 512 NIS + supplement post-7/10/2023 de +13 566 NIS
+  → appliques dans `bereaved_family_benefits`
+- **Combat reservist bonuses** : credit 5 000 + 80/jour + voucher 3 500-4 500 + aide parentale 10 000
+  → appliques dans `combat_reservist_bonuses_2026`
+- **Combat veteran rights** : remise terrain 100 000 NIS HT + zone 10/20/35%
+  → appliques dans `combat_veteran_rights`
+- **Student scholarships** : Keren Sahaf 4 000/6 240/12 480 + prets 7 000
+  → appliques dans `student_scholarships_general`
+- **PERACH** : ~6 430 NIS/an + bonus reservistes 10j +2 600 NIS
+  → applique dans `perach_scholarship`
+- **Section 66 young child** : bonus 2022 "mere +1 pt 6-17 ans" NON reconduit en 2026
+  → applique dans `credit_young_child`
+- **Nekoudot schedule 2022+** : mois 1-12=1pt, 13-30=3pts, 31-42=2pts, 43-54=1pt
+  → applique dans `israeliPayroll.ts` (nouvelle fonction `computeOlehPoints`)
+  → applique dans `employeeRights.ts` (calcul par mois et non plus par annee)
+
+### ⏳ RESTE A VERIFIER (items sans valeur dans le rapport cowork)
+- Miluim plafonds journalier (1 730.33) / mensuel (51 910) — methodologie confirmee, chiffres a
+  valider manuellement par un dernier coup d'oeil sur btl.gov.il
+
+## 📋 Contexte original
+
+Ces entrees etaient **masquees en production** avant la resolution Claude cowork.
 Elles peuvent attendre une 2e iteration apres la stabilisation du catalogue.
 
 ---

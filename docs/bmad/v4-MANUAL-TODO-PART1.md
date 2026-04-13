@@ -1,6 +1,32 @@
-# Tloush V4 — A verifier manuellement (Partie 1/2 : PRIORITE 1)
+# Tloush V4 — A verifier manuellement (Partie 1/2 : PRIORITE 1) — ✅ RESOLU
 
 > **Date** : 13/04/2026
+> **Statut** : ✅ **TOUTES LES VALEURS ONT ETE VERIFIEES ET APPLIQUEES**
+>
+> Claude cowork a verifie les 3 items via navigateur reel sur les sites officiels
+> (nbn.org.il, gov.il) et transmis les valeurs en clair dans le chat.
+> Les corrections ont ete appliquees au catalogue le 13/04/2026.
+>
+> Voir `docs/bmad/v4-COWORK-REPORT.md` pour le rapport source complet.
+
+## Resolution
+
+**Sal Klita** : 21 694 NIS (celib) / 41 359 (couple) / 50 888 (couple pre-retraite) /
+35 071 (parent isole) / 26 785 (retraite seul 67+) + supplements enfants 0-4/4-17/18-21.
+Appliques dans `benefitsCatalog.ts` entree `sal_klita`.
+
+**Rental Assistance** : 24 versements auto mois 7-30, pas de test de revenus.
+Centre 363/659/739 NIS, Nord/Haifa/Sud 1336/2000/2239 NIS.
+Appliques dans `benefitsCatalog.ts` entree `rental_assistance_olim`.
+
+**Mashkanta** : 300 000 NIS max (pas 200 000), taux BoI-0.5% plafonne a 3%, 30 ans,
+fenetre eligibilite 15 ans. Teudat Zakaut delivre par la banque.
+Appliques dans `benefitsCatalog.ts` entree `mashkanta_olim`.
+
+---
+
+## 📜 Contenu original de la Partie 1 (pour reference)
+
 > **Duree estimee** : ~45 min
 > **Objectif** : verifier les 3 items les plus critiques pour debloquer
 > les olim en production.

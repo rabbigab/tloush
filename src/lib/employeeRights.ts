@@ -26,6 +26,7 @@ import {
   calculateSeverance,
   CREDIT_POINT_VALUE_MONTHLY,
   DEFAULT_CREDIT_POINTS,
+  computeOlehPoints,
 } from './israeliPayroll'
 
 // ─── Input type ───
@@ -300,17 +301,22 @@ function calculateCreditPoints(profile: EmployeeProfile): CreditPointsInfo {
   }
 
   if (profile.isNewOleh && profile.aliyahYear) {
-    const currentYear = new Date().getFullYear()
-    const yearsSinceAliyah = currentYear - profile.aliyahYear
-    if (yearsSinceAliyah < 1.5) {
-      bonus += 3
-      details.push('+3 points — nouvel oleh (18 premiers mois)')
-    } else if (yearsSinceAliyah < 2.5) {
-      bonus += 2
-      details.push('+2 points — oleh (12 mois suivants)')
-    } else if (yearsSinceAliyah < 3.5) {
-      bonus += 1
-      details.push('+1 point — oleh (12 derniers mois)')
+    // Schedule post-reforme janvier 2022 : mois 1-12=1pt, 13-30=3pts, 31-42=2pts, 43-54=1pt
+    // Source : cpa-dray.com, verifie par navigateur reel 13/04/2026 (Claude cowork)
+    const now = new Date()
+    const aliyahDate = new Date(profile.aliyahYear, 0, 1)  // approx 1er janvier de l'annee d'alyah
+    const monthsSinceAliyah =
+      (now.getFullYear() - aliyahDate.getFullYear()) * 12 +
+      (now.getMonth() - aliyahDate.getMonth())
+    const olehBonus = computeOlehPoints(monthsSinceAliyah)
+    if (olehBonus > 0) {
+      bonus += olehBonus
+      let label: string
+      if (monthsSinceAliyah < 12) label = 'mois 1-12'
+      else if (monthsSinceAliyah < 30) label = 'mois 13-30'
+      else if (monthsSinceAliyah < 42) label = 'mois 31-42'
+      else label = 'mois 43-54'
+      details.push(`+${olehBonus} point${olehBonus > 1 ? 's' : ''} — oleh chadash (${label})`)
     }
   }
 
