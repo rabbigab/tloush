@@ -1137,6 +1137,76 @@ const OLEH_2026_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION 13 — Misrad HaKlita : Sal Klita + Ulpan
+// =====================================================
+// Sources :
+// https://www.gov.il/en/life-events/immigration-and-assimilation
+// https://www.nbn.org.il/aliyah-rights-and-benefits/
+
+const KLITA_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'sal_klita',
+    category: 'immigration',
+    authority: 'misrad_haklita',
+    title_fr: 'Sal Klita (panier d\'integration)',
+    title_he: 'סל קליטה',
+    description_fr:
+      'Aide financiere versee aux nouveaux olim pendant 6 mois pour couvrir les frais d\'installation (logement, nourriture, transports).',
+    full_description_fr:
+      'Versement initial en cash a Ben Gurion, puis 6 mensualites virees sur le compte bancaire israelien. ' +
+      'Montants varient selon l\'age, le statut familial et le nombre d\'enfants. ' +
+      'Exemples typiques (2026) : celibataire 25-45 ans ~4 500 NIS/mois, couple ~6 500 NIS/mois, couple + 2 enfants ~8 500 NIS/mois. ' +
+      'Versements mensuels entre le 1er et le 15 du mois. ' +
+      'Cumulable avec Dmei Avtala reduits (regime olim).',
+    conditions: {
+      requires_oleh: true,
+      aliyah_years_range: [0, 0],  // premiere annee uniquement
+    },
+    estimated_annual_value: 4500 * 6,
+    value_unit: 'NIS (sur 6 mois)',
+    typical_monthly_amount: 4500,
+    application_url: 'https://www.gov.il/en/life-events/immigration-and-assimilation',
+    action_label: 'Infos Sal Klita',
+    info_url: 'https://www.nbn.org.il/aliyah-rights-and-benefits/',
+    disclaimer:
+      'Versement automatique pour les olim reconnus. Verifiez avec Misrad HaKlita ou votre conseiller Nefesh B\'Nefesh.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+  },
+  {
+    slug: 'ulpan_free',
+    category: 'immigration',
+    authority: 'misrad_haklita',
+    title_fr: 'Cours d\'hebreu gratuits (Ulpan)',
+    title_he: 'אולפן עברית חינם',
+    description_fr:
+      'Les nouveaux olim ont droit a un ulpan (cours d\'hebreu) gratuit de 5 mois pendant leurs 18 premiers mois en Israel.',
+    full_description_fr:
+      'Programme standard : 5 mois, 5 jours/semaine, 5 heures/jour, niveau debutant a intermediaire. ' +
+      'Disponible dans de nombreuses villes. ' +
+      'L\'inscription doit se faire dans les 18 mois suivant l\'alyah. ' +
+      'Subventionne par Misrad HaKlita, aucun frais pour l\'oleh. ' +
+      'Certains centres proposent aussi des ulpans specialises (medecins, ingenieurs, artistes).',
+    conditions: {
+      requires_oleh: true,
+      aliyah_years_range: [0, 1],
+    },
+    estimated_annual_value: 8000,  // valeur economisee
+    value_unit: 'NIS (valeur economisee)',
+    application_url: 'https://www.gov.il/en/life-events/immigration-and-assimilation',
+    action_label: 'M\'inscrire a un ulpan',
+    info_url: 'https://shivat-zion.com/information-portal/first-steps-in-israel/ulpan/',
+    disclaimer:
+      'Droit limite aux 18 premiers mois apres alyah. Inscrivez-vous rapidement.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-12',
+  },
+]
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
 export const BENEFITS_CATALOG: BenefitDefinition[] = [
@@ -1151,4 +1221,5 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...MILUIM_BENEFITS,
   ...TAX_CREDIT_BENEFITS,
   ...OLEH_2026_BENEFITS,
+  ...KLITA_BENEFITS,
 ]
