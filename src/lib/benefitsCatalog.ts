@@ -1058,6 +1058,85 @@ const TAX_CREDIT_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION 12 — Oleh 2026 Tax Exemption (NOUVELLE LOI)
+// =====================================================
+// Sources :
+// https://www.timesofisrael.com/israel-unveils-0-tax-rate-for-2026s-immigrants-and-returning-residents/
+// https://www.gov.il/en/pages/tax-reforms-for-new-olim
+//
+// NOUVELLE LOI (adoptee fin 2025) : les olim qui arrivent en 2026
+// beneficient d'une exemption totale d'impot sur le revenu pour
+// 2026 et 2027, puis taux progressifs 10/20/30% en 2028-2030.
+// Plafond annuel : 1 million NIS.
+
+const OLEH_2026_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'oleh_2026_full_exemption',
+    category: 'immigration',
+    authority: 'tax_authority',
+    title_fr: 'EXEMPTION TOTALE impot sur le revenu (olim 2026)',
+    title_he: 'פטור מלא ממס הכנסה לעולים 2026',
+    description_fr:
+      'Les olim qui arrivent en 2026 beneficient de 0% d\'impot sur le revenu en 2026 et 2027, puis de taux progressifs (10%/20%/30%) en 2028-2030. Plafond 1M NIS/an.',
+    full_description_fr:
+      'NOUVELLE LOI adoptee fin 2025 : ' +
+      'Annees 1-2 (2026-2027) : 0% d\'impot sur le revenu ' +
+      'Annee 3 (2028) : 10% ' +
+      'Annee 4 (2029) : 20% ' +
+      'Annee 5 (2030) : 30% ' +
+      'Puis taux normal israelien (jusqu\'a 50%). ' +
+      'Plafond annuel : 1 000 000 NIS. Au-dela, taux normal applique. ' +
+      'C\'est la loi fiscale la plus genereuse jamais accordee aux olim en Israel. ' +
+      'IMPORTANT : applicable uniquement aux personnes qui deviennent olim chadashim OU residents qui reviennent (toshav chozer) a partir du 1er janvier 2026.',
+    conditions: {
+      requires_oleh: true,
+      aliyah_years_range: [0, 4],
+    },
+    estimated_annual_value: 0,  // depend totalement du salaire
+    value_unit: 'taux 0-30% sur 5 ans, jusqu\'a 1M NIS/an',
+    application_url: 'https://www.gov.il/en/pages/tax-reforms-for-new-olim',
+    action_label: 'Voir loi officielle',
+    info_url: 'https://www.timesofisrael.com/israel-unveils-0-tax-rate-for-2026s-immigrants-and-returning-residents/',
+    disclaimer:
+      'Applicable uniquement aux olim arrivant a partir du 1er janvier 2026. Confirmez votre eligibilite avec un yoetz mas. Plafond 1M NIS/an.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+    notes: 'Loi adoptee fin 2025. Specifique aux olim 2026+.',
+  },
+  {
+    slug: 'oleh_bituach_leumi_exemption_us',
+    category: 'immigration',
+    authority: 'bituach_leumi',
+    title_fr: 'Exemption BL 5 ans pour olim americains',
+    title_he: 'פטור מביטוח לאומי לעולים אמריקאים',
+    description_fr:
+      'Les nouveaux olim americains payant la Social Security/Self-Employment Tax aux USA beneficient d\'une exemption de 5 ans de cotisations BL.',
+    full_description_fr:
+      'Loi adoptee en 2025-2026 : les olim venant des USA qui continuent de payer la US Social Security (salaries) ou la Self-Employment Tax (independants) ' +
+      'sont exemptes des cotisations Bituach Leumi pendant 5 ans apres leur alyah. ' +
+      'Ils restent couverts pour les soins de sante via Kupat Holim (obligatoire) mais ne paient pas BL. ' +
+      'Economie typique : 7% du salaire brut au-dessus du seuil = plusieurs milliers de NIS par an.',
+    conditions: {
+      requires_oleh: true,
+      aliyah_years_range: [0, 4],
+    },
+    estimated_annual_value: 7000,  // estimation grossiere
+    value_unit: 'NIS/an (variable selon salaire)',
+    application_url: 'https://www.btl.gov.il/',
+    action_label: 'Demande exemption BL',
+    info_url: 'https://www.pstein.com/blog/this-is-the-best-time-to-make-aliyah/',
+    disclaimer:
+      'Specifique aux olim americains payant aux US. Consultez un yoetz mas specialise US-Israel.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+  },
+]
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
 export const BENEFITS_CATALOG: BenefitDefinition[] = [
@@ -1071,4 +1150,5 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...MATERNITY_BENEFITS,
   ...MILUIM_BENEFITS,
   ...TAX_CREDIT_BENEFITS,
+  ...OLEH_2026_BENEFITS,
 ]
