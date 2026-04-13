@@ -379,10 +379,90 @@ const OLD_AGE_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION 5 — Survivor Benefits (Kitsbat Sheirim) 2026
+// =====================================================
+// Source : https://www.btl.gov.il/benefits/Survivors/Pages/default.aspx
+// https://www.kolzchut.org.il/he/קצבת_שאירים
+//
+// Pension de survivant versee aux membres de la famille d'une personne
+// assuree decedee : conjoint survivant et enfants.
+//
+// Montants 2026 (indexes sur CPI) :
+// - Veuf/veuve sans enfant : ~1 879 NIS/mois (equivalent pension vieillesse)
+// - Veuf/veuve avec enfant(s) : ~2 350 NIS/mois + supplement par enfant
+// - Enfants orphelins (sans conjoint survivant) : ~1 400 NIS/mois/enfant
+// - Supplement grossesse/conge maternite pour veuve enceinte : +30%
+// - Supplement anciennete : 2%/an au-dela de 10 ans d'anciennete
+
+const SURVIVOR_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'survivor_pension_spouse',
+    category: 'welfare',
+    authority: 'bituach_leumi',
+    title_fr: 'Pension de survivant (Kitsbat Sheirim) — conjoint',
+    title_he: 'קצבת שאירים - בן/בת זוג',
+    description_fr:
+      'Pension mensuelle versee au conjoint survivant d\'une personne assuree a BL decedee, pour assurer un revenu minimum apres le deuil.',
+    full_description_fr:
+      'Conditions : le defunt devait etre resident israelien assure a BL, et avoir cotise au moins 12 mois sur les 5 dernieres annees. ' +
+      'Montant 2026 : environ 1 879 NIS/mois pour un conjoint sans enfant, 2 350 NIS/mois avec enfant(s). ' +
+      'Supplements possibles : +2%/an d\'anciennete au-dela de 10 ans, +30% pour une veuve enceinte ou en conge maternite. ' +
+      'Il faut faire la demande dans les 12 mois suivant le deces pour ne pas perdre de droits retroactifs.',
+    conditions: {
+      required_marital_status: ['widowed'],
+      requires_resident: true,
+    },
+    estimated_annual_value: 1879 * 12,
+    value_unit: 'NIS/an (base)',
+    typical_monthly_amount: 1879,
+    application_url: 'https://www.btl.gov.il/benefits/Survivors/Pages/default.aspx',
+    action_label: 'Faire ma demande de pension survivant',
+    info_url: 'https://www.kolzchut.org.il/he/קצבת_שאירים',
+    disclaimer:
+      'Les montants varient selon l\'age, le nombre d\'enfants, et l\'anciennete d\'assurance du defunt. Consultez BL ou un conseiller pour votre situation exacte.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+    notes: 'Montants 2026 approximatifs — a verifier sur la page BL officielle.',
+  },
+  {
+    slug: 'survivor_pension_orphan',
+    category: 'welfare',
+    authority: 'bituach_leumi',
+    title_fr: 'Pension de survivant — enfants orphelins',
+    title_he: 'קצבת שאירים - יתומים',
+    description_fr:
+      'Pension mensuelle versee aux enfants mineurs orphelins suite au deces d\'un parent assure a BL.',
+    full_description_fr:
+      'Versee jusqu\'aux 18 ans de l\'enfant (ou 20 ans si il poursuit des etudes secondaires). ' +
+      'Montant 2026 : environ 1 400 NIS/mois par enfant. ' +
+      'Cumulable avec la pension du conjoint survivant si les deux conditions sont remplies.',
+    conditions: {
+      min_children: 1,
+      requires_resident: true,
+    },
+    estimated_annual_value: 1400 * 12,
+    value_unit: 'NIS/an/enfant',
+    typical_monthly_amount: 1400,
+    application_url: 'https://www.btl.gov.il/benefits/Survivors/Pages/default.aspx',
+    action_label: 'Demande pension orphelins',
+    info_url: 'https://www.kolzchut.org.il/he/קצבת_שאירים',
+    disclaimer:
+      'Versement automatique apres declaration du deces, mais verifiez que BL a bien enregistre les enfants.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+  },
+]
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
 export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...KITSBAT_YELADIM_BENEFITS,
   ...MAANAK_LEIDA_BENEFITS,
   ...OLD_AGE_BENEFITS,
+  ...SURVIVOR_BENEFITS,
 ]
