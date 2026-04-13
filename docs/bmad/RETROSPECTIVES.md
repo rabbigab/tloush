@@ -4,6 +4,93 @@ Document vivant — une rétro par sprint livré.
 
 ---
 
+## V4.2 — Catalogue de benefices + Rights Detector V2
+
+### Livre
+
+**Profil utilisateur enrichi (+20 champs)**
+- Migration `20260418_profile_enrichment_v2.sql` : gender, birth_date,
+  spouse_*, served_in_idf, is_combat_veteran, is_active_reservist,
+  education_level, is_holocaust_survivor, is_caregiver, chronic_illness,
+  has_mobility_limitation, has_disabled_child, is_bereaved_family,
+  household_income_monthly, municipality, home_size_sqm,
+  children_with_disabilities, receives_* flags
+- Types TypeScript mis a jour (Gender, EducationLevel, etc.)
+- Profile completion algorithm updated (30+ fields, weighted)
+- UI : 9 sections (identite, famille, alyah, service militaire, pro,
+  education, sante, logement, allocations en cours)
+- API PATCH validation complete
+
+**Catalogue de benefices (src/lib/benefitsCatalog.ts — 20 sections)**
+- 44 benefices structures
+- 11 categories (family, fiscal, employment, immigration, housing,
+  health, retirement, military, welfare, education, special)
+- 8 autorites (BL, Tax Authority, Klita, HaShikun, HaBitachon, Municipality,
+  HaChinuch, Claims Conference)
+- Interface EligibilityConditions avec 20+ champs pour matching
+- Chaque benefice avec slug, titre FR/HE, conditions, valeur estimee,
+  URL d'action, disclaimer, confidence level, status, verified_at
+- Helper functions : getBenefitBySlug, getBenefitsByCategory,
+  getVerifiedBenefits, getBenefitsNeedingVerification, getCatalogStats
+
+**Nouvelle loi 2026 decouverte** : exemption totale d'impot pour olim
+qui arrivent en 2026 (0% 2026-2027, puis 10/20/30% 2028-2030, plafond
+1M NIS/an). Integree au catalogue via `oleh_2026_full_exemption`.
+
+**Rights Detector V2 (src/lib/rightsDetectorV2.ts)**
+- Nouveau moteur base sur le catalogue (vs hardcoded V1)
+- Matching profile -> EligibilityConditions (20+ champs)
+- Confidence scoring : catalog confidence × match quality
+- Detection "already_receiving" via profile flags
+- Trie par confidence_score desc, puis valeur desc
+- Exports : scanBenefits, scanUnclaimedBenefits, estimateUnclaimedValue
+
+**Doc `v4-INACCESSIBLE-SOURCES.md`**
+- Liste exhaustive des sources officielles bloquees (403 WebFetch)
+- 6 categories : BTL, Tax Authority, Klita, Arnona, new laws, missing info
+- Pour chaque source : URL, statut, ce qu'il faut verifier, frequence
+- Checklist trimestrielle pour validation manuelle
+- Contacts utiles (BL, NBN, Chaim V'Chessed, etc.)
+- Script de verification semi-automatique propose (Browserless.io)
+
+### Ce qui a bien marche
+- **20 commits successifs** sur le catalogue, un par section, commit granulaire
+- Chaque commit compile (`npx tsc --noEmit`) avant push
+- Recherche web reelle sur les sources officielles (pas juste training data)
+- Decouverte de la loi 2026 exemption olim que je n'aurais jamais trouve
+  sans recherche active
+- Profile enrichi designe pour matcher exactement les conditions des benefices
+
+### Ce qui a coince
+- Plusieurs bugs de comportement de mon cote : je terminais les reponses
+  sans chainer les tool calls. Corrige en forcant execution directe.
+- Les pages BTL retournent 403 sur WebFetch — impossible de verifier
+  automatiquement. Compromis : utiliser Google + sites tiers (CWS, NBN,
+  kolzchut) et documenter dans INACCESSIBLE-SOURCES.md
+- Certaines valeurs 2026 restent approximatives (old age, disability,
+  survivor). Marquees `needs_verification` dans le catalogue.
+- Le rights detector V1 existe toujours — V2 coexiste mais pas encore
+  wire-in dans l'UI. A faire dans un sprint ulterieur.
+
+### Actions pour V5
+- [ ] Wire rights detector V2 dans `/rights-detector` (remplacer V1)
+- [ ] Tester avec 3-5 vrais profils olim francophones
+- [ ] Faire valider le catalogue par un yoetz mas
+- [ ] Ajouter un script de verification semi-automatique (Browserless)
+- [ ] Ajouter le champ `gender` au profil UI (actuellement dans le type
+      mais pas expose dans l'edit form — a verifier)
+- [ ] Afficher les benefices deja declares separement dans
+      `/rights-detector` (section "Deja reclames")
+
+### Metriques
+- ~1 300 lignes de code dans benefitsCatalog.ts
+- ~385 lignes dans rightsDetectorV2.ts
+- ~300 lignes de documentation (INACCESSIBLE-SOURCES.md)
+- 23 commits deployes sur main
+- 0 erreur TypeScript
+
+---
+
 ## V4 — 7 sprints livres en une session (BMAD task force)
 
 ### Livre
