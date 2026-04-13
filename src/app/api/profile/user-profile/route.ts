@@ -230,11 +230,19 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: validated.error }, { status: 400 })
   }
 
-  const { data: existing } = await supabase
+  const { data: existing, error: fetchError } = await supabase
     .from('user_profiles')
     .select('*')
     .eq('user_id', user.id)
     .maybeSingle()
+
+  if (fetchError) {
+    console.error('[user-profile PATCH] fetch existing failed:', fetchError)
+    return NextResponse.json(
+      { error: `Lecture du profil impossible : ${fetchError.message}. La migration 20260418_profile_enrichment_v2.sql est peut-etre manquante.` },
+      { status: 500 }
+    )
+  }
 
   const merged = { ...(existing || {}), ...validated, user_id: user.id }
   const completionPct = computeProfileCompletion(merged)
@@ -253,7 +261,24 @@ export async function PATCH(req: NextRequest) {
     .single()
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('[user-profile PATCH] upsert failed:', {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      validated_keys: Object.keys(validated),
+    })
+    // Erreur specifique : colonne manquante (migration non appliquee)
+    if (error.message?.includes('column') && error.message?.includes('does not exist')) {
+      return NextResponse.json(
+        {
+          error: 'La base de donnees n\'est pas a jour. Appliquez la migration 20260418_profile_enrichment_v2.sql via Supabase SQL Editor.',
+          db_error: error.message,
+        },
+        { status: 500 }
+      )
+    }
+    return NextResponse.json({ error: error.message, db_error: error.message }, { status: 500 })
   }
 
   return NextResponse.json({ profile: data })

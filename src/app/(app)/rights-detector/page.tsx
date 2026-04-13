@@ -20,5 +20,8 @@ export default async function RightsDetectorPage() {
     .eq('user_id', user.id)
     .maybeSingle()
 
-  return <RightsDetectorClient profileComplete={!!profile && profile.profile_completion_pct > 30} />
+  // Seuil relache : des qu'un profil existe (meme a 0%), on laisse acceder
+  // au detecteur. Le scan retourne les benefices sans conditions + ceux qui
+  // matchent le peu de donnees disponibles, et incite a completer le profil.
+  return <RightsDetectorClient profileComplete={!!profile} />
 }

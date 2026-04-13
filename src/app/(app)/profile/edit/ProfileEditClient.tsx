@@ -35,17 +35,7 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
   const [error, setError] = useState('')
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const update = useCallback(<K extends keyof UserProfile>(key: K, value: UserProfile[K]) => {
-    setProfile(prev => ({ ...prev, [key]: value }))
-    setSaved(false)
-
-    if (saveTimer.current) clearTimeout(saveTimer.current)
-    saveTimer.current = setTimeout(() => {
-      save({ [key]: value })
-    }, 800)
-  }, [])
-
-  async function save(patch: Partial<UserProfile>) {
+  const save = useCallback(async (patch: Partial<UserProfile>) => {
     setSaving(true)
     setError('')
     try {
@@ -56,7 +46,9 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        setError(data.error || 'Erreur lors de la sauvegarde')
+        const msg = data.error || `Erreur ${res.status} lors de la sauvegarde`
+        console.error('[profile save] failed:', { status: res.status, data, patch })
+        setError(data.db_error ? `${msg}\nDetail DB : ${data.db_error}` : msg)
         return
       }
       const data = await res.json()
@@ -65,12 +57,23 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
       }
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
-    } catch {
-      setError('Erreur reseau')
+    } catch (err) {
+      console.error('[profile save] network error:', err)
+      setError(`Erreur reseau : ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setSaving(false)
     }
-  }
+  }, [])
+
+  const update = useCallback(<K extends keyof UserProfile>(key: K, value: UserProfile[K]) => {
+    setProfile(prev => ({ ...prev, [key]: value }))
+    setSaved(false)
+
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => {
+      save({ [key]: value })
+    }, 800)
+  }, [save])
 
   useEffect(() => {
     return () => {
@@ -125,9 +128,14 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
       </div>
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-3 text-sm text-red-700 dark:text-red-300 flex items-center gap-2">
-          <AlertCircle size={14} />
-          {error}
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-4 text-sm text-red-700 dark:text-red-300">
+          <div className="flex items-start gap-2">
+            <AlertCircle size={16} className="shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold mb-1">Echec de la sauvegarde</p>
+              <pre className="text-xs whitespace-pre-wrap break-words font-mono">{error}</pre>
+            </div>
+          </div>
         </div>
       )}
 

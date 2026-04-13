@@ -82,9 +82,14 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
       if (res.ok) {
         const data = await res.json()
         setRights(data.rights || [])
+      } else {
+        const data = await res.json().catch(() => ({}))
+        console.error('[rights-detector fetch] failed:', { status: res.status, data })
+        setError(data.error || `Erreur de chargement (HTTP ${res.status})`)
       }
-    } catch {
-      setError('Erreur de chargement')
+    } catch (err) {
+      console.error('[rights-detector fetch] network error:', err)
+      setError(`Erreur de chargement : ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setLoading(false)
     }
@@ -101,12 +106,17 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
       const res = await fetch('/api/rights-detector', { method: 'POST' })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error || 'Erreur lors du scan')
+        console.error('[rights-detector scan] failed:', { status: res.status, data })
+        setError(data.error || `Erreur lors du scan (HTTP ${res.status})`)
         return
       }
       setRights(data.rights || [])
-    } catch {
-      setError('Erreur reseau')
+      if ((data.rights || []).length === 0 && data.detected_count === 0) {
+        setError('Aucun droit detecte pour votre profil actuel. Completez plus de champs pour debloquer plus de resultats.')
+      }
+    } catch (err) {
+      console.error('[rights-detector scan] network error:', err)
+      setError(`Erreur reseau : ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setScanning(false)
     }

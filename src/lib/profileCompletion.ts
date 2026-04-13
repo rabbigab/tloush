@@ -50,6 +50,16 @@ const FIELD_WEIGHTS: Record<string, number> = {
   has_disabled_child: 3,
 }
 
+// Champs numeriques ou 0 est une reponse valide (ex: "j'ai 0 enfant", "0% invalidite")
+// et doit etre compte dans la completion.
+const NUMERIC_FIELDS_ZERO_IS_VALID = new Set([
+  'children_count',
+  'children_with_disabilities',
+  'children_in_daycare',
+  'disability_level',
+  'miluim_days_current_year',
+])
+
 /**
  * Calcule le pourcentage de completion du profil.
  */
@@ -70,7 +80,11 @@ export function computeProfileCompletion(profile: Partial<UserProfile>): number 
     else if (Array.isArray(value)) {
       if (value.length > 0) totalScore += weight
     }
-    // Pour les nombres/strings
+    // Pour les nombres ou 0 est une reponse valide
+    else if (typeof value === 'number' && NUMERIC_FIELDS_ZERO_IS_VALID.has(field)) {
+      if (value !== null && value !== undefined) totalScore += weight
+    }
+    // Pour les autres nombres/strings (ou 0 ou '' signifie "non renseigne")
     else if (value !== null && value !== undefined && value !== '' && value !== 0) {
       totalScore += weight
     }
