@@ -56,7 +56,7 @@ export default function Testimonials() {
           <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 dark:text-slate-100 mb-3">
             Ce que disent nos utilisateurs
           </h2>
-          <p className="text-neutral-600 dark:text-slate-400 text-base">
+          <p className="text-neutral-600 dark:text-slate-300 text-base">
             Ils ont repris le controle de leurs documents
           </p>
         </motion.div>
@@ -86,7 +86,7 @@ export default function Testimonials() {
               {/* Author */}
               <div className="border-t border-neutral-100 dark:border-slate-700 pt-4">
                 <p className="text-sm font-semibold text-neutral-900 dark:text-slate-200">{t.name}</p>
-                <p className="text-xs text-neutral-500 dark:text-slate-400">{t.location} &bull; {t.plan}</p>
+                <p className="text-xs text-neutral-500 dark:text-slate-300">{t.location} &bull; {t.plan}</p>
               </div>
             </motion.div>
           ))}

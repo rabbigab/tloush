@@ -36,7 +36,7 @@ export default function HowItWorks() {
         <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 dark:text-slate-100 mb-3">
           Comment ça marche ?
         </h2>
-        <p className="text-neutral-600 dark:text-slate-400 max-w-xl mx-auto text-base">
+        <p className="text-neutral-600 dark:text-slate-300 max-w-xl mx-auto text-base">
           3 étapes simples pour reprendre le contrôle de vos documents
         </p>
       </motion.div>
@@ -70,7 +70,7 @@ export default function HowItWorks() {
                 <h3 className="font-bold text-neutral-800 dark:text-slate-200 mb-2 text-base">
                   {step.title}
                 </h3>
-                <p className="text-sm text-neutral-500 dark:text-slate-400 leading-relaxed">
+                <p className="text-sm text-neutral-500 dark:text-slate-300 leading-relaxed">
                   {step.desc}
                 </p>
               </div>

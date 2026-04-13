@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { X, Upload, MessageSquare, FolderOpen, Bell, Sparkles, ArrowRight, ArrowLeft, ArrowUp, CheckCircle2 } from 'lucide-react'
 import { track } from '@/lib/analytics'
@@ -116,6 +116,32 @@ export default function OnboardingGuide() {
     }
   }, [visible, updateHighlight])
 
+  const dialogRef = useRef<HTMLDivElement>(null)
+
+  // Focus trap + Escape key
+  useEffect(() => {
+    if (!visible) return
+    const el = dialogRef.current
+    if (!el) return
+    const focusable = el.querySelectorAll<HTMLElement>(
+      'button, a[href], input, [tabindex]:not([tabindex="-1"])'
+    )
+    focusable[0]?.focus()
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') { dismiss(); return }
+      if (e.key !== 'Tab' || focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus() }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus() }
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [visible]) // eslint-disable-line react-hooks/exhaustive-deps
+
   function dismiss() {
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -223,7 +249,7 @@ export default function OnboardingGuide() {
           transform: 'translate(-50%, -50%)',
         }}
       >
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full relative overflow-hidden animate-slideUp">
+        <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="onboarding-title" className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full relative overflow-hidden animate-slideUp">
           {/* Arrow pointing to highlighted element */}
           {showHighlight && current.position === 'bottom' && (
             <div className="flex justify-center -mt-2">
@@ -266,10 +292,10 @@ export default function OnboardingGuide() {
             </div>
 
             {/* Content */}
-            <h2 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 mb-2">
+            <h2 id="onboarding-title" className="text-lg font-extrabold text-slate-900 dark:text-slate-100 mb-2">
               {current.title}
             </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
               {current.description}
             </p>
           </div>

@@ -9,7 +9,7 @@ import UploadZone from "@/components/upload/UploadZone";
 import DisclaimerBlock from "@/components/shared/DisclaimerBlock";
 import { Loader2, ChevronRight, AlertCircle, CheckCircle, Eye } from "lucide-react";
 import clsx from "clsx";
-import type { DocumentType, DocumentAnalysis, ScanApiResponse, DocumentTypeCard } from "@/types/scanner";
+import type { DocumentType, DocumentAnalysis, ScanApiResponse, DocumentTypeCard, ContractAnalysis, OfficialLetterAnalysis, TaxNoticeAnalysis, LeaseAnalysis, TerminationAnalysis } from "@/types/scanner";
 import { DOCUMENT_TYPES } from "@/types/scanner";
 
 const SCANNER_STEPS: import("@/components/shared/ProgressStepper").Step[] = [
@@ -405,21 +405,21 @@ function ScanResultsDisplay({ result }: ScanResultsDisplayProps) {
 
   switch (documentType) {
     case "contract":
-      return <ContractResults data={data as any} />;
+      return <ContractResults data={data as ContractAnalysis} />;
     case "officialLetter":
-      return <OfficialLetterResults data={data as any} />;
+      return <OfficialLetterResults data={data as OfficialLetterAnalysis} />;
     case "taxNotice":
-      return <TaxNoticeResults data={data as any} />;
+      return <TaxNoticeResults data={data as TaxNoticeAnalysis} />;
     case "lease":
-      return <LeaseResults data={data as any} />;
+      return <LeaseResults data={data as LeaseAnalysis} />;
     case "termination":
-      return <TerminationResults data={data as any} />;
+      return <TerminationResults data={data as TerminationAnalysis} />;
     default:
       return null;
   }
 }
 
-function ContractResults({ data }: any) {
+function ContractResults({ data }: { data: ContractAnalysis }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
@@ -481,7 +481,7 @@ function ContractResults({ data }: any) {
   );
 }
 
-function OfficialLetterResults({ data }: any) {
+function OfficialLetterResults({ data }: { data: OfficialLetterAnalysis }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
@@ -531,7 +531,7 @@ function OfficialLetterResults({ data }: any) {
   );
 }
 
-function TaxNoticeResults({ data }: any) {
+function TaxNoticeResults({ data }: { data: TaxNoticeAnalysis }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
@@ -573,7 +573,7 @@ function TaxNoticeResults({ data }: any) {
   );
 }
 
-function LeaseResults({ data }: any) {
+function LeaseResults({ data }: { data: LeaseAnalysis }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
@@ -607,7 +607,7 @@ function LeaseResults({ data }: any) {
   );
 }
 
-function TerminationResults({ data }: any) {
+function TerminationResults({ data }: { data: TerminationAnalysis }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
