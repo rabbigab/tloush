@@ -1,8 +1,17 @@
 import { describe, it, expect } from 'vitest'
 import { validateFile, escapeHtml } from '@/lib/fileValidation'
 
+const MAGIC: Record<string, number[]> = {
+  'application/pdf': [0x25, 0x50, 0x44, 0x46], // %PDF
+  'image/jpeg': [0xFF, 0xD8, 0xFF, 0xE0],
+  'image/png': [0x89, 0x50, 0x4E, 0x47],
+  'image/webp': [0x52, 0x49, 0x46, 0x46], // RIFF
+}
+
 function makeFile(name: string, type: string, size: number): File {
   const buf = new Uint8Array(size)
+  const sig = MAGIC[type]
+  if (sig) sig.forEach((b, i) => { buf[i] = b })
   return new File([buf], name, { type })
 }
 

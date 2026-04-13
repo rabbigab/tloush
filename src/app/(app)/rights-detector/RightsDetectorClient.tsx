@@ -75,6 +75,7 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
   const [scanning, setScanning] = useState(false)
   const [filter, setFilter] = useState<'suggested' | 'all' | 'claimed'>('suggested')
   const [error, setError] = useState('')
+  const [dbError, setDbError] = useState('')
 
   const fetchRights = useCallback(async () => {
     try {
@@ -85,12 +86,13 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
       } else {
         const data = await res.json().catch(() => ({}))
         console.error('[rights-detector fetch] failed:', { status: res.status, data })
-        const msg = data.error || `Erreur de chargement (HTTP ${res.status})`
-        setError(data.db_error ? `${msg}\nDetail DB : ${data.db_error}` : msg)
+        setError(data.error || `Erreur de chargement (HTTP ${res.status})`)
+        setDbError(data.db_error || '')
       }
     } catch (err) {
       console.error('[rights-detector fetch] network error:', err)
       setError(`Erreur de chargement : ${err instanceof Error ? err.message : String(err)}`)
+      setDbError('')
     } finally {
       setLoading(false)
     }
@@ -104,6 +106,7 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
     console.log('[rights-detector] scan started')
     setScanning(true)
     setError('')
+    setDbError('')
     try {
       const res = await fetch('/api/rights-detector', { method: 'POST' })
       console.log('[rights-detector] scan response:', res.status)
@@ -111,8 +114,8 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
       console.log('[rights-detector] scan data:', data)
       if (!res.ok) {
         console.error('[rights-detector scan] failed:', { status: res.status, data })
-        const msg = data.error || `Erreur lors du scan (HTTP ${res.status})`
-        setError(data.db_error ? `${msg}\nDetail DB : ${data.db_error}` : msg)
+        setError(data.error || `Erreur lors du scan (HTTP ${res.status})`)
+        setDbError(data.db_error || '')
         return
       }
       setRights(data.rights || [])
@@ -231,12 +234,18 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
       />
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-4 text-sm text-red-700 dark:text-red-300">
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-4 text-sm text-red-700 dark:text-red-300" role="alert" aria-live="polite">
           <div className="flex items-start gap-2">
             <AlertCircle size={16} className="shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="font-semibold mb-1">Echec du scan</p>
-              <pre className="text-xs whitespace-pre-wrap break-words font-mono">{error}</pre>
+              <p className="text-sm">{error}</p>
+              {dbError && (
+                <details className="mt-2">
+                  <summary className="text-xs cursor-pointer opacity-60 hover:opacity-100">Detail technique</summary>
+                  <pre className="text-xs whitespace-pre-wrap break-words font-mono mt-1 opacity-70">{dbError}</pre>
+                </details>
+              )}
             </div>
           </div>
         </div>

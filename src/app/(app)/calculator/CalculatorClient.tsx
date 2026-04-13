@@ -87,11 +87,12 @@ export default function CalculatorClient() {
       {/* Input Section */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm space-y-4">
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+          <label htmlFor="gross_salary" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
             Salaire brut mensuel
           </label>
           <div className="relative">
             <input
+              id="gross_salary"
               type="number"
               name="gross_salary"
               inputMode="decimal"
@@ -106,10 +107,11 @@ export default function CalculatorClient() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+          <label htmlFor="credit_points" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
             Points de credit fiscal (נקודות זיכוי)
           </label>
           <select
+            id="credit_points"
             value={creditPoints}
             onChange={e => setCreditPoints(e.target.value)}
             className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 text-sm"
@@ -136,8 +138,9 @@ export default function CalculatorClient() {
           <div className="space-y-3 pt-1">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Pension employe (%)</label>
+                <label htmlFor="pension_rate" className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Pension employe (%)</label>
                 <input
+                  id="pension_rate"
                   type="number"
                   value={pensionRate}
                   onChange={e => setPensionRate(e.target.value)}
@@ -145,8 +148,9 @@ export default function CalculatorClient() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Keren Hishtalmut employe (%)</label>
+                <label htmlFor="keren_employee" className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Keren Hishtalmut employe (%)</label>
                 <input
+                  id="keren_employee"
                   type="number"
                   value={kerenEmployee}
                   onChange={e => setKerenEmployee(e.target.value)}
@@ -154,8 +158,9 @@ export default function CalculatorClient() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Keren Hishtalmut employeur (%)</label>
+                <label htmlFor="keren_employer" className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Keren Hishtalmut employeur (%)</label>
                 <input
+                  id="keren_employer"
                   type="number"
                   value={kerenEmployer}
                   onChange={e => setKerenEmployer(e.target.value)}

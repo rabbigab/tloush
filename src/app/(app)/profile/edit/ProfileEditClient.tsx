@@ -57,11 +57,13 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
   const [saved, setSaved] = useState(false)
   const [fullySaved, setFullySaved] = useState(false)  // apres bouton "Sauvegarder tout"
   const [error, setError] = useState('')
+  const [dbError, setDbError] = useState('')
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const save = useCallback(async (patch: Partial<UserProfile>) => {
     setSaving(true)
     setError('')
+    setDbError('')
     try {
       const res = await fetch('/api/profile/user-profile', {
         method: 'PATCH',
@@ -70,9 +72,9 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        const msg = data.error || `Erreur ${res.status} lors de la sauvegarde`
         console.error('[profile save] failed:', { status: res.status, data, patch })
-        setError(data.db_error ? `${msg}\nDetail DB : ${data.db_error}` : msg)
+        setError(data.error || `Erreur ${res.status} lors de la sauvegarde`)
+        setDbError(data.db_error || '')
         return false
       }
       const data = await res.json()
@@ -198,12 +200,18 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
       </div>
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-4 text-sm text-red-700 dark:text-red-300">
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-4 text-sm text-red-700 dark:text-red-300" role="alert" aria-live="polite">
           <div className="flex items-start gap-2">
             <AlertCircle size={16} className="shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="font-semibold mb-1">Echec de la sauvegarde</p>
-              <pre className="text-xs whitespace-pre-wrap break-words font-mono">{error}</pre>
+              <p className="text-sm">{error}</p>
+              {dbError && (
+                <details className="mt-2">
+                  <summary className="text-xs cursor-pointer opacity-60 hover:opacity-100">Detail technique</summary>
+                  <pre className="text-xs whitespace-pre-wrap break-words font-mono mt-1 opacity-70">{dbError}</pre>
+                </details>
+              )}
             </div>
           </div>
         </div>

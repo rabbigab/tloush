@@ -8,34 +8,39 @@ export async function PATCH(req: NextRequest) {
   if (auth instanceof NextResponse) return auth
   const { user } = auth
 
-  const body = await req.json()
-  const { id, status, admin_note } = body as { id?: string; status?: string; admin_note?: string }
+  try {
+    const body = await req.json()
+    const { id, status, admin_note } = body as { id?: string; status?: string; admin_note?: string }
 
-  if (!id) {
-    return NextResponse.json({ error: 'ID manquant' }, { status: 400 })
+    if (!id) {
+      return NextResponse.json({ error: 'ID manquant' }, { status: 400 })
+    }
+
+    const validStatuses = ['new', 'read', 'resolved', 'archived']
+    if (status && !validStatuses.includes(status)) {
+      return NextResponse.json({ error: 'Statut invalide' }, { status: 400 })
+    }
+
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    const update: Record<string, string> = {}
+    if (status) update.status = status
+    if (admin_note !== undefined) update.admin_note = admin_note
+
+    const { error } = await supabaseAdmin.from('feedbacks').update(update).eq('id', id)
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('[admin/feedbacks PATCH] unexpected:', err)
+    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
   }
-
-  const validStatuses = ['new', 'read', 'resolved', 'archived']
-  if (status && !validStatuses.includes(status)) {
-    return NextResponse.json({ error: 'Statut invalide' }, { status: 400 })
-  }
-
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-
-  const update: Record<string, string> = {}
-  if (status) update.status = status
-  if (admin_note !== undefined) update.admin_note = admin_note
-
-  const { error } = await supabaseAdmin.from('feedbacks').update(update).eq('id', id)
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-
-  return NextResponse.json({ ok: true })
 }
 
 // POST: reply to a feedback via email

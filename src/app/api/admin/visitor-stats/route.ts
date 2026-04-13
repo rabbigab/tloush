@@ -11,6 +11,7 @@ export async function GET() {
   const auth = await requireAdmin()
   if (auth instanceof NextResponse) return auth
 
+  try {
   const now = new Date()
   const dayStart = new Date(now)
   dayStart.setHours(0, 0, 0, 0)
@@ -115,4 +116,8 @@ export async function GET() {
     top_countries: topCountries,
     daily_trend: dailyTrend,
   })
+  } catch (err) {
+    console.error('[admin/visitor-stats GET] unexpected:', err)
+    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
+  }
 }

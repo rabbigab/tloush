@@ -80,8 +80,8 @@ export default function OnboardingGuide() {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) return
 
-    // Only show on inbox page
-    if (!pathname?.includes('/inbox')) return
+    // Show on dashboard (entry page after login)
+    if (!pathname?.includes('/dashboard')) return
 
     const t = setTimeout(() => {
       setVisible(true)

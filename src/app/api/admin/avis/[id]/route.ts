@@ -14,21 +14,26 @@ export async function PATCH(
   const auth = await requireAdmin()
   if (auth instanceof NextResponse) return auth
 
-  const { id } = await params
-  const body = await req.json()
-  const { status } = body
+  try {
+    const { id } = await params
+    const body = await req.json()
+    const { status } = body
 
-  if (!status || !['published', 'rejected'].includes(status)) {
-    return NextResponse.json({ error: 'Statut invalide' }, { status: 400 })
+    if (!status || !['published', 'rejected'].includes(status)) {
+      return NextResponse.json({ error: 'Statut invalide' }, { status: 400 })
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('provider_reviews')
+      .update({ status })
+      .eq('id', id)
+      .select('id, provider_id, status')
+      .single()
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ review: data })
+  } catch (err) {
+    console.error('[admin/avis PATCH] unexpected:', err)
+    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
   }
-
-  const { data, error } = await supabaseAdmin
-    .from('provider_reviews')
-    .update({ status })
-    .eq('id', id)
-    .select('id, provider_id, status')
-    .single()
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ review: data })
 }

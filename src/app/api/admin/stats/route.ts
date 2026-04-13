@@ -8,6 +8,7 @@ export async function GET() {
   const auth = await requireAdmin()
   if (auth instanceof NextResponse) return auth
 
+  try {
   // Use service role to read all data
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -191,4 +192,8 @@ export async function GET() {
     users: enrichedUsers,
     recent_documents: recentDocs,
   })
+  } catch (err) {
+    console.error('[admin/stats GET] unexpected:', err)
+    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
+  }
 }
