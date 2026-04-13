@@ -1466,6 +1466,80 @@ const HOLOCAUST_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION 17 — Students (Etudiants)
+// =====================================================
+
+const STUDENT_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'perach_scholarship',
+    category: 'education',
+    authority: 'other',
+    title_fr: 'Bourse PERACH (mentorat)',
+    title_he: 'פרח',
+    description_fr:
+      'Programme de mentorat : bourse d\'etudes en echange de 4h/semaine de tutorat benevole aupres d\'enfants defavorises.',
+    full_description_fr:
+      'Tous les etudiants de l\'enseignement superieur peuvent candidater. ' +
+      'En contrepartie de ~4h/semaine de mentorat (deux sessions de 2h), la bourse couvre une partie des frais de scolarite. ' +
+      'Montant 2026 : environ 5 200 NIS/an. ' +
+      'Compatible avec d\'autres bourses et aides.',
+    conditions: { requires_student: true },
+    estimated_annual_value: 5200,
+    value_unit: 'NIS/an',
+    application_url: 'https://perach.org.il/',
+    action_label: 'Candidater au PERACH',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-12',
+  },
+  {
+    slug: 'student_authority_olim',
+    category: 'education',
+    authority: 'misrad_haklita',
+    title_fr: 'Etudes superieures gratuites pour olim (Student Authority)',
+    title_he: 'מנהל הסטודנטים לעולים',
+    description_fr:
+      'Les olim chadashim peuvent beneficier d\'etudes superieures gratuites (licence ou master) grace au Minhal HaStudentim.',
+    full_description_fr:
+      'Couvre les frais de scolarite complets dans la plupart des universites et colleges israeliens. ' +
+      'Inclut aussi : guidance pedagogique, programmes de preparation (Mechinat Olim, TAKA), bourses d\'aide. ' +
+      'Condition : etre oleh chadash et s\'inscrire dans une institution academique reconnue. ' +
+      'Duree : couvre les 10 annees suivant l\'alyah.',
+    conditions: {
+      requires_oleh: true,
+      requires_student: true,
+      aliyah_years_range: [0, 9],
+    },
+    estimated_annual_value: 15000,
+    value_unit: 'NIS/an (frais scolarite)',
+    application_url: 'https://www.nbn.org.il/life-in-israel/government-services/rights-and-benefits/student-authority-tuition-benefits/',
+    action_label: 'Infos Student Authority',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-12',
+  },
+  {
+    slug: 'student_scholarships_general',
+    category: 'education',
+    authority: 'other',
+    title_fr: 'Bourses d\'etudes generales',
+    description_fr: 'Bourses proposees par les universites, unions etudiantes et fondations (social, merite, situation financiere).',
+    full_description_fr:
+      'Chaque universite a son bureau des bourses (Dean of Students). ' +
+      'Les unions etudiantes proposent des bourses basees sur l\'implication sociale. ' +
+      'Fondations privees (JUF, Hillel, etc.) offrent aussi des bourses pour les etudiants internationaux.',
+    conditions: { requires_student: true },
+    estimated_annual_value: 3000,
+    value_unit: 'NIS (variable)',
+    application_url: 'https://che.org.il/en/scholarships-grants-students-faculty/student-scholarships/',
+    action_label: 'Chercher des bourses',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+  },
+]
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
 export const BENEFITS_CATALOG: BenefitDefinition[] = [
@@ -1484,4 +1558,5 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...HOUSING_OLIM_BENEFITS,
   ...ARNONA_BENEFITS,
   ...HOLOCAUST_BENEFITS,
+  ...STUDENT_BENEFITS,
 ]
