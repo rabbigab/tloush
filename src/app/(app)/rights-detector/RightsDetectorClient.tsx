@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Sparkles, AlertCircle, CheckCircle2, XCircle, ExternalLink, Loader2, TrendingUp, Shield, Users, Heart, DollarSign, Briefcase, Building2, UserPlus, Info } from 'lucide-react'
+import { ArrowLeft, Sparkles, AlertCircle, CheckCircle2, XCircle, ExternalLink, Loader2, TrendingUp, Shield, Users, Heart, DollarSign, Briefcase, Building2, UserPlus, Info, Plane, GraduationCap, LifeBuoy, Star } from 'lucide-react'
 import LegalDisclaimer, { BetaBadge } from '@/components/shared/LegalDisclaimer'
 
 interface DetectedRight {
@@ -34,6 +34,11 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   health: Heart,
   retirement: Shield,
   housing: Building2,
+  military: Shield,
+  welfare: LifeBuoy,
+  immigration: Plane,
+  education: GraduationCap,
+  special: Star,
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -43,6 +48,25 @@ const CATEGORY_LABELS: Record<string, string> = {
   health: 'Sante',
   retirement: 'Retraite',
   housing: 'Logement',
+  military: 'Militaire',
+  welfare: 'Aide sociale',
+  immigration: 'Alyah / Olim',
+  education: 'Education',
+  special: 'Special',
+}
+
+const CATEGORY_COLORS: Record<string, string> = {
+  fiscal: 'bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400',
+  family: 'bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400',
+  employment: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400',
+  health: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400',
+  retirement: 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400',
+  housing: 'bg-teal-50 dark:bg-teal-950/30 text-teal-600 dark:text-teal-400',
+  military: 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300',
+  welfare: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400',
+  immigration: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400',
+  education: 'bg-violet-50 dark:bg-violet-950/30 text-violet-600 dark:text-violet-400',
+  special: 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400',
 }
 
 export default function RightsDetectorClient({ profileComplete }: { profileComplete: boolean }) {
@@ -285,7 +309,7 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
               }`}
             >
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${CATEGORY_COLORS[r.category] || 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400'}`}>
                   <Icon size={22} />
                 </div>
                 <div className="flex-1 min-w-0">
