@@ -731,6 +731,125 @@ const INCOME_SUPPORT_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION 9 — Maternity Leave (Dmei Leida / Chufsha)
+// =====================================================
+// Sources :
+// https://www.btl.gov.il/benefits/Maternity/Pages/default.aspx
+// https://www.gov.il/en/pages/workers-rights-during-maternity-leave
+// https://www.kolzchut.org.il/he/דמי_לידה
+//
+// Droit a un conge de maternite paye par Bituach Leumi pour toute
+// femme salariee ou independante ayant cotise.
+//
+// Duree du conge en 2026 :
+// - 26 semaines si anciennete >= 12 mois chez le meme employeur
+// - 15 semaines si anciennete < 12 mois
+// - Jusqu'a 7 semaines peuvent etre prises AVANT l'accouchement
+//
+// Montant :
+// - Calcul base sur le salaire moyen des 3 derniers mois
+// - Plafond : le salaire moyen economie (~12 550 NIS/mois en 2026)
+// - Minimum : calcul prorata du salaire minimum
+//
+// Paternite (nouveaute post-2017) :
+// - Le pere peut prendre jusqu'a 20 semaines si la mere a droit a 26
+// - Duree minimum : 21 jours consecutifs, a partir de la 7e semaine apres l'accouchement
+
+const MATERNITY_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'dmei_leida_full',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Conge maternite paye 26 semaines (Dmei Leida)',
+    title_he: 'דמי לידה מלאים',
+    description_fr:
+      'Conge maternite de 26 semaines entierement paye par Bituach Leumi pour les salariees ayant au moins 12 mois d\'anciennete chez le meme employeur.',
+    full_description_fr:
+      'Duree : 26 semaines, dont jusqu\'a 7 semaines peuvent etre prises avant l\'accouchement. ' +
+      'Montant : base sur le salaire moyen des 3 derniers mois, plafonne au salaire moyen de l\'economie (~12 550 NIS/mois en 2026). ' +
+      'Le paiement est fait directement par BL a la mere (pas par l\'employeur). ' +
+      'La demande doit etre faite dans les 12 mois suivant la naissance. ' +
+      'Les 14 premieres semaines sont obligatoires, les 12 semaines restantes sont optionnelles mais recommandees.',
+    conditions: {
+      required_gender: 'female',
+      required_employment: ['employed'],
+      requires_resident: true,
+    },
+    estimated_annual_value: 12550 * 6,  // ~6 mois
+    value_unit: 'NIS (sur 26 semaines)',
+    application_url: 'https://www.btl.gov.il/benefits/Maternity/Pages/default.aspx',
+    action_label: 'Demande conge maternite',
+    info_url: 'https://www.kolzchut.org.il/he/דמי_לידה',
+    disclaimer:
+      'Condition : anciennete >= 12 mois chez le meme employeur. Sinon duree reduite a 15 semaines.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+  },
+  {
+    slug: 'dmei_leida_short',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Conge maternite 15 semaines (anciennete reduite)',
+    title_he: 'דמי לידה מקוצרים',
+    description_fr:
+      'Conge maternite de 15 semaines paye par Bituach Leumi pour les salariees ayant moins de 12 mois d\'anciennete.',
+    full_description_fr:
+      'Duree : 15 semaines paye, dont jusqu\'a 7 semaines avant l\'accouchement. ' +
+      'Conditions : avoir cotise a BL au moins 10 mois sur les 14 derniers mois, ou 15 mois sur les 22 derniers. ' +
+      'Vous pouvez prolonger avec un conge sans solde jusqu\'a 26 semaines au total, mais sans paiement au-dela de 15 semaines.',
+    conditions: {
+      required_gender: 'female',
+      required_employment: ['employed'],
+      requires_resident: true,
+    },
+    estimated_annual_value: 12550 * 3.5,  // ~3.5 mois
+    value_unit: 'NIS (sur 15 semaines)',
+    application_url: 'https://www.btl.gov.il/benefits/Maternity/Pages/default.aspx',
+    action_label: 'Demande conge maternite',
+    disclaimer:
+      'Si vous avez plus de 12 mois d\'anciennete, vous avez droit aux 26 semaines completes.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+  },
+  {
+    slug: 'paternity_leave',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Conge paternite paye',
+    title_he: 'חופשת לידה לאב',
+    description_fr:
+      'Le pere peut prendre jusqu\'a 20 semaines de conge paternite paye (partage du conge de 26 semaines de la mere).',
+    full_description_fr:
+      'Conditions : le pere doit avoir 12+ mois d\'anciennete chez son employeur, ' +
+      'la mere doit aussi avoir droit a 26 semaines. ' +
+      'Duree minimum : 21 jours consecutifs, a prendre a partir de la 7e semaine apres la naissance. ' +
+      'Maximum : 20 semaines (la mere garde les 6 premieres semaines minimum). ' +
+      'Le pere recoit Dmei Leida pendant sa portion de conge, calcule sur son propre salaire.',
+    conditions: {
+      required_gender: 'male',
+      required_employment: ['employed'],
+      requires_resident: true,
+      min_children: 1,
+    },
+    estimated_annual_value: 12550 * 5,  // ~5 mois
+    value_unit: 'NIS (variable selon duree choisie)',
+    application_url: 'https://www.btl.gov.il/benefits/Maternity/Pages/default.aspx',
+    action_label: 'Infos conge paternite',
+    info_url: 'https://familylawisrael.com/en/paternity-leave-in-israel/',
+    disclaimer:
+      'Reforme relativement recente (post-2017). Beaucoup d\'employeurs ignorent encore ce droit. Verifiez avec votre RH et BL.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+  },
+]
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
 export const BENEFITS_CATALOG: BenefitDefinition[] = [
@@ -741,4 +860,5 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...DISABILITY_BENEFITS,
   ...UNEMPLOYMENT_BENEFITS,
   ...INCOME_SUPPORT_BENEFITS,
+  ...MATERNITY_BENEFITS,
 ]
