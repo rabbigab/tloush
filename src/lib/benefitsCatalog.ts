@@ -225,8 +225,75 @@ const KITSBAT_YELADIM_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION 3 — Maanak Leida (prime de naissance) 2026
+// =====================================================
+// Source : https://www.btl.gov.il/benefits/Maternity/Pages/MaanakLeyda.aspx
+// Confirme via recherche web avril 2026.
+//
+// Prime UNIQUE versee par BL apres l'accouchement, sous conditions :
+// - La mere ou son conjoint doivent etre assures a BL
+// - L'accouchement doit avoir lieu dans un hopital israelien reconnu,
+//   OU si l'accouchement a lieu hors d'un hopital, la mere doit y etre
+//   transferee dans les 24h
+//
+// Montants 2026 :
+// - 1er enfant  : 2 103 NIS
+// - 2e enfant   : 946 NIS
+// - 3e enfant+  : 631 NIS
+// - Jumeaux     : 10 514 NIS
+// - Triples     : 15 771 NIS
+
+/**
+ * Calcule la prime de naissance pour le rang d'enfant donne.
+ */
+export function computeMaanakLeida2026(childRank: number, isMultiple?: 'twins' | 'triplets'): number {
+  if (isMultiple === 'triplets') return 15_771
+  if (isMultiple === 'twins') return 10_514
+  if (childRank === 1) return 2_103
+  if (childRank === 2) return 946
+  return 631  // 3e et +
+}
+
+const MAANAK_LEIDA_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'maanak_leida',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Prime de naissance (Maanak Leida)',
+    title_he: 'מענק לידה',
+    description_fr:
+      'Prime unique versee par Bituach Leumi apres chaque accouchement, pour aider aux frais lies a l\'arrivee du bebe.',
+    full_description_fr:
+      'Montants 2026 : 2 103 NIS pour le 1er enfant, 946 NIS pour le 2e, 631 NIS pour le 3e et suivants. ' +
+      '10 514 NIS pour des jumeaux, 15 771 NIS pour des triples. ' +
+      'La prime est versee automatiquement apres la sortie de l\'hopital, sur le compte bancaire declare a BL. ' +
+      'Conditions : la mere ou son conjoint doivent etre assures a BL, et l\'accouchement doit avoir lieu dans ' +
+      'un hopital israelien reconnu (ou y etre transferee dans les 24h si naissance hors hopital).',
+    conditions: {
+      required_gender: 'female',
+      min_children: 1,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2103,  // par enfant, one-time
+    value_unit: 'NIS (versement unique)',
+    typical_monthly_amount: 0,  // ce n'est pas mensuel
+    application_url: 'https://www.btl.gov.il/benefits/Maternity/Pages/MaanakLeyda.aspx',
+    action_label: 'Verifier ma prime de naissance',
+    info_url: 'https://www.kolzchut.org.il/he/מענק_לידה',
+    disclaimer:
+      'Versement automatique apres l\'accouchement. Si vous n\'avez rien recu 3 mois apres la naissance, contactez BL.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+    notes: 'Montants 2026 confirmes via recherche web. Rang d\'enfant compte dans l\'ordre de naissance dans le foyer.',
+  },
+]
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
 export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...KITSBAT_YELADIM_BENEFITS,
+  ...MAANAK_LEIDA_BENEFITS,
 ]
