@@ -291,9 +291,98 @@ const MAANAK_LEIDA_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION 4 — Old Age Pension (Kitsbat Zikna) 2026
+// =====================================================
+// Source : https://www.btl.gov.il/benefits/Old_age/Pages/default.aspx
+// https://www.kolzchut.org.il/he/קצבת_זקנה
+//
+// Pension vieillesse versee par Bituach Leumi aux residents israeliens
+// ayant atteint l'age de la retraite.
+//
+// Ages (apres reforme 2021) :
+// - Hommes : 67 ans
+// - Femmes : 62-65 ans selon date de naissance (progressivement jusqu'a 65)
+// - Age universel (sans test de revenu) : 70 ans pour tous
+//
+// Montants 2026 (approximatifs, indexes sur CPI) :
+// - Individu : ~1 879 NIS/mois
+// - Couple : ~2 824 NIS/mois (si 2 pensions)
+// - Supplement anciennete : ~2% par annee au-dela de 10 ans d'anciennete
+// - Supplement si age > 80 : ~50 NIS/mois
+//
+// Important : il faut tester l'income test AVANT 70 ans (le revenu
+// du travail peut reduire ou annuler la pension entre 67 et 70 ans).
+
+const OLD_AGE_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'old_age_pension',
+    category: 'retirement',
+    authority: 'bituach_leumi',
+    title_fr: 'Pension vieillesse (Kitsbat Zikna)',
+    title_he: 'קצבת זקנה',
+    description_fr:
+      'Pension mensuelle versee par Bituach Leumi aux residents israeliens ayant atteint l\'age de la retraite (67 ans H, 62-65 F).',
+    full_description_fr:
+      'Pension de base : environ 1 879 NIS/mois pour un individu, 2 824 NIS/mois pour un couple en 2026. ' +
+      'Supplements possibles : anciennete (2%/an au-dela de 10 ans), age > 80 ans (+50 NIS/mois). ' +
+      'Entre 67 et 70 ans, un test de revenu est applique (les revenus du travail peuvent reduire la pension). ' +
+      'A partir de 70 ans, la pension est versee sans condition de revenu. ' +
+      'Il faut faire la demande dans les 12 mois suivant l\'age d\'eligibilite pour ne pas perdre de droits retroactifs.',
+    conditions: {
+      min_age: 62,  // age minimum femme
+      requires_resident: true,
+    },
+    estimated_annual_value: 1879 * 12,
+    value_unit: 'NIS/an (individu de base)',
+    typical_monthly_amount: 1879,
+    application_url: 'https://www.btl.gov.il/benefits/Old_age/Pages/default.aspx',
+    action_label: 'Faire ma demande de pension',
+    info_url: 'https://www.kolzchut.org.il/he/קצבת_זקנה',
+    disclaimer:
+      'Les montants peuvent varier selon votre situation (anciennete, conjoint, age). Entre 67 et 70 ans, vos revenus du travail peuvent reduire la pension. A 70 ans, elle devient automatique sans test de revenu.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+    notes: 'Montants 2026 approximatifs — a verifier sur la page BL officielle pour avoir les chiffres exacts indexes sur CPI 2026.',
+  },
+  {
+    slug: 'old_age_income_supplement',
+    category: 'retirement',
+    authority: 'bituach_leumi',
+    title_fr: 'Complement de revenu pour retraites (Hashlamat Hachnasa)',
+    title_he: 'השלמת הכנסה לקצבת זקנה',
+    description_fr:
+      'Supplement verse aux retraites dont les revenus totaux sont inferieurs au minimum vital. Vient s\'ajouter a la pension vieillesse.',
+    full_description_fr:
+      'Si votre pension vieillesse + autres revenus est inferieure au seuil minimum defini par BL, ' +
+      'un complement est automatiquement verse pour atteindre ce seuil. ' +
+      'Pour un individu : environ 3 500 NIS/mois total, pour un couple environ 5 500 NIS/mois. ' +
+      'Ce complement est soumis a des conditions de ressources et de patrimoine (epargne, proprietes, etc.).',
+    conditions: {
+      min_age: 67,
+      requires_resident: true,
+      max_monthly_income: 3500,
+    },
+    estimated_annual_value: (3500 - 1879) * 12,  // ecart a combler maximum
+    value_unit: 'NIS/an (variable selon revenu)',
+    application_url: 'https://www.btl.gov.il/benefits/Old_age/IncomeSupplement/Pages/default.aspx',
+    action_label: 'Demande complement de revenu',
+    info_url: 'https://www.kolzchut.org.il/he/השלמת_הכנסה_לקצבת_זקנה',
+    disclaimer:
+      'Soumis a des conditions strictes de ressources et de patrimoine. Les epargnes, proprietes et autres revenus comptent dans le calcul.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+  },
+]
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
 export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...KITSBAT_YELADIM_BENEFITS,
   ...MAANAK_LEIDA_BENEFITS,
+  ...OLD_AGE_BENEFITS,
 ]
