@@ -458,6 +458,126 @@ const SURVIVOR_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION 6 — Disability Benefits (Nekhout Klalit) 2026
+// =====================================================
+// Source : https://www.btl.gov.il/benefits/Disability/Pages/default.aspx
+// https://www.kolzchut.org.il/he/נכות_כללית
+//
+// 3 types principaux de prestations invalidite :
+// 1. Nekhout Klalit (invalidite generale) — incapacite de gagner sa vie
+// 2. Sheirutei Cheirut / Attendance Allowance — besoin d'aide quotidienne
+// 3. Nekhout Meyuchedet (invalidite speciale) — pour deficits severes
+//
+// Montants 2026 (indexes sur salaire moyen apres reforme 2021) :
+// - Nekhout klalit pleine (100%) : ~4 480 NIS/mois
+// - Nekhout klalit partielle : proportionnelle au taux (75%, 60%, 50%)
+// - Attendance allowance (sheirutei cheirut) : 50% / 112% / 188% taux de base
+// - Minimum taux d'invalidite pour eligibilite : 40% (nekhout),
+//   100% avec besoin d'assistance (sheirutei cheirut)
+
+const DISABILITY_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'disability_pension_general',
+    category: 'health',
+    authority: 'bituach_leumi',
+    title_fr: 'Pension d\'invalidite generale (Nekhout Klalit)',
+    title_he: 'קצבת נכות כללית',
+    description_fr:
+      'Pension mensuelle versee aux personnes dont la capacite a gagner leur vie est reduite d\'au moins 50% en raison d\'une deficience medicale.',
+    full_description_fr:
+      'Condition : perte de capacite de gain d\'au moins 50% reconnue par une commission medicale de BL. ' +
+      'Montants 2026 : environ 4 480 NIS/mois pour une invalidite pleine (100%), proportionnel pour les taux partiels. ' +
+      'Supplements possibles : conjoint (+20%), enfants (+10% par enfant jusqu\'a 4), aide au logement. ' +
+      'La demande necessite un dossier medical complet et passe par une commission medicale BL. ' +
+      'Les delais d\'instruction peuvent etre longs (3-6 mois).',
+    conditions: {
+      min_disability: 50,
+      min_age: 18,
+      max_age: 67,  // apres 67, c'est la pension vieillesse qui prend le relais
+      requires_resident: true,
+    },
+    estimated_annual_value: 4480 * 12,
+    value_unit: 'NIS/an (pour 100% invalidite)',
+    typical_monthly_amount: 4480,
+    application_url: 'https://www.btl.gov.il/benefits/Disability/Pages/default.aspx',
+    action_label: 'Faire ma demande d\'invalidite',
+    info_url: 'https://www.kolzchut.org.il/he/נכות_כללית',
+    disclaimer:
+      'La demande necessite un dossier medical complet et une commission medicale BL. Un avocat specialise ou un travailleur social peut vous aider a constituer le dossier.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+    notes: 'Montants 2026 approximatifs — a verifier exactement apres publication des taux BL 2026 bases sur le salaire moyen.',
+  },
+  {
+    slug: 'attendance_allowance',
+    category: 'health',
+    authority: 'bituach_leumi',
+    title_fr: 'Allocation pour tierce personne (Sheirutei Cheirut)',
+    title_he: 'קצבת שירותים מיוחדים',
+    description_fr:
+      'Allocation versee aux personnes handicapees ayant besoin de l\'aide d\'une tierce personne pour les actes essentiels de la vie quotidienne.',
+    full_description_fr:
+      'Conditions : etre reconnu avec un taux d\'invalidite de 100% ET avoir besoin d\'aide permanente pour s\'habiller, manger, ' +
+      'se laver, ou se deplacer dans son domicile. ' +
+      'Trois niveaux en 2026 : ' +
+      '50% (~2 240 NIS/mois) — aide importante, ' +
+      '112% (~5 017 NIS/mois) — aide majoritaire, ' +
+      '188% (~8 422 NIS/mois) — aide permanente. ' +
+      'L\'evaluation est faite par un travailleur social BL a votre domicile.',
+    conditions: {
+      min_disability: 100,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2240 * 12,  // niveau de base
+    value_unit: 'NIS/an (50% base)',
+    typical_monthly_amount: 2240,
+    application_url: 'https://www.btl.gov.il/benefits/Disability/attendance_allowance/Pages/default.aspx',
+    action_label: 'Demande allocation tierce personne',
+    info_url: 'https://www.kolzchut.org.il/he/קצבת_שירותים_מיוחדים',
+    disclaimer:
+      'Necessite une reconnaissance d\'invalidite 100% prealable et une evaluation par un travailleur social BL a domicile.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+  },
+  {
+    slug: 'mobility_allowance',
+    category: 'health',
+    authority: 'bituach_leumi',
+    title_fr: 'Allocation de mobilite (Kitsbat Nayadut)',
+    title_he: 'קצבת ניידות',
+    description_fr:
+      'Allocation et avantages pour les personnes ayant des difficultes a se deplacer : aide a l\'achat de vehicule, reduction d\'impots sur vehicule adapte, allocation mensuelle.',
+    full_description_fr:
+      'Pour les personnes avec au moins 40% d\'incapacite de mobilite reconnue par BL. ' +
+      'Avantages : aide a l\'achat de vehicule adapte (jusqu\'a 92 000 NIS de pret a taux zero), ' +
+      'exemption partielle ou totale de la taxe sur le vehicule, ' +
+      'allocation mensuelle variable selon le niveau (~1 500-4 000 NIS/mois), ' +
+      'carte de stationnement reserve. ' +
+      'La demande necessite un dossier medical et une evaluation d\'orthopediste BL.',
+    conditions: {
+      min_disability: 40,
+      requires_resident: true,
+    },
+    estimated_annual_value: 1500 * 12,
+    value_unit: 'NIS/an (variable)',
+    typical_monthly_amount: 1500,
+    application_url: 'https://www.btl.gov.il/benefits/Mobility/Pages/default.aspx',
+    action_label: 'Demande allocation mobilite',
+    info_url: 'https://www.kolzchut.org.il/he/קצבת_ניידות',
+    disclaimer:
+      'Demande complexe necessitant un dossier medical et une commission orthopedique BL. Delais 3-6 mois.',
+    confidence: 'low',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+  },
+]
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
 export const BENEFITS_CATALOG: BenefitDefinition[] = [
@@ -465,4 +585,5 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...MAANAK_LEIDA_BENEFITS,
   ...OLD_AGE_BENEFITS,
   ...SURVIVOR_BENEFITS,
+  ...DISABILITY_BENEFITS,
 ]
