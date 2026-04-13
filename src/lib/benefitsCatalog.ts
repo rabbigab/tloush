@@ -671,6 +671,66 @@ const UNEMPLOYMENT_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION 8 — Income Support (Hashlamat Hachnasa) 2026
+// =====================================================
+// Source : https://www.btl.gov.il/benefits/Income_support/Pages/default.aspx
+// https://www.kolzchut.org.il/he/הבטחת_הכנסה
+//
+// Filet de securite pour les personnes dans une situation de pauvrete,
+// ne pouvant pas gagner leur vie malgre les tentatives.
+//
+// Conditions strictes :
+// - Age 20+
+// - Resident israelien
+// - Revenu total inferieur au minimum vital
+// - Avoir epuise Dmei Avtala (si eligible)
+// - Etre inscrit a la Lishkat Ta'asuka et rechercher un emploi
+// - Patrimoine et economies limites (test de ressources strict)
+//
+// Montants 2026 (approximatifs, niveaux ordinaires) :
+// - Individu : ~2 800 NIS/mois
+// - Couple : ~4 500 NIS/mois
+// - Couple avec 1 enfant : ~5 500 NIS/mois
+// - Couple avec 2 enfants+ : ~6 200 NIS/mois
+// - Parent isole avec enfant : ~4 200 NIS/mois
+
+const INCOME_SUPPORT_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'hashlamat_hachnasa',
+    category: 'welfare',
+    authority: 'bituach_leumi',
+    title_fr: 'Complement de revenu (Hashlamat Hachnasa / Havtahat Hachnasa)',
+    title_he: 'הבטחת הכנסה',
+    description_fr:
+      'Allocation de dernier recours versee aux personnes dont les revenus totaux sont en dessous du minimum vital, apres avoir epuise les autres droits.',
+    full_description_fr:
+      'Condition principale : revenu du foyer en dessous du minimum vital defini par BL. ' +
+      'Conditions supplementaires : patrimoine limite (pas plus de X NIS d\'epargne), pas de biens immobiliers autres que la residence principale, ' +
+      'inscription a la Lishkat Ta\'asuka, recherche active d\'emploi, test de ressources strict. ' +
+      'Montants 2026 : ~2 800 NIS/mois individu, ~4 500 NIS/mois couple, ~6 200 NIS/mois couple avec 2 enfants+. ' +
+      'L\'allocation peut etre suspendue si vous refusez des offres d\'emploi proposees par la Lishkat Ta\'asuka.',
+    conditions: {
+      min_age: 20,
+      max_monthly_income: 4500,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2800 * 12,
+    value_unit: 'NIS/an (individu)',
+    typical_monthly_amount: 2800,
+    application_url: 'https://www.btl.gov.il/benefits/Income_support/Pages/default.aspx',
+    action_label: 'Demande complement de revenu',
+    info_url: 'https://www.kolzchut.org.il/he/הבטחת_הכנסה',
+    disclaimer:
+      'Conditions strictes de ressources. Les epargnes, proprietes, voitures et autres biens comptent dans le calcul. Un travailleur social BL peut vous accompagner dans la demande.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+    notes: 'Montants 2026 approximatifs — depend du statut familial exact et des ressources. A verifier avec BL directement.',
+  },
+]
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
 export const BENEFITS_CATALOG: BenefitDefinition[] = [
@@ -680,4 +740,5 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...SURVIVOR_BENEFITS,
   ...DISABILITY_BENEFITS,
   ...UNEMPLOYMENT_BENEFITS,
+  ...INCOME_SUPPORT_BENEFITS,
 ]
