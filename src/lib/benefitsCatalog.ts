@@ -1398,6 +1398,74 @@ const ARNONA_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION 16 — Holocaust Survivors
+// =====================================================
+// Sources :
+// https://www.claimscon.org/regions/israel/
+// Ministere de l'Egalite Sociale (Misrad HaShivyon HaHevrati)
+
+const HOLOCAUST_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'holocaust_monthly_stipend',
+    category: 'special',
+    authority: 'misrad_habitahon',  // Actually ministry of social equality, but closest
+    title_fr: 'Allocation mensuelle survivants de la Shoah',
+    title_he: 'קצבה חודשית לניצולי שואה',
+    description_fr:
+      'Allocation mensuelle versee aux survivants de la Shoah reconnus, versee par le Ministere de l\'Egalite Sociale ou via la Claims Conference.',
+    full_description_fr:
+      'Montants 2026 : entre ~2 800 et ~7 000 NIS/mois (~800-2 000 USD) selon le statut et les conditions de reconnaissance. ' +
+      'Certains survivants recoivent aussi des paiements annuels de la Claims Conference. ' +
+      'Eligibilite : naissance avant 1945, presence dans un pays occupe par les nazis ou sous regime antijuif entre 1933 et 1945. ' +
+      'Couvre aussi certains enfants caches ou conjoints survivants.',
+    conditions: {
+      requires_holocaust_survivor: true,
+      min_age: 79,
+    },
+    estimated_annual_value: 2800 * 12,
+    value_unit: 'NIS/an (base)',
+    typical_monthly_amount: 2800,
+    application_url: 'https://www.claimscon.org/regions/israel/',
+    action_label: 'Contacter Claims Conference',
+    disclaimer:
+      'Les allocations survivants sont complexes et varient selon le dossier. Plusieurs fondations et organisations peuvent aider (Foundation for the Benefit of Holocaust Victims, Claims Conference, etc.).',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+  },
+  {
+    slug: 'holocaust_in_home_services',
+    category: 'special',
+    authority: 'other',
+    title_fr: 'Services a domicile pour survivants (Foundation)',
+    description_fr: 'La Foundation for the Benefit of Holocaust Victims offre des services a domicile gratuits (aide menagere, visites sociales, soins) aux survivants isoles.',
+    conditions: { requires_holocaust_survivor: true, min_age: 79 },
+    estimated_annual_value: 10000,
+    value_unit: 'NIS (valeur services)',
+    application_url: 'https://www.claimscon.org/regions/israel/',
+    action_label: 'Contacter la Foundation',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+  },
+  {
+    slug: 'holocaust_arnona_full_exemption',
+    category: 'housing',
+    authority: 'municipality',
+    title_fr: 'Exemption totale Arnona survivants Shoah',
+    description_fr: 'Les survivants de la Shoah beneficient d\'une exemption totale ou majoritaire d\'arnona dans la plupart des municipalites israeliennes.',
+    conditions: { requires_holocaust_survivor: true },
+    estimated_annual_value: 6000,
+    value_unit: 'NIS/an (variable)',
+    application_url: 'https://www.kolzchut.org.il/he/הנחה_בארנונה',
+    action_label: 'Demande exemption arnona',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+  },
+]
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
 export const BENEFITS_CATALOG: BenefitDefinition[] = [
@@ -1415,4 +1483,5 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...KLITA_BENEFITS,
   ...HOUSING_OLIM_BENEFITS,
   ...ARNONA_BENEFITS,
+  ...HOLOCAUST_BENEFITS,
 ]
