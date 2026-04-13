@@ -1540,6 +1540,85 @@ const STUDENT_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION 18 — Combat Reservists Benefits 2026
+// =====================================================
+
+const COMBAT_RESERVIST_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'combat_reservist_bonuses_2026',
+    category: 'military',
+    authority: 'misrad_habitahon',
+    title_fr: 'Bonus reservistes combat 2026',
+    title_he: 'מענקים ללוחמי מילואים 2026',
+    description_fr:
+      'Packages financiers etendus pour les reservistes combattants : bonus supplementaires, aide parentale, vouchers vacances.',
+    full_description_fr:
+      'Nouveautes 2026 : ' +
+      '- Bonus financier lie au nombre de jours de miluim servis ' +
+      '- Aide financiere parentale pour reservistes avec enfants ' +
+      '- Vouchers vacances (jusqu\'a plusieurs milliers de NIS) ' +
+      '- Supplement mensuel pour reservistes a bas revenu (voir section 10) ' +
+      '- Reduction du nombre de jours requis pour declencher les benefits ' +
+      'Notification 2-3 mois avant la periode de miluim prevue.',
+    conditions: {
+      requires_active_reservist: true,
+      requires_combat: true,
+    },
+    estimated_annual_value: 5000,
+    value_unit: 'NIS (package variable)',
+    application_url: 'https://www.gov.il/en/pages/specialbenefits',
+    action_label: 'Voir benefits reservistes',
+    info_url: 'https://www.ynetnews.com/article/rkvvxazqex',
+    disclaimer:
+      'Package evolue en 2026 avec la reduction du service miluim. Consultez votre officier miluim ou Misrad HaBitachon pour les montants exacts.',
+    confidence: 'low',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+    tax_year: 2026,
+    notes: 'Multiples bonus difficiles a chiffrer individuellement. Reformes en cours depuis fin 2025.',
+  },
+  {
+    slug: 'combat_veteran_rights',
+    category: 'military',
+    authority: 'misrad_habitahon',
+    title_fr: 'Droits anciens combattants',
+    description_fr: 'Reductions et avantages divers pour les anciens combattants IDF (transport, arnona, sante, education).',
+    conditions: { requires_idf_service: true, requires_combat: true },
+    estimated_annual_value: 3000,
+    value_unit: 'NIS/an (variable)',
+    application_url: 'https://www.gov.il/en/pages/specialbenefits',
+    action_label: 'Infos anciens combattants',
+    confidence: 'low',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+  },
+  {
+    slug: 'bereaved_family_benefits',
+    category: 'special',
+    authority: 'misrad_habitahon',
+    title_fr: 'Droits familles endeuillees IDF',
+    title_he: 'זכויות משפחות שכולות',
+    description_fr: 'Pensions et droits pour les familles de soldats tues pendant le service militaire ou victimes du terrorisme.',
+    full_description_fr:
+      'Pension mensuelle a vie pour veufs/veuves et enfants. ' +
+      'Aide pour les parents bereaves (kimat horim shkulim). ' +
+      'Couverture sante complete. ' +
+      'Aide au logement. ' +
+      'Soutien psychologique gratuit.',
+    conditions: { requires_bereaved: true },
+    estimated_annual_value: 50000,
+    value_unit: 'NIS/an (variable)',
+    application_url: 'https://www.mod.gov.il/',
+    action_label: 'Contacter Misrad HaBitachon',
+    disclaimer:
+      'Les droits des familles endeuillees sont complexes et etendus. Un coordinateur Misrad HaBitachon est assigne a chaque famille.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-12',
+  },
+]
+
+// =====================================================
 // Registre principal (rempli dans les sections 2-20)
 // =====================================================
 export const BENEFITS_CATALOG: BenefitDefinition[] = [
@@ -1559,4 +1638,5 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...ARNONA_BENEFITS,
   ...HOLOCAUST_BENEFITS,
   ...STUDENT_BENEFITS,
+  ...COMBAT_RESERVIST_BENEFITS,
 ]
