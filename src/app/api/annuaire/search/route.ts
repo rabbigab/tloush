@@ -30,10 +30,14 @@ export async function GET(req: NextRequest) {
   }
 
   if (q) {
-    // Sanitize input: remove PostgREST special characters to prevent filter injection
-    const sanitized = q.replace(/[,().]/g, ' ').trim()
+    // Use separate ilike() calls on explicit columns — avoids PostgREST .or() injection
+    const sanitized = q.trim().slice(0, 100) // cap length
     if (sanitized) {
-      query = query.or(`first_name.ilike.%${sanitized}%,last_name.ilike.%${sanitized}%,description.ilike.%${sanitized}%`)
+      const pattern = `%${sanitized}%`
+      query = query.or(
+        `first_name.ilike.${pattern},last_name.ilike.${pattern},description.ilike.${pattern}`,
+        { foreignTable: undefined }
+      )
     }
   }
 

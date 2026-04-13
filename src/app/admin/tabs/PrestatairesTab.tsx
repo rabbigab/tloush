@@ -244,10 +244,10 @@ export function PrestatairesTab({
                         </>
                       ) : (
                         <>
-                          <button onClick={() => handleEditProvider(p)} className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-600 dark:hover:bg-amber-900/30" title="Modifier"><Pencil size={14} /></button>
-                          <button onClick={() => handleToggleReferenced(p.id, p.is_referenced)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 dark:hover:bg-blue-900/30" title={p.is_referenced ? 'Retirer le badge' : 'Ajouter le badge'}><CheckCircle size={14} /></button>
-                          <a href={`/annuaire/${p.category}/${p.slug}`} target="_blank" className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 dark:hover:bg-slate-700" title="Voir la fiche"><Eye size={14} /></a>
-                          <button onClick={() => handleDelistProvider(p.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 dark:hover:bg-red-900/30" title="Delister"><Trash2 size={14} /></button>
+                          <button onClick={() => handleEditProvider(p)} className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-600 dark:hover:bg-amber-900/30" aria-label="Modifier" title="Modifier"><Pencil size={14} /></button>
+                          <button onClick={() => handleToggleReferenced(p.id, p.is_referenced)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 dark:hover:bg-blue-900/30" aria-label={p.is_referenced ? 'Retirer le badge' : 'Ajouter le badge'} title={p.is_referenced ? 'Retirer le badge' : 'Ajouter le badge'}><CheckCircle size={14} /></button>
+                          <a href={`/annuaire/${p.category}/${p.slug}`} target="_blank" className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 dark:hover:bg-slate-700" aria-label="Voir la fiche" title="Voir la fiche"><Eye size={14} /></a>
+                          <button onClick={() => handleDelistProvider(p.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 dark:hover:bg-red-900/30" aria-label="Delister ce prestataire" title="Delister"><Trash2 size={14} /></button>
                         </>
                       )}
                     </div>

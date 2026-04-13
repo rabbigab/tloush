@@ -75,13 +75,31 @@ export function UsersTab({
               <tr className="bg-slate-50 dark:bg-slate-750 border-b border-slate-200 dark:border-slate-700">
                 <th className="text-left px-4 py-3 font-medium text-slate-500">Email</th>
                 <th className="text-left px-4 py-3 font-medium text-slate-500">Plan</th>
-                <th className="text-center px-4 py-3 font-medium text-slate-500 cursor-pointer select-none" onClick={() => toggleSort('total_documents')}>
+                <th
+                  className="text-center px-4 py-3 font-medium text-slate-500 cursor-pointer select-none"
+                  onClick={() => toggleSort('total_documents')}
+                  role="button" tabIndex={0}
+                  onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && toggleSort('total_documents')}
+                  aria-sort={sortBy === 'total_documents' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+                >
                   <span className="inline-flex items-center gap-1">Docs <SortIcon field="total_documents" sortBy={sortBy} sortDir={sortDir} /></span>
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500 cursor-pointer select-none hidden md:table-cell" onClick={() => toggleSort('created_at')}>
+                <th
+                  className="text-left px-4 py-3 font-medium text-slate-500 cursor-pointer select-none hidden md:table-cell"
+                  onClick={() => toggleSort('created_at')}
+                  role="button" tabIndex={0}
+                  onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && toggleSort('created_at')}
+                  aria-sort={sortBy === 'created_at' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+                >
                   <span className="inline-flex items-center gap-1">Inscription <SortIcon field="created_at" sortBy={sortBy} sortDir={sortDir} /></span>
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500 cursor-pointer select-none hidden md:table-cell" onClick={() => toggleSort('last_sign_in_at')}>
+                <th
+                  className="text-left px-4 py-3 font-medium text-slate-500 cursor-pointer select-none hidden md:table-cell"
+                  onClick={() => toggleSort('last_sign_in_at')}
+                  role="button" tabIndex={0}
+                  onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && toggleSort('last_sign_in_at')}
+                  aria-sort={sortBy === 'last_sign_in_at' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+                >
                   <span className="inline-flex items-center gap-1">Derniere connexion <SortIcon field="last_sign_in_at" sortBy={sortBy} sortDir={sortDir} /></span>
                 </th>
                 <th className="text-left px-4 py-3 font-medium text-slate-500 hidden lg:table-cell">

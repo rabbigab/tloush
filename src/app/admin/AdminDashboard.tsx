@@ -106,7 +106,9 @@ export default function AdminDashboard() {
     try {
       const res = await fetch('/api/admin/visitor-stats')
       if (res.ok) setVisitorStats(await res.json())
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.error('[AdminDashboard] visitor-stats fetch failed:', err)
+    }
     setVisitorLoading(false)
   }, [])
 
@@ -141,7 +143,9 @@ export default function AdminDashboard() {
       if (activeRes.ok) setProviders((await activeRes.json()).providers || [])
       if (pendingRes.ok) setProviderApplications((await pendingRes.json()).providers || [])
       if (statsRes.ok) setAnnuaireStats(await statsRes.json())
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.error('[AdminDashboard] providers fetch failed:', err)
+    }
     setProviderLoading(false)
   }, [])
 

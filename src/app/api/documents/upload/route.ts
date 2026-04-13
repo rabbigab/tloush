@@ -603,9 +603,11 @@ FICHE ACTUELLE (${analysisResult.period || '?'}) : ${JSON.stringify(analysisResu
           const body = JSON.stringify({ userId: user.id, documentId: docId })
 
           if (Boolean(analysisResult.is_urgent)) {
-            fetch(`${baseUrl}/api/alerts/urgent`, { method: 'POST', headers, body }).catch(() => {})
+            fetch(`${baseUrl}/api/alerts/urgent`, { method: 'POST', headers, body })
+              .catch(err => console.error('[upload] urgent alert failed:', err))
           }
-          fetch(`${baseUrl}/api/alerts/analysis-complete`, { method: 'POST', headers, body }).catch(() => {})
+          fetch(`${baseUrl}/api/alerts/analysis-complete`, { method: 'POST', headers, body })
+            .catch(err => console.error('[upload] analysis-complete alert failed:', err))
         }
       } catch (asyncErr) {
         console.error('[Async post-analysis] Error:', asyncErr)
