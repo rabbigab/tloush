@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/apiAuth'
-import { scanUnclaimedBenefits, type DetectedBenefit } from '@/lib/rightsDetectorV2'
+import { scanUnclaimedBenefits, type DetectedBenefit } from '@/lib/rightsDetector'
 
 // =====================================================
 // GET /api/rights-detector
@@ -26,7 +26,7 @@ export async function GET() {
 
 // =====================================================
 // POST /api/rights-detector
-// Lance un scan complet via rightsDetectorV2 (base sur benefitsCatalog).
+// Lance un scan complet via rightsDetector (base sur benefitsCatalog).
 // =====================================================
 export async function POST() {
   const auth = await requireAuth()
