@@ -106,7 +106,7 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
     for (const field of EDITABLE_FIELDS) {
       const value = profile[field as keyof UserProfile]
       if (value !== undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line
         ;(fullPatch as any)[field] = value
       }
     }
@@ -126,7 +126,7 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
     for (const field of EDITABLE_FIELDS) {
       const value = profile[field as keyof UserProfile]
       if (value !== undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line
         ;(fullPatch as any)[field] = value
       }
     }
@@ -166,7 +166,7 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Completer mon profil</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            Plus votre profil est complet, plus Tloush peut detecter d'aides auxquelles vous avez droit.
+            Plus votre profil est complet, plus Tloush peut detecter d&apos;aides auxquelles vous avez droit.
           </p>
         </div>
       </div>
@@ -343,7 +343,7 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
               onChange={(e) => update('israeli_citizen', e.target.checked)}
               className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
             />
-            <span className="text-sm text-slate-700 dark:text-slate-300">Oui, j'ai la citoyennete israelienne</span>
+            <span className="text-sm text-slate-700 dark:text-slate-300">Oui, j&apos;ai la citoyennete israelienne</span>
           </label>
         </Field>
       </Section>
@@ -358,7 +358,7 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
               onChange={(e) => update('served_in_idf', e.target.checked)}
               className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
             />
-            <span className="text-sm text-slate-700 dark:text-slate-300">Oui, j'ai fait mon service militaire</span>
+            <span className="text-sm text-slate-700 dark:text-slate-300">Oui, j&apos;ai fait mon service militaire</span>
           </label>
         </Field>
 
