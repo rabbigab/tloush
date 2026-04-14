@@ -52,8 +52,20 @@ export async function POST(req: NextRequest) {
     const { data, error } = await supabaseAdmin
       .from('providers')
       .insert({
-        ...body,
-        status: body.status || 'active',
+        first_name,
+        last_name,
+        phone,
+        category,
+        slug,
+        email: body.email || null,
+        description: body.description || null,
+        specialties: Array.isArray(body.specialties) ? body.specialties : [],
+        service_areas: Array.isArray(body.service_areas) ? body.service_areas : [],
+        languages: Array.isArray(body.languages) ? body.languages : ['fr'],
+        years_experience: typeof body.years_experience === 'number' ? body.years_experience : null,
+        osek_number: body.osek_number || null,
+        is_referenced: body.is_referenced === true,
+        status: typeof body.status === 'string' ? body.status : 'active',
       })
       .select()
       .single()
