@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { MapPin, Bed, Maximize, Building2, Car, Wind, ArrowUpRight } from 'lucide-react'
 import type { Listing } from '@/types/listings'
 import { useListingsStore } from '@/store/listingsStore'
@@ -50,11 +51,14 @@ export default function ListingCard({ listing }: { listing: Listing }) {
       {/* Image */}
       {listing.images?.[0] && (
         <div className="relative mb-3 rounded-lg overflow-hidden aspect-[16/10] bg-neutral-100 dark:bg-slate-800">
-          <img
+          <Image
             src={listing.images[0]}
             alt={listing.title || 'Photo'}
-            className="object-cover w-full h-full"
+            fill
+            className="object-cover"
             loading="lazy"
+            sizes="(max-width: 768px) 100vw, 33vw"
+            unoptimized
           />
           {/* Badge source */}
           <span className={`absolute top-2 left-2 text-xs font-medium px-2 py-0.5 rounded-full ${

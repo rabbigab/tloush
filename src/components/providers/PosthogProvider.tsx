@@ -9,7 +9,7 @@ function PageTracker() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if ((window as any).__ph_initialized) {
+    if (window.__ph_initialized) {
       posthog.capture("$pageview", { path: pathname });
     }
   }, [pathname, searchParams]);
@@ -27,7 +27,7 @@ export function PosthogProvider({ children }: { children: React.ReactNode }) {
         person_profiles: "identified_only",
         capture_pageview: false,
         loaded: () => {
-          (window as any).__ph_initialized = true;
+          window.__ph_initialized = true;
         },
       });
     }

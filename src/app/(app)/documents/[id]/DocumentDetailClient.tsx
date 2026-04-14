@@ -271,6 +271,7 @@ export default function DocumentDetailClient({ document: doc, originalUrl }: { d
             </a>
           </div>
           {doc.file_name.match(/\.(jpg|jpeg|png|gif|webp|bmp)$/i) ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={originalUrl}
               alt={doc.file_name}
