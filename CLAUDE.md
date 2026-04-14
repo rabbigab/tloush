@@ -19,6 +19,17 @@ Cette règle a été explicitement demandée par l'utilisateur le 14/04/2026 pou
 - Ne jamais commiter de secrets (.env, credentials.json)
 - Toujours faire le type-check avant de merger
 
+## Fractionnement des tâches (anti-timeout)
+
+**Toujours splitter les grandes tâches en sous-étapes de 5-15 min max** :
+- Pour chaque section logique : un commit + un push + un type-check
+- Ne jamais accumuler 10+ edits sans intermédiaire (risque de message tronqué ou context lost)
+- Utiliser TodoWrite pour tracker chaque sous-tâche
+- Un gros catalogue (ex. 14 bénéfices à ajouter) = 1 sous-commit par groupe de 2-3 entrées
+- Si un fichier fait > 500 lignes à éditer, splitter en plusieurs Edit tool calls
+
+Cette règle a été demandée par l'utilisateur le 14/04/2026 suite à un bug sur une grande opération.
+
 ## Post-merge audit léger (checklist)
 
 Après chaque merge vers main :
