@@ -12,6 +12,11 @@ function makeFile(name: string, type: string, size: number): File {
   const buf = new Uint8Array(size)
   const sig = MAGIC[type]
   if (sig) sig.forEach((b, i) => { buf[i] = b })
+  // WEBP requires 'WEBP' at offset 8 in addition to RIFF at offset 0
+  if (type === 'image/webp' && size >= 12) {
+    const webp = [0x57, 0x45, 0x42, 0x50]
+    webp.forEach((b, i) => { buf[8 + i] = b })
+  }
   return new File([buf], name, { type })
 }
 
