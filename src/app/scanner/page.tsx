@@ -612,7 +612,7 @@ function LeaseResults({ data }: { data: LeaseAnalysis }) {
       {data.abusiveClauses && data.abusiveClauses.length > 0 && (
         <div className="space-y-2">
           <h4 className="font-semibold text-neutral-900 text-sm">Clauses problématiques</h4>
-          {data.abusiveClauses.map((clause: any, idx: number) => (
+          {data.abusiveClauses.map((clause, idx) => (
             <div
               key={idx}
               className="card p-3 bg-danger/5 border-l-4 border-l-danger"
@@ -673,7 +673,7 @@ function TerminationResults({ data }: { data: TerminationAnalysis }) {
       {data.legalComplianceIssues && data.legalComplianceIssues.length > 0 && (
         <div className="space-y-2">
           <h4 className="font-semibold text-neutral-900 text-sm">Problèmes légaux</h4>
-          {data.legalComplianceIssues.map((issue: any, idx: number) => (
+          {data.legalComplianceIssues.map((issue, idx) => (
             <div
               key={idx}
               className={clsx(
@@ -733,6 +733,12 @@ function Badge({ label, color }: BadgeProps) {
 // Helpers for extracting alerts
 // ============================================================
 
+interface Alert {
+  message: string
+  severity: "high" | "medium" | "low"
+  recommendation?: string
+}
+
 function hasAlerts(data: DocumentAnalysis): boolean {
   if ("alerts" in data && Array.isArray(data.alerts) && data.alerts.length > 0) {
     return true;
@@ -740,9 +746,9 @@ function hasAlerts(data: DocumentAnalysis): boolean {
   return false;
 }
 
-function getAlerts(data: DocumentAnalysis): any[] {
+function getAlerts(data: DocumentAnalysis): Alert[] {
   if ("alerts" in data && Array.isArray(data.alerts)) {
-    return data.alerts;
+    return data.alerts as Alert[];
   }
   return [];
 }

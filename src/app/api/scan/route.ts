@@ -144,8 +144,23 @@ export async function POST(req: NextRequest) {
     const processingTime = Date.now() - startTime;
     timing(`claude_complete (${processingTime}ms)`);
 
-    const rawText =
-      message.content[0].type === "text" ? message.content[0].text : "";
+    // Defensive: guard against empty or non-text Claude responses
+    if (!message.content || message.content.length === 0) {
+      console.error("[/api/scan] Empty Claude response:", message);
+      return NextResponse.json(
+        { error: "Réponse vide du service d'analyse. Réessayez dans quelques instants." },
+        { status: 502 }
+      );
+    }
+    if (message.content[0].type !== "text") {
+      console.error("[/api/scan] Non-text Claude response block:", message.content[0].type);
+      return NextResponse.json(
+        { error: "Format de réponse inattendu du service d'analyse." },
+        { status: 502 }
+      );
+    }
+
+    const rawText = message.content[0].text;
 
     // Strip possible markdown fences
     const cleaned = rawText
@@ -156,28 +171,27 @@ export async function POST(req: NextRequest) {
     let data: DocumentAnalysis;
     try {
       data = JSON.parse(cleaned);
-    } catch {
+    } catch (parseErr) {
+      console.error("[/api/scan] JSON parse failed:", parseErr, "rawText:", rawText.slice(0, 500));
       return NextResponse.json(
-        {
-          error: "Impossible de parser la réponse de l'IA",
-          raw: rawText,
-        },
+        { error: "Impossible de parser la réponse de l'IA. Réessayez avec un document plus clair." },
         { status: 422 }
       );
     }
 
     // Calculate confidence score (0-100)
-    // Higher confidence if all critical fields are present
     const confidenceScore = calculateConfidenceScore(data, documentType);
 
-    // Increment usage counter
-    await incrementUsage(supabase, user.id, 'documents_analyzed');
+    // Increment usage counter (non-critical — log but don't fail the request)
+    incrementUsage(supabase, user.id, 'documents_analyzed').catch(err => {
+      console.error("[/api/scan] incrementUsage failed:", err);
+    });
     timing("TOTAL_RESPONSE");
 
+    // Note: rawTranslation omitted from response to avoid leaking raw AI output
     return NextResponse.json({
       documentType,
       data,
-      rawTranslation: rawText,
       confidenceScore,
       processingTime,
     });
