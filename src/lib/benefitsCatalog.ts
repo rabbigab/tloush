@@ -2157,6 +2157,104 @@ const UTILITY_BENEFITS: BenefitDefinition[] = [
     tax_year: 2026,
     notes: 'Ajout catalogue 14/04/2026. Entree matchee sur retraites (cas le plus frequent). Les autres categories eligibles sont mentionnees dans la description.',
   },
+  {
+    slug: 'rav_kav_senior_free',
+    category: 'retirement',
+    authority: 'other',  // Ministry of Transport
+    title_fr: 'Transport public GRATUIT seniors 67+ (reforme 2025)',
+    title_he: 'נסיעה חינם בתחבורה ציבורית לאזרחים ותיקים',
+    description_fr: 'Depuis janvier 2025, tous les residents 67+ voyagent GRATUITEMENT sur l\'ensemble du reseau de transport public israelien (bus, train, tramway, cable car) — pas de reduction, gratuite totale.',
+    full_description_fr:
+      'Reforme "Tsedek Tkhbura" (Transport Justice) phase 2, effective depuis le 25 avril 2025 : ' +
+      'abaissement du seuil de gratuite de 75 ans a 67 ans. ' +
+      '500 000 seniors supplementaires ont gagne ce droit en une seule reforme. ' +
+      'Champ d\'application : bus (Egged, Dan, Superbus, Metropoline), train (Israel Railways), ' +
+      'tramway (Jerusalem Light Rail, Tel Aviv Purple Line), cable car Haifa. ' +
+      'Procedure : demander le profil "Golden Rav-Kav" dans n\'importe quel centre Rav-Kav ou ' +
+      'point de vente en presentant sa carte d\'identite. Active immediatement. ' +
+      'Economie reelle : un senior utilisateur regulier du transport public epargne typiquement ' +
+      '3 000-6 000 NIS par an selon son usage (equivalent d\'un abonnement mensuel illimite).',
+    conditions: {
+      min_age: 67,
+      requires_resident: true,
+    },
+    estimated_annual_value: 4000,  // usage typique senior actif
+    value_unit: 'NIS/an (gratuite totale, economie reelle 3 000 - 6 000)',
+    application_url: 'https://ravkavonline.co.il/en/75',
+    action_label: 'Activer le Golden Rav-Kav',
+    info_url: 'https://www.gov.il/en/service/public_transportation_fare_discount_for_special_populations',
+    disclaimer:
+      'GRATUITE TOTALE depuis janvier 2025 (anciennement 75+ avant la reforme). Demande unique a un centre Rav-Kav avec carte d\'identite. Beaucoup de seniors ignorent la reforme et continuent de payer plein tarif.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-14',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 14/04/2026. Source verifiee via davar1.co.il + ravkavonline.co.il + shemesh.co.il. Reforme "Tsedek Tkhbura" phase 2 effective 25/04/2025. Age abaisse de 75 a 67. 500 000 beneficiaires supplementaires.',
+  },
+  {
+    slug: 'rav_kav_disability_discount',
+    category: 'health',
+    authority: 'other',  // Ministry of Transport
+    title_fr: 'Reduction 50% transport public pour handicapes',
+    title_he: 'הנחה 50% בתחבורה ציבורית לנכים',
+    description_fr: '50% de reduction sur les billets simples (pas sur les abonnements mensuels) pour les personnes avec attestation d\'invalidite BL. Gratuite totale uniquement pour les malvoyants.',
+    full_description_fr:
+      'Profil "nekhut" (handicap) sur la carte Rav-Kav donnant : ' +
+      '- 50% de reduction sur chaque trajet (billet simple uniquement, pas sur abonnement) ' +
+      '- Gratuite totale pour les porteurs d\'attestation de cecite (Vision Loss Certificate) ' +
+      '- Accompagnateur a 50% pour les aveugles ' +
+      'Eligibilite : attestation d\'invalidite delivree par Bituach Leumi (teudat nekhoot) avec date d\'expiration valide. ' +
+      'Procedure : activation du profil handicape a un centre Rav-Kav avec la teudat nekhoot. ' +
+      'Note importante : la reduction 50% est appliquee trajet par trajet, non sur les abonnements. ' +
+      'Les beneficiaires Hashlamat Hachnasa ont la meme reduction 50% via un profil separe.',
+    conditions: {
+      min_disability: 40,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2000,
+    value_unit: 'NIS/an (50% sur trajets, gratuit si cecite)',
+    application_url: 'https://ravkavonline.co.il/en/ravkav-free-rides',
+    action_label: 'Activer profil handicape Rav-Kav',
+    info_url: 'https://www.gov.il/en/service/public_transportation_fare_discount_for_special_populations',
+    disclaimer:
+      'Reduction 50% uniquement sur les billets unitaires (trajet simple), PAS sur les abonnements mensuels illimites. Seuls les aveugles (attestation de cecite) beneficient de la gratuite complete. Necessite la teudat nekhoot BL avec date d\'expiration valide.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-14',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 14/04/2026. Source verifiee via ravkavonline.co.il + gov.il. Correction importante : NON gratuit pour 100% tleya (hors cecite). La reduction est trajet par trajet, pas sur abonnement — beaucoup confondent.',
+  },
+  {
+    slug: 'rav_kav_discharged_soldier',
+    category: 'military',
+    authority: 'other',  // Ministry of Transport
+    title_fr: 'Transport public gratuit 1 an apres service militaire',
+    title_he: 'נסיעה חינם לחיילים משוחררים',
+    description_fr: 'Transport public completement gratuit pendant 12 mois apres la date de demobilisation, pour les soldats et volontaires Sherut Leumi. Profil "Meshukhrar" sur Rav-Kav.',
+    full_description_fr:
+      'Droit national accorde aux chayalim meshukhrareem (soldats demobilises) et aux volontaires ' +
+      'Sherut Leumi ayant termine leur service : gratuite totale sur tout le reseau de transport public ' +
+      'pendant 12 mois a compter de la date de demobilisation. ' +
+      'Procedure : activer le profil "Meshukhrar" sur la carte Rav-Kav en presentant le ' +
+      'Teudat Shikhrur (certificat de demobilisation) dans un centre Rav-Kav. ' +
+      'Bonus : cumulable avec le Pikadon HaShikhrur et le Sal Klita pour les olim soldats solitaires.',
+    conditions: {
+      requires_idf_service: true,
+      max_age: 30,  // typiquement demobilises recents
+    },
+    estimated_annual_value: 4000,
+    value_unit: 'NIS (gratuite totale pendant 12 mois post-service)',
+    application_url: 'https://ravkavonline.co.il/en/ravkav-free-rides',
+    action_label: 'Activer profil Meshukhrar Rav-Kav',
+    info_url: 'https://www.gov.il/en/service/public_transportation_fare_discount_for_special_populations',
+    disclaimer:
+      'Droit limite a 12 mois post-service. Activation une seule fois au centre Rav-Kav avec le Teudat Shikhrur. Si vous avez servi et avez encore le certificat : verifiez si les 12 mois sont encore ouverts.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-14',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 14/04/2026. Source verifiee via ravkavonline.co.il. Droit peu connu des olim soldats solitaires. max_age: 30 est une approximation pour limiter aux cas plausibles (service typiquement entre 18-24).',
+  },
 ]
 
 // =====================================================
