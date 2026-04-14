@@ -159,6 +159,28 @@ export async function POST() {
     )
   }
 
+  // 4b. Supprimer les droits obsoletes — ceux qui etaient en DB mais plus
+  // detectes par le moteur (apres changement de profil ou correction d'une
+  // regle). On preserve les lignes dont le user a un statut non-suggested
+  // (claimed/dismissed/verified) pour ne pas effacer son historique.
+  const detectedSlugs = new Set(detected.map(b => b.slug))
+  const staleSlugs = (existingRows || [])
+    .filter(row => !detectedSlugs.has(row.right_slug) && row.status === 'suggested')
+    .map(row => row.right_slug)
+
+  if (staleSlugs.length > 0) {
+    const { error: deleteError } = await supabase
+      .from('detected_rights')
+      .delete()
+      .eq('user_id', user.id)
+      .in('right_slug', staleSlugs)
+
+    if (deleteError) {
+      console.error('[rights-detector POST] stale rights delete failed:', deleteError)
+      // Non-bloquant : on continue avec les bonnes donnees upsert
+    }
+  }
+
   // 5. Retourner la liste a jour
   const { data: final, error: finalError } = await supabase
     .from('detected_rights')
