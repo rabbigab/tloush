@@ -1375,6 +1375,44 @@ const OLEH_2026_BENEFITS: BenefitDefinition[] = [
     notes: 'Loi adoptee fin 2025. Piege reporting ajoute apres audit 13/04/2026 : declaration obligatoire des revenus/actifs mondiaux des 2026 malgre l\'exemption d\'impot.',
   },
   {
+    slug: 'reforme_fiscale_olim_2026',
+    category: 'immigration',
+    authority: 'tax_authority',
+    title_fr: 'Reforme fiscale olim 2026 — Exemption revenus ISRAELIENS (phase 5 ans)',
+    title_he: 'רפורמת המיסוי לעולים חדשים 2026',
+    description_fr: 'Reforme majeure 2026 : les nouveaux olim arrives apres novembre 2025 beneficient d\'une exemption progressive d\'impot sur leurs revenus ISRAELIENS (salaire israelien, remote work, etc.), degressive sur 5 ans : jusqu\'a 1 million NIS/an exempt la 1ere annee.',
+    full_description_fr:
+      'Reforme inedite : jusqu\'a present, l\'exemption 10 ans des olim ne concernait que les revenus ETRANGERS. ' +
+      'La nouvelle loi 2026 ajoute une exemption sur les revenus ISRAELIENS (salaire chez un employeur israelien, freelance locale, remote work pour une societe etrangere paye en NIS, etc.). ' +
+      'Phases officielles de l\'exemption (plafond annuel exonere d\'impot sur le revenu israelien) : ' +
+      '- Annee fiscale 2026-2027 : jusqu\'a 1 000 000 NIS exonere ' +
+      '- Annee fiscale 2028 : jusqu\'a 600 000 NIS exonere ' +
+      '- Annee fiscale 2029 : jusqu\'a 350 000 NIS exonere ' +
+      '- Annee fiscale 2030 : jusqu\'a 150 000 NIS exonere ' +
+      '- Au-dela de 2030 : fin de l\'exemption supplementaire (seule l\'exemption 10 ans sur revenus etrangers reste active). ' +
+      'Eligibilite : ' +
+      '- Nouveaux olim arrives APRES novembre 2025 (olim avant cette date restent sur l\'ancien regime) ' +
+      '- Toshavim chozrim vatikim (residents revenus apres 10 ans minimum a l\'etranger) ' +
+      'La reforme est retroactive : un oleh arrive en decembre 2025 peut beneficier de l\'exemption 2026 des son arrivee. ' +
+      'Economie potentielle sur un salaire israelien de 30 000 NIS/mois (360 000 NIS/an), marginal 47% : ~170 000 NIS d\'impots economises en 2026-2027 seul.',
+    conditions: {
+      requires_oleh: true,
+      aliyah_years_range: [0, 1],  // olim arrives fin 2025 ou 2026 (en date d'avril 2026)
+    },
+    estimated_annual_value: 170000,  // pour un salaire 30kNIS/mois typique
+    value_unit: 'NIS/an (economie d\'impot selon salaire, jusqu\'a 470k si salaire 1M+)',
+    application_url: 'https://www.gov.il/en/pages/tax-reforms-for-new-olim',
+    action_label: 'Infos reforme fiscale olim 2026',
+    info_url: 'https://www.nbn.org.il/life-in-israel/finances/taxes/',
+    disclaimer:
+      'ATTENTION : reforme limitee aux olim arrives APRES Novembre 2025. Si votre alyah est anterieure, vous restez sur l\'ancien regime (exemption 10 ans sur revenus ETRANGERS uniquement). Consultez imperativement un yoetz mas (conseiller fiscal) specialise olim avant toute declaration ou decision de carriere — la loi a ete adoptee fin 2025 et les modalites precises peuvent evoluer. Non cumulable avec d\'autres regimes d\'exemption hors olim.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-14',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 14/04/2026. Source utilisateur : gov.il/en/pages/tax-reforms-for-new-olim. Verifie aussi via timesofisrael.com/israel-unveils-0-tax-rate-for-2026s-immigrants + pstein.com/blog/the-proposed-2026-israel-tax-reform-for-new-olim. Confidence medium car la loi est recente et les modalites precises peuvent avoir evolue depuis l\'adoption fin 2025.',
+  },
+  {
     slug: 'oleh_bituach_leumi_exemption_us',
     category: 'immigration',
     authority: 'bituach_leumi',
