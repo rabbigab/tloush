@@ -11,12 +11,17 @@ interface ExtractionReviewFormProps {
   onConfirm: (updated: PayrollDocument) => void;
 }
 
+function fieldId(label: string) {
+  return 'field-' + label.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-')
+}
+
 function NumericField({ label, value, onChange, unit = "₪" }: { label: string; value: number | null; onChange: (v: number | null) => void; unit?: string; }) {
+  const id = fieldId(label)
   return (
     <div>
-      <label className="block text-xs font-medium text-neutral-600 mb-1">{label}</label>
+      <label htmlFor={id} className="block text-xs font-medium text-neutral-600 mb-1">{label}</label>
       <div className="relative">
-        <input type="number" className="input-field pr-10 text-sm" placeholder="Non détecté" value={value ?? ""} onChange={(e) => onChange(e.target.value === "" ? null : Number(e.target.value))} />
+        <input id={id} type="number" className="input-field pr-10 text-sm" placeholder="Non détecté" value={value ?? ""} onChange={(e) => onChange(e.target.value === "" ? null : Number(e.target.value))} />
         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs">{unit}</span>
       </div>
     </div>
@@ -24,10 +29,11 @@ function NumericField({ label, value, onChange, unit = "₪" }: { label: string;
 }
 
 function TextField({ label, value, onChange, placeholder }: { label: string; value: string | null; onChange: (v: string | null) => void; placeholder?: string; }) {
+  const id = fieldId(label)
   return (
     <div>
-      <label className="block text-xs font-medium text-neutral-600 mb-1">{label}</label>
-      <input type="text" className="input-field text-sm" placeholder={placeholder ?? "Non détecté"} value={value ?? ""} onChange={(e) => onChange(e.target.value === "" ? null : e.target.value)} />
+      <label htmlFor={id} className="block text-xs font-medium text-neutral-600 mb-1">{label}</label>
+      <input id={id} type="text" className="input-field text-sm" placeholder={placeholder ?? "Non détecté"} value={value ?? ""} onChange={(e) => onChange(e.target.value === "" ? null : e.target.value)} />
     </div>
   );
 }
