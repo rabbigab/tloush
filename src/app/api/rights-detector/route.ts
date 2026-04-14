@@ -174,7 +174,23 @@ export async function POST() {
     )
   }
 
-  const totalValue = detected.reduce((sum, b) => sum + (b.estimated_value || 0), 0)
+  // Ne comptabiliser dans le total annuel QUE les benefices recurrents
+  // (unite /an ou /mois). Les economies one-shot (mashkanta, reduction achat...)
+  // sont affichees sur leur carte mais exclues du total pour ne pas gonfler
+  // artificiellement la "valeur annuelle potentielle".
+  const isAnnualRecurring = (unit: string | undefined | null): boolean => {
+    if (!unit) return false
+    const u = unit.toLowerCase()
+    return u.includes('/an') || u.includes('/mois') || u.includes('/year') || u.includes('/month')
+  }
+  const totalValue = detected.reduce((sum, b) => {
+    if (!b.estimated_value) return sum
+    if (!isAnnualRecurring(b.value_unit)) return sum
+    // Si /mois → convertir en annuel
+    const u = (b.value_unit || '').toLowerCase()
+    const multiplier = u.includes('/mois') || u.includes('/month') ? 12 : 1
+    return sum + b.estimated_value * multiplier
+  }, 0)
 
   return NextResponse.json({
     rights: final || [],

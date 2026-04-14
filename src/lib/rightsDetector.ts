@@ -235,6 +235,20 @@ function matchProfile(
     }
   }
 
+  // Niveau d'etudes requis (ex. ['ba','ma','phd'] pour les credits diplome)
+  if (conditions.required_education_levels && conditions.required_education_levels.length > 0) {
+    totalChecks++
+    if (
+      profile.education_level &&
+      (conditions.required_education_levels as string[]).includes(profile.education_level)
+    ) {
+      passedChecks++
+      reasons.push(`Niveau d'etudes: ${profile.education_level}`)
+    } else {
+      return { matches: false, score: 0, reasons: [] }
+    }
+  }
+
   // Shoah
   if (conditions.requires_holocaust_survivor) {
     totalChecks++

@@ -87,6 +87,8 @@ export interface EligibilityConditions {
   requires_disabled_child?: boolean
   /** Doit etre aidant familial */
   requires_caregiver?: boolean
+  /** Niveau(x) d'etudes requis (ex. ['ba', 'ma', 'phd']) */
+  required_education_levels?: Array<'none' | 'high_school' | 'vocational' | 'ba' | 'ma' | 'phd' | 'other'>
 }
 
 export interface BenefitDefinition {
@@ -1029,8 +1031,9 @@ const TAX_CREDIT_BENEFITS: BenefitDefinition[] = [
       'Apres l\'obtention d\'un diplome BA, MA ou PhD, vous beneficiez d\'un point de credit fiscal supplementaire (+2 904 NIS/an) pour une duree definie : ' +
       '1 an pour BA, 2 ans pour MA, 3 ans pour PhD. ' +
       'Valable meme si vous avez obtenu votre diplome a l\'etranger. ' +
-      'La demande se fait aupres du Rashut HaMisim avec copie du diplome traduite en hebreu.',
-    conditions: { requires_resident: true },
+      'La demande se fait aupres du Rashut HaMisim avec copie du diplome traduite en hebreu. ' +
+      'Le baccalaureat francais (equivalent teudat bagrout) n\'ouvre PAS droit a ce credit — seuls les diplomes post-secondaires sont eligibles.',
+    conditions: { requires_resident: true, required_education_levels: ['ba', 'ma', 'phd'] },
     estimated_annual_value: 2904,
     value_unit: 'NIS/an',
     application_url: 'https://www.gov.il/en/service/tax-credit',

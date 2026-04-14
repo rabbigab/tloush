@@ -198,9 +198,19 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
     return true
   })
 
+  // Total annuel = uniquement les benefices recurrents (unite /an ou /mois).
+  // Les economies one-shot (mashkanta olim, reduction achat immo) sont visibles
+  // sur leur carte mais n'entrent pas dans la "valeur annuelle potentielle".
   const totalValue = rights
     .filter(r => r.status === 'suggested' && r.estimated_value)
-    .reduce((s, r) => s + Number(r.estimated_value || 0), 0)
+    .reduce((s, r) => {
+      const unit = (r.value_unit || '').toLowerCase()
+      const isAnnual = unit.includes('/an') || unit.includes('/year')
+      const isMonthly = unit.includes('/mois') || unit.includes('/month')
+      if (!isAnnual && !isMonthly) return s
+      const mult = isMonthly ? 12 : 1
+      return s + Number(r.estimated_value || 0) * mult
+    }, 0)
 
   if (loading) {
     return (
@@ -414,11 +424,18 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
                     <span className="text-xs text-slate-400">{CATEGORY_LABELS[r.category] || r.category}</span>
                   </div>
                   <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">{r.right_description_fr}</p>
-                  {r.estimated_value && (
-                    <p className="text-sm font-semibold text-green-600 dark:text-green-400 mb-2">
-                      ≈ {Number(r.estimated_value).toLocaleString('fr-IL')} {r.value_unit}
-                    </p>
-                  )}
+                  {r.estimated_value && (() => {
+                    const unit = (r.value_unit || '').toLowerCase()
+                    const isRecurring = unit.includes('/an') || unit.includes('/mois') || unit.includes('/year') || unit.includes('/month')
+                    return (
+                      <p className="text-sm font-semibold text-green-600 dark:text-green-400 mb-2">
+                        ≈ {Number(r.estimated_value).toLocaleString('fr-IL')} {r.value_unit}
+                        {!isRecurring && (
+                          <span className="ml-1 text-xs font-normal text-slate-500 dark:text-slate-400">(economie ponctuelle, non cumulee dans le total annuel)</span>
+                        )}
+                      </p>
+                    )
+                  })()}
                   <p className="text-xs text-slate-400 mb-3">
                     Source : {r.authority}
                   </p>
