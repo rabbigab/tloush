@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/apiAuth'
+import { getAdminClient } from '@/lib/supabase/admin'
 
 /**
  * GET  — Get current user's referral code + stats
@@ -56,70 +57,82 @@ export async function POST(req: Request) {
   if (auth instanceof NextResponse) return auth
   const { user, supabase } = auth
 
-  const { referralCode } = await req.json()
-  if (!referralCode || typeof referralCode !== 'string') {
-    return NextResponse.json({ error: 'Code de parrainage manquant' }, { status: 400 })
-  }
+  try {
+    const body = await req.json().catch(() => ({}))
+    const { referralCode } = body
+    if (!referralCode || typeof referralCode !== 'string') {
+      return NextResponse.json({ error: 'Code de parrainage manquant' }, { status: 400 })
+    }
 
-  const cleanCode = referralCode.trim().toUpperCase()
+    const cleanCode = referralCode.trim().toUpperCase()
 
-  // Prevent self-referral
-  if (cleanCode === generateCode(user.id)) {
-    return NextResponse.json({ error: 'Vous ne pouvez pas utiliser votre propre code' }, { status: 400 })
-  }
+    // Basic format check
+    if (!/^TL-[A-Z0-9]{8}$/.test(cleanCode)) {
+      return NextResponse.json({ error: 'Code de parrainage invalide' }, { status: 400 })
+    }
 
-  // Check if user was already referred
-  const { data: existing } = await supabase
-    .from('referrals')
-    .select('id')
-    .eq('referred_id', user.id)
-    .single()
+    // Prevent self-referral
+    if (cleanCode === generateCode(user.id)) {
+      return NextResponse.json({ error: 'Vous ne pouvez pas utiliser votre propre code' }, { status: 400 })
+    }
 
-  if (existing) {
-    return NextResponse.json({ error: 'Vous avez déjà utilisé un code de parrainage' }, { status: 400 })
-  }
+    // Check if user was already referred
+    const { data: existing } = await supabase
+      .from('referrals')
+      .select('id')
+      .eq('referred_id', user.id)
+      .single()
 
-  // Find the referrer by matching their code against all users
-  // Code format: TL-{first 8 chars of UUID uppercase without dashes}
-  const prefix = cleanCode.replace('TL-', '')
-  const { data: allUsers } = await supabase.auth.admin.listUsers({ perPage: 1000 })
+    if (existing) {
+      return NextResponse.json({ error: 'Vous avez déjà utilisé un code de parrainage' }, { status: 400 })
+    }
 
-  const referrer = allUsers?.users?.find(u => {
-    const uCode = u.id.replace(/-/g, '').slice(0, 8).toUpperCase()
-    return uCode === prefix
-  })
+    // Find the referrer by UUID prefix (admin client required for listUsers)
+    // Code format: TL-{first 8 chars of UUID uppercase without dashes}
+    const prefix = cleanCode.replace('TL-', '').toLowerCase()
+    const adminClient = getAdminClient()
+    const { data: allUsers } = await adminClient.auth.admin.listUsers({ perPage: 1000 })
 
-  if (!referrer) {
-    return NextResponse.json({ error: 'Code de parrainage invalide' }, { status: 404 })
-  }
-
-  // Create referral record
-  await supabase.from('referrals').insert({
-    referrer_id: referrer.id,
-    referred_id: user.id,
-    referral_code: cleanCode,
-    referred_upgraded: false,
-  })
-
-  // Grant +1 bonus analysis to the referrer
-  const { data: existingBonus } = await supabase
-    .from('referral_bonuses')
-    .select('id, bonus_analyses')
-    .eq('user_id', referrer.id)
-    .single()
-
-  if (existingBonus) {
-    await supabase
-      .from('referral_bonuses')
-      .update({ bonus_analyses: (existingBonus.bonus_analyses || 0) + 1, updated_at: new Date().toISOString() })
-      .eq('id', existingBonus.id)
-  } else {
-    await supabase.from('referral_bonuses').insert({
-      user_id: referrer.id,
-      bonus_analyses: 1,
-      free_months_earned: 0,
+    const referrer = allUsers?.users?.find(u => {
+      const uCode = u.id.replace(/-/g, '').slice(0, 8)
+      return uCode === prefix
     })
-  }
 
-  return NextResponse.json({ ok: true, message: 'Code appliqué ! Votre parrain reçoit 1 analyse bonus.' })
+    if (!referrer) {
+      return NextResponse.json({ error: 'Code de parrainage invalide' }, { status: 404 })
+    }
+
+    // Create referral record
+    await supabase.from('referrals').insert({
+      referrer_id: referrer.id,
+      referred_id: user.id,
+      referral_code: cleanCode,
+      referred_upgraded: false,
+    })
+
+    // Grant +1 bonus analysis to the referrer
+    const { data: existingBonus } = await supabase
+      .from('referral_bonuses')
+      .select('id, bonus_analyses')
+      .eq('user_id', referrer.id)
+      .single()
+
+    if (existingBonus) {
+      await supabase
+        .from('referral_bonuses')
+        .update({ bonus_analyses: (existingBonus.bonus_analyses || 0) + 1, updated_at: new Date().toISOString() })
+        .eq('id', existingBonus.id)
+    } else {
+      await supabase.from('referral_bonuses').insert({
+        user_id: referrer.id,
+        bonus_analyses: 1,
+        free_months_earned: 0,
+      })
+    }
+
+    return NextResponse.json({ ok: true, message: 'Code appliqué ! Votre parrain reçoit 1 analyse bonus.' })
+  } catch (err) {
+    console.error('[referral POST] unexpected:', err)
+    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
+  }
 }

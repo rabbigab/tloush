@@ -61,6 +61,7 @@ export async function POST(req: Request) {
   if (auth instanceof NextResponse) return auth
   const { user, supabase } = auth
 
+  try {
   const body = await req.json().catch(() => ({}))
   const {
     start_date,
@@ -119,6 +120,10 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json({ period: data })
+  } catch (err) {
+    console.error('[miluim POST] unexpected:', err)
+    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
+  }
 }
 
 // =====================================================
@@ -130,19 +135,24 @@ export async function DELETE(req: Request) {
   if (auth instanceof NextResponse) return auth
   const { user, supabase } = auth
 
-  const url = new URL(req.url)
-  const id = url.searchParams.get('id')
-  if (!id) return NextResponse.json({ error: 'ID requis' }, { status: 400 })
+  try {
+    const url = new URL(req.url)
+    const id = url.searchParams.get('id')
+    if (!id) return NextResponse.json({ error: 'ID requis' }, { status: 400 })
 
-  const { error } = await supabase
-    .from('miluim_periods')
-    .delete()
-    .eq('id', id)
-    .eq('user_id', user.id)
+    const { error } = await supabase
+      .from('miluim_periods')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id)
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    console.error('[miluim DELETE] unexpected:', err)
+    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
   }
-
-  return NextResponse.json({ success: true })
 }
