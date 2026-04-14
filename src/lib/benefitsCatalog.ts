@@ -630,6 +630,47 @@ const DISABILITY_BENEFITS: BenefitDefinition[] = [
     tax_year: 2026,
     notes: 'Valeurs kolzchut + btl.gov.il 2026 verifiees par navigateur reel (Claude cowork 13/04/2026). Fourchette 1 807-6 493 NIS/mois, pret ~90 000 NIS (reforme en cours).',
   },
+  {
+    slug: 'gimlat_sicud',
+    category: 'health',
+    authority: 'bituach_leumi',
+    title_fr: 'Allocation d\'autonomie / aide a domicile (Gimlat Sicud)',
+    title_he: 'גמלת סיעוד',
+    description_fr: 'Allocation BL pour personnes agees (67+) ou handicapees necessitant une aide pour les gestes de la vie quotidienne. Versee en heures d\'aide a domicile (non en argent).',
+    full_description_fr:
+      'Programme BL majeur pour les seniors dependants : entre 5 et 30 heures d\'aide a domicile par semaine selon le niveau de dependance evalue. ' +
+      'Conditions : ' +
+      '- Age 67+ (pour les femmes, des 62 ans dans certains cas) OU handicap severe <67 ans ' +
+      '- Resident israelien ' +
+      '- Besoin d\'aide evalue par travailleur social BL (grille ADL : eating, dressing, bathing, mobility, toilet, transfert) ' +
+      '- Revenus sous un seuil (plafond ~12 800 NIS/mois individu, ~19 200 couple en 2026) ' +
+      'Niveau d\'aide selon score ADL : ' +
+      '- Niveau 1 : 5.5h/semaine ' +
+      '- Niveau 2 : 12h/semaine ' +
+      '- Niveau 3 : 18h/semaine ' +
+      '- Niveau 4 : 23h/semaine ' +
+      '- Niveau 5 : 30h/semaine (dependance lourde) ' +
+      '- Niveau 6 : 30h + soins infirmiers ' +
+      'Valeur monetaire : 5h/sem ≈ 2 500 NIS/mois de services, 30h/sem ≈ 15 000 NIS/mois. ' +
+      'L\'aide est versee en nature via une agence agreee par BL (Matav, Natali, Danel, etc.). Le beneficiaire ne touche pas l\'argent mais recoit les heures d\'aide.',
+    conditions: {
+      min_age: 67,
+      requires_resident: true,
+    },
+    estimated_annual_value: 5000 * 12,  // niveau moyen 2-3
+    typical_monthly_amount: 5000,
+    value_unit: 'NIS/an en services (2 500 - 15 000 NIS/mois selon niveau)',
+    application_url: 'https://www.btl.gov.il/benefits/Long_Term_Care/Pages/default.aspx',
+    action_label: 'Demander gimlat sicud',
+    info_url: 'https://www.kolzchut.org.il/he/גמלת_סיעוד',
+    disclaimer:
+      'Allocation en nature (heures d\'aide a domicile), pas en argent. Evaluation par travailleur social BL a domicile. Possibilite de choisir son agence et parfois son aide personnellement. Pre-requis : etre chez soi (pas en institution). Les personnes avec handicap severe <67 peuvent aussi etre eligibles sous autre base legale.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-14',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 14/04/2026. Un des plus gros postes BL, largement sous-utilise. Beaucoup de seniors ne savent pas qu\'ils y ont droit ou hesitent a demander l\'evaluation. Gap majeur pre-existant.',
+  },
 ]
 
 // =====================================================
@@ -1133,6 +1174,43 @@ const TAX_CREDIT_BENEFITS: BenefitDefinition[] = [
     confidence: 'high',
     status: 'verified',
     verified_at: '2026-04-12',
+  },
+  {
+    slug: 'hachzar_mas',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Remboursement d\'impot sur le revenu (Hachzar Mas)',
+    title_he: 'החזר מס הכנסה',
+    description_fr: 'Les salaries peuvent demander un remboursement des trop-percus d\'impot sur le revenu jusqu\'a 6 ans en arriere, pour les credits non declares au tofes 101 (naissance d\'enfant, divorce, diplome, alyah, etc.).',
+    full_description_fr:
+      'Beaucoup de salaries israeliens ignorent qu\'ils peuvent recuperer des impots trop-percus. ' +
+      'Causes courantes de trop-percu : ' +
+      '- Changement de situation en cours d\'annee non declare a l\'employeur (naissance d\'enfant, mariage, divorce, obtention d\'un diplome) ' +
+      '- Oleh qui n\'a pas applique ses points de credit olim (+3 pts la premiere annee et demie) ' +
+      '- Conge maternite ou arret maladie avec salaires multiples employeurs ' +
+      '- Travail sur une partie de l\'annee seulement ' +
+      '- Dons caritatifs (>190 NIS donnent droit a 35% de credit fiscal) ' +
+      '- Assurance vie / pension privee (jusqu\'a 5% credit) ' +
+      '- Frais medicaux importants non rembourses ' +
+      'Procedure : remplir le formulaire 135 (tofes 135) en ligne sur gov.il. Delai de traitement : 2-8 mois. ' +
+      'Retroactivite : vous pouvez reclamer les 6 dernieres annees fiscales (2020-2025 en 2026). ' +
+      'Remboursement moyen olim : 3 000 - 10 000 NIS. Remboursement maximum : depend des trop-percus cumules.',
+    conditions: {
+      required_employment: ['employed', 'self_employed'],
+      requires_resident: true,
+    },
+    estimated_annual_value: 4000,  // remboursement moyen par annee eligible
+    value_unit: 'NIS/an (moyenne, retroactivite 6 ans possible)',
+    application_url: 'https://www.gov.il/he/service/income-tax-refund',
+    action_label: 'Demander remboursement tofes 135',
+    info_url: 'https://www.kolzchut.org.il/he/החזר_מס_הכנסה',
+    disclaimer:
+      'Demande entierement en ligne via tofes 135 sur gov.il. Vous pouvez le faire seul ou via un yoetz mas (comptable fiscal). Les yoetz mas prennent 20-30% du remboursement — pour un dossier simple, faites-le vous-meme. Retroactivite 6 ans : si vous n\'avez jamais demande, vous pouvez recuperer jusqu\'a 24 000 NIS en une fois.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-14',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 14/04/2026. Gap enorme : ce droit concerne pratiquement tous les salaries, et les olim y perdent beaucoup en ne l\'utilisant pas. Valeur typique conservative (4k/an) — en realite les olim recuperent souvent 15-30k NIS sur 6 ans.',
   },
 ]
 
