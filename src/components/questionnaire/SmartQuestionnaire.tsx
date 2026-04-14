@@ -20,10 +20,12 @@ function QuestionField({
   question,
   value,
   onChange,
+  inputId,
 }: {
   question: Question;
   value: unknown;
   onChange: (v: unknown) => void;
+  inputId?: string;
 }) {
   if (question.type === "boolean") {
     return (
@@ -52,6 +54,7 @@ function QuestionField({
   if (question.type === "select" && question.options) {
     return (
       <select
+        id={inputId}
         className="input-field text-sm"
         value={(value as string) ?? ""}
         onChange={(e) => onChange(e.target.value || null)}
@@ -69,6 +72,7 @@ function QuestionField({
   if (question.type === "number") {
     return (
       <input
+        id={inputId}
         type="number"
         min={0}
         className="input-field text-sm"
@@ -84,6 +88,7 @@ function QuestionField({
   if (question.type === "date") {
     return (
       <input
+        id={inputId}
         type="date"
         className="input-field text-sm"
         value={(value as string) ?? ""}
@@ -147,22 +152,29 @@ export default function SmartQuestionnaire({
         <p className="text-sm text-neutral-500">{currentBlock.description}</p>
       </div>
       <div className="space-y-5">
-        {visibleQuestions.map((q) => (
-          <div key={q.id} className="card animate-fade-in-up">
-            <div className="mb-3">
-              <label className="font-semibold text-neutral-800 text-sm leading-snug block mb-1">
-                {q.label}{q.required && <span className="text-danger ml-1">*</span>}
-              </label>
-              {q.helpText && (
-                <div className="flex items-start gap-1.5 mt-1">
-                  <HelpCircle size={13} className="text-neutral-400 mt-0.5 shrink-0" />
-                  <p className="text-xs text-neutral-400 leading-relaxed">{q.helpText}</p>
-                </div>
-              )}
+        {visibleQuestions.map((q) => {
+          const inputId = `q-${q.id}`
+          const isInteractiveLabel = q.type !== 'boolean'
+          return (
+            <div key={q.id} className="card animate-fade-in-up">
+              <div className="mb-3">
+                <label
+                  htmlFor={isInteractiveLabel ? inputId : undefined}
+                  className="font-semibold text-neutral-800 text-sm leading-snug block mb-1"
+                >
+                  {q.label}{q.required && <span className="text-danger ml-1">*</span>}
+                </label>
+                {q.helpText && (
+                  <div className="flex items-start gap-1.5 mt-1">
+                    <HelpCircle size={13} className="text-neutral-400 mt-0.5 shrink-0" />
+                    <p className="text-xs text-neutral-400 leading-relaxed">{q.helpText}</p>
+                  </div>
+                )}
+              </div>
+              <QuestionField question={q} value={ctx[q.id]} onChange={(v) => updateCtx(q.id, v)} inputId={isInteractiveLabel ? inputId : undefined} />
             </div>
-            <QuestionField question={q} value={ctx[q.id]} onChange={(v) => updateCtx(q.id, v)} />
-          </div>
-        ))}
+          )
+        })}
       </div>
       {visibleQuestions.length === 0 && (
         <div className="card text-center py-8">
