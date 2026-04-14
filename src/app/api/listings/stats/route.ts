@@ -4,6 +4,8 @@ import { createClient } from '@supabase/supabase-js'
 /**
  * GET /api/listings/stats — Statistiques de l'aggregateur
  */
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
