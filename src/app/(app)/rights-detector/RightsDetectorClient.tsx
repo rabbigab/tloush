@@ -76,6 +76,11 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
   const [filter, setFilter] = useState<'suggested' | 'all' | 'claimed'>('suggested')
   const [error, setError] = useState('')
   const [dbError, setDbError] = useState('')
+  const [lastScanInfo, setLastScanInfo] = useState<{
+    detectedCount: number
+    totalValue: number
+    timestamp: string
+  } | null>(null)
 
   const fetchRights = useCallback(async () => {
     try {
@@ -107,6 +112,10 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
     setScanning(true)
     setError('')
     setDbError('')
+    // Scroll to top so user sees the feedback
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
     try {
       const res = await fetch('/api/rights-detector', { method: 'POST' })
       console.log('[rights-detector] scan response:', res.status)
@@ -116,15 +125,24 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
         console.error('[rights-detector scan] failed:', { status: res.status, data })
         setError(data.error || `Erreur lors du scan (HTTP ${res.status})`)
         setDbError(data.db_error || '')
+        setLastScanInfo(null)
         return
       }
+      const detectedCount = typeof data.detected_count === 'number' ? data.detected_count : (data.rights?.length || 0)
+      const totalValue = typeof data.total_estimated_annual_value === 'number' ? data.total_estimated_annual_value : 0
       setRights(data.rights || [])
-      if ((data.rights || []).length === 0 && data.detected_count === 0) {
-        setError(data.message || 'Aucun droit detecte pour votre profil actuel. Completez plus de champs pour debloquer plus de resultats.')
+      setLastScanInfo({
+        detectedCount,
+        totalValue,
+        timestamp: new Date().toISOString(),
+      })
+      if (detectedCount === 0) {
+        setError(data.message || 'Aucun droit detecte pour votre profil actuel. Completez plus de champs (annee d\'alyah, enfants, emploi, sante) pour debloquer plus de resultats.')
       }
     } catch (err) {
       console.error('[rights-detector scan] network error:', err)
       setError(`Erreur reseau : ${err instanceof Error ? err.message : String(err)}`)
+      setLastScanInfo(null)
     } finally {
       setScanning(false)
     }
@@ -233,18 +251,64 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
         expert_label="Consulter un expert"
       />
 
+      {/* Scan in progress indicator */}
+      {scanning && (
+        <div
+          className="bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-300 dark:border-blue-700 rounded-xl p-4 flex items-center gap-3"
+          role="status"
+          aria-live="polite"
+        >
+          <Loader2 size={20} className="animate-spin text-blue-600 dark:text-blue-400 shrink-0" />
+          <div>
+            <p className="font-semibold text-blue-800 dark:text-blue-200">Scan en cours...</p>
+            <p className="text-xs text-blue-600 dark:text-blue-400">Analyse de votre profil et de vos documents.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Scan success banner (when benefits were detected) */}
+      {!scanning && lastScanInfo && lastScanInfo.detectedCount > 0 && !error && (
+        <div
+          className="bg-green-50 dark:bg-green-950/30 border-2 border-green-300 dark:border-green-700 rounded-xl p-4 flex items-start gap-3"
+          role="status"
+          aria-live="polite"
+        >
+          <CheckCircle2 size={20} className="text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold text-green-800 dark:text-green-200">
+              Scan termine : {lastScanInfo.detectedCount} droit{lastScanInfo.detectedCount > 1 ? 's' : ''} detecte{lastScanInfo.detectedCount > 1 ? 's' : ''}
+            </p>
+            {lastScanInfo.totalValue > 0 && (
+              <p className="text-sm text-green-700 dark:text-green-300">
+                Valeur annuelle estimee : {Math.round(lastScanInfo.totalValue).toLocaleString('fr-IL')} ₪
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       {error && (
-        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-4 text-sm text-red-700 dark:text-red-300" role="alert" aria-live="polite">
+        <div className="bg-amber-50 dark:bg-amber-950/30 border-2 border-amber-300 dark:border-amber-700 rounded-xl p-4 text-sm text-amber-800 dark:text-amber-200" role="alert" aria-live="assertive">
           <div className="flex items-start gap-2">
-            <AlertCircle size={16} className="shrink-0 mt-0.5" />
+            <AlertCircle size={18} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
             <div className="flex-1 min-w-0">
-              <p className="font-semibold mb-1">Echec du scan</p>
+              <p className="font-semibold mb-1">
+                {lastScanInfo ? 'Scan termine' : 'Echec du scan'}
+              </p>
               <p className="text-sm">{error}</p>
               {dbError && (
                 <details className="mt-2">
                   <summary className="text-xs cursor-pointer opacity-60 hover:opacity-100">Detail technique</summary>
                   <pre className="text-xs whitespace-pre-wrap break-words font-mono mt-1 opacity-70">{dbError}</pre>
                 </details>
+              )}
+              {!lastScanInfo && (
+                <Link
+                  href="/profile/edit"
+                  className="inline-flex items-center gap-1 text-xs font-semibold mt-2 text-amber-900 dark:text-amber-100 underline"
+                >
+                  Completer mon profil
+                </Link>
               )}
             </div>
           </div>
