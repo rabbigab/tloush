@@ -109,6 +109,12 @@ export interface EligibilityConditions {
    * Age minimum specifique aux femmes (override min_age).
    */
   min_age_female?: number
+  /**
+   * Exige qu'au moins un enfant soit dans une tranche d'age (en mois).
+   * Ex. [36, 96] = enfant entre 3 et 8 ans (tsaharon).
+   * Se base sur profile.children_birth_dates.
+   */
+  requires_child_age_range_months?: [number, number]
 }
 
 export interface BenefitDefinition {
@@ -1836,7 +1842,94 @@ const COMBAT_RESERVIST_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
-// SECTION 19 — Helper functions
+// SECTION 19 — Garde d'enfants pour parents qui travaillent
+// =====================================================
+// Sources :
+// - https://www.gov.il/he/departments/bureaus/moital-childcare
+// - https://www.kolzchut.org.il/he/סבסוד_שהיית_ילדים_במעונות_יום_ובמשפחתונים
+// - Misrad HaAvoda (Ministere du Travail et des Affaires Sociales)
+//
+// Enorme trou dans le catalogue d'origine : les parents qui travaillent
+// peuvent toucher des subventions tres importantes pour la garde de leurs
+// enfants jusqu'a ~8 ans. Beaucoup d'olim ignorent ce droit car il ne
+// passe pas par Bituach Leumi mais par le Misrad HaAvoda.
+
+const CHILDCARE_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'maonot_yom',
+    category: 'family',
+    authority: 'other',  // Misrad HaAvoda
+    title_fr: 'Subvention creche / maonot yom (parents qui travaillent)',
+    title_he: 'סבסוד מעונות יום ומשפחתונים',
+    description_fr: 'Subvention pouvant couvrir jusqu\'a 75% du cout de la creche (maon yom) ou assistante maternelle (mishpachton) pour les enfants de 0 a 3 ans, pour les parents qui travaillent.',
+    full_description_fr:
+      'Subvention versee par Misrad HaAvoda aux parents d\'enfants de 3 mois a 3 ans frequentant une creche ou mishpachton agree. ' +
+      'Conditions cumulatives : ' +
+      '- Enfant age de 3 mois a 3 ans ' +
+      '- Creche/mishpachton dans la liste officielle agree ' +
+      '- Les DEUX parents travaillent (≥24h/semaine chacun) OU parent isole qui travaille OU en formation pro OU en recherche active d\'emploi via Lishkat Ta\'asuka ' +
+      'Niveau de subvention : calcule par "tau" (tranche) selon le revenu du foyer : ' +
+      '- Tau 1 (bas revenu) : jusqu\'a 85% du cout ' +
+      '- Tau moyen : 50-70% ' +
+      '- Tau haut revenu : 0% (plafond ~17k NIS/mois pour le foyer) ' +
+      'Cout typique d\'une creche agree : 3 000-4 500 NIS/mois. Economies potentielles : 1 500-3 500 NIS/mois par enfant.',
+    conditions: {
+      max_youngest_child_months: 36,  // enfant < 3 ans
+      required_employment: ['employed', 'self_employed'],
+      requires_resident: true,
+    },
+    estimated_annual_value: 2500 * 12,  // economie typique tau moyen
+    typical_monthly_amount: 2500,
+    value_unit: 'NIS/an (variable 500 - 40 000 selon tranche revenu)',
+    application_url: 'https://www.gov.il/he/service/childcare_subsidy',
+    action_label: 'Demander la subvention creche',
+    info_url: 'https://www.kolzchut.org.il/he/סבסוד_שהיית_ילדים_במעונות_יום_ובמשפחתונים',
+    disclaimer:
+      'La creche ou mishpachton DOIT etre dans la liste officielle agreee par Misrad HaAvoda. Le revenu du foyer determine la tranche (tau). Demande en ligne sur gov.il, renouvelable chaque annee scolaire. Les deux parents doivent travailler (≥24h/semaine) ou justifier recherche active.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-14',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 14/04/2026 (gap majeur). Les montants varient enormement selon le tau de revenu — la valeur indicative (30k NIS/an) correspond au tau moyen pour un foyer middle class.',
+  },
+  {
+    slug: 'tsaharon',
+    category: 'family',
+    authority: 'other',  // Misrad HaAvoda
+    title_fr: 'Subvention tsaharon (garderie apres-classe 3-8 ans)',
+    title_he: 'סבסוד צהרונים',
+    description_fr: 'Subvention du Ministere du Travail pour la garderie post-classe (tsaharon) des enfants en gan chova (3-6 ans) et premier cycle d\'ecole (6-8 ans), pour les parents qui travaillent.',
+    full_description_fr:
+      'Programme "Netz Lashon" (נתיב החיים) : subvention de Misrad HaAvoda pour les enfants en tsaharon (garderie apres-classe) de 13h30 a 17h environ. ' +
+      'Tranches eligibles : ' +
+      '- Gan hova (3-6 ans) : tsaharon dans les gardens municipaux ' +
+      '- Classes 1-2 (6-8 ans) : tsaharon dans les ecoles publiques ' +
+      'Conditions : les deux parents travaillent OU parent isole travaille. ' +
+      'Montant typique : subvention de 700-1 500 NIS/mois selon tau de revenu (le cout brut d\'un tsaharon est de 900-1 800 NIS/mois). ' +
+      'Periode : septembre-juin (annee scolaire, 10 mois).',
+    conditions: {
+      requires_child_age_range_months: [36, 96],  // 3 a 8 ans
+      required_employment: ['employed', 'self_employed'],
+      requires_resident: true,
+    },
+    estimated_annual_value: 1000 * 10,  // 10 mois d'annee scolaire
+    typical_monthly_amount: 1000,
+    value_unit: 'NIS/an (variable 3 000 - 15 000 selon tau)',
+    application_url: 'https://www.gov.il/he/service/afterschool_subsidy',
+    action_label: 'Demander la subvention tsaharon',
+    info_url: 'https://www.kolzchut.org.il/he/צהרונים',
+    disclaimer:
+      'La subvention depend de votre mairie et de votre tau de revenu. Demande au service education de la mairie ou en ligne sur gov.il. Priorite aux familles monoparentales et bas revenus. Places limitees — inscription des le printemps.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-14',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 14/04/2026. Programme gere conjointement par Misrad HaAvoda et les mairies. Les montants varient mais l\'economie annuelle typique est de 10-15k NIS pour un foyer middle class.',
+  },
+]
+
+// =====================================================
+// SECTION 20 — Helper functions
 // =====================================================
 
 /**
@@ -1968,6 +2061,7 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...HOLOCAUST_BENEFITS,
   ...STUDENT_BENEFITS,
   ...COMBAT_RESERVIST_BENEFITS,
+  ...CHILDCARE_BENEFITS,
 ]
 
 // Calcul dynamique des stats au chargement

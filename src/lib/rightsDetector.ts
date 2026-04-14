@@ -79,6 +79,27 @@ function hasChildYoungerThanMonths(
 }
 
 /**
+ * Renvoie true si un enfant est dans une tranche d'age (en mois, inclusif).
+ * Ex. [36, 96] = enfant entre 3 et 8 ans.
+ */
+function hasChildInAgeRangeMonths(
+  profile: UserProfile,
+  range: [number, number],
+  now: Date
+): boolean {
+  const [minMonths, maxMonths] = range
+  const dates = profile.children_birth_dates
+  if (!Array.isArray(dates) || dates.length === 0) return false
+  for (const d of dates) {
+    const birth = new Date(d)
+    if (isNaN(birth.getTime())) continue
+    const ageMonths = monthsBetween(birth, now)
+    if (ageMonths >= minMonths && ageMonths <= maxMonths) return true
+  }
+  return false
+}
+
+/**
  * Verifie si un profil utilisateur correspond aux conditions d'un benefice.
  * Retourne un score 0-1 et la liste des raisons.
  */
@@ -181,6 +202,18 @@ function matchProfile(
     if (hasChildYoungerThanMonths(profile, conditions.max_youngest_child_months, now)) {
       passedChecks++
       reasons.push(`Enfant < ${Math.round(conditions.max_youngest_child_months / 12)} ans`)
+    } else {
+      return { matches: false, score: 0, reasons: [] }
+    }
+  }
+
+  // Enfant dans une tranche d'age precise (tsaharon 3-8 ans, etc.)
+  if (conditions.requires_child_age_range_months) {
+    totalChecks++
+    if (hasChildInAgeRangeMonths(profile, conditions.requires_child_age_range_months, now)) {
+      passedChecks++
+      const [minM, maxM] = conditions.requires_child_age_range_months
+      reasons.push(`Enfant entre ${Math.round(minM / 12)} et ${Math.round(maxM / 12)} ans`)
     } else {
       return { matches: false, score: 0, reasons: [] }
     }
