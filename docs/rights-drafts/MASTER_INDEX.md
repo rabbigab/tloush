@@ -108,3 +108,100 @@
 ---
 
 > (Suite : sources 4-17 dans les commits suivants)
+
+---
+
+### Source 4 — Rashut HaMisim (Impôts)
+**INDEX** : `INDEX_rashut_hamis.md`
+**Couverture** : ~85%
+
+**Fiches principales** :
+- `nekudot_zikui_toshav` — Points de crédit résident (2.25-2.75 pts)
+- `nekudot_zikui_yeladim` — Points crédit enfants (2-4.5 pts selon âge)
+- `nekudot_zikui_horim_yehidim` — Points parent isolé/divorcé
+- `petur_mas_nakhut` — Exemption impôt invalidité 90%+
+- `petur_mas_shkhirat_dira` — Exemption loyers résidentiels (≤5 654 NIS/mois)
+- `zikuy_mas_priferia` — Crédit fiscal périphérie
+- `hatavat_mas_gil_60` — Taux réduits revenus capital 60+
+- `hatavot_mas_pensia_atzmai` — Déductions cotisations retraite
+- `hanakat_mas_hakhnasa_olim` — Réduction impôt olim (10 ans)
+- `mas_rechisha_olim` — Réduction droits d'achat (olim)
+- `petur_mas_hakhnasa_huhul` — Exemption impôt malade grave
+- `hanakat_mkhes_rakav` — Réduction droits d'achat véhicule (olim)
+
+---
+
+### Source 5 — Rashut leNiztolei HaShoah (Droits des survivants de la Shoah)
+**INDEX** : `INDEX_rashut_niztolei_shoah.md`
+**Couverture** : ~85%
+
+**Fiches principales** :
+- `gmala_niztolei_shoah_misrad_haotzer` — Pension mensuelle (25-100% : 2 861-7 184 NIS/mois)
+- `tagmul_niztolei_shoah_vatik` — Pension pré-1953 (barème identique)
+- `kitzva_keren_sif2_claims` — Claims Conference Article 2 (~2 670 NIS/mois)
+- `gmala_hashlama_sif2` — Supplément israélien Keren Sif 2
+- `maanak_matzeva_shoah` — Grant pierre tombale (2 022 NIS, one-shot)
+- `maanak_shnati_shoah` — Grant annuel (7 688 NIS/an)
+- `tagmul_shaarim_niztolei_shoah` — Pension conjoint survivant (2 000+ NIS/mois)
+- `hatavot_refuiot_niztolei_shoah` — Avantages médicaux (exemptions, soins)
+- `taavurot_hatavot_shoah` — Avantages utilities (électricité, eau, arnona)
+- `hanakha_arnona_niztolei_shoah` — Réduction arnona (jusqu'à 66%)
+
+---
+
+### Source 6 — Misrad HaRvaha (Bien-être social)
+**INDEX** : `INDEX_misrad_harvaha.md`
+**Couverture** : ~60%
+
+**Fiches principales** :
+- `siyua_khomri_ezrakhim_vatikim` — Aide matérielle seniors (jusqu'à 14 520 NIS/an)
+- `maanak_histaglut_nashim_alimut` — Grant réinstallation violences conjugales (~11 000 NIS)
+- `tmikha_sotsyalit_vatikim` — Soutien travailleur social senior (service)
+- `siyua_nifgeot_alimut_mishpakha` — Soutien psychologique violences (service)
+- `maanak_maavar_nashim` — Aide transition femmes en danger
+- `yetom_alimut_mishpakha` — Droits orphelins violences domestiques
+
+---
+
+### Source 7 — Misrad HaBriut (Santé publique)
+**INDEX** : `INDEX_misrad_habriut.md`
+**Couverture** : ~40%
+
+**Fiches principales** :
+- `tipulei_shinayim_vatikim` — Soins dentaires 72+ dans sal briut
+- `sal_shikum_mitmodedei_nefesh` — Panier réhabilitation psychiatrique (services en nature)
+- `sherutim_meyukhadim` — Services spéciaux enfants handicapés
+
+---
+
+### Source 8 — Misrad HaKhinukh (Éducation)
+**INDEX** : `INDEX_misrad_hakhinukh.md`
+**Couverture** : ~35%
+
+**Fiches principales** :
+- `malgot_siyua_talmidim_nezakkim` — Bourses scolaires difficultés économiques (100-1 200 NIS)
+- `minhal_hastudentim_olim` — Aide étudiants olim (université)
+
+---
+
+### Source 9 — Rashuyot Mekomiyot / Arnona (Autorités municipales)
+**INDEX** : `INDEX_rashuyot_mekomiyot.md`
+**Couverture** : ~55%
+
+**Fiches principales** :
+- `hanakha_arnona_vatikim` — Réduction arnona seniors (25-100% sur 100 m²)
+- `hanakha_arnona_nakhim` — Réduction arnona invalides Tsahal (66.66% sur 70-90 m²)
+- `hanakha_arnona_niztolei_shoah` — Réduction arnona survivants Shoah (jusqu'à 66%)
+
+---
+
+### Source 10 — Misrad HaTahbura (Transport public)
+**INDEX** : `INDEX_misrad_hatahbura.md`
+**Couverture** : ~85%
+
+**Fiches principales** :
+- `hanakha_tahbura_tziburit` — Réductions transports (33-100% selon catégorie)
+
+---
+
+> (Suite : sources 11-17 dans le commit suivant)
