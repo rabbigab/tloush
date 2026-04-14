@@ -8,8 +8,8 @@ interface UploadZoneProps {
   onFileAccepted: (file: File) => void;
 }
 
-const ACCEPTED_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
-const MAX_SIZE_MB = 10;
+const ACCEPTED_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/jpg", "image/webp"];
+const MAX_SIZE_MB = 25;
 
 export default function UploadZone({ onFileAccepted }: UploadZoneProps) {
   const [dragOver, setDragOver] = useState(false);

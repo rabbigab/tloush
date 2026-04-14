@@ -63,39 +63,59 @@ function ScannerContent() {
     setIsAnalyzing(true);
     setLocalStep("analyzing");
 
+    if (!selectedDocType) {
+      setError("Veuillez sélectionner un type de document.");
+      setLocalStep("selectType");
+      setIsAnalyzing(false);
+      return;
+    }
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 330_000);
 
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("documentType", selectedDocType || "");
+      formData.append("documentType", selectedDocType);
 
+      console.log("[scanner] POST /api/scan", { docType: selectedDocType, fileName: file.name, size: file.size });
       const response = await fetch("/api/scan", {
         method: "POST",
         body: formData,
         signal: controller.signal,
       });
+      console.log("[scanner] response status:", response.status);
 
       if (!response.ok) {
         const status = response.status;
         const data = await response.json().catch(() => ({}));
+        console.warn("[scanner] error response:", status, data);
         const msg = status === 429
           ? "Limite atteinte : 10 analyses par heure. Réessayez plus tard."
           : status === 401
-          ? "Session expirée. Veuillez vous reconnecter."
+          ? "Vous devez être connecté pour utiliser le scanner. Connectez-vous puis réessayez."
+          : status === 403
+          ? (data.error || "Accès refusé. Vérifiez votre abonnement ou votre quota.")
           : status === 413
           ? "Fichier trop volumineux (max 25 Mo)."
           : status === 504 || status === 408
           ? "L'analyse a pris trop de temps. Réessayez avec un document plus petit ou contactez le support."
-          : (data.error || "Une erreur est survenue lors de l'analyse. Réessayez ou contactez le support.");
+          : (data.error || `Une erreur est survenue lors de l'analyse (code ${status}). Réessayez ou contactez le support.`);
         throw new Error(msg);
       }
 
       const result: ScanApiResponse = await response.json();
+      console.log("[scanner] result received", { documentType: result.documentType, confidence: result.confidenceScore });
+
+      // Defensive: make sure the response has the expected shape
+      if (!result.data || !result.documentType) {
+        throw new Error("Réponse du serveur invalide. Réessayez ou contactez le support.");
+      }
+
       setAnalysisResult(result);
       setLocalStep("results");
     } catch (err) {
+      console.error("[scanner] handleFileAccepted error:", err);
       if (err instanceof Error && err.name === "AbortError") {
         setError("Le délai d'analyse a été dépassé. Réessayez avec un document plus petit ou contactez le support.");
       } else if (err instanceof TypeError && err.message.includes("fetch")) {
@@ -544,7 +564,7 @@ function TaxNoticeResults({ data }: { data: TaxNoticeAnalysis }) {
         )}
       </div>
 
-      {data.refundAmount !== undefined && (
+      {data.refundAmount !== undefined && data.refundAmount !== null && (
         <div className={clsx(
           "card p-4",
           data.refundAmount > 0 ? "bg-success/5 border-l-4 border-l-success" : "bg-warning/5 border-l-4 border-l-warning"

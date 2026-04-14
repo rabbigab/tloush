@@ -504,12 +504,12 @@ export default function AdminDashboard() {
         {/* Tabs navigation */}
         <div className="flex gap-1 border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
           {([
-            { key: 'overview', label: 'Vue d\'ensemble', Icon: TrendingUp },
-            { key: 'users', label: `Utilisateurs (${users.length})`, Icon: Users },
-            { key: 'documents', label: `Documents (${recent_documents.length})`, Icon: FileText },
+            { key: 'overview', label: 'Vue d\'ensemble', Icon: TrendingUp, badge: 0 },
+            { key: 'users', label: `Utilisateurs (${users.length})`, Icon: Users, badge: 0 },
+            { key: 'documents', label: `Documents (${recent_documents.length})`, Icon: FileText, badge: 0 },
             { key: 'feedbacks', label: 'Feedbacks', Icon: MessageSquare, badge: feedback_stats.new },
             { key: 'prestataires', label: 'Prestataires', Icon: UserCheck, badge: providerApplications.length },
-            { key: 'visiteurs', label: 'Visiteurs', Icon: Activity },
+            { key: 'visiteurs', label: 'Visiteurs', Icon: Activity, badge: 0 },
           ] as const).map(({ key, label, Icon, badge }) => (
             <button
               key={key}
@@ -518,7 +518,7 @@ export default function AdminDashboard() {
             >
               <Icon size={14} className="inline mr-1.5" />
               {label}
-              {badge !== undefined && badge > 0 && (
+              {badge > 0 && (
                 <span className="ml-1.5 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold bg-red-500 text-white rounded-full">
                   {badge}
                 </span>
