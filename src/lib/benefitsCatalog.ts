@@ -2112,7 +2112,55 @@ const CHILDCARE_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
-// SECTION 20 — Helper functions
+// SECTION 20 — Tarifs reduits (electricite, eau, transport)
+// =====================================================
+// Sources :
+// - https://www.iec.co.il/ (Israel Electric Corporation)
+// - https://www.gov.il/he/departments/ministry_of_transport
+// - https://www.kolzchut.org.il/
+//
+// Petites reductions mais cumulatives et souvent ignorees par les olim
+// (pourtant automatiques si les justificatifs sont deposes une fois).
+
+const UTILITY_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'hanacha_hashmal',
+    category: 'welfare',
+    authority: 'other',  // Israel Electric Corporation (IEC)
+    title_fr: 'Reduction facture electricite (Hanacha Hashmal)',
+    title_he: 'הנחה בחשבון חשמל',
+    description_fr: 'Reduction nationale IEC (Israel Electric Corporation) sur les 400 premiers kWh consommes chaque mois pour les retraites percevant la pension vieillesse BL.',
+    full_description_fr:
+      'Reduction automatique sur la facture d\'electricite pour les categories eligibles : ' +
+      '- Retraites 67+ percevant la pension vieillesse BL : ~50% sur 400 premiers kWh/mois ' +
+      '- Personnes handicapees 75%+ : meme taux ' +
+      '- Beneficiaires Hashlamat Hachnasa : meme taux ' +
+      '- Families 4+ enfants mineurs : meme taux ' +
+      '- Survivants de la Shoah reconnus : meme taux ' +
+      'Procedure : la reduction est automatique pour les retraites BL si la pension est enregistree chez IEC. Sinon, formulaire en ligne sur iec.co.il avec scan des justificatifs (attestation BL, carte d\'identite). Applique a compter du mois suivant. ' +
+      'Economie typique : ~100-150 NIS/mois sur la facture, soit 1 200-1 800 NIS/an.',
+    conditions: {
+      min_age: 67,
+      requires_resident: true,
+    },
+    estimated_annual_value: 100 * 12,
+    typical_monthly_amount: 100,
+    value_unit: 'NIS/an (~50% sur 400 premiers kWh)',
+    application_url: 'https://www.iec.co.il/content/discounts',
+    action_label: 'Demander la reduction electricite',
+    info_url: 'https://www.kolzchut.org.il/he/הנחה_בתעריף_החשמל',
+    disclaimer:
+      'Reduction automatique pour les retraites si leur pension BL est enregistree chez IEC. Sinon : demande en ligne avec justificatifs. Les memes droits existent pour handicapes, hashlamat, 4+ enfants et Shoah mais sont regroupes dans cette entree "retraite" pour eviter la duplication.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-14',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 14/04/2026. Entree matchee sur retraites (cas le plus frequent). Les autres categories eligibles sont mentionnees dans la description.',
+  },
+]
+
+// =====================================================
+// SECTION 21 — Helper functions
 // =====================================================
 
 /**
@@ -2245,6 +2293,7 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...STUDENT_BENEFITS,
   ...COMBAT_RESERVIST_BENEFITS,
   ...CHILDCARE_BENEFITS,
+  ...UTILITY_BENEFITS,
 ]
 
 // Calcul dynamique des stats au chargement
