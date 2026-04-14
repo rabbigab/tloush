@@ -259,7 +259,9 @@ export default function FamilySection({ userEmail }: { userEmail: string }) {
       {/* Invite form */}
       {spotsLeft > 0 && (
         <form onSubmit={handleInvite} className="flex gap-2">
+          <label htmlFor="family-invite-email" className="sr-only">Adresse email a inviter</label>
           <input
+            id="family-invite-email"
             type="email"
             value={inviteEmail}
             onChange={e => setInviteEmail(e.target.value)}

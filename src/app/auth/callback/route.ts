@@ -42,7 +42,8 @@ export async function GET(request: NextRequest) {
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!exchangeError) {
-      const redirectTo = next.startsWith('/') ? next : '/'
+      // Strict path validation: must start with '/' but NOT '//' (protocol-relative open redirect)
+      const redirectTo = /^\/[^/]/.test(next) || next === '/' ? next : '/'
       return NextResponse.redirect(`${origin}${redirectTo}`)
     }
 

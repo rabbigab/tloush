@@ -263,7 +263,7 @@ export default function MiluimClient() {
               placeholder="Ex: 15000"
               className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900"
             />
-            <p className="text-xs text-slate-400 mt-1">Pour calculer l'estimation de compensation</p>
+            <p className="text-xs text-slate-400 mt-1">Pour calculer l&apos;estimation de compensation</p>
           </div>
 
           <div>

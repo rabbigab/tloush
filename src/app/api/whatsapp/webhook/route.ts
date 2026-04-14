@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { createClient } from '@supabase/supabase-js'
+import { getAdminClient } from '@/lib/supabase/admin'
 import { WHATSAPP_SYSTEM_PROMPT } from '@/lib/prompts'
 
 /**
@@ -14,11 +14,6 @@ import { WHATSAPP_SYSTEM_PROMPT } from '@/lib/prompts'
  * 3. Set env vars: WHATSAPP_VERIFY_TOKEN, WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID
  * 4. Point webhook URL to: https://tloush.com/api/whatsapp/webhook
  */
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 // GET: Webhook verification (Meta sends this to verify the endpoint)
 export async function GET(req: NextRequest) {
@@ -173,6 +168,7 @@ async function getWhatsAppMediaUrl(mediaId: string, accessToken: string): Promis
 
 async function trackWhatsAppUsage(phone: string) {
   try {
+    const supabase = getAdminClient()
     // Find user by phone in metadata
     const { data } = await supabase.auth.admin.listUsers({ perPage: 1000 })
     const user = data?.users?.find(u =>

@@ -71,12 +71,40 @@ const KEREN_HISHTALMUT_DEFAULTS = {
 const CREDIT_POINT_VALUE_MONTHLY = 242 // ~₪2,904/year ÷ 12
 
 // Default credit points for Israeli resident
+// Schedule olim post-reforme janvier 2022 (source : cpa-dray.com, verifie 13/04/2026) :
+// - Mois 1-12  : 1 point
+// - Mois 13-30 : 3 points (18 mois)
+// - Mois 31-42 : 2 points (12 mois)
+// - Mois 43-54 : 1 point (12 mois)
+// Total : 54 mois d'eligibilite
+// IMPORTANT : les constantes year1/year2/year3/year4 ci-dessous sont une
+// approximation annuelle. Pour le calcul exact au mois, utiliser computeOlehPoints().
 const DEFAULT_CREDIT_POINTS = {
   resident: 2.25,    // All Israeli residents get 2.25 points
   woman_bonus: 0.5,  // Additional 0.5 for women
-  new_oleh_year1: 3, // New olim: 3 extra points year 1 (total ~5.25)
-  new_oleh_year2: 2, // 2 extra points year 2
-  new_oleh_year3: 1, // 1 extra point year 3
+  new_oleh_year1: 1, // Mois 1-12 : 1 point (corrige 13/04/2026 — etait 3 pre-2022)
+  new_oleh_year2: 3, // Mois 13-24 : 3 points
+  new_oleh_year3: 2.5, // Mois 25-36 : moyenne (3 pts moitie + 2 pts moitie)
+  new_oleh_year4: 1.5, // Mois 37-48 : moyenne (2 pts moitie + 1 pt moitie)
+  new_oleh_year5: 0.5, // Mois 49-54 : 1 pt sur 6 mois uniquement
+}
+
+/**
+ * Retourne le nombre de points de credit olim a appliquer selon le mois
+ * depuis l'alyah (schedule post-reforme janvier 2022).
+ *
+ * Source : cpa-dray.com, verifie par navigateur reel 13/04/2026 (Claude cowork).
+ *
+ * @param monthsSinceAliyah - Nombre de mois ecoules depuis l'alyah
+ * @returns Nombre de points de credit (0 si hors periode 54 mois)
+ */
+export function computeOlehPoints(monthsSinceAliyah: number): number {
+  if (monthsSinceAliyah < 0) return 0
+  if (monthsSinceAliyah < 12) return 1   // mois 1-12
+  if (monthsSinceAliyah < 30) return 3   // mois 13-30 (18 mois)
+  if (monthsSinceAliyah < 42) return 2   // mois 31-42 (12 mois)
+  if (monthsSinceAliyah < 54) return 1   // mois 43-54 (12 mois)
+  return 0                                // > 54 mois : plus de bonus
 }
 
 // ─── Convalescence (Dmei Havra'a) 2025 ───

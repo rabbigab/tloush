@@ -70,9 +70,10 @@ export default function MashkantaClient() {
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-6 space-y-5">
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Prix du bien</label>
+              <label htmlFor="property_price" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Prix du bien</label>
               <div className="relative">
                 <input
+                  id="property_price"
                   type="number"
                   name="property_price"
                   inputMode="decimal"
@@ -85,9 +86,10 @@ export default function MashkantaClient() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Apport personnel</label>
+              <label htmlFor="down_payment" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Apport personnel</label>
               <div className="relative">
                 <input
+                  id="down_payment"
                   type="number"
                   name="down_payment"
                   inputMode="decimal"
@@ -108,8 +110,9 @@ export default function MashkantaClient() {
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Duree (annees)</label>
+              <label htmlFor="loan_term" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Duree (annees)</label>
               <select
+                id="loan_term"
                 value={loanTermYears}
                 onChange={e => setLoanTermYears(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -120,8 +123,9 @@ export default function MashkantaClient() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Taux d&apos;interet moyen (%)</label>
+              <label htmlFor="interest_rate" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Taux d&apos;interet moyen (%)</label>
               <input
+                id="interest_rate"
                 type="number"
                 step="0.1"
                 value={interestRate}
@@ -132,9 +136,10 @@ export default function MashkantaClient() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Revenu mensuel du foyer (pour ratio endettement)</label>
+            <label htmlFor="monthly_income" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Revenu mensuel du foyer (pour ratio endettement)</label>
             <div className="relative">
               <input
+                id="monthly_income"
                 type="number"
                 name="monthly_income"
                 inputMode="decimal"

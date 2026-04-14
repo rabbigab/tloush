@@ -27,12 +27,17 @@ export async function GET() {
     return NextResponse.json({ error: 'Non autorise' }, { status: 403 })
   }
 
-  const stats = getCatalogStats()
+  try {
+    const stats = getCatalogStats()
 
-  return NextResponse.json({
-    metadata: CATALOG_METADATA,
-    summary: CATALOG_SUMMARY,
-    stats,
-    catalog: BENEFITS_CATALOG,
-  })
+    return NextResponse.json({
+      metadata: CATALOG_METADATA,
+      summary: CATALOG_SUMMARY,
+      stats,
+      catalog: BENEFITS_CATALOG,
+    })
+  } catch (err) {
+    console.error('[admin/benefits-catalog GET] unexpected:', err)
+    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
+  }
 }

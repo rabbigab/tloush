@@ -180,7 +180,7 @@ function LoginForm() {
         </div>
 
         {error && (
-          <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3 text-red-700 dark:text-red-300 text-sm">
+          <div role="alert" aria-live="polite" className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3 text-red-700 dark:text-red-300 text-sm">
             {error}
           </div>
         )}

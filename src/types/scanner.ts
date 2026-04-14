@@ -148,7 +148,6 @@ export type DocumentAnalysis =
 export interface ScanApiResponse {
   documentType: DocumentType;
   data: DocumentAnalysis;
-  rawTranslation: string;
   confidenceScore: number;            // 0–100
   processingTime: number;             // milliseconds
 }

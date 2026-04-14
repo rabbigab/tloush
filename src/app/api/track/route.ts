@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { getAdminClient } from '@/lib/supabase/admin'
 import { createHash } from 'crypto'
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 function hashIp(ip: string): string {
   return createHash('sha256').update(ip + (process.env.IP_HASH_SALT || 'tloush')).digest('hex').slice(0, 16)
 }
 
 export async function POST(req: NextRequest) {
+  const supabaseAdmin = getAdminClient()
   let body: { path?: string; referrer?: string; session_id?: string; user_id?: string }
   try {
     body = await req.json()

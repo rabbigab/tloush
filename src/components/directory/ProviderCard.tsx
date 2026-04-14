@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Star, MapPin, CheckCircle2 } from 'lucide-react'
 import { getCategoryBySlug, getProviderDisplayName, formatRating } from '@/types/directory'
 import type { Provider } from '@/types/directory'
@@ -22,9 +23,11 @@ export default function ProviderCard({ provider, topReview, topReviewAuthor }: P
       {/* Header: photo + name + badge */}
       <div className="flex items-start gap-3.5 mb-3">
         {provider.photo_url ? (
-          <img
+          <Image
             src={provider.photo_url}
             alt={displayName}
+            width={56}
+            height={56}
             className="w-14 h-14 rounded-xl object-cover shrink-0"
             loading="lazy"
           />

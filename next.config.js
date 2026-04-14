@@ -20,7 +20,13 @@ const nextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-          { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://client.crisp.chat https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://client.crisp.chat https://unpkg.com; img-src 'self' data: blob: https://*.supabase.co https://client.crisp.chat https://*.tile.openstreetmap.org https://unpkg.com https://img.yad2.co.il https://*.scontent.xx.fbcdn.net; font-src 'self' https://client.crisp.chat; connect-src 'self' https://*.supabase.co https://wss.crisp.chat https://client.crisp.chat https://api.anthropic.com https://va.vercel-scripts.com https://nominatim.openstreetmap.org; frame-src 'self' https://js.stripe.com https://game.crisp.chat; frame-ancestors 'none'" },
+          {
+            key: 'Content-Security-Policy',
+            // 'unsafe-eval' removed in production (only kept in dev for HMR)
+            value: process.env.NODE_ENV === 'development'
+              ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://client.crisp.chat https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://client.crisp.chat https://unpkg.com; img-src 'self' data: blob: https://*.supabase.co https://client.crisp.chat https://*.tile.openstreetmap.org https://unpkg.com https://img.yad2.co.il https://*.scontent.xx.fbcdn.net; font-src 'self' https://client.crisp.chat; connect-src 'self' https://*.supabase.co https://wss.crisp.chat https://client.crisp.chat https://api.anthropic.com https://va.vercel-scripts.com https://nominatim.openstreetmap.org; frame-src 'self' https://js.stripe.com https://game.crisp.chat; frame-ancestors 'none'"
+              : "default-src 'self'; script-src 'self' 'unsafe-inline' https://client.crisp.chat https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://client.crisp.chat https://unpkg.com; img-src 'self' data: blob: https://*.supabase.co https://client.crisp.chat https://*.tile.openstreetmap.org https://unpkg.com https://img.yad2.co.il https://*.scontent.xx.fbcdn.net; font-src 'self' https://client.crisp.chat; connect-src 'self' https://*.supabase.co https://wss.crisp.chat https://client.crisp.chat https://api.anthropic.com https://va.vercel-scripts.com https://nominatim.openstreetmap.org; frame-src 'self' https://js.stripe.com https://game.crisp.chat; frame-ancestors 'none'",
+          },
         ],
       },
     ];

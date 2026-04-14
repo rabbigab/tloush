@@ -1,17 +1,12 @@
 import { notFound } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
 import { getCategoryBySlug } from '@/types/directory'
 import type { ProviderReviewDisplay } from '@/types/directory'
 import type { Metadata } from 'next'
 import DirectoryProviderClient from './DirectoryProviderClient'
 import { ProviderJsonLd } from '@/components/directory/ProviderSchema'
+import { getAdminClient } from '@/lib/supabase/admin'
 
 export const revalidate = 1800
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 export async function generateMetadata({
   params,
@@ -21,7 +16,7 @@ export async function generateMetadata({
   const { categorie, slug } = await params
   const cat = getCategoryBySlug(categorie)
 
-  const { data: provider } = await supabaseAdmin
+  const { data: provider } = await getAdminClient()
     .from('providers')
     .select('first_name, last_name, service_areas, average_rating, total_reviews')
     .eq('slug', slug)
@@ -46,6 +41,8 @@ export default async function ProviderPage({
   const { categorie, slug } = await params
   const category = getCategoryBySlug(categorie)
   if (!category) notFound()
+
+  const supabaseAdmin = getAdminClient()
 
   // Fetch provider
   const { data: provider } = await supabaseAdmin

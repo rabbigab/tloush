@@ -172,7 +172,7 @@ export default function FamilyClient({ userEmail }: { userEmail: string }) {
             Plan Famille requis
           </h2>
           <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-md mx-auto">
-            Invitez jusqu'a 5 membres de votre foyer pour partager vos documents, centraliser les echeances et beneficier des analyses pour toute la famille.
+            Invitez jusqu&apos;a 5 membres de votre foyer pour partager vos documents, centraliser les echeances et beneficier des analyses pour toute la famille.
           </p>
           <Link
             href="/pricing"

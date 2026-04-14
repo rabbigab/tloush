@@ -9,7 +9,7 @@ import UploadZone from "@/components/upload/UploadZone";
 import DisclaimerBlock from "@/components/shared/DisclaimerBlock";
 import { Loader2, ChevronRight, AlertCircle, CheckCircle, Eye } from "lucide-react";
 import clsx from "clsx";
-import type { DocumentType, DocumentAnalysis, ScanApiResponse, DocumentTypeCard } from "@/types/scanner";
+import type { DocumentType, DocumentAnalysis, ScanApiResponse, DocumentTypeCard, ContractAnalysis, OfficialLetterAnalysis, TaxNoticeAnalysis, LeaseAnalysis, TerminationAnalysis } from "@/types/scanner";
 import { DOCUMENT_TYPES } from "@/types/scanner";
 
 const SCANNER_STEPS: import("@/components/shared/ProgressStepper").Step[] = [
@@ -63,39 +63,59 @@ function ScannerContent() {
     setIsAnalyzing(true);
     setLocalStep("analyzing");
 
+    if (!selectedDocType) {
+      setError("Veuillez sélectionner un type de document.");
+      setLocalStep("selectType");
+      setIsAnalyzing(false);
+      return;
+    }
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 330_000);
 
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("documentType", selectedDocType || "");
+      formData.append("documentType", selectedDocType);
 
+      console.log("[scanner] POST /api/scan", { docType: selectedDocType, fileName: file.name, size: file.size });
       const response = await fetch("/api/scan", {
         method: "POST",
         body: formData,
         signal: controller.signal,
       });
+      console.log("[scanner] response status:", response.status);
 
       if (!response.ok) {
         const status = response.status;
         const data = await response.json().catch(() => ({}));
+        console.warn("[scanner] error response:", status, data);
         const msg = status === 429
           ? "Limite atteinte : 10 analyses par heure. Réessayez plus tard."
           : status === 401
-          ? "Session expirée. Veuillez vous reconnecter."
+          ? "Vous devez être connecté pour utiliser le scanner. Connectez-vous puis réessayez."
+          : status === 403
+          ? (data.error || "Accès refusé. Vérifiez votre abonnement ou votre quota.")
           : status === 413
           ? "Fichier trop volumineux (max 25 Mo)."
           : status === 504 || status === 408
           ? "L'analyse a pris trop de temps. Réessayez avec un document plus petit ou contactez le support."
-          : (data.error || "Une erreur est survenue lors de l'analyse. Réessayez ou contactez le support.");
+          : (data.error || `Une erreur est survenue lors de l'analyse (code ${status}). Réessayez ou contactez le support.`);
         throw new Error(msg);
       }
 
       const result: ScanApiResponse = await response.json();
+      console.log("[scanner] result received", { documentType: result.documentType, confidence: result.confidenceScore });
+
+      // Defensive: make sure the response has the expected shape
+      if (!result.data || !result.documentType) {
+        throw new Error("Réponse du serveur invalide. Réessayez ou contactez le support.");
+      }
+
       setAnalysisResult(result);
       setLocalStep("results");
     } catch (err) {
+      console.error("[scanner] handleFileAccepted error:", err);
       if (err instanceof Error && err.name === "AbortError") {
         setError("Le délai d'analyse a été dépassé. Réessayez avec un document plus petit ou contactez le support.");
       } else if (err instanceof TypeError && err.message.includes("fetch")) {
@@ -405,21 +425,21 @@ function ScanResultsDisplay({ result }: ScanResultsDisplayProps) {
 
   switch (documentType) {
     case "contract":
-      return <ContractResults data={data as any} />;
+      return <ContractResults data={data as ContractAnalysis} />;
     case "officialLetter":
-      return <OfficialLetterResults data={data as any} />;
+      return <OfficialLetterResults data={data as OfficialLetterAnalysis} />;
     case "taxNotice":
-      return <TaxNoticeResults data={data as any} />;
+      return <TaxNoticeResults data={data as TaxNoticeAnalysis} />;
     case "lease":
-      return <LeaseResults data={data as any} />;
+      return <LeaseResults data={data as LeaseAnalysis} />;
     case "termination":
-      return <TerminationResults data={data as any} />;
+      return <TerminationResults data={data as TerminationAnalysis} />;
     default:
       return null;
   }
 }
 
-function ContractResults({ data }: any) {
+function ContractResults({ data }: { data: ContractAnalysis }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
@@ -481,7 +501,7 @@ function ContractResults({ data }: any) {
   );
 }
 
-function OfficialLetterResults({ data }: any) {
+function OfficialLetterResults({ data }: { data: OfficialLetterAnalysis }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
@@ -531,7 +551,7 @@ function OfficialLetterResults({ data }: any) {
   );
 }
 
-function TaxNoticeResults({ data }: any) {
+function TaxNoticeResults({ data }: { data: TaxNoticeAnalysis }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
@@ -544,7 +564,7 @@ function TaxNoticeResults({ data }: any) {
         )}
       </div>
 
-      {data.refundAmount !== undefined && (
+      {data.refundAmount !== undefined && data.refundAmount !== null && (
         <div className={clsx(
           "card p-4",
           data.refundAmount > 0 ? "bg-success/5 border-l-4 border-l-success" : "bg-warning/5 border-l-4 border-l-warning"
@@ -573,7 +593,7 @@ function TaxNoticeResults({ data }: any) {
   );
 }
 
-function LeaseResults({ data }: any) {
+function LeaseResults({ data }: { data: LeaseAnalysis }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
@@ -592,7 +612,7 @@ function LeaseResults({ data }: any) {
       {data.abusiveClauses && data.abusiveClauses.length > 0 && (
         <div className="space-y-2">
           <h4 className="font-semibold text-neutral-900 text-sm">Clauses problématiques</h4>
-          {data.abusiveClauses.map((clause: any, idx: number) => (
+          {data.abusiveClauses.map((clause, idx) => (
             <div
               key={idx}
               className="card p-3 bg-danger/5 border-l-4 border-l-danger"
@@ -607,7 +627,7 @@ function LeaseResults({ data }: any) {
   );
 }
 
-function TerminationResults({ data }: any) {
+function TerminationResults({ data }: { data: TerminationAnalysis }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
@@ -653,7 +673,7 @@ function TerminationResults({ data }: any) {
       {data.legalComplianceIssues && data.legalComplianceIssues.length > 0 && (
         <div className="space-y-2">
           <h4 className="font-semibold text-neutral-900 text-sm">Problèmes légaux</h4>
-          {data.legalComplianceIssues.map((issue: any, idx: number) => (
+          {data.legalComplianceIssues.map((issue, idx) => (
             <div
               key={idx}
               className={clsx(
@@ -713,6 +733,12 @@ function Badge({ label, color }: BadgeProps) {
 // Helpers for extracting alerts
 // ============================================================
 
+interface Alert {
+  message: string
+  severity: "high" | "medium" | "low"
+  recommendation?: string
+}
+
 function hasAlerts(data: DocumentAnalysis): boolean {
   if ("alerts" in data && Array.isArray(data.alerts) && data.alerts.length > 0) {
     return true;
@@ -720,9 +746,9 @@ function hasAlerts(data: DocumentAnalysis): boolean {
   return false;
 }
 
-function getAlerts(data: DocumentAnalysis): any[] {
+function getAlerts(data: DocumentAnalysis): Alert[] {
   if ("alerts" in data && Array.isArray(data.alerts)) {
-    return data.alerts;
+    return data.alerts as Alert[];
   }
   return [];
 }

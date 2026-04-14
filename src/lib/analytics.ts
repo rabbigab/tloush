@@ -65,7 +65,7 @@ type TloushEvent =
 
 export function track(event: TloushEvent, properties?: Record<string, unknown>) {
   try {
-    if (typeof window !== "undefined" && (window as any).__ph_initialized) {
+    if (typeof window !== "undefined" && window.__ph_initialized) {
       posthog.capture(event, properties);
     }
   } catch (_) {}
@@ -73,7 +73,7 @@ export function track(event: TloushEvent, properties?: Record<string, unknown>) 
 
 export function identifyUser(userId: string, traits?: Record<string, unknown>) {
   try {
-    if (typeof window !== "undefined" && (window as any).__ph_initialized) {
+    if (typeof window !== "undefined" && window.__ph_initialized) {
       posthog.identify(userId, traits);
     }
   } catch (_) {}

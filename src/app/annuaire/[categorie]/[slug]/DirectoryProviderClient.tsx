@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   ArrowLeft, Star, MapPin, CheckCircle2, Phone, MessageCircle,
   Globe, Clock, Info, ChevronDown, ChevronUp,
@@ -181,7 +182,7 @@ export default function DirectoryProviderClient({
       {/* Provider header */}
       <div className="flex items-start gap-4 mb-6">
         {provider.photo_url ? (
-          <img src={provider.photo_url} alt={displayName} className="w-20 h-20 rounded-2xl object-cover" />
+          <Image src={provider.photo_url} alt={displayName} width={80} height={80} className="w-20 h-20 rounded-2xl object-cover" />
         ) : (
           <div className="w-20 h-20 rounded-2xl bg-brand-100 dark:bg-brand-950/50 flex items-center justify-center text-2xl font-bold text-brand-600">
             {provider.first_name.charAt(0)}

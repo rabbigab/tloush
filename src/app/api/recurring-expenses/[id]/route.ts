@@ -30,7 +30,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const body = await req.json()
 
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
-  if (typeof body.amount === 'number') updates.amount = body.amount
+  if (typeof body.amount === 'number' && body.amount > 0) updates.amount = body.amount
   if (typeof body.frequency === 'string') updates.frequency = body.frequency
   if (typeof body.provider_name === 'string' && body.provider_name.trim()) {
     updates.provider_name = body.provider_name.trim()

@@ -38,7 +38,9 @@ export default function ListingsFilters() {
         </div>
 
         {/* Ville */}
+        <label htmlFor="filter-city" className="sr-only">Ville</label>
         <select
+          id="filter-city"
           value={filters.city || ''}
           onChange={(e) => setFilter('city', e.target.value || undefined)}
           className="px-3 py-2 text-sm border border-neutral-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-neutral-700 dark:text-slate-300"
@@ -52,7 +54,9 @@ export default function ListingsFilters() {
         </select>
 
         {/* Source */}
+        <label htmlFor="filter-source" className="sr-only">Source</label>
         <select
+          id="filter-source"
           value={filters.source || ''}
           onChange={(e) => setFilter('source', (e.target.value || undefined) as typeof filters.source)}
           className="px-3 py-2 text-sm border border-neutral-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-neutral-700 dark:text-slate-300"
@@ -95,16 +99,20 @@ export default function ListingsFilters() {
         <div className="flex flex-wrap items-center gap-3 p-4 bg-neutral-50 dark:bg-slate-800/50 rounded-xl border border-neutral-100 dark:border-slate-700">
           {/* Prix */}
           <div className="flex items-center gap-2">
-            <label className="text-xs text-neutral-500 dark:text-slate-400 font-medium">Prix</label>
+            <span className="text-xs text-neutral-500 dark:text-slate-400 font-medium" aria-hidden="true">Prix</span>
+            <label htmlFor="filter-min-price" className="sr-only">Prix minimum</label>
             <input
+              id="filter-min-price"
               type="number"
               placeholder="Min"
               value={filters.min_price || ''}
               onChange={(e) => setFilter('min_price', e.target.value ? Number(e.target.value) : undefined)}
               className="w-24 px-2 py-1.5 text-sm border border-neutral-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800"
             />
-            <span className="text-neutral-400">-</span>
+            <span className="text-neutral-400" aria-hidden="true">-</span>
+            <label htmlFor="filter-max-price" className="sr-only">Prix maximum</label>
             <input
+              id="filter-max-price"
               type="number"
               placeholder="Max"
               value={filters.max_price || ''}
@@ -115,16 +123,20 @@ export default function ListingsFilters() {
 
           {/* Pieces */}
           <div className="flex items-center gap-2">
-            <label className="text-xs text-neutral-500 dark:text-slate-400 font-medium">Pieces</label>
+            <span className="text-xs text-neutral-500 dark:text-slate-400 font-medium" aria-hidden="true">Pieces</span>
+            <label htmlFor="filter-min-rooms" className="sr-only">Pieces minimum</label>
             <input
+              id="filter-min-rooms"
               type="number"
               placeholder="Min"
               value={filters.min_rooms || ''}
               onChange={(e) => setFilter('min_rooms', e.target.value ? Number(e.target.value) : undefined)}
               className="w-16 px-2 py-1.5 text-sm border border-neutral-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800"
             />
-            <span className="text-neutral-400">-</span>
+            <span className="text-neutral-400" aria-hidden="true">-</span>
+            <label htmlFor="filter-max-rooms" className="sr-only">Pieces maximum</label>
             <input
+              id="filter-max-rooms"
               type="number"
               placeholder="Max"
               value={filters.max_rooms || ''}
@@ -135,16 +147,20 @@ export default function ListingsFilters() {
 
           {/* Surface */}
           <div className="flex items-center gap-2">
-            <label className="text-xs text-neutral-500 dark:text-slate-400 font-medium">Surface</label>
+            <span className="text-xs text-neutral-500 dark:text-slate-400 font-medium" aria-hidden="true">Surface</span>
+            <label htmlFor="filter-min-size" className="sr-only">Surface minimum en m²</label>
             <input
+              id="filter-min-size"
               type="number"
               placeholder="Min m²"
               value={filters.min_size || ''}
               onChange={(e) => setFilter('min_size', e.target.value ? Number(e.target.value) : undefined)}
               className="w-20 px-2 py-1.5 text-sm border border-neutral-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800"
             />
-            <span className="text-neutral-400">-</span>
+            <span className="text-neutral-400" aria-hidden="true">-</span>
+            <label htmlFor="filter-max-size" className="sr-only">Surface maximum en m²</label>
             <input
+              id="filter-max-size"
               type="number"
               placeholder="Max m²"
               value={filters.max_size || ''}
@@ -185,7 +201,9 @@ export default function ListingsFilters() {
           </div>
 
           {/* Tri */}
+          <label htmlFor="filter-sort" className="sr-only">Trier par</label>
           <select
+            id="filter-sort"
             value={filters.sort_by || 'date_desc'}
             onChange={(e) => setFilter('sort_by', e.target.value as typeof filters.sort_by)}
             className="px-3 py-1.5 text-sm border border-neutral-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-neutral-700 dark:text-slate-300"

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import {
@@ -11,6 +12,12 @@ import {
   Clock,
   Server,
 } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Politique de confidentialité — Tloush",
+  description:
+    "Comment Tloush protège vos données personnelles et vos documents. RGPD, chiffrement, conservation, droits des utilisateurs.",
+};
 
 const SECTIONS = [
   {

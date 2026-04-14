@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Phone, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -37,16 +37,42 @@ export default function PhonePrompt() {
     }
   }
 
+  const dialogRef = useRef<HTMLDivElement>(null)
+
   function handleDismiss() {
     localStorage.setItem('tloush_phone_dismissed', 'true')
     setShow(false)
   }
 
+  // Focus trap + Escape key
+  useEffect(() => {
+    if (!show) return
+    const el = dialogRef.current
+    if (!el) return
+    const focusable = el.querySelectorAll<HTMLElement>(
+      'button, input, [tabindex]:not([tabindex="-1"])'
+    )
+    focusable[0]?.focus()
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') { handleDismiss(); return }
+      if (e.key !== 'Tab' || focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus() }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus() }
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [show]) // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!show) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-6 w-full max-w-sm relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" aria-modal="true" role="dialog" aria-labelledby="phone-prompt-title">
+      <div ref={dialogRef} className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-6 w-full max-w-sm relative">
         <button
           onClick={handleDismiss}
           className="absolute top-3 right-3 text-slate-400 hover:text-slate-600 p-1"
@@ -60,7 +86,7 @@ export default function PhonePrompt() {
             <Phone size={20} className="text-blue-600" />
           </div>
           <div>
-            <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Votre numéro de téléphone</h3>
+            <h3 id="phone-prompt-title" className="font-semibold text-slate-900 dark:text-white text-sm">Votre numéro de téléphone</h3>
             <p className="text-xs text-slate-500">Pour vous contacter si besoin</p>
           </div>
         </div>

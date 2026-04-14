@@ -75,10 +75,15 @@ export default function FeedbackWidget() {
 
       {/* Panel */}
       {open && (
-        <div className="fixed bottom-4 right-4 left-4 md:left-auto md:bottom-6 md:right-6 z-40 md:w-96 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="feedback-dialog-title"
+          className="fixed bottom-4 right-4 left-4 md:left-auto md:bottom-6 md:right-6 z-40 md:w-96 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden"
+        >
           <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
             <div>
-              <h3 className="font-bold text-sm">Votre avis compte</h3>
+              <h3 id="feedback-dialog-title" className="font-bold text-sm">Votre avis compte</h3>
               <p className="text-xs text-blue-100 mt-0.5">On vous répond en moins de 24h</p>
             </div>
             <button
@@ -110,6 +115,7 @@ export default function FeedbackWidget() {
                       key={cat.value}
                       type="button"
                       onClick={() => setCategory(cat.value)}
+                      aria-pressed={category === cat.value}
                       className={`flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-xs font-medium transition-all ${
                         category === cat.value
                           ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 ring-1 ring-blue-200 dark:ring-blue-800'

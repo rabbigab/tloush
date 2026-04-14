@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { ShieldCheck, LayoutDashboard, Moon, Sun, CreditCard, Scale, Menu, X, Star } from "lucide-react";
+import { ShieldCheck, LayoutDashboard, Moon, Sun, CreditCard, Scale, Menu, X, Star, Home } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -30,6 +30,13 @@ export default function Header() {
 
         {/* Desktop nav */}
         <nav className="hidden sm:flex items-center gap-1 lg:gap-2">
+          <Link
+            href="/immobilier"
+            className="flex items-center gap-1.5 text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors px-2 py-1.5 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-950/30"
+          >
+            <Home size={14} />
+            <span className="hidden lg:inline">Immobilier</span>
+          </Link>
           <Link
             href="/annuaire"
             className="flex items-center gap-1.5 text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors px-2 py-1.5 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-950/30"
@@ -101,6 +108,10 @@ export default function Header() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="sm:hidden bg-white dark:bg-slate-900 border-t border-neutral-100 dark:border-slate-700 px-4 py-4 space-y-1">
+          <Link href="/immobilier" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 rounded-lg">
+            <Home size={16} />
+            Immobilier
+          </Link>
           <Link href="/annuaire" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 rounded-lg">
             <Star size={16} />
             Annuaire

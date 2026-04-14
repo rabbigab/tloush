@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 /**
@@ -9,14 +9,17 @@ import { createClient } from '@/lib/supabase/client'
  * Runs once, then clears the stored code.
  */
 export default function ReferralApply() {
+  const mounted = useRef(true)
+
   useEffect(() => {
+    mounted.current = true
     async function apply() {
       const stored = localStorage.getItem('tloush_referral_code')
       if (!stored) return
 
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!mounted.current || !user) return
 
       // Also check user_metadata in case it was set during email signup
       const code = stored || user.user_metadata?.referral_code
@@ -28,7 +31,7 @@ export default function ReferralApply() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ referralCode: code }),
         })
-        if (res.ok) {
+        if (mounted.current && res.ok) {
           localStorage.removeItem('tloush_referral_code')
         }
       } catch {
@@ -37,6 +40,7 @@ export default function ReferralApply() {
     }
 
     apply()
+    return () => { mounted.current = false }
   }, [])
 
   return null

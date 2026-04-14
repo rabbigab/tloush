@@ -21,40 +21,45 @@ export async function GET() {
     return NextResponse.json({ error: 'Non autorise' }, { status: 403 })
   }
 
-  const stale = getStaleConstants(90)
-  const toRefresh = getConstantsToRefresh()
+  try {
+    const stale = getStaleConstants(90)
+    const toRefresh = getConstantsToRefresh()
 
-  const now = Date.now()
-  const enriched = LEGAL_CONSTANTS.map(c => {
-    const verifiedAt = new Date(c.verified_at).getTime()
-    const daysSince = Math.floor((now - verifiedAt) / (1000 * 60 * 60 * 24))
-    const source = LEGAL_SOURCES[c.source_id]
-    return {
-      ...c,
-      days_since_verification: daysSince,
-      source_name: source?.name || c.source_id,
-      source_category: source?.category || 'general',
-      is_stale: daysSince > 90,
-      needs_refresh: c.tax_year ? c.tax_year < new Date().getFullYear() : false,
+    const now = Date.now()
+    const enriched = LEGAL_CONSTANTS.map(c => {
+      const verifiedAt = new Date(c.verified_at).getTime()
+      const daysSince = Math.floor((now - verifiedAt) / (1000 * 60 * 60 * 24))
+      const source = LEGAL_SOURCES[c.source_id]
+      return {
+        ...c,
+        days_since_verification: daysSince,
+        source_name: source?.name || c.source_id,
+        source_category: source?.category || 'general',
+        is_stale: daysSince > 90,
+        needs_refresh: c.tax_year ? c.tax_year < new Date().getFullYear() : false,
+      }
+    })
+
+    const byCategory: Record<string, typeof enriched> = {}
+    for (const c of enriched) {
+      const cat = c.source_category
+      if (!byCategory[cat]) byCategory[cat] = []
+      byCategory[cat].push(c)
     }
-  })
 
-  const byCategory: Record<string, typeof enriched> = {}
-  for (const c of enriched) {
-    const cat = c.source_category
-    if (!byCategory[cat]) byCategory[cat] = []
-    byCategory[cat].push(c)
+    return NextResponse.json({
+      stats: {
+        total_constants: LEGAL_CONSTANTS.length,
+        total_sources: Object.keys(LEGAL_SOURCES).length,
+        stale_count: stale.length,
+        to_refresh_count: toRefresh.length,
+      },
+      sources: Object.values(LEGAL_SOURCES),
+      constants: enriched,
+      by_category: byCategory,
+    })
+  } catch (err) {
+    console.error('[admin/legal-watch GET] unexpected:', err)
+    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
   }
-
-  return NextResponse.json({
-    stats: {
-      total_constants: LEGAL_CONSTANTS.length,
-      total_sources: Object.keys(LEGAL_SOURCES).length,
-      stale_count: stale.length,
-      to_refresh_count: toRefresh.length,
-    },
-    sources: Object.values(LEGAL_SOURCES),
-    constants: enriched,
-    by_category: byCategory,
-  })
 }

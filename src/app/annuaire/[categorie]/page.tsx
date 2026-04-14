@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
-import { PROVIDER_CATEGORIES, getCategoryBySlug } from '@/types/directory'
+import { getAdminClient } from '@/lib/supabase/admin'
+import { getCategoryBySlug } from '@/types/directory'
 import type { Provider } from '@/types/directory'
 import type { Metadata } from 'next'
 import ProviderCard from '@/components/directory/ProviderCard'
@@ -11,15 +11,6 @@ import Link from 'next/link'
 import { ArrowLeft, ShieldCheck } from 'lucide-react'
 
 export const revalidate = 1800
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
-export async function generateStaticParams() {
-  return PROVIDER_CATEGORIES.map((c) => ({ categorie: c.slug }))
-}
 
 export async function generateMetadata({
   params,
@@ -48,7 +39,7 @@ export default async function CategoryPage({
   const CategoryIcon = category.icon
   const content = CATEGORY_CONTENT[categorie as keyof typeof CATEGORY_CONTENT]
 
-  const { data: providers } = await supabaseAdmin
+  const { data: providers } = await getAdminClient()
     .from('providers')
     .select('id, slug, first_name, last_name, photo_url, category, specialties, service_areas, languages, description, years_experience, is_referenced, average_rating, total_reviews, created_at, updated_at')
     .eq('category', categorie)

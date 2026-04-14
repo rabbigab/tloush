@@ -2,17 +2,10 @@
 // Orchestrateur de scraping — insere/met a jour en DB
 // =====================================================
 
-import { createClient } from '@supabase/supabase-js'
 import type { Listing, ListingSource, ScrapingResult } from '@/types/listings'
+import { getAdminClient } from '@/lib/supabase/admin'
 import { scrapeYad2 } from './yad2'
 import { scrapeFacebook } from './facebook'
-
-function getServiceClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-}
 
 /**
  * Insere ou met a jour des listings en DB via upsert.
@@ -21,7 +14,7 @@ function getServiceClient() {
 async function upsertListings(
   listings: Partial<Listing>[]
 ): Promise<{ newCount: number; updatedCount: number; errors: string[] }> {
-  const supabase = getServiceClient()
+  const supabase = getAdminClient()
   let newCount = 0
   let updatedCount = 0
   const errors: string[] = []
@@ -77,7 +70,7 @@ async function logScrapingRun(
   result: ScrapingResult,
   status: 'completed' | 'failed'
 ) {
-  const supabase = getServiceClient()
+  const supabase = getAdminClient()
   await supabase.from('scraping_logs').insert({
     source,
     finished_at: new Date().toISOString(),
@@ -172,7 +165,7 @@ export async function runFullScraping(): Promise<{
  * depuis X jours (annonces probablement expirees).
  */
 export async function deactivateStaleListings(staleDays: number = 14): Promise<number> {
-  const supabase = getServiceClient()
+  const supabase = getAdminClient()
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() - staleDays)
 

@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+
+export const metadata: Metadata = {
+  title: "Modèles de lettres — Tloush",
+  description:
+    "Modèles de lettres gratuits pour vos démarches en Israël : réclamation salaire, démission, recours Bituach Leumi, etc.",
+};
 
 export default function ModelsPage() {
   return (

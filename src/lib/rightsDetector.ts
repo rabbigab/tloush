@@ -54,6 +54,51 @@ function yearsSinceAliyah(aliyahYear: number | null, now: Date): number | null {
   return now.getFullYear() - aliyahYear
 }
 
+function monthsBetween(past: Date, now: Date): number {
+  return (now.getFullYear() - past.getFullYear()) * 12 + (now.getMonth() - past.getMonth())
+}
+
+/**
+ * Renvoie true si un enfant est ne dans les N derniers mois (age <= maxMonths).
+ * Strict : si children_birth_dates est vide ou non parse, retourne false.
+ */
+function hasChildYoungerThanMonths(
+  profile: UserProfile,
+  maxMonths: number,
+  now: Date
+): boolean {
+  const dates = profile.children_birth_dates
+  if (!Array.isArray(dates) || dates.length === 0) return false
+  for (const d of dates) {
+    const birth = new Date(d)
+    if (isNaN(birth.getTime())) continue
+    const ageMonths = monthsBetween(birth, now)
+    if (ageMonths >= 0 && ageMonths <= maxMonths) return true
+  }
+  return false
+}
+
+/**
+ * Renvoie true si un enfant est dans une tranche d'age (en mois, inclusif).
+ * Ex. [36, 96] = enfant entre 3 et 8 ans.
+ */
+function hasChildInAgeRangeMonths(
+  profile: UserProfile,
+  range: [number, number],
+  now: Date
+): boolean {
+  const [minMonths, maxMonths] = range
+  const dates = profile.children_birth_dates
+  if (!Array.isArray(dates) || dates.length === 0) return false
+  for (const d of dates) {
+    const birth = new Date(d)
+    if (isNaN(birth.getTime())) continue
+    const ageMonths = monthsBetween(birth, now)
+    if (ageMonths >= minMonths && ageMonths <= maxMonths) return true
+  }
+  return false
+}
+
 /**
  * Verifie si un profil utilisateur correspond aux conditions d'un benefice.
  * Retourne un score 0-1 et la liste des raisons.
@@ -67,15 +112,33 @@ function matchProfile(
   let totalChecks = 0
   let passedChecks = 0
 
-  // Age
-  if (conditions.min_age !== undefined) {
-    totalChecks++
-    const age = ageFromBirthDate(profile.birth_date, now)
-    if (age !== null && age >= conditions.min_age) {
-      passedChecks++
-      reasons.push(`Age ${age} ≥ ${conditions.min_age}`)
-    } else if (age !== null) {
-      return { matches: false, score: 0, reasons: [`Age ${age} < ${conditions.min_age}`] }
+  // Age — avec override gender-specifique (ex. old_age_pension 62F / 67M)
+  // Le min_age_{gender} prend le dessus sur min_age si defini.
+  {
+    let effectiveMinAge: number | undefined
+    if (profile.gender === 'male' && conditions.min_age_male !== undefined) {
+      effectiveMinAge = conditions.min_age_male
+    } else if (profile.gender === 'female' && conditions.min_age_female !== undefined) {
+      effectiveMinAge = conditions.min_age_female
+    } else if (conditions.min_age !== undefined) {
+      effectiveMinAge = conditions.min_age
+    } else if (conditions.min_age_male !== undefined || conditions.min_age_female !== undefined) {
+      // Genre non declare mais condition genre-specifique : on prend le plus strict
+      effectiveMinAge = Math.max(
+        conditions.min_age_male ?? 0,
+        conditions.min_age_female ?? 0
+      )
+    }
+
+    if (effectiveMinAge !== undefined) {
+      totalChecks++
+      const age = ageFromBirthDate(profile.birth_date, now)
+      if (age !== null && age >= effectiveMinAge) {
+        passedChecks++
+        reasons.push(`Age ${age} ≥ ${effectiveMinAge}`)
+      } else if (age !== null) {
+        return { matches: false, score: 0, reasons: [`Age ${age} < ${effectiveMinAge}`] }
+      }
     }
   }
   if (conditions.max_age !== undefined) {
@@ -117,6 +180,40 @@ function matchProfile(
     if (profile.children_count >= conditions.min_children) {
       passedChecks++
       reasons.push(`${profile.children_count} enfant(s) ≥ ${conditions.min_children}`)
+    } else {
+      return { matches: false, score: 0, reasons: [] }
+    }
+  }
+
+  // Enfant ne recemment (dmei leida, maanak leida, paternity leave)
+  if (conditions.requires_recent_birth_months !== undefined) {
+    totalChecks++
+    if (hasChildYoungerThanMonths(profile, conditions.requires_recent_birth_months, now)) {
+      passedChecks++
+      reasons.push(`Naissance recente (< ${conditions.requires_recent_birth_months} mois)`)
+    } else {
+      return { matches: false, score: 0, reasons: [] }
+    }
+  }
+
+  // Plus jeune enfant < N mois (credit young child)
+  if (conditions.max_youngest_child_months !== undefined) {
+    totalChecks++
+    if (hasChildYoungerThanMonths(profile, conditions.max_youngest_child_months, now)) {
+      passedChecks++
+      reasons.push(`Enfant < ${Math.round(conditions.max_youngest_child_months / 12)} ans`)
+    } else {
+      return { matches: false, score: 0, reasons: [] }
+    }
+  }
+
+  // Enfant dans une tranche d'age precise (tsaharon 3-8 ans, etc.)
+  if (conditions.requires_child_age_range_months) {
+    totalChecks++
+    if (hasChildInAgeRangeMonths(profile, conditions.requires_child_age_range_months, now)) {
+      passedChecks++
+      const [minM, maxM] = conditions.requires_child_age_range_months
+      reasons.push(`Enfant entre ${Math.round(minM / 12)} et ${Math.round(maxM / 12)} ans`)
     } else {
       return { matches: false, score: 0, reasons: [] }
     }
@@ -235,6 +332,20 @@ function matchProfile(
     }
   }
 
+  // Niveau d'etudes requis (ex. ['ba','ma','phd'] pour les credits diplome)
+  if (conditions.required_education_levels && conditions.required_education_levels.length > 0) {
+    totalChecks++
+    if (
+      profile.education_level &&
+      (conditions.required_education_levels as string[]).includes(profile.education_level)
+    ) {
+      passedChecks++
+      reasons.push(`Niveau d'etudes: ${profile.education_level}`)
+    } else {
+      return { matches: false, score: 0, reasons: [] }
+    }
+  }
+
   // Shoah
   if (conditions.requires_holocaust_survivor) {
     totalChecks++
@@ -339,15 +450,28 @@ function toDetected(
 // =====================================================
 
 /**
- * Scan le profil utilisateur contre TOUS les benefices du catalogue
+ * Scan le profil utilisateur contre les benefices VERIFIES du catalogue
  * et retourne ceux auxquels l'utilisateur est potentiellement eligible.
+ *
+ * IMPORTANT : seules les entrees avec status === 'verified' sont exposees
+ * aux utilisateurs en production. Les entrees 'needs_verification' ou
+ * 'estimated' sont exclues pour garantir la fiabilite juridique.
+ * Passer { includeUnverified: true } pour un audit interne.
  *
  * Trie par confidence_score decroissant.
  */
-export function scanBenefits(profile: UserProfile, now: Date = new Date()): DetectedBenefit[] {
+export function scanBenefits(
+  profile: UserProfile,
+  now: Date = new Date(),
+  options: { includeUnverified?: boolean } = {}
+): DetectedBenefit[] {
   const results: DetectedBenefit[] = []
 
   for (const benefit of BENEFITS_CATALOG) {
+    // Filtre production : on ne montre que les entrees verifiees
+    if (!options.includeUnverified && benefit.status !== 'verified') {
+      continue
+    }
     const match = matchProfile(profile, benefit.conditions, now)
     if (match.matches) {
       results.push(toDetected(benefit, match, profile))
@@ -368,8 +492,12 @@ export function scanBenefits(profile: UserProfile, now: Date = new Date()): Dete
 /**
  * Filtre les benefices deja declares comme recus.
  */
-export function scanUnclaimedBenefits(profile: UserProfile, now: Date = new Date()): DetectedBenefit[] {
-  return scanBenefits(profile, now).filter(b => !b.already_receiving)
+export function scanUnclaimedBenefits(
+  profile: UserProfile,
+  now: Date = new Date(),
+  options: { includeUnverified?: boolean } = {}
+): DetectedBenefit[] {
+  return scanBenefits(profile, now, options).filter(b => !b.already_receiving)
 }
 
 /**
