@@ -250,6 +250,111 @@ const KITSBAT_YELADIM_BENEFITS: BenefitDefinition[] = [
     verified_at: '2026-04-12',
     tax_year: 2026,
   },
+  {
+    slug: 'maanak_limudim',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Prime scolarite de rentree (Maanak Limudim)',
+    title_he: 'מענק לימודים',
+    description_fr: 'Prime annuelle BL versee en aout/septembre pour aider aux frais de rentree scolaire des enfants de 6 a 18 ans, sous conditions de ressources.',
+    full_description_fr:
+      'Prime automatique versee en aout-septembre (~1 semaine avant la rentree) aux familles eligibles. ' +
+      'Montants officiels 2026 : ' +
+      '- Enfant 6-14 ans : ~1 085 NIS ' +
+      '- Enfant 15-18 ans : ~602 NIS ' +
+      'Eligibilite (conditions cumulatives) : ' +
+      '- Percevoir Kitsbat Yeladim pour l\'enfant concerne (actif) ' +
+      '- OU etre famille monoparentale (Im Chad Horit) ' +
+      '- OU recevoir Hashlamat Hachnasa ou pension invalidite/survivant BL ' +
+      '- OU famille nombreuse 4+ enfants ' +
+      '- OU nouveau oleh dans les 5 ans ' +
+      'Versement automatique : si vous etes eligible, BL vous verse sans demande. Verifiez votre compte bancaire fin aout.',
+    conditions: {
+      requires_child_age_range_months: [72, 216],  // 6-18 ans
+      requires_resident: true,
+    },
+    estimated_annual_value: 1085,  // moyenne par enfant eligible
+    value_unit: 'NIS/an/enfant (versement unique aout)',
+    application_url: 'https://www.btl.gov.il/benefits/Grant_children/Pages/default.aspx',
+    action_label: 'Verifier mon eligibilite',
+    info_url: 'https://www.kolzchut.org.il/he/מענק_לימודים',
+    disclaimer:
+      'Versement automatique pour les ayant-droits. Si vous pensez etre eligible mais ne recevez rien : contactez votre agence BL locale. La prime est versee une fois par an (debut septembre).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-14',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 14/04/2026. Prime peu connue des olim car elle est versee automatiquement sous conditions spe BL. Les families monoparentales et grandes families y ont droit sans demarche.',
+  },
+  {
+    slug: 'mishpacha_brucha_yeladim',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Bonus famille nombreuse (Mishpacha Brucha Yeladim 4+)',
+    title_he: 'משפחה ברוכת ילדים',
+    description_fr: 'Les familles de 4+ enfants beneficient de bonus cumules : kitsbat yeladim majore, reduction arnona, tarifs reduits transport et activites, parfois exemption mas rechisha.',
+    full_description_fr:
+      'Statut reconnu des 4 enfants a charge (moins de 18 ans ou etudiants jusqu\'a 21 ans). ' +
+      'Bonus cumules : ' +
+      '- Kitsbat yeladim majore a partir du 2e enfant (219 NIS vs 173) ' +
+      '- Reduction arnona : 25-50% selon mairie (Tel Aviv 30%, Jerusalem 30%, etc.) sur 100m² ' +
+      '- Reduction transport public : cartes familiales Rav-Kav ' +
+      '- Acces prioritaire aux maonot yom et tsaharon subventionnes ' +
+      '- Reduction sur activites culturelles municipales (piscines, bibliotheques) ' +
+      '- Carte Tav Mishpacha Brucha pour reductions diverses ' +
+      'Les familles de 7+ enfants ont des droits supplementaires (logement social prioritaire, transport quasi-gratuit).',
+    conditions: {
+      min_children: 4,
+      requires_resident: true,
+    },
+    estimated_annual_value: 3000,  // estimation reduction arnona + avantages cumules
+    value_unit: 'NIS/an (variable selon mairie et niveau)',
+    application_url: 'https://www.btl.gov.il/benefits/children/Pages/default.aspx',
+    action_label: 'Demande carte famille nombreuse',
+    info_url: 'https://www.kolzchut.org.il/he/משפחה_ברוכת_ילדים',
+    disclaimer:
+      'Demande de la carte Tav Mishpacha Brucha a la mairie avec certificats de naissance. Cumulable avec la plupart des autres reductions (Im Chad Horit, bas revenu, handicape). Chaque mairie a ses propres baremes supplementaires.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-14',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 14/04/2026. Statut reconnu des 4 enfants a charge. Souvent, les families cumulent 3-5k NIS/an de droits entre arnona, transport et activites.',
+  },
+  {
+    slug: 'dmei_imutz',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Allocation adoption (Dmei Imutz)',
+    title_he: 'דמי אימוץ',
+    description_fr: 'Allocation BL equivalente au conge maternite pour les parents qui adoptent un enfant. Duree et montant similaires a Dmei Leida.',
+    full_description_fr:
+      'Les parents adoptifs (biologiques ou non) beneficient de conditions equivalentes au conge maternite BL : ' +
+      '- Duree : 15 semaines payees + jusqu\'a 26 semaines au total ' +
+      '- Pour l\'adoption d\'un enfant de moins de 10 ans ' +
+      '- Un des deux parents peut prendre le conge (pas obligatoirement la mere) ' +
+      '- Paiement base sur les 3 derniers mois de salaire du parent concerne ' +
+      '- Plafond : salaire moyen economie (~12 550 NIS/mois) ' +
+      'Conditions : 10 mois de cotisations BL sur les 14 derniers. ' +
+      'Adoption via Misrad HaRevacha agreee OU adoption a l\'etranger reconnue Israel.',
+    conditions: {
+      required_employment: ['employed', 'self_employed'],
+      requires_resident: true,
+      min_children: 1,
+      requires_recent_birth_months: 12,
+    },
+    estimated_annual_value: 12550 * 3.5,  // 15 semaines payees
+    value_unit: 'NIS (sur 15 semaines payees)',
+    application_url: 'https://www.btl.gov.il/benefits/Maternity/Pages/default.aspx',
+    action_label: 'Demande dmei imutz',
+    info_url: 'https://www.kolzchut.org.il/he/דמי_אימוץ',
+    disclaimer:
+      'Meme regime que dmei leida mais pour les adoptions. Le parent qui prend le conge doit avoir 10 mois de cotisations BL sur les 14 derniers. Adoption officiellement reconnue obligatoire.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-14',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 14/04/2026. Note : la condition requires_recent_birth_months s\'applique aussi via children_birth_dates (date de la premiere entree au foyer en cas d\'adoption).',
+  },
 ]
 
 // =====================================================
