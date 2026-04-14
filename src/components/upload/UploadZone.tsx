@@ -48,13 +48,17 @@ export default function UploadZone({ onFileAccepted }: UploadZoneProps) {
     <div className="space-y-4">
       {!preview ? (
         <div
+          role="button"
+          tabIndex={0}
+          aria-label="Zone de dépôt de fichier — cliquez ou glissez un fichier PDF, JPG ou PNG"
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onDrop={onDrop}
           onClick={() => inputRef.current?.click()}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputRef.current?.click() } }}
           className={clsx("relative cursor-pointer border-2 border-dashed rounded-2xl p-10 text-center transition-all duration-200", dragOver ? "border-brand-500 bg-brand-50 scale-[1.01]" : "border-neutral-200 bg-neutral-50 hover:border-brand-300 hover:bg-brand-50/40")}
         >
-          <input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={onInputChange} />
+          <input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" aria-hidden="true" onChange={onInputChange} />
           <div className="flex flex-col items-center gap-4">
             <div className={clsx("w-16 h-16 rounded-2xl flex items-center justify-center transition-colors", dragOver ? "bg-brand-100" : "bg-white shadow-soft")}>
               <Upload size={28} className={dragOver ? "text-brand-600" : "text-neutral-400"} />
