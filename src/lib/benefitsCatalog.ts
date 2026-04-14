@@ -89,6 +89,26 @@ export interface EligibilityConditions {
   requires_caregiver?: boolean
   /** Niveau(x) d'etudes requis (ex. ['ba', 'ma', 'phd']) */
   required_education_levels?: Array<'none' | 'high_school' | 'vocational' | 'ba' | 'ma' | 'phd' | 'other'>
+  /**
+   * Exige qu'au moins un enfant soit ne dans les N derniers mois
+   * (utilise pour dmei leida, maanak leida, paternity leave).
+   * Se base sur profile.children_birth_dates.
+   */
+  requires_recent_birth_months?: number
+  /**
+   * Exige qu'au moins un enfant ait moins de N mois
+   * (utilise pour credit_young_child qui concerne les enfants < 6 ans).
+   */
+  max_youngest_child_months?: number
+  /**
+   * Age minimum specifique aux hommes (override min_age).
+   * Exemple : old_age_pension = 67 pour hommes, 62 pour femmes.
+   */
+  min_age_male?: number
+  /**
+   * Age minimum specifique aux femmes (override min_age).
+   */
+  min_age_female?: number
 }
 
 export interface BenefitDefinition {
@@ -275,6 +295,7 @@ const MAANAK_LEIDA_BENEFITS: BenefitDefinition[] = [
       required_gender: 'female',
       min_children: 1,
       requires_resident: true,
+      requires_recent_birth_months: 12,  // prime versee a l'accouchement
     },
     estimated_annual_value: 2103,  // par enfant, one-time
     value_unit: 'NIS (versement unique)',
@@ -331,7 +352,9 @@ const OLD_AGE_BENEFITS: BenefitDefinition[] = [
       'A partir de 70 ans, la pension est versee sans condition de revenu. ' +
       'Il faut faire la demande dans les 12 mois suivant l\'age d\'eligibilite pour ne pas perdre de droits retroactifs.',
     conditions: {
-      min_age: 62,  // age minimum femme
+      // Age minimum gender-specifique : 62 femmes, 67 hommes (regle BL 2026)
+      min_age_female: 62,
+      min_age_male: 67,
       requires_resident: true,
     },
     estimated_annual_value: 1795 * 12,
@@ -457,6 +480,9 @@ const SURVIVOR_BENEFITS: BenefitDefinition[] = [
       '- Les 2 parents decedes : 2 284 NIS/mois par enfant ' +
       'Cumulable avec la pension du conjoint survivant si les deux conditions sont remplies.',
     conditions: {
+      // Cas concret modelisable : parent survivant (veuf/veuve) avec enfant mineur.
+      // Le cas double-orphelin necessite un champ profil dedie (pas modelisable ici).
+      required_marital_status: ['widowed'],
       min_children: 1,
       requires_resident: true,
     },
@@ -802,6 +828,9 @@ const MATERNITY_BENEFITS: BenefitDefinition[] = [
       required_gender: 'female',
       required_employment: ['employed'],
       requires_resident: true,
+      // Conge mat : concerne les meres dont l'accouchement est recent
+      // (demande possible jusqu'a 12 mois apres naissance).
+      requires_recent_birth_months: 12,
     },
     estimated_annual_value: 12550 * 3.5,  // 15 semaines payees (~3.5 mois)
     value_unit: 'NIS (sur 15 semaines payees)',
@@ -832,6 +861,7 @@ const MATERNITY_BENEFITS: BenefitDefinition[] = [
       required_gender: 'female',
       required_employment: ['employed'],
       requires_resident: true,
+      requires_recent_birth_months: 12,
     },
     estimated_annual_value: 12550 * 3.5,  // ~3.5 mois
     value_unit: 'NIS (sur 15 semaines)',
@@ -864,6 +894,9 @@ const MATERNITY_BENEFITS: BenefitDefinition[] = [
       required_employment: ['employed'],
       requires_resident: true,
       min_children: 1,
+      // Conge paternite : concerne les peres d'un enfant tres recent
+      // (demande dans les 12 mois suivant la naissance).
+      requires_recent_birth_months: 12,
     },
     estimated_annual_value: 12550 * 5,  // ~5 mois
     value_unit: 'NIS (variable selon duree choisie)',
@@ -1058,7 +1091,12 @@ const TAX_CREDIT_BENEFITS: BenefitDefinition[] = [
       'Ages 6-17 : mere +1 pt, pere 0 pt. ' +
       'IMPORTANT : le bonus "+1 point pour la mere avec enfants 6-17 ans" etait TEMPORAIRE pour 2022 uniquement. Il n\'est PAS reconduit en 2026. ' +
       'Cumulable : si vous avez 2 enfants de 3 ans, vous avez 5 points d\'enfants (en plus de votre base).',
-    conditions: { required_gender: 'female', min_children: 1 },
+    conditions: {
+      required_gender: 'female',
+      min_children: 1,
+      // Points credit "jeunes enfants" : applique tant qu'un enfant a < 6 ans (72 mois).
+      max_youngest_child_months: 72,
+    },
     estimated_annual_value: 2.5 * 2904,
     value_unit: 'NIS/an/enfant',
     application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
@@ -1405,7 +1443,7 @@ const ARNONA_BENEFITS: BenefitDefinition[] = [
     authority: 'municipality',
     title_fr: 'Reduction Arnona personnes handicapees',
     description_fr: 'Reduction d\'arnona pour les personnes avec taux d\'invalidite reconnu (varie 25-80% selon taux).',
-    conditions: { min_disability: 50 },
+    conditions: { min_disability: 50, requires_resident: true },
     estimated_annual_value: 3000,
     value_unit: 'NIS/an (variable)',
     application_url: 'https://www.kolzchut.org.il/he/הנחה_בארנונה',
@@ -1420,7 +1458,7 @@ const ARNONA_BENEFITS: BenefitDefinition[] = [
     authority: 'municipality',
     title_fr: 'Reduction Arnona retraites',
     description_fr: 'Reduction d\'arnona pour les retraites recevant la pension vieillesse (taux 25-100% selon revenu).',
-    conditions: { min_age: 67 },
+    conditions: { min_age: 67, requires_resident: true },
     estimated_annual_value: 2000,
     value_unit: 'NIS/an (variable)',
     application_url: 'https://www.kolzchut.org.il/he/הנחה_בארנונה',
@@ -1438,6 +1476,7 @@ const ARNONA_BENEFITS: BenefitDefinition[] = [
     conditions: {
       required_marital_status: ['divorced', 'widowed', 'separated', 'single'],
       min_children: 1,
+      requires_resident: true,
     },
     estimated_annual_value: 1500,
     value_unit: 'NIS/an (variable)',
@@ -1453,7 +1492,7 @@ const ARNONA_BENEFITS: BenefitDefinition[] = [
     authority: 'municipality',
     title_fr: 'Reduction Arnona etudiants',
     description_fr: 'Reduction d\'arnona pour les etudiants (variable par ville, souvent 10-30%).',
-    conditions: { requires_student: true },
+    conditions: { requires_student: true, requires_resident: true },
     estimated_annual_value: 1000,
     value_unit: 'NIS/an (variable)',
     application_url: 'https://www.kolzchut.org.il/he/הנחה_בארנונה',

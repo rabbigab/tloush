@@ -54,6 +54,30 @@ function yearsSinceAliyah(aliyahYear: number | null, now: Date): number | null {
   return now.getFullYear() - aliyahYear
 }
 
+function monthsBetween(past: Date, now: Date): number {
+  return (now.getFullYear() - past.getFullYear()) * 12 + (now.getMonth() - past.getMonth())
+}
+
+/**
+ * Renvoie true si un enfant est ne dans les N derniers mois (age <= maxMonths).
+ * Strict : si children_birth_dates est vide ou non parse, retourne false.
+ */
+function hasChildYoungerThanMonths(
+  profile: UserProfile,
+  maxMonths: number,
+  now: Date
+): boolean {
+  const dates = profile.children_birth_dates
+  if (!Array.isArray(dates) || dates.length === 0) return false
+  for (const d of dates) {
+    const birth = new Date(d)
+    if (isNaN(birth.getTime())) continue
+    const ageMonths = monthsBetween(birth, now)
+    if (ageMonths >= 0 && ageMonths <= maxMonths) return true
+  }
+  return false
+}
+
 /**
  * Verifie si un profil utilisateur correspond aux conditions d'un benefice.
  * Retourne un score 0-1 et la liste des raisons.
@@ -67,15 +91,33 @@ function matchProfile(
   let totalChecks = 0
   let passedChecks = 0
 
-  // Age
-  if (conditions.min_age !== undefined) {
-    totalChecks++
-    const age = ageFromBirthDate(profile.birth_date, now)
-    if (age !== null && age >= conditions.min_age) {
-      passedChecks++
-      reasons.push(`Age ${age} ≥ ${conditions.min_age}`)
-    } else if (age !== null) {
-      return { matches: false, score: 0, reasons: [`Age ${age} < ${conditions.min_age}`] }
+  // Age — avec override gender-specifique (ex. old_age_pension 62F / 67M)
+  // Le min_age_{gender} prend le dessus sur min_age si defini.
+  {
+    let effectiveMinAge: number | undefined
+    if (profile.gender === 'male' && conditions.min_age_male !== undefined) {
+      effectiveMinAge = conditions.min_age_male
+    } else if (profile.gender === 'female' && conditions.min_age_female !== undefined) {
+      effectiveMinAge = conditions.min_age_female
+    } else if (conditions.min_age !== undefined) {
+      effectiveMinAge = conditions.min_age
+    } else if (conditions.min_age_male !== undefined || conditions.min_age_female !== undefined) {
+      // Genre non declare mais condition genre-specifique : on prend le plus strict
+      effectiveMinAge = Math.max(
+        conditions.min_age_male ?? 0,
+        conditions.min_age_female ?? 0
+      )
+    }
+
+    if (effectiveMinAge !== undefined) {
+      totalChecks++
+      const age = ageFromBirthDate(profile.birth_date, now)
+      if (age !== null && age >= effectiveMinAge) {
+        passedChecks++
+        reasons.push(`Age ${age} ≥ ${effectiveMinAge}`)
+      } else if (age !== null) {
+        return { matches: false, score: 0, reasons: [`Age ${age} < ${effectiveMinAge}`] }
+      }
     }
   }
   if (conditions.max_age !== undefined) {
@@ -117,6 +159,28 @@ function matchProfile(
     if (profile.children_count >= conditions.min_children) {
       passedChecks++
       reasons.push(`${profile.children_count} enfant(s) ≥ ${conditions.min_children}`)
+    } else {
+      return { matches: false, score: 0, reasons: [] }
+    }
+  }
+
+  // Enfant ne recemment (dmei leida, maanak leida, paternity leave)
+  if (conditions.requires_recent_birth_months !== undefined) {
+    totalChecks++
+    if (hasChildYoungerThanMonths(profile, conditions.requires_recent_birth_months, now)) {
+      passedChecks++
+      reasons.push(`Naissance recente (< ${conditions.requires_recent_birth_months} mois)`)
+    } else {
+      return { matches: false, score: 0, reasons: [] }
+    }
+  }
+
+  // Plus jeune enfant < N mois (credit young child)
+  if (conditions.max_youngest_child_months !== undefined) {
+    totalChecks++
+    if (hasChildYoungerThanMonths(profile, conditions.max_youngest_child_months, now)) {
+      passedChecks++
+      reasons.push(`Enfant < ${Math.round(conditions.max_youngest_child_months / 12)} ans`)
     } else {
       return { matches: false, score: 0, reasons: [] }
     }
