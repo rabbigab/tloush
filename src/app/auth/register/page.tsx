@@ -15,6 +15,7 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [error, setError] = useState('')
   const [redirecting, setRedirecting] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -54,6 +55,12 @@ export default function RegisterPage() {
 
     if (!phone.trim()) {
       setError('Veuillez saisir votre numéro de téléphone')
+      setLoading(false)
+      return
+    }
+
+    if (!acceptedTerms) {
+      setError('Vous devez accepter les conditions générales et la politique de confidentialité pour continuer')
       setLoading(false)
       return
     }
@@ -235,6 +242,28 @@ export default function RegisterPage() {
               )}
             </div>
 
+            <div className="flex items-start gap-2.5 pt-1">
+              <input
+                id="accept-terms"
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={e => setAcceptedTerms(e.target.checked)}
+                required
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-brand-600 focus:ring-2 focus:ring-brand-400 cursor-pointer"
+              />
+              <label htmlFor="accept-terms" className="text-xs text-slate-600 dark:text-slate-400 cursor-pointer leading-relaxed">
+                J&apos;ai lu et j&apos;accepte les{' '}
+                <Link href="/cgv" target="_blank" className="underline text-brand-600 dark:text-brand-400 hover:text-brand-700">
+                  conditions générales de vente
+                </Link>
+                {' '}et la{' '}
+                <Link href="/privacy" target="_blank" className="underline text-brand-600 dark:text-brand-400 hover:text-brand-700">
+                  politique de confidentialité
+                </Link>
+                .
+              </label>
+            </div>
+
             {error && (
               <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3 text-red-700 dark:text-red-300 text-sm">
                 {error}
@@ -243,7 +272,7 @@ export default function RegisterPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !acceptedTerms}
               className="w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors active:scale-[0.99]"
             >
               {loading ? 'Creation...' : 'Creer mon compte'}
