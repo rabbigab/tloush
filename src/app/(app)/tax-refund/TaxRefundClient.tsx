@@ -113,7 +113,7 @@ export default function TaxRefundClient({ profileComplete }: { profileComplete: 
             <BetaBadge />
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Estimez votre החזר מס en quelques clics grace au bareme 2025.
+            Estimez votre החזר מס en quelques clics grace au bareme 2026.
           </p>
         </div>
       </div>

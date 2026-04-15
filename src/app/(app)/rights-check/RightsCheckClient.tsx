@@ -236,7 +236,7 @@ export default function RightsCheckClient() {
           </div>
 
           <p className="text-[11px] text-slate-400 dark:text-slate-500 text-center">
-            Calcul base sur le droit du travail israelien 2024-2025. Consultez un expert pour validation.
+            Calcul base sur le droit du travail israelien 2026. Consultez un expert pour validation.
           </p>
         </div>
       )}
