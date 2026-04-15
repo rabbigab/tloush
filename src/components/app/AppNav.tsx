@@ -18,7 +18,7 @@ const TOOLS_SECTIONS = [
   {
     title: 'Calculateurs',
     items: [
-      { label: 'Simulateur salaire', href: '/calculator', icon: Calculator },
+      { label: 'Simulateur salaire', href: '/calculateurs/brut-net', icon: Calculator },
       { label: 'Freelance', href: '/freelance', icon: Briefcase },
       { label: 'Comparer tlushs', href: '/compare', icon: GitCompareArrows },
       { label: 'Evolution annuelle', href: '/payslips/annual', icon: TrendingUp },
@@ -88,7 +88,7 @@ const MOBILE_SECTIONS = [
   {
     title: 'Calculateurs',
     items: [
-      { label: 'Simulateur salaire', href: '/calculator', icon: Calculator },
+      { label: 'Simulateur salaire', href: '/calculateurs/brut-net', icon: Calculator },
       { label: 'Freelance', href: '/freelance', icon: Briefcase },
       { label: 'Comparer tlushs', href: '/compare', icon: GitCompareArrows },
       { label: 'Evolution annuelle', href: '/payslips/annual', icon: TrendingUp },
