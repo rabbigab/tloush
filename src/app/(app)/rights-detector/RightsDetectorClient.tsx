@@ -237,11 +237,11 @@ export default function RightsDetectorClient({ profileComplete }: { profileCompl
         </Link>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Sparkles size={22} className="text-purple-600" /> Mes droits detectes
+            <Sparkles size={22} className="text-purple-600" /> Detecter mes aides
             <BetaBadge />
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Scan de votre profil et de vos documents pour trouver les droits non reclames.
+            Scan automatique de votre profil et de vos documents pour trouver les aides gouvernementales non reclamees (olim, seniors, familles, reservistes...). Pour calculer vos droits du travail (salaire, conges, pitzuim), utilisez plutot &laquo; Droits du salarie &raquo;.
           </p>
         </div>
         <button
