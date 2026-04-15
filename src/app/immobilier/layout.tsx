@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Immobilier Israel — Annonces Yad2 + Facebook | Tloush',
+  title: 'Immobilier Israel — Annonces Yad2 + Facebook',
   description:
     'Toutes les annonces immobilieres en Israel au meme endroit. Yad2, Facebook, groupes francophones. Carte interactive, filtres avances.',
   keywords: [

@@ -22,7 +22,9 @@ export async function generateMetadata({
   if (!cat) return {}
 
   return {
-    title: `${cat.label === 'Climatisation' ? 'Technicien climatisation' : cat.label} francophone en Israel — References | Tloush Recommande`,
+    title: {
+      absolute: `${cat.label === 'Climatisation' ? 'Technicien climatisation' : cat.label} francophone en Israel — References | Tloush Recommande`,
+    },
     description: `Trouvez un ${cat.label === 'Climatisation' ? 'technicien climatisation' : cat.label.toLowerCase()} francophone et reference en Israel. Avis clients, notes, contact direct. Gratuit.`,
   }
 }

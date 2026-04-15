@@ -14,7 +14,7 @@ export async function generateStaticParams() {
 
 export function generateMetadata({ params }: { params: { slug: string } }) {
   const template = templates.find((t) => t.slug === params.slug);
-  if (!template) return { title: "Modèle introuvable — Tloush" };
+  if (!template) return { title: "Modèle introuvable" };
   return {
     title: `${template.title} — Modèle de lettre Tloush`,
     description: template.description,

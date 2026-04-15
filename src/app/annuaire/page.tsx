@@ -5,7 +5,7 @@ import DirectoryPageTracker from '@/components/directory/DirectoryPageTracker'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Annuaire prestataires francophones en Israel | Tloush Recommande',
+  title: { absolute: 'Annuaire prestataires francophones en Israel | Tloush Recommande' },
   description:
     'Trouvez un plombier, electricien, peintre ou serrurier francophone en Israel. Prestataires references, avis de la communaute. Gratuit.',
 }

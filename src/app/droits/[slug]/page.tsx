@@ -21,7 +21,7 @@ export async function generateMetadata({
   if (!guide) return {};
 
   return {
-    title: `${guide.title} | Tloush`,
+    title: `${guide.title}`,
     description: guide.subtitle,
     keywords: guide.keywords,
   };

@@ -5,7 +5,7 @@ import AnnualPayslipClient from './AnnualPayslipClient'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Evolution annuelle — Tloush',
+  title: 'Evolution annuelle',
   description: 'Visualisez l\'evolution de votre salaire sur 12 mois avec detection automatique des variations.',
 }
 

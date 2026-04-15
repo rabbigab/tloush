@@ -5,7 +5,7 @@ import TaxRefundClient from './TaxRefundClient'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Remboursement d\'impots — Tloush',
+  title: 'Remboursement d\'impots',
   description: 'Estimez votre remboursement d\'impots israeliens (החזר מס) en quelques clics.',
 }
 

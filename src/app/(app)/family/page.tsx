@@ -5,7 +5,7 @@ import FamilyClient from './FamilyClient'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Ma famille — Tloush',
+  title: 'Ma famille',
   description: 'Gerez votre foyer et les documents partages avec votre famille.',
 }
 

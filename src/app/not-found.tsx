@@ -3,11 +3,11 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { Home, LayoutDashboard, Search, ArrowLeft } from 'lucide-react'
 
-// `title.absolute` court-circuite le template "%s | Tloush" du root
-// layout et evite la duplication "Page introuvable — Tloush | Tloush".
+// `title.absolute` court-circuite le template "%s" du root
+// layout et evite la duplication "Page introuvable — Tloush".
 export const metadata = {
   title: {
-    absolute: 'Page introuvable — Tloush',
+    absolute: 'Page introuvable',
   },
 }
 

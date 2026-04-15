@@ -28,7 +28,7 @@ export async function generateMetadata({
   const city = provider.service_areas?.[0] || 'Israel'
 
   return {
-    title: `${provider.first_name} ${provider.last_name.charAt(0)}. — ${cat.label} francophone a ${city} | Tloush`,
+    title: `${provider.first_name} ${provider.last_name.charAt(0)}. — ${cat.label} francophone a ${city}`,
     description: `${provider.first_name}, ${cat.label.toLowerCase()} francophone a ${city}. ${provider.total_reviews > 0 ? `${provider.average_rating}/5 (${provider.total_reviews} avis).` : ''} Contactez gratuitement via Tloush Recommande.`,
   }
 }

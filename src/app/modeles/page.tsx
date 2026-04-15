@@ -6,7 +6,7 @@ import { templates, CATEGORY_LABELS, type TemplateCategory } from "@/data/templa
 import { FileText, ChevronRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Modèles de lettres — Tloush",
+  title: "Modèles de lettres",
   description:
     "Modèles de lettres gratuits pour vos démarches en Israël : réclamation salaire, démission, recours Bituach Leumi, heures supplémentaires, certificat de travail.",
 };

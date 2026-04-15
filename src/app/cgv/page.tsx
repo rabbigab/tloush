@@ -3,7 +3,7 @@ import Footer from "@/components/layout/Footer";
 import { FileText } from "lucide-react";
 
 export const metadata = {
-  title: "CGV — Tloush",
+  title: "CGV",
   description:
     "Conditions Générales de Vente et d'Utilisation du service Tloush.",
 };

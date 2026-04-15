@@ -6,7 +6,7 @@ import { Clock, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Vos droits en tant que salarié en Israël — Tloush",
+  title: "Vos droits en tant que salarié en Israël",
   description:
     "Guides complets en français sur vos droits : congés, heures supplémentaires, licenciement, cotisations. Tout ce qu'un salarié francophone doit savoir en Israël.",
 };

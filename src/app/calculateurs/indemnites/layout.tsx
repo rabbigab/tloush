@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Calculateur indemnités de licenciement (pitzuim) — Tloush",
+  title: "Calculateur indemnités de licenciement (pitzuim)",
   description:
     "Calculez vos indemnités de fin de contrat (pitzuim piturim) selon la loi israélienne. Formule, ancienneté, montant dû.",
 }
