@@ -124,7 +124,7 @@ export default function DroitsPage({
               Analysez votre fiche de paie pour vérifier que tout est conforme.
             </p>
           </div>
-          <Link href="/analyze" className="btn-primary text-sm py-2.5 px-5 shrink-0">
+          <Link href="/scanner" className="btn-primary text-sm py-2.5 px-5 shrink-0">
             Analyser ma fiche
           </Link>
         </div>

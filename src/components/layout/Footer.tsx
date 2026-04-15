@@ -24,7 +24,7 @@ export default function Footer() {
           <div>
             <h3 className="text-xs font-semibold text-neutral-700 dark:text-slate-300 uppercase tracking-wider mb-3">Application</h3>
             <ul className="space-y-2">
-              <li><Link href="/analyze" className="text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors">Analyser ma fiche</Link></li>
+              <li><Link href="/scanner" className="text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors">Analyser ma fiche</Link></li>
               <li><Link href="/#how-it-works" className="text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors">Comment ça marche</Link></li>
             </ul>
           </div>
