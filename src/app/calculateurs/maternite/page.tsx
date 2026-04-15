@@ -45,7 +45,6 @@ export default function MaterniteLeaveCalculator() {
   const [monthlySalary, setMonthlySalary] = useState("");
   const [isMultipleBirth, setIsMultipleBirth] = useState(false);
   const [numberOfBabies, setNumberOfBabies] = useState(2);
-  const [wantToShare, setWantToShare] = useState(false);
 
   const calculations = useMemo(() => {
     if (!dueDate || !employmentStartDate || !monthlySalary) {
@@ -74,8 +73,11 @@ export default function MaterniteLeaveCalculator() {
     const paternityDays = 7;
 
     // Calculate dates
+    // Le conge peut commencer jusqu'a 6 semaines (42 jours) avant la date
+    // prevue d'accouchement. C'est la date "Debut recommande" affichee a
+    // l'utilisatrice dans la carte "Periode de conge maternite".
     const leaveStartDate = new Date(due);
-    leaveStartDate.setDate(leaveStartDate.getDate() - 6); // Can start 6 weeks before (optional)
+    leaveStartDate.setDate(leaveStartDate.getDate() - 42);
 
     const mandatoryStartDate = new Date(due); // Mandatory 6 weeks after birth
     const mandatoryEndDate = new Date(mandatoryStartDate);
@@ -279,27 +281,6 @@ export default function MaterniteLeaveCalculator() {
               </motion.div>
             )}
 
-            {/* Share Leave */}
-            <motion.div variants={itemVariants}>
-              <label className="block text-sm font-semibold text-neutral-900 mb-3">
-                Partager le congé avec le conjoint ?
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                {["Non", "Oui"].map((option, idx) => (
-                  <button
-                    key={option}
-                    onClick={() => setWantToShare(idx === 1)}
-                    className={`py-2 px-4 rounded-lg font-medium text-sm transition-all ${
-                      wantToShare === (idx === 1)
-                        ? "bg-brand-600 text-white"
-                        : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </motion.div>
           </div>
         </motion.div>
 
