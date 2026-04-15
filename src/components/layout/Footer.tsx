@@ -13,8 +13,8 @@ export default function Footer() {
   return (
     <footer className="bg-white dark:bg-slate-900 border-t border-neutral-100 dark:border-slate-700 mt-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 mb-8">
-          <div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-8">
+          <div className="col-span-2 sm:col-span-1">
             <div className="flex items-center gap-2 mb-3">
               <Image src="/icon.png" alt="Tloush" width={40} height={40} className="rounded-lg" />
               <span className="font-bold text-neutral-800 dark:text-slate-200">Tloush</span>
@@ -25,7 +25,16 @@ export default function Footer() {
             <h3 className="text-xs font-semibold text-neutral-700 dark:text-slate-300 uppercase tracking-wider mb-3">Application</h3>
             <ul className="space-y-2">
               <li><Link href="/scanner" className="text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors">Analyser ma fiche</Link></li>
-              <li><Link href="/#how-it-works" className="text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors">Comment ça marche</Link></li>
+              <li><Link href="/calculateurs" className="text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors">Calculateurs</Link></li>
+              <li><Link href="/modeles" className="text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors">Modèles de lettres</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-xs font-semibold text-neutral-700 dark:text-slate-300 uppercase tracking-wider mb-3">Tloush</h3>
+            <ul className="space-y-2">
+              <li><Link href="/a-propos" className="text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors">À propos</Link></li>
+              <li><Link href="/faq" className="text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors">FAQ</Link></li>
+              <li><Link href="/contact" className="text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors">Contact</Link></li>
             </ul>
           </div>
           <div>
