@@ -3,14 +3,13 @@ import { redirect } from 'next/navigation'
 export const dynamic = 'force-dynamic'
 
 /**
- * /analyze etait l'ancien flow d'analyse de fiches de paie, base sur
- * un OCR simule (simulateOcrExtraction dans src/data/mockPayroll.ts).
- * Le vrai flow d'analyse est /scanner qui appelle /api/scan pour une
- * extraction reelle via IA.
+ * /analyze etait l'ancien flow d'analyse base sur un OCR simule
+ * (simulateOcrExtraction dans mockPayroll.ts). Toute cette chaine
+ * (analyze -> store -> results -> history) a ete supprimee en P2.6.
  *
- * /analyze redirige vers /scanner pour conserver les liens historiques
- * (droits, footer, history, emails). Une fois que tous les liens
- * internes auront ete mis a jour, cette route pourra etre supprimee.
+ * Le vrai flow d'analyse est /scanner qui appelle /api/scan (extraction
+ * IA reelle). Cette route est conservee uniquement pour rediriger les
+ * liens historiques (emails, bookmarks) vers /scanner.
  */
 export default function AnalyzePage() {
   redirect('/scanner')
