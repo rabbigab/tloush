@@ -4,6 +4,7 @@
 
 // ------ Document Types ------
 export type DocumentType =
+  | "payslip"          // Fiche de paie (tlush)
   | "contract"         // Contrat de travail
   | "officialLetter"   // Lettre officielle
   | "taxNotice"        // Avis d'imposition
@@ -136,8 +137,47 @@ export interface TerminationAnalysis {
   urgentActions: string[];
 }
 
+// ------ Payslip (Fiche de paie) ------
+export interface PayslipAnalysis {
+  period: string | null;              // "Mars 2026" ou "03/2026"
+  employerName: string | null;
+  employeeName: string | null;
+  grossSalary: number | null;         // Salaire brut ILS
+  netSalary: number | null;           // Salaire net ILS
+  workingDays: number | null;         // Jours travaillés
+  workingHours: number | null;        // Heures travaillées
+  deductions: {
+    incomeTax: number | null;         // Impôt sur le revenu (Mas Hakhnasa)
+    bituahLeumi: number | null;       // Cotisation Bituah Leumi
+    healthInsurance: number | null;   // Assurance santé (Mas Briut)
+    pension: number | null;           // Cotisation pension
+    kerenHishtalmut: number | null;   // Fonds de perfectionnement
+    other: Array<{ label: string; amount: number }>;
+  };
+  benefits: {
+    baseSalary: number | null;
+    transportAllowance: number | null; // Prime de transport
+    mealAllowance: number | null;      // Prime de repas
+    overtimePay: number | null;        // Heures supplémentaires
+    other: Array<{ label: string; amount: number }>;
+  };
+  leaveBalance: number | null;        // Jours de congés restants
+  sickBalance: number | null;         // Jours de maladie restants
+  seniority: string | null;           // Ancienneté (ex. "3 ans 6 mois")
+  cumulativeYear: {
+    grossYTD: number | null;          // Cumul annuel brut
+    netYTD: number | null;            // Cumul annuel net
+  };
+  alerts: Array<{
+    severity: "low" | "medium" | "high";
+    message: string;
+    recommendation: string;
+  }>;
+}
+
 // ------ Union type for any document analysis ------
 export type DocumentAnalysis =
+  | PayslipAnalysis
   | ContractAnalysis
   | OfficialLetterAnalysis
   | TaxNoticeAnalysis
@@ -162,6 +202,13 @@ export interface DocumentTypeCard {
 }
 
 export const DOCUMENT_TYPES: DocumentTypeCard[] = [
+  {
+    id: "payslip",
+    icon: "💵",
+    label: "Fiche de paie (tlush)",
+    description: "Analysez votre bulletin de salaire en hebreu",
+    color: "brand",
+  },
   {
     id: "contract",
     icon: "📄",

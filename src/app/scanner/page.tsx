@@ -9,7 +9,7 @@ import UploadZone from "@/components/upload/UploadZone";
 import DisclaimerBlock from "@/components/shared/DisclaimerBlock";
 import { Loader2, ChevronRight, AlertCircle, CheckCircle, Eye } from "lucide-react";
 import clsx from "clsx";
-import type { DocumentType, DocumentAnalysis, ScanApiResponse, DocumentTypeCard, ContractAnalysis, OfficialLetterAnalysis, TaxNoticeAnalysis, LeaseAnalysis, TerminationAnalysis } from "@/types/scanner";
+import type { DocumentType, DocumentAnalysis, ScanApiResponse, DocumentTypeCard, PayslipAnalysis, ContractAnalysis, OfficialLetterAnalysis, TaxNoticeAnalysis, LeaseAnalysis, TerminationAnalysis } from "@/types/scanner";
 import { DOCUMENT_TYPES } from "@/types/scanner";
 
 const SCANNER_STEPS: import("@/components/shared/ProgressStepper").Step[] = [
@@ -166,6 +166,16 @@ function ScannerContent() {
               <h2 className="section-title">Quel type de document analysez-vous ?</h2>
               <p className="section-subtitle">
                 Sélectionnez le type de document hébraïque que vous souhaitez analyser.
+              </p>
+            </div>
+
+            {/* Pre-warning auth (audit #26) : annonce la friction auth avant
+                que l'utilisateur ne depose son fichier, evite l'erreur 401
+                post-upload. */}
+            <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 rounded-xl px-4 py-3 flex items-start gap-3">
+              <AlertCircle size={16} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-blue-900 dark:text-blue-200 leading-relaxed">
+                <strong>Compte gratuit requis.</strong> Apres le choix du type, vous serez invité a créer un compte (3 analyses offertes) avant l&apos;upload du document. Aucune carte bancaire demandée.
               </p>
             </div>
 
@@ -424,6 +434,8 @@ function ScanResultsDisplay({ result }: ScanResultsDisplayProps) {
   const { documentType, data } = result;
 
   switch (documentType) {
+    case "payslip":
+      return <PayslipResults data={data as PayslipAnalysis} />;
     case "contract":
       return <ContractResults data={data as ContractAnalysis} />;
     case "officialLetter":
@@ -437,6 +449,138 @@ function ScanResultsDisplay({ result }: ScanResultsDisplayProps) {
     default:
       return null;
   }
+}
+
+function PayslipResults({ data }: { data: PayslipAnalysis }) {
+  const fmt = (n: number | null | undefined) =>
+    n == null ? "—" : `${n.toLocaleString("fr-FR", { maximumFractionDigits: 0 })} ₪`;
+
+  return (
+    <div className="space-y-4">
+      {/* Header metadata */}
+      <div className="grid grid-cols-2 gap-3">
+        {data.period && <ResultField label="Période" value={data.period} />}
+        {data.employerName && <ResultField label="Employeur" value={data.employerName} />}
+        {data.employeeName && <ResultField label="Salarié" value={data.employeeName} />}
+        {data.seniority && <ResultField label="Ancienneté" value={data.seniority} />}
+      </div>
+
+      {/* Gross / Net banner */}
+      {(data.grossSalary != null || data.netSalary != null) && (
+        <div className="card p-4 bg-brand-50">
+          <h4 className="font-semibold text-neutral-900 mb-3 text-sm">Synthèse</h4>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-xs text-neutral-500 uppercase tracking-wide">Brut</p>
+              <p className="text-2xl font-bold text-neutral-900">{fmt(data.grossSalary)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-neutral-500 uppercase tracking-wide">Net</p>
+              <p className="text-2xl font-bold text-brand-700">{fmt(data.netSalary)}</p>
+            </div>
+          </div>
+          {(data.workingDays != null || data.workingHours != null) && (
+            <p className="text-xs text-neutral-500 mt-2">
+              {data.workingDays != null && `${data.workingDays} jours travaillés`}
+              {data.workingDays != null && data.workingHours != null && " · "}
+              {data.workingHours != null && `${data.workingHours} heures`}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Deductions */}
+      <div className="card p-4">
+        <h4 className="font-semibold text-neutral-900 mb-3 text-sm">Retenues</h4>
+        <div className="space-y-1.5 text-sm">
+          {data.deductions.incomeTax != null && (
+            <div className="flex justify-between">
+              <span className="text-neutral-600">Impôt sur le revenu (Mas Hakhnasa)</span>
+              <span className="font-medium text-danger">-{fmt(data.deductions.incomeTax)}</span>
+            </div>
+          )}
+          {data.deductions.bituahLeumi != null && (
+            <div className="flex justify-between">
+              <span className="text-neutral-600">Bituah Leumi</span>
+              <span className="font-medium text-danger">-{fmt(data.deductions.bituahLeumi)}</span>
+            </div>
+          )}
+          {data.deductions.healthInsurance != null && (
+            <div className="flex justify-between">
+              <span className="text-neutral-600">Assurance santé (Mas Briut)</span>
+              <span className="font-medium text-danger">-{fmt(data.deductions.healthInsurance)}</span>
+            </div>
+          )}
+          {data.deductions.pension != null && (
+            <div className="flex justify-between">
+              <span className="text-neutral-600">Pension</span>
+              <span className="font-medium text-danger">-{fmt(data.deductions.pension)}</span>
+            </div>
+          )}
+          {data.deductions.kerenHishtalmut != null && (
+            <div className="flex justify-between">
+              <span className="text-neutral-600">Keren Hishtalmut</span>
+              <span className="font-medium text-danger">-{fmt(data.deductions.kerenHishtalmut)}</span>
+            </div>
+          )}
+          {data.deductions.other?.map((d, i) => (
+            <div key={i} className="flex justify-between">
+              <span className="text-neutral-600">{d.label}</span>
+              <span className="font-medium text-danger">-{fmt(d.amount)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Benefits / primes */}
+      {(data.benefits.transportAllowance != null ||
+        data.benefits.mealAllowance != null ||
+        data.benefits.overtimePay != null ||
+        (data.benefits.other && data.benefits.other.length > 0)) && (
+        <div className="card p-4">
+          <h4 className="font-semibold text-neutral-900 mb-3 text-sm">Primes et avantages</h4>
+          <div className="space-y-1.5 text-sm">
+            {data.benefits.transportAllowance != null && (
+              <div className="flex justify-between">
+                <span className="text-neutral-600">Prime transport</span>
+                <span className="font-medium text-success">+{fmt(data.benefits.transportAllowance)}</span>
+              </div>
+            )}
+            {data.benefits.mealAllowance != null && (
+              <div className="flex justify-between">
+                <span className="text-neutral-600">Prime repas</span>
+                <span className="font-medium text-success">+{fmt(data.benefits.mealAllowance)}</span>
+              </div>
+            )}
+            {data.benefits.overtimePay != null && (
+              <div className="flex justify-between">
+                <span className="text-neutral-600">Heures supplémentaires</span>
+                <span className="font-medium text-success">+{fmt(data.benefits.overtimePay)}</span>
+              </div>
+            )}
+            {data.benefits.other?.map((b, i) => (
+              <div key={i} className="flex justify-between">
+                <span className="text-neutral-600">{b.label}</span>
+                <span className="font-medium text-success">+{fmt(b.amount)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Balances */}
+      {(data.leaveBalance != null || data.sickBalance != null) && (
+        <div className="grid grid-cols-2 gap-3">
+          {data.leaveBalance != null && (
+            <ResultField label="Solde congés" value={`${data.leaveBalance} j`} />
+          )}
+          {data.sickBalance != null && (
+            <ResultField label="Solde maladie" value={`${data.sickBalance} j`} />
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function ContractResults({ data }: { data: ContractAnalysis }) {
