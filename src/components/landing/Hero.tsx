@@ -81,7 +81,7 @@ export default function Hero() {
 
           {/* Pricing teaser */}
           <p className="text-sm text-neutral-500 dark:text-slate-400 mb-12">
-            3 analyses gratuites &bull; Puis 49&#8362;/mois pour un acces illimite &bull;{" "}
+            3 analyses gratuites &bull; Puis 49&#8362;/mois pour 30 analyses &bull;{" "}
             <Link href="/pricing" className="text-brand-600 dark:text-brand-400 font-semibold hover:underline">
               Voir les plans
             </Link>
