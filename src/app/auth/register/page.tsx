@@ -259,7 +259,9 @@ export default function RegisterPage() {
         </div>
 
         <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-4">
-          En creant un compte, vous acceptez notre{' '}
+          En créant un compte, vous acceptez nos{' '}
+          <Link href="/cgv" className="underline hover:text-slate-500 dark:hover:text-slate-300">conditions générales</Link>
+          {' '}et notre{' '}
           <Link href="/privacy" className="underline hover:text-slate-500 dark:hover:text-slate-300">politique de confidentialité</Link>.
         </p>
       </div>

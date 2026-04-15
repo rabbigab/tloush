@@ -140,7 +140,7 @@ export default function HistoryPage() {
             <p className="text-sm text-neutral-400 mb-4">
               Vos analyses de fiches de paie apparaîtront ici automatiquement.
             </p>
-            <Link href="/analyze" className="btn-primary text-sm px-4 py-2">
+            <Link href="/scanner" className="btn-primary text-sm px-4 py-2">
               Analyser ma fiche de paie
             </Link>
           </div>

@@ -224,8 +224,12 @@ export default function LoginPage() {
         <Suspense fallback={<div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 h-64 animate-pulse" />}>
           <LoginForm />
         </Suspense>
-        <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-4">
+        <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-4 space-x-2">
+          <Link href="/cgv" className="underline hover:text-slate-500 dark:hover:text-slate-300">CGV</Link>
+          <span className="text-slate-300 dark:text-slate-600">·</span>
           <Link href="/privacy" className="underline hover:text-slate-500 dark:hover:text-slate-300">Politique de confidentialité</Link>
+          <span className="text-slate-300 dark:text-slate-600">·</span>
+          <Link href="/mentions-legales" className="underline hover:text-slate-500 dark:hover:text-slate-300">Mentions légales</Link>
         </p>
       </div>
     </div>

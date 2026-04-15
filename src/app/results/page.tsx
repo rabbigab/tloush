@@ -56,7 +56,7 @@ export default function ResultsPage() {
 
   useEffect(() => {
     if (!finalReport) {
-      router.replace("/analyze");
+      router.replace("/scanner");
     }
   }, [finalReport, router]);
 
@@ -94,7 +94,7 @@ export default function ResultsPage() {
       <div className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 space-y-8">
 
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <Link href="/analyze" className="btn-ghost text-sm">
+          <Link href="/scanner" className="btn-ghost text-sm">
             <ArrowLeft size={16} /> Nouvelle analyse
           </Link>
           <div className="flex gap-2">
@@ -104,7 +104,7 @@ export default function ResultsPage() {
             <button onClick={handlePrint} className="btn-secondary text-sm py-2 px-4 print:hidden">
               <FileText size={15} /> Imprimer / PDF
             </button>
-            <button onClick={() => { resetAll(); router.push("/analyze"); }} className="btn-ghost text-sm print:hidden">
+            <button onClick={() => { resetAll(); router.push("/scanner"); }} className="btn-ghost text-sm print:hidden">
               <RefreshCw size={15} /> Reinitialiser
             </button>
           </div>
@@ -206,7 +206,7 @@ export default function ResultsPage() {
           </div>
           <div className="flex gap-2 shrink-0">
             <Link href="/experts" className="btn-secondary text-sm py-2.5 px-5">Trouver un expert</Link>
-            <button onClick={() => { resetAll(); router.push("/analyze"); }} className="btn-primary text-sm py-2.5 px-5">
+            <button onClick={() => { resetAll(); router.push("/scanner"); }} className="btn-primary text-sm py-2.5 px-5">
               Analyser une autre fiche
             </button>
           </div>
