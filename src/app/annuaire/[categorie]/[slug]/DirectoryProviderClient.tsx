@@ -289,7 +289,14 @@ export default function DirectoryProviderClient({
       )}
 
       {/* Reviews */}
-      {reviews.length > 0 && (
+      {reviews.length === 0 ? (
+        <div className="mb-8 border border-dashed border-neutral-200 dark:border-slate-700 rounded-2xl p-5 text-center">
+          <p className="text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Aucun avis pour le moment</p>
+          <p className="text-xs text-neutral-500 dark:text-slate-400">
+            Vous avez fait appel à {displayFirstName} ? Votre avis aide la communauté francophone.
+          </p>
+        </div>
+      ) : (
         <div className="mb-8">
           <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4">
             Avis ({reviews.length})
