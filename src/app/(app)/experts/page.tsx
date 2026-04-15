@@ -2,7 +2,20 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Calculator, Scale, Clock, ArrowRight, Bell, Check, Loader2 } from 'lucide-react'
+import {
+  Calculator,
+  Scale,
+  Clock,
+  ArrowRight,
+  Bell,
+  Check,
+  Loader2,
+  FileText,
+  PiggyBank,
+  ShieldCheck,
+  Landmark,
+  Home,
+} from 'lucide-react'
 
 const CATEGORIES = [
   {
@@ -31,6 +44,76 @@ const CATEGORIES = [
       'Contestation de licenciement',
       'Négocier vos conditions',
       'Comprendre vos droits en tant que salarié',
+    ],
+  },
+  {
+    id: 'notaire',
+    label: 'Notaire',
+    description: 'Actes authentiques, successions, donations, pouvoirs, certifications',
+    icon: FileText,
+    color: 'bg-amber-50 border-amber-200 hover:border-amber-400',
+    iconColor: 'text-amber-600',
+    examples: [
+      'Certifier un acte officiel',
+      'Traduire et certifier un document',
+      'Établir un pouvoir (Yipui koach)',
+      'Accompagner une succession',
+    ],
+  },
+  {
+    id: 'fiscaliste',
+    label: 'Fiscaliste',
+    description: 'Optimisation fiscale olim, double imposition, exonérations 10 ans',
+    icon: PiggyBank,
+    color: 'bg-emerald-50 border-emerald-200 hover:border-emerald-400',
+    iconColor: 'text-emerald-600',
+    examples: [
+      'Maximiser les avantages olim',
+      'Éviter la double imposition FR/IL',
+      'Déclaration de revenus étrangers',
+      'Planification patrimoniale',
+    ],
+  },
+  {
+    id: 'assureur',
+    label: 'Assureur',
+    description: 'Assurance santé privée, vie, habitation, automobile, professionnelle',
+    icon: ShieldCheck,
+    color: 'bg-red-50 border-red-200 hover:border-red-400',
+    iconColor: 'text-red-600',
+    examples: [
+      'Choisir une kupat holim supplémentaire',
+      'Assurance habitation',
+      'Assurance santé privée',
+      'Assurance vie',
+    ],
+  },
+  {
+    id: 'banquier',
+    label: 'Banquier / Conseiller financier',
+    description: 'Ouverture compte, mashkanta, épargne, investissement, transferts FR/IL',
+    icon: Landmark,
+    color: 'bg-indigo-50 border-indigo-200 hover:border-indigo-400',
+    iconColor: 'text-indigo-600',
+    examples: [
+      'Ouvrir un compte bancaire',
+      'Négocier une mashkanta',
+      'Transférer son épargne depuis la France',
+      'Conseils investissement',
+    ],
+  },
+  {
+    id: 'conseiller_immobilier',
+    label: 'Conseiller immobilier',
+    description: 'Achat / location, négociation, visites, mashkanta, fiscalité immobilière',
+    icon: Home,
+    color: 'bg-teal-50 border-teal-200 hover:border-teal-400',
+    iconColor: 'text-teal-600',
+    examples: [
+      'Chercher un appartement',
+      'Négocier un achat',
+      'Comprendre un contrat de bail',
+      'Calculer le mas rechisha',
     ],
   },
 ]
