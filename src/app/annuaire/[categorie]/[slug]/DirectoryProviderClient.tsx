@@ -7,7 +7,8 @@ import {
   ArrowLeft, Star, MapPin, CheckCircle2, Phone, MessageCircle,
   Globe, Clock, Info, ChevronDown, ChevronUp,
 } from 'lucide-react'
-import { getProviderDisplayName, formatRating } from '@/types/directory'
+import { formatRating } from '@/types/directory'
+import { getProviderDisplayName, normalizeFirstName, getProviderInitial } from '@/lib/providerDisplay'
 import { createClient } from '@/lib/supabase/client'
 import { track } from '@/lib/analytics'
 import type { Provider, ProviderReviewDisplay } from '@/types/directory'
@@ -27,6 +28,8 @@ export default function DirectoryProviderClient({
   categoryLabel,
   categorySlug,
 }: Props) {
+  // Prenom normalise affiche a l'utilisateur (cf. src/lib/providerDisplay)
+  const displayFirstName = normalizeFirstName(provider.first_name)
   const [user, setUser] = useState<{ id: string; phone?: string } | null>(null)
   const [contactRevealed, setContactRevealed] = useState(false)
   const [revealedPhone, setRevealedPhone] = useState<string | null>(null)
@@ -165,7 +168,7 @@ export default function DirectoryProviderClient({
 
   const visibleReviews = showAllReviews ? reviews : reviews.slice(0, 5)
   const whatsappLink = revealedPhone
-    ? `https://wa.me/${revealedPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Bonjour ${provider.first_name}, je vous contacte via Tloush Recommande pour ${categoryLabel}. Etes-vous disponible ?`)}`
+    ? `https://wa.me/${revealedPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Bonjour ${displayFirstName}, je vous contacte via Tloush Recommande pour ${categoryLabel}. Etes-vous disponible ?`)}`
     : '#'
 
   return (
@@ -185,7 +188,7 @@ export default function DirectoryProviderClient({
           <Image src={provider.photo_url} alt={displayName} width={80} height={80} className="w-20 h-20 rounded-2xl object-cover" />
         ) : (
           <div className="w-20 h-20 rounded-2xl bg-brand-100 dark:bg-brand-950/50 flex items-center justify-center text-2xl font-bold text-brand-600">
-            {provider.first_name.charAt(0)}
+            {getProviderInitial(provider.first_name)}
           </div>
         )}
         <div className="flex-1">
@@ -262,8 +265,8 @@ export default function DirectoryProviderClient({
           </div>
           <div className="mt-4 p-3 bg-brand-50 dark:bg-brand-950/30 border border-brand-200 dark:border-brand-800 rounded-xl">
             <p className="text-sm text-brand-700 dark:text-brand-300">
-              {provider.first_name} vous a envoye un devis ?{' '}
-              <Link href="/inbox" className="underline font-medium hover:text-brand-900">
+              {displayFirstName} vous a envoye un devis ?{' '}
+              <Link href="/scanner" className="underline font-medium hover:text-brand-900">
                 Analysez-le gratuitement avec Tloush
               </Link>
             </p>
@@ -275,13 +278,13 @@ export default function DirectoryProviderClient({
           disabled={loading}
           className="w-full py-4 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-bold text-lg shadow-lg shadow-green-500/25 transition-colors mb-2 disabled:opacity-50"
         >
-          {loading ? 'Chargement...' : `Obtenir le numero de ${provider.first_name}`}
+          {loading ? 'Chargement...' : `Obtenir le numero de ${displayFirstName} (compte gratuit requis)`}
         </button>
       )}
 
       {!contactRevealed && contactsThisMonth > 0 && (
         <p className="text-xs text-neutral-400 dark:text-slate-500 text-center mb-8">
-          {contactsThisMonth} personne{contactsThisMonth > 1 ? 's' : ''} {contactsThisMonth > 1 ? 'ont' : 'a'} contacte {provider.first_name} ce mois-ci
+          {contactsThisMonth} personne{contactsThisMonth > 1 ? 's' : ''} {contactsThisMonth > 1 ? 'ont' : 'a'} contacte {displayFirstName} ce mois-ci
         </p>
       )}
 
@@ -366,7 +369,7 @@ export default function DirectoryProviderClient({
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6">
             <div className="flex justify-between items-start mb-4">
               <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
-                Dernier pas pour contacter {provider.first_name}
+                Dernier pas pour contacter {displayFirstName}
               </h2>
               <button
                 onClick={() => setShowGate(false)}
