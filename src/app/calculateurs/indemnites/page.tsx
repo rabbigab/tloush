@@ -22,6 +22,50 @@ const ARTICLE_14_LABELS: Record<Article14, string> = {
   full: "Complet (100% — aucun pitzuim dû par l'employeur)",
 };
 
+const ARTICLE_14_EXPLANATIONS: Record<Article14, string> = {
+  none: "Votre pension ne contient pas de Keren Pitzuim. L'employeur doit verser l'intégralité du pitzuim (salaire × années d'ancienneté).",
+  partial:
+    "Votre pension contient une Keren Pitzuim partielle (6% du salaire sur 8.33% théorique = 72% couverts). Il reste 28% du pitzuim à la charge de l'employeur.",
+  full:
+    "Votre pension contient une Keren Pitzuim complète (100%). Aucun pitzuim n'est dû par l'employeur : la pension couvre tout et vous a déjà été créditée au fil des années.",
+};
+
+type DismissalReason =
+  | "dismissal"
+  | "health"
+  | "family"
+  | "naissance"
+  | "demenagement"
+  | "non_paiement"
+  | "aggravation";
+
+const DISMISSAL_REASON_LABELS: Record<DismissalReason, string> = {
+  dismissal: "Licenciement par l'employeur",
+  health: "Démission pour raison de santé",
+  family: "Démission pour raison familiale (parent malade, garde)",
+  naissance: "Démission après naissance d'un enfant (dans les 9 mois)",
+  demenagement: "Déménagement (plus de 40 km ou suite à mariage)",
+  non_paiement: "Démission suite à non-paiement du salaire",
+  aggravation: "Démission suite à aggravation des conditions de travail",
+};
+
+const DISMISSAL_REASON_NOTES: Record<DismissalReason, string> = {
+  dismissal:
+    "Licenciement classique : droit automatique au pitzuim après 12 mois d'ancienneté minimum.",
+  health:
+    "Donne droit au pitzuim si une attestation médicale prouve que les conditions de travail nuisent à votre santé. Doit être documentée.",
+  family:
+    "Donne droit au pitzuim si vous devez vous occuper d'un parent / enfant malade, sur justificatif médical et démarche auprès de l'employeur.",
+  naissance:
+    "Donne droit au pitzuim aux mères (et pères dans certains cas) qui démissionnent dans les 9 mois suivant l'accouchement pour s'occuper de l'enfant.",
+  demenagement:
+    "Donne droit au pitzuim si vous déménagez à plus de 40 km OU si le déménagement est lié à un mariage. Justificatif requis.",
+  non_paiement:
+    "Donne droit au pitzuim si l'employeur est en retard de plus de 3 mois sur le paiement du salaire. Notification préalable obligatoire.",
+  aggravation:
+    "Donne droit au pitzuim si l'employeur aggrave significativement vos conditions (réduction de salaire, changement de poste défavorable, etc.). Notification préalable obligatoire.",
+};
+
 function computeSeniorityYears(start: Date, end: Date): number {
   const ms = end.getTime() - start.getTime();
   if (ms <= 0) return 0;
@@ -37,7 +81,7 @@ export default function PitzuimCalculatorPage() {
   const [monthlySalary, setMonthlySalary] = useState("12000");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState(new Date().toISOString().slice(0, 10));
-  const [reason, setReason] = useState<"dismissal" | "resignation_equiv">("dismissal");
+  const [reason, setReason] = useState<DismissalReason>("dismissal");
   const [article14, setArticle14] = useState<Article14>("none");
 
   const result = useMemo(() => {
@@ -70,12 +114,11 @@ export default function PitzuimCalculatorPage() {
       employerPitzuim = basePitzuim * 0.28;
     }
 
-    // Cas demission equivalente a un licenciement (sante, famille, naissance,
-    // demenagement, non-paiement de salaire, aggravation conditions) — meme
-    // droit au pitzuim que dans le cas d'un licenciement
-    const finalAmount = reason === "dismissal" || reason === "resignation_equiv"
-      ? employerPitzuim
-      : 0;
+    // Toutes les raisons listees dans DismissalReason donnent droit au
+    // pitzuim : licenciement classique + 6 cas de demission equivalente
+    // prevus par la Loi 1963 + jurisprudence. La difference entre les
+    // cas est purement pedagogique (condition a remplir, justificatifs).
+    const finalAmount = employerPitzuim;
 
     return {
       years,
@@ -171,18 +214,17 @@ export default function PitzuimCalculatorPage() {
               <select
                 id="pitzuim-reason"
                 value={reason}
-                onChange={(e) => setReason(e.target.value as typeof reason)}
+                onChange={(e) => setReason(e.target.value as DismissalReason)}
                 className="w-full px-3 py-2.5 border border-neutral-200 rounded-xl bg-white focus:ring-2 focus:ring-orange-500 outline-none"
               >
-                <option value="dismissal">Licenciement par l&apos;employeur</option>
-                <option value="resignation_equiv">
-                  Démission équivalente à un licenciement
-                </option>
+                {(Object.keys(DISMISSAL_REASON_LABELS) as DismissalReason[]).map((key) => (
+                  <option key={key} value={key}>
+                    {DISMISSAL_REASON_LABELS[key]}
+                  </option>
+                ))}
               </select>
-              <p className="text-xs text-neutral-500 mt-1">
-                Démission pour raison de santé, famille, naissance, déménagement,
-                non-paiement de salaire ou aggravation des conditions : donne
-                droit au pitzuim comme en cas de licenciement.
+              <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+                {DISMISSAL_REASON_NOTES[reason]}
               </p>
             </div>
 
@@ -201,9 +243,8 @@ export default function PitzuimCalculatorPage() {
                 <option value="partial">{ARTICLE_14_LABELS.partial}</option>
                 <option value="full">{ARTICLE_14_LABELS.full}</option>
               </select>
-              <p className="text-xs text-neutral-500 mt-1">
-                Si votre contrat contient la clause article 14, votre pension
-                (Keren Pitzuim) remplace totalement ou partiellement le pitzuim.
+              <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+                {ARTICLE_14_EXPLANATIONS[article14]}
               </p>
             </div>
           </div>
