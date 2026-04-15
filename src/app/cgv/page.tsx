@@ -27,7 +27,7 @@ const SECTIONS = [
   {
     title: "4. Plans et tarification",
     content:
-      "Tloush propose trois formules : un plan Découverte gratuit (3 analyses offertes au total), un plan Solo à 49 ILS par mois (50 documents, historique illimité, assistant IA, rappels) et un plan Famille à 99 ILS par mois (150 documents, jusqu'à 5 membres). Les prix sont indiqués en shekels israéliens (ILS) toutes taxes comprises. Le paiement est mensuel et s'effectue par carte bancaire via notre prestataire Stripe. L'abonnement est tacitement renouvelé chaque mois jusqu'à annulation par l'utilisateur.",
+      "Tloush propose trois formules : un plan Gratuit (3 analyses offertes, historique 7 jours, sans assistant IA), un plan Solo à 49 ILS par mois (30 analyses par mois, historique 1 an, assistant IA limité à 200 messages par mois, traduction des messages hébreux, support prioritaire) et un plan Famille à 99 ILS par mois (100 analyses par mois, historique 1 an, assistant IA limité à 500 messages par mois, jusqu'à 5 membres avec quota partagé). Les prix sont indiqués en shekels israéliens (ILS) toutes taxes comprises. Le paiement est mensuel et s'effectue par carte bancaire via notre prestataire Stripe. L'abonnement est tacitement renouvelé chaque mois jusqu'à annulation par l'utilisateur. Tloush se réserve le droit de modifier les quotas et fonctionnalités des plans moyennant un préavis de 30 jours par email, conformément à l'article 12.",
   },
   {
     title: "5. Paiement et facturation",

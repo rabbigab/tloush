@@ -37,15 +37,31 @@ const CATEGORIES = [
 
 function WaitlistBanner() {
   const [email, setEmail] = useState('')
-  const [status, setStatus] = useState<'idle' | 'loading' | 'done'>('idle')
+  const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+  const [errorMessage, setErrorMessage] = useState('')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!email) return
     setStatus('loading')
-    // Simulate — in production, send to an API or Supabase table
-    await new Promise(r => setTimeout(r, 800))
-    setStatus('done')
+    setErrorMessage('')
+    try {
+      const res = await fetch('/api/experts/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, category: 'any' }),
+      })
+      const data = (await res.json().catch(() => ({}))) as { error?: string }
+      if (!res.ok) {
+        setErrorMessage(data.error || 'Erreur serveur, reessayez dans un instant.')
+        setStatus('error')
+        return
+      }
+      setStatus('done')
+    } catch {
+      setErrorMessage('Connexion impossible. Verifiez votre internet et reessayez.')
+      setStatus('error')
+    }
   }
 
   return (
@@ -87,6 +103,10 @@ function WaitlistBanner() {
             Prévenez-moi
           </button>
         </form>
+      )}
+
+      {status === 'error' && errorMessage && (
+        <p className="mt-2 text-xs text-red-600 dark:text-red-400">{errorMessage}</p>
       )}
     </div>
   )
