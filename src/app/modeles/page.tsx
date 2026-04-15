@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { templates, CATEGORY_LABELS, type TemplateCategory } from "@/data/templates";
+import { templates, CATEGORY_LABELS, TEMPLATES_VERIFIED_AT, type TemplateCategory } from "@/data/templates";
 import { FileText, ChevronRight } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -17,6 +17,8 @@ const CATEGORY_ORDER: (TemplateCategory | "all")[] = [
   "licenciement",
   "heures-sup",
   "documents",
+  "immobilier",
+  "consommation",
 ];
 
 const CATEGORY_META: Record<TemplateCategory | "all", { label: string; emoji: string }> = {
@@ -25,6 +27,8 @@ const CATEGORY_META: Record<TemplateCategory | "all", { label: string; emoji: st
   licenciement: { label: CATEGORY_LABELS.licenciement, emoji: "📋" },
   "heures-sup": { label: CATEGORY_LABELS["heures-sup"], emoji: "⏰" },
   documents: { label: CATEGORY_LABELS.documents, emoji: "📄" },
+  immobilier: { label: CATEGORY_LABELS.immobilier, emoji: "🏠" },
+  consommation: { label: CATEGORY_LABELS.consommation, emoji: "🛒" },
 };
 
 export default function ModelsPage({
@@ -54,6 +58,15 @@ export default function ModelsPage({
             Lettres types gratuites pour vos démarches administratives en
             Israël. Personnalisez en remplissant quelques champs, puis
             copiez-collez dans votre email ou courrier.
+          </p>
+          <p className="text-xs text-neutral-400 mt-3">
+            Catalogue vérifié le{' '}
+            {new Date(TEMPLATES_VERIFIED_AT).toLocaleDateString("fr-FR", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+            {' '}· {templates.length} modèles disponibles
           </p>
         </div>
 
