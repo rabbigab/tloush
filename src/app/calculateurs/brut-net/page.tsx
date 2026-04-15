@@ -3,8 +3,8 @@
 import { useState, useMemo } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { calculateNetSalary, type PayrollResult } from "@/lib/israeliPayroll";
-import { Banknote, ArrowDown, TrendingDown, Building2, PiggyBank } from "lucide-react";
+import { calculateNetSalary, type PayrollResult, LAST_VERIFIED_DATE } from "@/lib/israeliPayroll";
+import { Banknote, ArrowDown, TrendingDown, Building2, PiggyBank, ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
 
 export default function BrutNetPage() {
@@ -54,7 +54,27 @@ export default function BrutNetPage() {
             Simulateur Brut → Net
           </h1>
           <p className="text-neutral-500 text-sm max-w-lg mx-auto">
-            Calculez votre salaire net en Israel. Basé sur les barèmes 2026 (impôt, Bituah Leumi, santé, pension).
+            Calculez votre salaire net en Israël. Basé sur les barèmes 2026 (impôt, Bituah Leumi, santé, pension).
+          </p>
+          <p className="text-xs text-neutral-400 mt-3">
+            Barèmes vérifiés le {new Date(LAST_VERIFIED_DATE).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })} · Tranches fiscales gelées par la loi des finances jusqu&apos;en 2027 ·{' '}
+            <a
+              href="https://www.taxes.gov.il"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-0.5 text-brand-600 hover:underline"
+            >
+              Rashut HaMisim <ExternalLink size={10} />
+            </a>
+            {' '}·{' '}
+            <a
+              href="https://www.btl.gov.il"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-0.5 text-brand-600 hover:underline"
+            >
+              Bituah Leumi <ExternalLink size={10} />
+            </a>
           </p>
         </div>
 
