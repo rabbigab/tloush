@@ -53,12 +53,26 @@ export default function OlimRightsPage() {
     [answers]
   );
 
-  const totalValue = applicableRights.reduce((sum, right) => {
-    if (right.amount && right.currency === "ILS") {
-      return sum + right.amount;
-    }
-    return sum;
-  }, 0);
+  // Separation par periodicite pour eviter d'additionner des sommes
+  // heterogenes (one-time + monthly + yearly = total trompeur).
+  // Les montants en USD sont exclus du total ILS — on compte leur
+  // presence pour afficher un avertissement explicite si besoin.
+  const monetaryBreakdown = applicableRights.reduce(
+    (acc, right) => {
+      if (!right.amount || !right.currency) return acc;
+      if (right.currency !== "ILS") {
+        acc.excludedForeignCount += 1;
+        return acc;
+      }
+      const periodicity = right.periodicity || "one-time";
+      if (periodicity === "one-time") acc.oneTime += right.amount;
+      else if (periodicity === "monthly") acc.monthly += right.amount;
+      else if (periodicity === "yearly") acc.yearly += right.amount;
+      return acc;
+    },
+    { oneTime: 0, monthly: 0, yearly: 0, excludedForeignCount: 0 },
+  );
+  const totalValue = monetaryBreakdown.oneTime;
 
   const handleArrivalDateChange = (value: string) => {
     if (value) {
@@ -543,21 +557,51 @@ export default function OlimRightsPage() {
           </div>
 
           {/* Total Value Card */}
-          {totalValue > 0 && (
+          {(monetaryBreakdown.oneTime > 0 ||
+            monetaryBreakdown.monthly > 0 ||
+            monetaryBreakdown.yearly > 0) && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className="bg-gradient-to-br from-success via-brand-600 to-brand-700 rounded-2xl p-8 text-white mb-10 shadow-lg"
             >
               <p className="text-sm font-medium opacity-90 mb-2">
-                Valeur estimée totale
+                Aides forfaitaires estimées
               </p>
               <h2 className="text-4xl sm:text-5xl font-bold mb-1">
-                {totalValue.toLocaleString("fr-FR")} ₪
+                {monetaryBreakdown.oneTime.toLocaleString("fr-FR")} ₪
               </h2>
               <p className="text-sm opacity-80">
-                Aides financières directes sur {applicableRights.length} droits
+                Sommes versées une seule fois (panier d&apos;absorption,
+                réductions douane, etc.)
               </p>
+
+              {(monetaryBreakdown.monthly > 0 ||
+                monetaryBreakdown.yearly > 0 ||
+                monetaryBreakdown.excludedForeignCount > 0) && (
+                <div className="mt-4 pt-4 border-t border-white/20 space-y-1 text-xs opacity-90">
+                  {monetaryBreakdown.monthly > 0 && (
+                    <p>
+                      + {monetaryBreakdown.monthly.toLocaleString("fr-FR")} ₪/mois
+                      d&apos;aides récurrentes mensuelles
+                    </p>
+                  )}
+                  {monetaryBreakdown.yearly > 0 && (
+                    <p>
+                      + {monetaryBreakdown.yearly.toLocaleString("fr-FR")} ₪/an
+                      d&apos;aides récurrentes annuelles
+                    </p>
+                  )}
+                  {monetaryBreakdown.excludedForeignCount > 0 && (
+                    <p className="opacity-75">
+                      {monetaryBreakdown.excludedForeignCount} aide
+                      {monetaryBreakdown.excludedForeignCount > 1 ? "s" : ""} en
+                      devise étrangère non comptabilisée
+                      {monetaryBreakdown.excludedForeignCount > 1 ? "s" : ""}
+                    </p>
+                  )}
+                </div>
+              )}
             </motion.div>
           )}
 
