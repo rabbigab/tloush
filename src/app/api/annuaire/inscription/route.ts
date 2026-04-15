@@ -22,10 +22,22 @@ export async function POST(req: NextRequest) {
   const reference_name = body.reference_name as string | undefined
   const reference_phone = body.reference_phone as string | undefined
   const years_experience = body.years_experience as number | undefined
+  const consent_public = body.consent_public as boolean | undefined
+  const consent_cgv = body.consent_cgv as boolean | undefined
 
   // Validation minimale
   if (!first_name?.trim() || !last_name?.trim() || !phone?.trim() || !category?.trim()) {
     return NextResponse.json({ error: 'Prenom, nom, telephone et categorie sont requis' }, { status: 400 })
+  }
+
+  // Consentement RGPD obligatoire : publication publique + CGV.
+  // La colonne consent_given_at est alimentee cote serveur pour
+  // garantir la coherence (l'horloge client ne peut pas mentir).
+  if (consent_public !== true || consent_cgv !== true) {
+    return NextResponse.json(
+      { error: 'Vous devez accepter la publication publique de votre fiche et les CGV pour continuer.' },
+      { status: 400 },
+    )
   }
 
   const { error } = await supabaseAdmin
@@ -43,6 +55,9 @@ export async function POST(req: NextRequest) {
       reference_name: reference_name?.trim() || null,
       reference_phone: reference_phone?.trim() || null,
       years_experience: years_experience || null,
+      consent_public: true,
+      consent_cgv: true,
+      consent_given_at: new Date().toISOString(),
     })
 
   if (error) {
