@@ -302,7 +302,7 @@ export default function CalculatorClient() {
           </div>
 
           <p className="text-[11px] text-slate-500 dark:text-slate-400 text-center">
-            Calcul indicatif base sur les taux 2024-2025. Des ecarts sont possibles selon votre situation personnelle. Consultez un expert-comptable pour un calcul exact.
+            Calcul indicatif base sur les taux 2026 (brackets geles jusqu'a 2027). Des ecarts sont possibles selon votre situation personnelle. Consultez un expert-comptable pour un calcul exact.
           </p>
         </div>
       )}

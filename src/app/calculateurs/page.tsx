@@ -95,7 +95,7 @@ export default function CalcuateursPage() {
           </h1>
           <p className="text-neutral-500 max-w-xl mx-auto text-sm">
             Des outils de calcul basés sur la législation israélienne en
-            vigueur en 2025. Gratuits et sans inscription.
+            vigueur en 2026. Gratuits et sans inscription.
           </p>
         </div>
 

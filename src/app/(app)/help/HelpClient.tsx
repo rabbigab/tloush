@@ -32,7 +32,7 @@ Votre fiche de paie israélienne contient plusieurs sections importantes :
 - קרן פנסיה = Caisse de retraite
 
 **Que vérifier ?**
-- Votre taux horaire doit être ≥ 32.30₪ (salaire minimum 2025)
+- Votre taux horaire doit être ≥ 32.30₪ (salaire minimum 2026)
 - Les heures sup doivent être payées 125% (2 premières) puis 150%
 - La cotisation retraite est obligatoire après 6 mois d'ancienneté
 - Vérifiez que vos congés (חופשה) et maladie (מחלה) s'accumulent
@@ -140,7 +140,7 @@ L'alya donne droit à de nombreux avantages fiscaux et sociaux.
     content: `**Le système fiscal israélien pour les francophones**
 
 **Impôt sur le revenu (מס הכנסה) :**
-Barème progressif 2025 :
+Barème progressif 2026 (brackets gelés 2025-2027) :
 - Jusqu'à 7 010₪ : 10%
 - 7 011 - 10 060₪ : 14%
 - 10 061 - 16 150₪ : 20%

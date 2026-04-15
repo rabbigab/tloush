@@ -17,7 +17,7 @@ const SECTIONS = [
   {
     title: "2. Description du service",
     content:
-      "Tloush permet à l'utilisateur de téléverser des documents administratifs (fiches de paie, factures, courriers officiels, contrats, etc.) et d'obtenir en retour une analyse automatisée en français générée par intelligence artificielle. Le Service inclut notamment : l'explication du contenu, la détection d'anomalies, les rappels d'échéances, le suivi des dépenses récurrentes, la gestion de dossiers et un assistant conversationnel. Tloush est un outil d'aide à la compréhension et ne remplace en aucun cas l'avis d'un professionnel qualifié (expert-comptable, avocat, conseiller fiscal).",
+      "Tloush permet à l'utilisateur de téléverser des documents administratifs (fiches de paie, factures, courriers officiels, contrats, etc.) et d'obtenir en retour une analyse automatisée en français générée par intelligence artificielle. Le Service inclut notamment : l'explication du contenu, la détection d'anomalies, les rappels d'échéances, le suivi des dépenses récurrentes, la gestion de dossiers, un assistant conversationnel, un ensemble de calculateurs (salaire, pitzuim, congés, maternité, etc.), un détecteur de droits et aides, ainsi qu'un annuaire de prestataires francophones régi par l'article 10. Tloush est un outil d'aide à la compréhension et ne remplace en aucun cas l'avis d'un professionnel qualifié (expert-comptable, avocat, conseiller fiscal).",
   },
   {
     title: "3. Création de compte",
@@ -27,7 +27,7 @@ const SECTIONS = [
   {
     title: "4. Plans et tarification",
     content:
-      "Tloush propose trois formules : un plan Gratuit (3 analyses offertes, historique 7 jours, sans assistant IA), un plan Solo à 49 ILS par mois (30 analyses par mois, historique 1 an, assistant IA limité à 200 messages par mois, traduction des messages hébreux, support prioritaire) et un plan Famille à 99 ILS par mois (100 analyses par mois, historique 1 an, assistant IA limité à 500 messages par mois, jusqu'à 5 membres avec quota partagé). Les prix sont indiqués en shekels israéliens (ILS) toutes taxes comprises. Le paiement est mensuel et s'effectue par carte bancaire via notre prestataire Stripe. L'abonnement est tacitement renouvelé chaque mois jusqu'à annulation par l'utilisateur. Tloush se réserve le droit de modifier les quotas et fonctionnalités des plans moyennant un préavis de 30 jours par email, conformément à l'article 12.",
+      "Tloush propose trois formules : un plan Gratuit (3 analyses offertes, historique 7 jours, sans assistant IA), un plan Solo à 49 ILS par mois (30 analyses par mois, historique 1 an, assistant IA limité à 200 messages par mois, traduction des messages hébreux, support prioritaire) et un plan Famille à 99 ILS par mois (100 analyses par mois, historique 1 an, assistant IA limité à 500 messages par mois, jusqu'à 5 membres avec quota partagé). Les prix sont indiqués en shekels israéliens (ILS) toutes taxes comprises. Le paiement est mensuel et s'effectue par carte bancaire via notre prestataire Stripe. L'abonnement est tacitement renouvelé chaque mois jusqu'à annulation par l'utilisateur. Tloush se réserve le droit de modifier les quotas et fonctionnalités des plans moyennant un préavis de 30 jours par email, conformément à l'article 13.",
   },
   {
     title: "5. Paiement et facturation",
@@ -55,27 +55,32 @@ const SECTIONS = [
       "Les analyses générées par Tloush sont fournies à titre indicatif et informatif uniquement. Elles ne constituent en aucun cas un conseil juridique, fiscal, comptable ou administratif. L'utilisateur reste seul responsable des décisions qu'il prend sur la base de ces analyses. Tloush ne peut être tenu responsable d'erreurs d'interprétation, de dommages directs ou indirects résultant de l'utilisation du Service, ni d'interruptions de service imputables à des tiers (hébergeurs, fournisseurs d'API).",
   },
   {
-    title: "10. Obligations de l'utilisateur",
+    title: "10. Annuaire de prestataires (/annuaire)",
+    content:
+      "Tloush met à disposition un annuaire de prestataires francophones (plombiers, électriciens, peintres, serruriers, comptables, avocats, etc.) sélectionnés par l'équipe Tloush. Cet annuaire a une vocation purement informative : Tloush n'intervient ni dans la prestation de services, ni dans la facturation, ni dans les litiges entre utilisateurs et prestataires. Le référencement d'un prestataire ne constitue pas un engagement de qualité, de disponibilité, de prix ou de conformité de la part de Tloush. Chaque utilisateur est responsable de la vérification des compétences, assurances, licences et références du prestataire qu'il choisit de contacter. Les avis publiés par les utilisateurs sont modérés a posteriori ; Tloush se réserve le droit de retirer un avis ou de déréférencer un prestataire en cas de plainte fondée, sans que sa responsabilité puisse être engagée. Pour tout litige avec un prestataire, l'utilisateur doit s'adresser directement à celui-ci ou aux autorités compétentes.",
+  },
+  {
+    title: "11. Obligations de l'utilisateur",
     content:
       "L'utilisateur s'engage à ne téléverser que des documents dont il est propriétaire ou pour lesquels il dispose d'une autorisation de traitement. Il s'engage à ne pas utiliser le Service à des fins illégales, frauduleuses ou portant atteinte aux droits de tiers. Tout manquement peut entraîner la suspension ou la résiliation du compte sans préavis.",
   },
   {
-    title: "11. Disponibilité",
+    title: "12. Disponibilité",
     content:
       "Tloush s'efforce de maintenir le Service accessible 24h/24 et 7j/7, mais ne garantit pas une disponibilité absolue. Des interruptions peuvent survenir pour maintenance, mise à jour ou en raison de facteurs indépendants (pannes des prestataires tiers). Tloush ne saurait être tenu responsable des conséquences de ces interruptions.",
   },
   {
-    title: "12. Modifications des CGV",
+    title: "13. Modifications des CGV",
     content:
       "Tloush se réserve le droit de modifier les présentes CGV à tout moment. Les utilisateurs seront informés par email des modifications substantielles au moins 30 jours avant leur entrée en vigueur. La poursuite de l'utilisation du Service après cette date vaut acceptation des nouvelles CGV.",
   },
   {
-    title: "13. Droit applicable",
+    title: "14. Droit applicable",
     content:
       "Les présentes CGV sont régies par le droit israélien. Tout litige relatif à l'exécution, l'interprétation ou la résiliation des présentes sera soumis à la compétence exclusive des tribunaux du ressort du siège social de Tloush, sauf disposition légale impérative contraire.",
   },
   {
-    title: "14. Contact",
+    title: "15. Contact",
     content:
       "Pour toute question relative aux présentes CGV, contactez-nous à contact@tloush.com.",
   },

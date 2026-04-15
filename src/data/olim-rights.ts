@@ -1,5 +1,15 @@
 export type RightCategory = "financial" | "tax" | "housing" | "health" | "employment" | "education" | "immigration";
 export type UrgencyLevel = "immediate" | "3months" | "noturgent";
+/**
+ * Periodicite d'un montant:
+ * - 'one-time'  : somme forfaitaire versee une seule fois (panier
+ *                 d'absorption, reduction douane vehicule, etc.)
+ * - 'monthly'   : montant recurrent mensuel
+ * - 'yearly'    : montant recurrent annuel
+ * Utilisee pour eviter d'additionner des aides de frequences
+ * differentes dans le totalValue affiche a l'utilisateur.
+ */
+export type AmountPeriodicity = "one-time" | "monthly" | "yearly";
 
 export interface OlimRight {
   id: string;
@@ -9,6 +19,8 @@ export interface OlimRight {
   icon: string;
   amount?: number;
   currency?: "ILS" | "USD";
+  /** Defaut: 'one-time'. Voir AmountPeriodicity. */
+  periodicity?: AmountPeriodicity;
   duration?: string;
   urgency: UrgencyLevel;
   howTo: string;

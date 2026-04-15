@@ -54,7 +54,7 @@ export default function BrutNetPage() {
             Simulateur Brut → Net
           </h1>
           <p className="text-neutral-500 text-sm max-w-lg mx-auto">
-            Calculez votre salaire net en Israel. Basé sur les barèmes 2025 (impôt, Bituah Leumi, santé, pension).
+            Calculez votre salaire net en Israel. Basé sur les barèmes 2026 (impôt, Bituah Leumi, santé, pension).
           </p>
         </div>
 
@@ -240,7 +240,7 @@ export default function BrutNetPage() {
         {/* Disclaimer */}
         <div className="bg-neutral-100 rounded-2xl p-4 text-center">
           <p className="text-xs text-neutral-500">
-            ⚠️ Estimation basée sur les barèmes 2025. Les montants exacts peuvent varier selon votre convention collective,
+            ⚠️ Estimation basée sur les barèmes 2026. Les montants exacts peuvent varier selon votre convention collective,
             votre ancienneté et votre situation personnelle. Consultez un comptable pour un calcul exact.
           </p>
         </div>
