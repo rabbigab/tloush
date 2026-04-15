@@ -1832,6 +1832,120 @@ const HOLOCAUST_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION 16B — Reconnaissance historique speciale (niche)
+// =====================================================
+// Sources :
+// - Loi Asirei Tzion 5752-1992 : https://www.btl.gov.il/benefits/Prisoners_of_Zion/Pages/default.aspx
+// - Loi Khasidei Umot Olam 5755-1995 : https://www.btl.gov.il/benefits/Righteous_among_nations/Pages/default.aspx
+// - Yad Vashem (reconnaissance) : https://www.yadvashem.org/righteous.html
+//
+// Allocations niches administrees par Bituach Leumi pour des categories
+// historiquement reconnues : prisonniers de Sion (dissidents sovietiques
+// emprisonnes pour activite sioniste) et Justes parmi les Nations (non-Juifs
+// reconnus par Yad Vashem pour avoir sauve des Juifs durant la Shoah).
+//
+// Les montants precis 2026 ne sont pas publiquement affiches par BL et
+// varient selon la reconnaissance, le handicap eventuel et les ayants-droit.
+// Les valeurs ci-dessous sont des fourchettes legales indicatives - la
+// demande se fait individuellement via BL.
+
+const SPECIAL_RECOGNITION_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'asirei_tzion',
+    category: 'special',
+    authority: 'bituach_leumi',
+    title_fr: 'Allocation Prisonniers de Sion (Asirei Tzion)',
+    title_he: 'תגמולים לאסירי ציון',
+    description_fr:
+      'Allocation mensuelle versee par Bituach Leumi aux personnes officiellement reconnues comme Prisonniers de Sion (emprisonnees dans un pays d\'origine pour activite sioniste) et a leurs ayants-droit.',
+    full_description_fr:
+      'Loi 5752-1992 (Chok Tagmulim le-Asirei Tzion u-Vnei Mishpahoteihem). ' +
+      'Concerne principalement les juifs dissidents des pays du bloc sovietique ou arabes ' +
+      'emprisonnes au moins 6 mois pour leur activite sioniste (organisation d\'hebreu clandestin, ' +
+      'demande d\'emigration, refus de service militaire pour motifs sionistes, etc.). ' +
+      '\n\n' +
+      'Prestations cumulables selon le statut : ' +
+      '- Allocation mensuelle de base (Tagmul Hodshi) : alignee sur le salaire moyen de l\'economie (~11 000-13 000 NIS/mois en 2026) ' +
+      '- Supplement handicap : si le prisonnier a subi une incapacite reconnue durant sa detention (majoration proportionnelle) ' +
+      '- Pension de veuvage : pour le conjoint survivant d\'un prisonnier de Sion decede ' +
+      '- Allocation orphelin : pour les enfants mineurs apres deces du parent prisonnier ' +
+      '- Soins medicaux et rehabilitation : couverture specifique au-dela de Kupat Holim ' +
+      '- Reductions Arnona, transport public, impot (lois annexes) ' +
+      '\n\n' +
+      'Procedure : dossier a deposer a la commission speciale BL (Vaadat Keria le-Hakaratz be-Asirei Tzion) ' +
+      'avec preuves de la periode d\'emprisonnement (archives KGB, temoignages, Yad Vashem pour les dissidents ' +
+      'sovietiques). Reconnaissance a vie une fois accordee. Aucune limite d\'age.',
+    conditions: {
+      requires_resident: true,
+      // Les Asirei Tzion sont presque toujours olim (venus d'URSS/pays arabes)
+      // mais la reconnaissance n'est pas conditionnee a l'olim status.
+    },
+    estimated_annual_value: 11000 * 12,  // base individu reconnu
+    value_unit: 'NIS/an (~11 000-13 000/mois base, +supplements)',
+    typical_monthly_amount: 11000,
+    application_url: 'https://www.btl.gov.il/benefits/Prisoners_of_Zion/Pages/default.aspx',
+    action_label: 'Demande de reconnaissance',
+    info_url: 'https://www.kolzchut.org.il/he/אסירי_ציון',
+    disclaimer:
+      'Droit niche : concerne principalement les olim d\'ex-URSS et pays arabes ayant ete emprisonnes pour activite sioniste. La reconnaissance se fait via une commission speciale BL. Si vous etes concerne(e) ou descendant(e), contactez imperativement un avocat specialise ou l\'Association des Prisonniers de Sion (Israel Council for the Welfare of Former Prisoners of Zion).',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-14',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 14/04/2026 (Phase E niche). Loi 5752-1992. Montants indexes sur le salaire moyen economie - valeur exacte 2026 non publiee par BL, fourchette 11-13k NIS/mois coherente avec le SMB 2026 (~13 300 NIS). Reconnaissance a vie par commission BL speciale. Confidence medium car montants precis non affiches publiquement - chaque dossier est individuel.',
+  },
+  {
+    slug: 'khasidei_umot_olam',
+    category: 'special',
+    authority: 'bituach_leumi',
+    title_fr: 'Allocation Justes parmi les Nations (Khasidei Umot Olam)',
+    title_he: 'גמלה לחסידי אומות העולם',
+    description_fr:
+      'Allocation mensuelle versee par Bituach Leumi aux non-Juifs officiellement reconnus par Yad Vashem comme "Justes parmi les Nations" pour avoir sauve des Juifs durant la Shoah, ainsi qu\'a leurs conjoints survivants s\'ils resident en Israel.',
+    full_description_fr:
+      'Loi 5755-1995 (Chok Gimlaot le-Khasidei Umot ha-Olam). ' +
+      'Reserve aux personnes qui ont recu le titre officiel de Juste parmi les Nations ' +
+      'decerne par l\'Institut Yad Vashem apres examen de leur dossier (avoir sauve des Juifs ' +
+      'au peril de leur vie pendant la Shoah, sans contrepartie financiere). ' +
+      '\n\n' +
+      'Prestations : ' +
+      '- Allocation mensuelle : alignee sur le salaire moyen de l\'economie (~11 000-13 000 NIS/mois en 2026) ' +
+      '- Conjoint survivant : continuite de l\'allocation apres le deces du Juste reconnu ' +
+      '- Couverture medicale Kupat Holim complete (cout pris en charge par l\'Etat) ' +
+      '- Droit de residence permanent en Israel (si Juste non-israelien souhaite y vivre) ' +
+      '- Reductions Arnona, transport public, impot foncier ' +
+      '- Aide au logement dans un etablissement specialise si besoin ' +
+      '\n\n' +
+      'Procedure : ' +
+      '1. Reconnaissance prealable par la Commission des Justes parmi les Nations de Yad Vashem ' +
+      '   (dossier avec temoignages de survivants, preuves, documents d\'epoque). ' +
+      '2. Une fois le titre decerne, demande d\'allocation a Bituach Leumi avec copie de la reconnaissance Yad Vashem. ' +
+      '3. Allocation versee des l\'arrivee ou la residence en Israel. ' +
+      '\n\n' +
+      'En 2026, environ 28 000 Justes ont ete reconnus dans le monde, mais seule une poignee reside ' +
+      'actuellement en Israel (la plupart sont decedes ou vivent dans leur pays d\'origine). ' +
+      'Cette allocation concerne principalement les conjoints survivants encore en vie.',
+    conditions: {
+      requires_resident: true,
+      // Droit reserve aux Justes reconnus par Yad Vashem (non modelisable en conditions).
+    },
+    estimated_annual_value: 11000 * 12,
+    value_unit: 'NIS/an (~11 000-13 000/mois)',
+    typical_monthly_amount: 11000,
+    application_url: 'https://www.btl.gov.il/benefits/Righteous_among_nations/Pages/default.aspx',
+    action_label: 'Infos Yad Vashem + BL',
+    info_url: 'https://www.yadvashem.org/righteous.html',
+    disclaimer:
+      'Droit extremement niche : reserve aux Justes parmi les Nations officiellement reconnus par Yad Vashem et leur conjoint survivant. Si vous etes concerne(e), contactez d\'abord la Commission des Justes de Yad Vashem (righteous@yadvashem.org.il) pour confirmer la reconnaissance, puis Bituach Leumi pour l\'allocation.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-14',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 14/04/2026 (Phase E niche). Loi 5755-1995. Montants indexes sur le salaire moyen economie (~11-13k NIS/mois en 2026). Tres peu de beneficiaires vivants (~quelques dizaines en Israel), mais critique pour les rares dossiers concernes. Confidence medium car montants exacts non affiches publiquement par BL.',
+  },
+]
+
+// =====================================================
 // SECTION 17 — Students (Etudiants)
 // =====================================================
 
@@ -2388,6 +2502,7 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...HOUSING_OLIM_BENEFITS,
   ...ARNONA_BENEFITS,
   ...HOLOCAUST_BENEFITS,
+  ...SPECIAL_RECOGNITION_BENEFITS,
   ...STUDENT_BENEFITS,
   ...COMBAT_RESERVIST_BENEFITS,
   ...CHILDCARE_BENEFITS,
