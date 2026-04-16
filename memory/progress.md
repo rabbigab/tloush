@@ -1,5 +1,110 @@
 # Avancement Tloush
 
+## Chantier 2 — Audit fraîcheur + constantes fiscales 2026 ✅ (2026-04-16)
+
+### Livrables
+
+| # | PR | Contenu |
+|---|---|---|
+| 1 | #25 | `audit(fraicheur): memory/audit_fraicheur.md` — rapport 125 aides + constantes 2026 |
+| 2 | #26 | `fix(fiscal): mise à jour constantes fiscales 2026 + nekudat zikui non confirmée` |
+
+### Audit fraîcheur (#25)
+
+`memory/audit_fraicheur.md` (475 lignes, 5 sections) :
+- Synthèse globale + détail par autorité (BTL, Mas Hakhnasa, kupot holim, Misrad HaKlita, etc.).
+- Audit constantes fiscales + glossaire.
+- 12 recommandations P0/P1/P2. Prochain audit prévu 2026-10-01.
+- **Résultat** : 125/125 entrées catalogue ✅ Frais (aucune périmée, aucune à vérifier).
+
+### Constantes fiscales mises à jour (#26)
+
+**Tranches 2026** (`israeliPayroll.ts`, `taxRefund.ts`, `freelanceMode.ts`) :
+- Tranche 20% élargie : 120 720 → **228 000 NIS/an** (était 193 800).
+- Tranche 31% décalée : 228 000 → **301 200 NIS/an** (était 193 800–269 280).
+- Tranches supérieures (35/47/50%) : inchangées.
+
+**Bituah Leumi atzmai 2026** :
+- Seuil réduit : 7 522 → **7 703 NIS/mois** (60% schar memutza indexé CPI).
+- Plafond assurable : 50 695 → **51 910 NIS/mois**.
+
+**Nekudat zikui** : maintenu à 242 NIS/mois (2 904/an). Commentaire explicite : *"valeur 2025, non confirmée 2026 — à revérifier quand taxes.gov.il publiera la brochure officielle 2026"*.
+
+**EUR/NIS unifié** (`benefitsCatalog.ts`) :
+- 3 taux hardcodés (4.00 / 4.10 / 4.20) remplacés par `EXCHANGE_RATE_EUR_NIS = 3.5268` (Bank of Israel 16/04/2026).
+- Helper `eurToNis()` utilisé sur toutes les entrées Shoah.
+
+**`LAST_VERIFIED_DATE = '2026-04-16'`** exporté depuis les 3 fichiers fiscaux.
+
+---
+
+## Chantier 4 — Scanner universel + 8 types spécialisés ✅ (2026-04-16)
+
+### Objectif
+
+Tout document uploadé est analysé automatiquement (plus de sélection manuelle du type). Détection Claude Vision → analyse spécialisée si type reconnu, sinon analyse universelle.
+
+### Livrables
+
+| # | PR | Contenu |
+|---|---|---|
+| A | #27 | `feat(scanner): mode universel + détection automatique` — fondation |
+| B | #28 | `feat(scanner): 4 types santé + disclaimer médical` |
+| C | #29 | `feat(scanner): 4 types courriers et factures` |
+
+### PR A — Fondation (#27)
+
+**Flow :** Upload → Pass 1 (détection Claude Vision, 256 tokens) → Pass 2 (analyse spécialisée ou universelle).
+
+**Nouveau type `universal`** :
+- Résumé FR 3–5 phrases.
+- Traduction HE→FR complète si document en hébreu.
+- Extraction auto : dates, montants, noms, institutions.
+- Actions suggérées : `reminder` (échéance) ou `reply` (template de réponse).
+
+**UI** :
+- Suppression du step `selectType` + des 6 cartes.
+- Flow en 3 étapes : Upload → Analyse (spinner) → Résultats.
+- Composant `UniversalResults`.
+
+### PR B — 4 types santé (#28)
+
+| Type | Champs clés |
+|---|---|
+| `medicalBill` | provider + type, montants (total/dû/remboursable), kupat holim, détail postes, alertes dépassement |
+| `kupatHolimLetter` | caisse, type (auth/refus/convocation/rappel), traduction HE→FR, procédure d'appel, template de réponse |
+| `prescription` | médecin, médicaments (nom HE + FR/DCI), dosage/posologie/durée, warnings d'interaction |
+| `labResults` | labo, paramètres (HE + FR), valeur, unité, intervalle, `horsNorme: boolean`, `interpretation: low/high/normal` |
+
+**Disclaimer médical** : composant `MedicalDisclaimer` affiché au-dessus des résultats pour les 4 types santé. *"Analyse à titre informatif — ne remplace pas un avis médical professionnel."*
+
+Guard typé : `HealthDocumentType` + `isHealthDocument()`.
+
+### PR C — 4 types courriers et factures (#29)
+
+| Type | Champs clés |
+|---|---|
+| `personalLetter` | sender, date, ton (formel/informel/urgent/amical), traduction HE→FR, réponse adaptée au ton |
+| `schoolLetter` | école, classe, enfant, subject typé, deadline, amountDue, actions typées, template de réponse |
+| `privateLetter` | sender + senderType (bank/insurance/telecom), subjectType, urgence, actions avec deadlines, template de contestation |
+| `utilityInvoice` | utilityType (arnona/élec/eau/gaz), période, montant, dueDate, customerCode, paymentReference, `abnormalIncrease` >20%, `suggestedReminderDate` = dueDate − 3 jours |
+
+### Récapitulatif types supportés
+
+**11 types** : `payslip`, `contract`, `officialLetter`, `taxNotice`, `lease`, `termination` (existants avant chantier 4), `medicalBill`, `kupatHolimLetter`, `prescription`, `labResults`, `personalLetter`, `schoolLetter`, `privateLetter`, `utilityInvoice` (8 nouveaux), + `universal` (fallback).
+
+### Pas de migration SQL
+
+Route `/api/scan` stateless — aucune écriture DB, aucune contrainte CHECK à mettre à jour.
+
+---
+
+## Chantier 1 — Reste à faire
+
+À cadrer ultérieurement.
+
+---
+
 ## Chantier 3 — Détecteur d'aides
 
 ### Étape A — Audit questionnaire (2026-04-16)
