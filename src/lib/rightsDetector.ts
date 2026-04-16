@@ -264,6 +264,17 @@ function matchProfile(
     }
   }
 
+  // Origine de l'invalidite (idf / work / general)
+  if (conditions.required_disability_source) {
+    totalChecks++
+    if (profile.disability_source === conditions.required_disability_source) {
+      passedChecks++
+      reasons.push(`Invalidite d'origine ${conditions.required_disability_source}`)
+    } else {
+      return { matches: false, score: 0, reasons: [] }
+    }
+  }
+
   // Revenu max
   if (conditions.max_monthly_income !== undefined) {
     totalChecks++

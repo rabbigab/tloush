@@ -10,6 +10,7 @@ import type {
   Gender,
   EducationLevel,
   ShoahPeriod,
+  DisabilitySource,
 } from '@/types/userProfile'
 
 // =====================================================
@@ -47,6 +48,7 @@ const VALID_KUPAT: KupatHolim[] = ['clalit', 'maccabi', 'meuhedet', 'leumit']
 const VALID_HOUSING: HousingStatus[] = ['renter', 'owner', 'living_with_family', 'public_housing', 'other']
 const VALID_EDUCATION: EducationLevel[] = ['none', 'high_school', 'vocational', 'ba', 'ma', 'phd', 'other']
 const VALID_SHOAH_PERIOD: ShoahPeriod[] = ['pre_1953', 'post_1953', 'ex_urss']
+const VALID_DISABILITY_SOURCE: DisabilitySource[] = ['idf', 'work', 'general']
 
 function num(v: unknown, min?: number, max?: number): number | null | 'error' {
   if (v === null || v === undefined || v === '') return null
@@ -168,6 +170,7 @@ function validateUpdate(body: unknown): UserProfileUpdate | { error: string } {
     if (r === 'error') return { error: 'disability_level invalide (0-100)' }
     clean.disability_level = r
   }
+  if ('disability_source' in b) clean.disability_source = enumCheck(b.disability_source, VALID_DISABILITY_SOURCE)
   if ('kupat_holim' in b) clean.kupat_holim = enumCheck(b.kupat_holim, VALID_KUPAT)
   if ('is_holocaust_survivor' in b) clean.is_holocaust_survivor = bool(b.is_holocaust_survivor)
   if ('shoah_period' in b) clean.shoah_period = enumCheck(b.shoah_period, VALID_SHOAH_PERIOD)

@@ -14,6 +14,7 @@ import type {
   HousingStatus,
   EducationLevel,
   ShoahPeriod,
+  DisabilitySource,
 } from '@/types/userProfile'
 import {
   GENDER_LABELS,
@@ -23,6 +24,7 @@ import {
   HOUSING_STATUS_LABELS,
   EDUCATION_LEVEL_LABELS,
   SHOAH_PERIOD_LABELS,
+  DISABILITY_SOURCE_LABELS,
 } from '@/types/userProfile'
 
 const INPUT_CLS = 'w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
@@ -43,7 +45,7 @@ const EDITABLE_FIELDS: (keyof UserProfileUpdate)[] = [
   'served_in_idf', 'military_discharge_year', 'is_combat_veteran',
   'is_active_reservist', 'is_bereaved_family',
   'education_level', 'is_current_student', 'institution_name',
-  'kupat_holim', 'disability_level',
+  'kupat_holim', 'disability_level', 'disability_source',
   'is_holocaust_survivor', 'shoah_period', 'is_caregiver', 'chronic_illness',
   'has_mobility_limitation', 'has_disabled_child', 'is_7octobre_victim',
   'city', 'municipality', 'housing_status', 'home_size_sqm', 'has_mortgage',
@@ -532,7 +534,11 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
             min={0}
             max={100}
             value={profile.disability_level ?? ''}
-            onChange={(e) => update('disability_level', e.target.value ? Number(e.target.value) : null)}
+            onChange={(e) => {
+              const next = e.target.value ? Number(e.target.value) : null
+              update('disability_level', next)
+              if (!next || next === 0) update('disability_source', null)
+            }}
             placeholder="0"
             className={INPUT_CLS}
           />
@@ -540,6 +546,24 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
             Confidentiel. Debloque : allocation invalidite BL, reduction arnona, exemption mas, mobilite.
           </p>
         </Field>
+
+        {(profile.disability_level ?? 0) > 0 && (
+          <Field label="Origine de l'invalidité">
+            <select
+              value={profile.disability_source ?? ''}
+              onChange={(e) => update('disability_source', (e.target.value || null) as DisabilitySource | null)}
+              className={INPUT_CLS}
+            >
+              <option value="">— Sélectionner —</option>
+              {(Object.keys(DISABILITY_SOURCE_LABELS) as DisabilitySource[]).map(s => (
+                <option key={s} value={s}>{DISABILITY_SOURCE_LABELS[s]}</option>
+              ))}
+            </select>
+            <p className="text-xs text-slate-400 mt-1">
+              Détermine le ministère compétent et les aides spécifiques (IDF = Misrad HaBitahon, travail/général = Bituach Leumi).
+            </p>
+          </Field>
+        )}
 
         <Field label="Situations particulieres">
           <div className="space-y-1">
