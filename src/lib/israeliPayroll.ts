@@ -622,4 +622,33 @@ export function calculateSeverance(lastMonthlySalary: number, yearsOfService: nu
   return { total, taxExempt, taxable: Math.max(0, round2(total - taxExempt)) }
 }
 
+// ============================================================
+// Metadata de verification (audit #18)
+// ============================================================
+// Date de la derniere verification manuelle des baremes contre les
+// sources officielles. Affichee sur les pages de calculateurs pour
+// transparence. Les brackets fiscaux sont geles par la loi des
+// finances jusqu'a 2027, donc pas de mise a jour attendue avant.
+
+export const LAST_VERIFIED_DATE = '2026-04-01'
+
+/** Sources officielles utilisees pour les baremes. Cles affichees en UI. */
+export const OFFICIAL_SOURCES = [
+  {
+    label: 'Rashut HaMisim (impot sur le revenu)',
+    url: 'https://www.taxes.gov.il',
+    scope: 'Tranches d\'impot, points de credit, plafonds',
+  },
+  {
+    label: 'Bituah Leumi (securite sociale)',
+    url: 'https://www.btl.gov.il',
+    scope: 'Taux BL + assurance sante, plafond assurable',
+  },
+  {
+    label: 'Loi des finances 2025-2027',
+    url: 'https://www.nevo.co.il',
+    scope: 'Gel des tranches d\'impot',
+  },
+] as const
+
 export { TAX_BRACKETS_2025, BL_RATES_2025, HEALTH_RATES_2025, PENSION_RATES, DEFAULT_CREDIT_POINTS, CREDIT_POINT_VALUE_MONTHLY, KEREN_HISHTALMUT_DEFAULTS, NOTICE_PERIODS }

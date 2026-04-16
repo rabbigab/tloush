@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { templates, CATEGORY_LABELS } from "@/data/templates";
+import { ArrowLeft, Calendar } from "lucide-react";
+import { templates, CATEGORY_LABELS, TEMPLATES_VERIFIED_AT } from "@/data/templates";
 import TemplateFiller from "./TemplateFiller";
 
 export async function generateStaticParams() {
@@ -53,6 +53,15 @@ export default function TemplatePage({
               {template.title}
             </h1>
             <p className="text-sm text-neutral-600">{template.description}</p>
+            <p className="text-xs text-neutral-400 mt-2 flex items-center gap-1">
+              <Calendar size={11} />
+              Mis à jour le{' '}
+              {new Date(template.updatedAt || TEMPLATES_VERIFIED_AT).toLocaleDateString("fr-FR", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
           </div>
         </div>
 

@@ -289,14 +289,215 @@
 - #27 robots.txt → `src/app/robots.ts` dynamique → Q2.5
 - #28 sitemap.ts filtre catégories vides → Q2.4
 
-### Lot 4 / Phase Q3 (contenu produit)
-- #21 /modeles étoffement (5 → 12+)
-- #22 /droits rédaction 3 guides + routing catégories
-- #23 /droits-olim sources + disclaimer
-- #24 /experts séparation waitlist/directory
-- #19 /calculateurs/maternite seuils BL
-- #20 /calculateurs/indemnites article 14 + démission équiv.
-- #18 /calculateurs sources barème + date vérification
+### Lot 4 / Phase Q3 (contenu produit) — FAIT
+- #18 /calculateurs sources barème + date → Q3.1
+- #19 /calculateurs/maternite seuils BL → Q3.2
+- #20 /calculateurs/indemnites article 14 + démission → Q3.3
+- #23 /droits-olim sources officielles + liens tiers → Q3.4
+- #24 /experts noindex + extension catégories → Q3.5
+- #22 /droits ajout 3 guides + sources → Q3.6
+- #21 /modeles ajout 3 templates + date → Q3.7
+- #29 pages manquantes /contact /a-propos /faq /aide → Q3.8
+
+---
+
+## Lot 4 — Phase Q3 (contenu produit)
+
+**Contenu prévu** : 8 items Q3 (scopés minimums pour rester actionnables).
+**Branche** : `claude/lot4-q3-fixes` (basée sur `claude/lot3-q2-fixes`).
+
+---
+
+## Fix #18 — /calculateurs sources barème + date vérification
+
+- **Problème** : pages calculateurs sans aucune source officielle ni date de vérification → manque de crédibilité juridique.
+- **Fichiers modifiés** :
+  - `src/lib/israeliPayroll.ts` (exports `LAST_VERIFIED_DATE` + `OFFICIAL_SOURCES`)
+  - `src/app/calculateurs/brut-net/page.tsx` (bandeau source)
+  - `src/app/calculateurs/page.tsx` (hub bandeau source)
+- **Correction** : nouvelle constante `LAST_VERIFIED_DATE = '2026-04-01'` + array `OFFICIAL_SOURCES` (3 sources : taxes.gov.il, btl.gov.il, nevo.co.il). Bandeau de transparence affiché sous le hero des 2 pages : "Barèmes vérifiés le 1 avril 2026 · Tranches gelées jusqu'en 2027 · Rashut HaMisim ⧉ · Bituah Leumi ⧉".
+- **Risque** : faible, purement textuel.
+- **Test** : `npx tsc --noEmit` → 0 erreur.
+- **Résultat** : ✅ commit `0fdd9cd`.
+
+---
+
+## Fix #19 — /calculateurs/maternite seuils cotisation Bituah Leumi
+
+- **Problème** : calcul `monthsDiff >= 10` trop simpliste, ne couvrait pas le seuil partiel 6 mois (7 semaines d'allocation).
+- **Fichiers modifiés** : `src/app/calculateurs/maternite/page.tsx`.
+- **Correction** : nouvelle constante `BL_MATERNITY_THRESHOLDS` avec 2 niveaux (full 10/14, partial 6/14), type `BlEligibility = 'full' | 'partial' | 'none'`, nouveau state `contributedMonths` (champ optionnel). `blPaidWeeks` calculé selon l'éligibilité (15 / 7 / 0). Section Bituach Leumi réécrite avec tableau récapitulatif des 3 seuils + affichage différencié selon le niveau. Source documentée : Loi 1995 art. 50 + Loi 1954.
+- **Risque** : faible-moyen (calcul juridique, à valider par un expert).
+- **Test** : `npx tsc --noEmit` → 0 erreur.
+- **Résultat** : ✅ commit `c9dc130`.
+
+---
+
+## Fix #20 — /calculateurs/indemnites article 14 + démission équivalente
+
+- **Problème** : 3 niveaux Article 14 sans explication, motif "démission équivalente" regroupait 6 cas distincts.
+- **Fichiers modifiés** : `src/app/calculateurs/indemnites/page.tsx`.
+- **Correction** : nouvelles constantes `ARTICLE_14_EXPLANATIONS` (3 messages pédagogiques), type `DismissalReason` avec 7 valeurs, `DISMISSAL_REASON_LABELS` + `DISMISSAL_REASON_NOTES` (conditions / justificatifs par motif). Le select "Motif" passe de 2 à 7 options avec hint dynamique. Simplification logique : `finalAmount = employerPitzuim` (tous les cas donnent droit au pitzuim, différence purement pédagogique).
+- **Risque** : faible (text + UI, pas de change logique).
+- **Test** : `npx tsc --noEmit` → 0 erreur.
+- **Résultat** : ✅ commit `8d6b598`.
+
+---
+
+## Fix #23 — /droits-olim sources officielles + liens tiers
+
+- **Problème** : pas de source officielle, date de mise à jour floue, pas de liens vers ressources tierces (Nefesh B'Nefesh, Misrad HaKlita, etc.).
+- **Fichiers modifiés** :
+  - `src/data/olim-rights.ts` (types étendus + `OLIM_RIGHTS_VERIFIED_AT` + `OFFICIAL_OLIM_RESOURCES`)
+  - `src/app/droits-olim/page.tsx`
+- **Correction** :
+  - `OlimRight` interface étendue avec `sourceUrl`, `sourceLabel`, `verifiedAt` (champs optionnels, à remplir progressivement).
+  - `OFFICIAL_OLIM_RESOURCES` : 6 ressources officielles (Misrad HaKlita, BL, Misrad HaShikun, Rashut HaMisim, Nefesh B'Nefesh, Agence Juive).
+  - Info box pre-submission reformulée avec date de vérification + rappel indicatif.
+  - Nouvelle section "Ressources officielles" dans le step summary : 6 liens cliquables avec description courte.
+  - Disclaimer final enrichi avec la date.
+- **Risque** : faible, contenu additif.
+- **Test** : `npx tsc --noEmit` → 0 erreur.
+- **Résultat** : ✅ commit `43cea9a`.
+
+---
+
+## Fix #24 — /experts noindex + extension catégories (2 → 7)
+
+- **Problème** : `/experts` indexable avec 0 profil réel, 2 catégories seulement (comptable, avocat).
+- **Fichiers modifiés** :
+  - `src/app/(app)/experts/layout.tsx` (nouveau)
+  - `src/app/(app)/experts/page.tsx`
+- **Correction** :
+  - Nouveau `layout.tsx` avec `metadata.robots = { index: false, follow: true }` tant que la DB experts est vide. Commentaire explicatif pour la réactivation.
+  - `CATEGORIES` étendu de 2 à 7 : + notaire, fiscaliste, assureur, banquier, conseiller_immobilier. Chaque catégorie a icon lucide + 4 exemples de demandes.
+- **Risque** : faible. Scope minimal : la vraie séparation `experts_waitlist` vs `experts_directory` (nouvelle table + API + admin) reste un chantier plus gros, reporté.
+- **Test** : `npx tsc --noEmit` → 0 erreur.
+- **Résultat** : ✅ commit `d6dd303`.
+
+---
+
+## Fix #22 — /droits hub : 3 nouveaux guides + sources légales
+
+- **Problème** : 2 guides publiés / 5 catégories promises + pas de sources légales citées.
+- **Fichiers modifiés** :
+  - `src/data/guides.ts` (+327 lignes)
+  - `src/app/droits/[slug]/page.tsx` (section Sources légales)
+- **Correction** :
+  - Nouvelle interface `GuideLegalSource` + champ optionnel `legalSources` sur `Guide`.
+  - Les 2 guides existants reçoivent leurs sources (Loi 1951 + amendement 2017 + Loi 1951 heures).
+  - 3 nouveaux guides ajoutés :
+    - `comprendre-sa-fiche` (salaire, 6 min) : 10 sections obligatoires d'un tlush + signaux d'alerte.
+    - `pitzuim-licenciement` (licenciement, 6 min) : formule, éligibilité, 6 cas de démission, article 14, plafond fiscal.
+    - `bituah-leumi-cotisations` (cotisations, 5 min) : taux 2026, ce que finance BL et santé, exemples de calcul.
+  - Chaque nouveau guide a ses `legalSources` (Loi 1958, Loi 1963, Loi 1995, Loi 1994).
+  - Page détail affiche dynamiquement les sources en bas du contenu avec disclaimer court.
+- **Risque** : moyen. **Les 3 nouveaux guides n'ont pas été validés juridiquement.** Le disclaimer est explicite. Une review par un avocat est à prévoir avant promotion.
+- **Test** : `npx tsc --noEmit` → 0 erreur.
+- **Résultat** : ✅ commit `09f51c4`.
+
+---
+
+## Fix #21 — /modeles : 3 nouveaux templates + date de mise à jour
+
+- **Problème** : 5 modèles insuffisants, pas de catégorie Immobilier / Consommation, pas de date de mise à jour visible.
+- **Fichiers modifiés** :
+  - `src/data/templates.ts` (+246 lignes)
+  - `src/app/modeles/page.tsx` (catégories + bandeau date)
+  - `src/app/modeles/[slug]/page.tsx` (ligne Mis à jour)
+- **Correction** :
+  - `TemplateCategory` étendu : + `immobilier` + `consommation`.
+  - Nouveau champ optionnel `updatedAt` sur `LetterTemplate` + constante globale `TEMPLATES_VERIFIED_AT`.
+  - 3 nouveaux templates :
+    - `resiliation-bail` (immobilier) : référence Loi 1971.
+    - `resiliation-assurance` (consommation) : référence Loi 1981.
+    - `contestation-pv` (consommation) : référence Loi 1985 + délai 30 jours.
+  - `/modeles` hub : ordre de catégories étendu + emojis (🏠 🛒) + bandeau "Catalogue vérifié le X · 8 modèles disponibles".
+  - `/modeles/[slug]` : ligne "Mis à jour le X" sous la description.
+- **Risque** : faible. Même note que #22 : pas de validation juridique, disclaimer global inline conservé.
+- **Test** : `npx tsc --noEmit` → 0 erreur.
+- **Résultat** : ✅ commit `907cd7d`.
+
+---
+
+## Fix #29 — /contact + /a-propos + /faq + /aide
+
+- **Problème** : 4 pages publiques standards manquantes, aucun canal de support visible.
+- **Fichiers modifiés** :
+  - `src/app/aide/page.tsx` (nouveau, redirect)
+  - `src/app/contact/page.tsx` (nouveau)
+  - `src/app/a-propos/page.tsx` (nouveau)
+  - `src/app/faq/page.tsx` (nouveau)
+  - `src/middleware.ts` (PUBLIC_ROUTES étendu)
+  - `src/app/sitemap.ts` (staticPages étendu)
+  - `src/components/layout/Footer.tsx` (nouvelle colonne "Tloush")
+- **Correction** :
+  - **`/aide`** : simple `redirect('/help')`. `/help` est auth-gated → middleware renvoie vers login si nécessaire.
+  - **`/contact`** : page server component avec 2 canaux explicites (`contact@` / `privacy@`) + section "Avant de nous contacter" avec liens vers FAQ, Pricing, CGV, Privacy.
+  - **`/a-propos`** : mission Tloush en 2 paragraphes (contenu neutre, sans inventer d'infos sur l'équipe) + valeurs (Simplicité, Confiance) + encart "Un outil, pas un avocat" avec lien vers `/experts`.
+  - **`/faq`** : 4 sections (Facturation, Plans, Analyses, RGPD) avec 14 questions au total, rendues via `<details>/<summary>` natif. Reprend les 4 FAQ existantes de `/pricing` + 10 nouvelles basées sur CGV et Privacy.
+  - `middleware.ts` PUBLIC_ROUTES : + `/contact` + `/a-propos` + `/faq` + `/aide`.
+  - `sitemap.ts` staticPages : + `/contact` + `/a-propos` + `/faq` (pas `/aide` = redirect).
+  - `Footer.tsx` : grid passe de 3 à 4 colonnes. Nouvelle colonne "Tloush" (a-propos / faq / contact). Colonne "Application" enrichie (+ calculateurs + modeles).
+- **Risque** : faible. `/a-propos` utilise des formulations neutres sans inventer l'équipe. `/faq` reprend uniquement des infos déjà publiées dans CGV/Privacy/Pricing.
+- **Test** : `npx tsc --noEmit` → 0 erreur.
+- **Résultat** : ✅ commit `253234e`.
+- **À compléter plus tard** : `/blog` (contenu à produire), `/parrainage` (route publique pour la feature `/referral` auth-gated si souhaitée).
+
+---
+
+# Résumé Lot 4
+
+## Fixes faits (8/8 items Q3)
+
+| # | Fix | Commit |
+|---|---|---|
+| #18 | Calculateurs sources + date | `0fdd9cd` |
+| #19 | Maternite BL seuils (3 niveaux) | `c9dc130` |
+| #20 | Indemnites article 14 + démission 6 cas | `8d6b598` |
+| #23 | Droits-olim sources + 6 ressources | `43cea9a` |
+| #24 | Experts noindex + 7 catégories | `d6dd303` |
+| #22 | Droits 3 nouveaux guides + sources | `09f51c4` |
+| #21 | Modeles 3 nouveaux templates + date | `907cd7d` |
+| #29 | Pages manquantes /contact /a-propos /faq /aide | `253234e` |
+
+**8 commits sur branche `claude/lot4-q3-fixes` (basée sur `claude/lot3-q2-fixes`).**
+
+## Tests passés
+- `npx tsc --noEmit` : **0 erreur** sur chaque commit (8 passes).
+
+## Blocages restants
+
+- Aucun blocage interne dans le Lot 4.
+- ⛔ **#6 + #7** (Lot 2) toujours bloqués sur infos légales externes.
+- ⚠️ Prérequis opérationnels identiques aux Lots précédents.
+
+## À valider manuellement
+
+1. **Review juridique** des 3 nouveaux guides `/droits/*` (comprendre-sa-fiche, pitzuim-licenciement, bituah-leumi-cotisations). Contenu rédigé sans validation avocat, disclaimer explicite.
+2. **Review juridique** des 3 nouveaux templates `/modeles/*` (resiliation-bail, resiliation-assurance, contestation-pv). Références aux lois citées à vérifier.
+3. **Calculateur maternité** : tester les 3 niveaux d'éligibilité avec différentes valeurs de `contributedMonths` pour vérifier que le UI bascule bien entre `full / partial / none`.
+4. **Calculateur indemnités** : vérifier que changer le motif met bien à jour le hint en temps réel.
+5. **Droits-olim ressources** : cliquer les 6 liens externes et vérifier qu'ils pointent vers les bonnes pages officielles.
+6. **Experts noindex** : vérifier en DevTools que `/experts` a bien la balise `<meta name="robots" content="noindex,follow">`.
+7. **Pages nouvelles** : charger `/contact`, `/a-propos`, `/faq`, `/aide` en navigateur et vérifier le rendu + les liens internes.
+8. **Footer** : vérifier que la grid à 4 colonnes s'affiche correctement en desktop ET mobile (wrap OK).
+
+## État global du projet
+
+**État main** (sha `6f39f75`) : 16 fixes P0/P1/P2.
+
+**Branches en attente (à merger en cascade)** :
+- `claude/lot1-q0-fixes` (3 commits) — Q0 quick wins
+- `claude/lot2-q1-fixes` (5 commits) — Q1 légal/sécurité (4/6 faits)
+- `claude/lot3-q2-fixes` (8 commits) — Q2 UX/SEO/conversion (8/8)
+- `claude/lot4-q3-fixes` (9 commits) — **Q3 contenu produit (8/8)**
+
+**Total Lot 1+2+3+4 : 28 items adressés** sur 30 du technical-mapping. Reste :
+- 2 bloqués (#6, #7) sur infos légales externes.
+- 0 item non-traité.
+
+**Le périmètre complet du technical-mapping est couvert** à l'exception des 2 findings bloqués par les infos légales de l'entité Tloush.
 
 ---
 

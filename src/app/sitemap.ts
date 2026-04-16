@@ -40,6 +40,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/mentions-legales',
     '/annuaire',
     '/annuaire/inscription',
+    '/contact',
+    '/a-propos',
+    '/faq',
   ]
 
   const entries: MetadataRoute.Sitemap = staticPages.map((route) => ({
