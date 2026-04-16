@@ -421,4 +421,55 @@ Contrôle échantillon sur 10 entrées communes :
 
 ---
 
-<!-- Recos + checklist ajoutés en sous-étape 5 -->
+## Recommandations hiérarchisées
+
+### 🔴 P0 — Bloquant sécurité juridique / fiabilité calculateurs
+
+1. **Renommer `TAX_BRACKETS_2025` → `TAX_BRACKETS_2026`** et vérifier que les brackets sont bien ceux publiés par l'Israel Tax Authority pour 2026. Fichier : `src/lib/israeliPayroll.ts:19-27`. Les calculateurs brut-net / tax-refund servent d'estimation à des utilisateurs qui peuvent prendre des décisions patrimoniales.
+2. **Idem pour `BL_RATES_2025` et `HEALTH_RATES_2025`** (lignes 36-50) : vérifier le salaire moyen 2026 (qui détermine les seuils `7_522` et `50_695`). Le salaire moyen 2025 utilisé est `12 536` ; sur 2026 il devrait avoisiner `13 000+` (indexé CPI).
+3. **Ajouter un en-tête `LAST_VERIFIED_DATE` + `OFFICIAL_SOURCES`** dans `israeliPayroll.ts` (pattern déjà adopté par le lot4-q3 pour les pages calculateurs — cf. CLAUDE.md § "État actuel du projet").
+
+### 🟡 P1 — Incohérence documentation / code
+
+4. **Harmoniser les slugs** entre `memory/glossary.md` et `src/lib/benefitsCatalog.ts`. Choisir une convention unique (recommandé : celle du catalogue car c'est la source de vérité technique) et mettre le glossaire en conformité. Éviter les variantes type `kitsbat_yeladim` vs `kitzvat_yeladim`.
+5. **Régénérer le glossaire depuis le catalogue** (script `npm run gen:glossary` à créer). Le catalogue étant désormais exhaustif (125 vs 116), le glossaire doit suivre automatiquement.
+6. **Corriger la ligne `nekudot_zikui_toshav`** du glossaire : remplacer `5 436–6 636 NIS/an` par `6 534–7 986 NIS/an` (cohérent avec 2 904 NIS/point du code) — ou expliciter le millésime référence.
+7. **Extraire le taux EUR/NIS** dans une constante unique (`EXCHANGE_RATE_EUR_NIS_2026 = 4.10` par ex.) avec `LAST_VERIFIED_DATE`, puis remplacer les 3 valeurs hardcodées (4.00 / 4.10 / 4.20) dans `benefitsCatalog.ts`.
+
+### 🟢 P2 — Amélioration continue
+
+8. **Ajouter un script `scripts/audit-freshness.ts`** qui parse `benefitsCatalog.ts`, extrait les `verified_at`, classe en Frais/À vérifier/Périmé, et exit `1` si un item dépasse 18 mois. À brancher en CI.
+9. **Ajouter un champ `official_url` + `source_last_fetched`** par entrée pour faciliter le cycle de re-vérification.
+10. **Planifier le prochain audit** : **Q3 2026 (1er octobre 2026)** — à 6 mois de l'audit actuel, pour rester largement sous le seuil 18 mois et anticiper les revalorisations BTL du 1er janvier 2027.
+11. **Compléter le catalogue** avec les ~20 vraies omissions du glossaire (`dmei_kvura`, `halva_klita`, `shikum_miktzoi`, `kitzvat_ilad_nakhe`, `petur_mas_hakhnasa_huhul`, `maanak_ptira`, `zkhuyot_pshitat_regel`, `tosefet_hashlamat_hakhnasa`, etc.).
+12. **Résoudre les 6 `needs_verification`** par ajout des champs profil manquants (`is_multiple_birth`, `is_premature_birth`, `is_adoptive_parent`, `is_foster_parent`, `is_domestic_violence_victim`, `is_orphan_of_domestic_violence`) — tracké dans `memory/progress.md` § Étape D.
+
+---
+
+## Checklist de suivi
+
+- [ ] P0 — Millésimer `TAX_BRACKETS_2026`
+- [ ] P0 — Millésimer `BL_RATES_2026` / `HEALTH_RATES_2026`
+- [ ] P0 — Ajouter `LAST_VERIFIED_DATE` à `israeliPayroll.ts`
+- [ ] P1 — Harmoniser slugs glossaire ↔ catalogue
+- [ ] P1 — Régénérer glossaire depuis catalogue
+- [ ] P1 — Corriger ligne `nekudot_zikui_toshav` glossaire
+- [ ] P1 — Extraire `EXCHANGE_RATE_EUR_NIS_2026`
+- [ ] P2 — Script CI de contrôle fraîcheur
+- [ ] P2 — Champ `source_last_fetched` par entrée
+- [ ] P2 — Planifier audit Q3 2026
+- [ ] P2 — Compléter ~20 omissions catalogue
+- [ ] P2 — Résoudre les 6 `needs_verification`
+
+---
+
+## Conclusion
+
+Le **catalogue des aides** est globalement **en excellent état de fraîcheur** (100% `verified_at` < 5 jours, 99/125 en `confidence: high`, 119/125 en `status: verified`). La veille Étape C du 16/04/2026 a été un succès.
+
+La **fragilité principale** vient des **constantes fiscales sous-jacentes** (`israeliPayroll.ts`) qui portent encore le millésime 2025 et qui alimentent les calculateurs brut-net et tax-refund. C'est le **point à traiter en priorité** avant le prochain cycle de publication (janvier 2027).
+
+Le **glossaire** est à jour en date mais pas tout à fait en contenu : ~20 vraies omissions et plusieurs montants pré-2026. Le plus pérenne serait de le **régénérer depuis le catalogue** automatiquement.
+
+Aucune entrée n'est ❌ périmée. Aucune entrée n'est ⚠️ à vérifier sur critère temporel. **Prochain rappel d'audit : 2026-10-01.**
+
