@@ -4,7 +4,7 @@
  * Covers Osek Patur (exempt) and Osek Murshe (licensed).
  * Calculates tax obligations, BL contributions, VAT, and deadlines.
  *
- * Sources: skills-il/government-services, Israeli tax authority rules 2025
+ * Sources: skills-il/government-services, Israeli tax authority rules 2026
  */
 
 export interface FreelanceProfile {
@@ -48,37 +48,46 @@ export interface FreelanceDeadline {
   description_fr: string
 }
 
-// ─── 2025 Constants ───
+// ─── 2026 Constants ───
+// Last verified: 2026-04-16 (audit fraîcheur — memory/audit_fraicheur.md)
+// Sources :
+//   - https://www.gov.il/en/pages/income-tax-monthly-deductions-booklet (brackets)
+//   - https://www.cwsisrael.com/israeli-tax-changes-2026-complete-guide/ (réforme 2026)
+//   - https://www.btl.gov.il (BL atzmai 2026)
 
-const OSEK_PATUR_THRESHOLD_2025 = 120_000 // Annual revenue threshold
-const VAT_RATE_2025 = 0.17
-const CREDIT_POINT_VALUE_2025 = 242 * 12 // Monthly × 12
+export const LAST_VERIFIED_DATE = '2026-04-16'
+export const TAX_YEAR = 2026
 
-// BL rates for self-employed (atzmai)
-// Source: https://www.btl.gov.il — effective January 2025
+const OSEK_PATUR_THRESHOLD_2026 = 120_000 // plafond annuel — inchangé 2026
+const VAT_RATE_2026 = 0.17                // TVA 17% inchangée
+const CREDIT_POINT_VALUE_2026 = 242 * 12  // 2 904 ₪/an/point — gelé 2026
+
+// BL rates for self-employed (atzmai) — 2026
+// Seuils indexés sur salaire moyen 2026 : 7 703 ₪/mois (60% schar memutza)
+// Plafond assurable 2026 : 51 910 ₪/mois
 const BL_SELF_EMPLOYED = {
-  reducedThreshold: 7_522 * 12, // annual (60% of average wage)
-  reducedRate: 0.0266,  // 2.66%
-  fullRate: 0.1183,     // 11.83%
-  ceiling: 50_695 * 12, // annual (5× average wage ceiling)
+  reducedThreshold: 7_703 * 12, // annuel (60% salaire moyen 2026)
+  reducedRate: 0.0266,          // 2.66% — inchangé
+  fullRate: 0.1183,             // 11.83% — inchangé
+  ceiling: 51_910 * 12,         // plafond 2026 (était 50 695 en 2025)
 }
 
-// Health tax rates for self-employed
-// Source: https://www.btl.gov.il — effective January 2025
+// Health tax rates for self-employed — 2026
 const HEALTH_SELF_EMPLOYED = {
-  reducedThreshold: 7_522 * 12,
-  reducedRate: 0.0323, // 3.23% (updated from 3.1%)
-  fullRate: 0.052,     // 5.2% (updated from 5%)
+  reducedThreshold: 7_703 * 12, // aligné sur BL 2026
+  reducedRate: 0.0323,          // 3.23% — inchangé
+  fullRate: 0.052,              // 5.2% — inchangé
 }
 
-// Tax brackets 2025 (annual)
+// Tax brackets 2026 (annual) — tranche 20% élargie, tranche 31% décalée.
+// Tranches supérieures 35/47/50% gelées 2026.
 const TAX_BRACKETS_ANNUAL = [
-  { upTo: 84_120, rate: 0.10 },
-  { upTo: 120_720, rate: 0.14 },
-  { upTo: 193_800, rate: 0.20 },
-  { upTo: 269_280, rate: 0.31 },
-  { upTo: 560_280, rate: 0.35 },
-  { upTo: 721_560, rate: 0.47 },
+  { upTo: 84_120,   rate: 0.10 },
+  { upTo: 120_720,  rate: 0.14 },
+  { upTo: 228_000,  rate: 0.20 },  // élargi (était 193 800)
+  { upTo: 301_200,  rate: 0.31 },  // décalé (était 269 280)
+  { upTo: 560_280,  rate: 0.35 },  // début décalé de 269 280 à 301 200
+  { upTo: 721_560,  rate: 0.47 },
   { upTo: Infinity, rate: 0.50 },
 ]
 
@@ -145,7 +154,7 @@ export function calculateFreelanceTax(profile: FreelanceProfile): FreelanceResul
     else if (yearsInIsrael <= 2.5) creditPoints += 2
     else if (yearsInIsrael <= 3.5) creditPoints += 1
   }
-  const creditValue = creditPoints * CREDIT_POINT_VALUE_2025
+  const creditValue = creditPoints * CREDIT_POINT_VALUE_2026
 
   // Income tax
   let incomeTax = 0
@@ -188,9 +197,9 @@ export function calculateFreelanceTax(profile: FreelanceProfile): FreelanceResul
   let vatNote = ''
   if (type === 'osek_patur') {
     vat = 0
-    vatNote = 'Osek Patur : exonere de TVA tant que le CA ne depasse pas ' + OSEK_PATUR_THRESHOLD_2025.toLocaleString() + '₪/an.'
+    vatNote = 'Osek Patur : exonere de TVA tant que le CA ne depasse pas ' + OSEK_PATUR_THRESHOLD_2026.toLocaleString() + '₪/an.'
   } else {
-    vat = annualRevenue * VAT_RATE_2025
+    vat = annualRevenue * VAT_RATE_2026
     vatNote = 'Osek Murshe : TVA de 17% collectee sur les factures, deductible sur les achats professionnels.'
   }
 
@@ -198,12 +207,12 @@ export function calculateFreelanceTax(profile: FreelanceProfile): FreelanceResul
   const netIncome = taxableIncome - totalObligations
   const effectiveRate = taxableIncome > 0 ? (totalObligations / taxableIncome) * 100 : 0
 
-  const shouldSwitchToMurshe = type === 'osek_patur' && annualRevenue > OSEK_PATUR_THRESHOLD_2025 * 0.8
+  const shouldSwitchToMurshe = type === 'osek_patur' && annualRevenue > OSEK_PATUR_THRESHOLD_2026 * 0.8
 
   // Tips
   const tips: string[] = []
-  if (type === 'osek_patur' && annualRevenue > OSEK_PATUR_THRESHOLD_2025 * 0.7) {
-    tips.push(`Votre CA approche le seuil d'Osek Patur (${OSEK_PATUR_THRESHOLD_2025.toLocaleString()}₪). Pensez a passer en Osek Murshe.`)
+  if (type === 'osek_patur' && annualRevenue > OSEK_PATUR_THRESHOLD_2026 * 0.7) {
+    tips.push(`Votre CA approche le seuil d'Osek Patur (${OSEK_PATUR_THRESHOLD_2026.toLocaleString()}₪). Pensez a passer en Osek Murshe.`)
   }
   if (type === 'osek_patur') {
     tips.push('En tant qu\'Osek Patur, vous ne pouvez pas deduire la TVA sur vos achats professionnels.')
@@ -238,7 +247,7 @@ export function calculateFreelanceTax(profile: FreelanceProfile): FreelanceResul
       ? FREELANCE_DEADLINES.filter(d => d.id !== 'bimonthly-vat')
       : FREELANCE_DEADLINES,
     tips,
-    osekPaturThreshold: OSEK_PATUR_THRESHOLD_2025,
+    osekPaturThreshold: OSEK_PATUR_THRESHOLD_2026,
     shouldSwitchToMurshe,
   }
 }

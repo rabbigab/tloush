@@ -1,25 +1,34 @@
 // =====================================================
 // Tax refund estimator (החזר מס)
 // =====================================================
-// Verifie avec sources officielles (avril 2026) :
-// - Baremes d'impot Rashut HaMisim (geles 2025-2027)
-// - Nekudot Zikui : https://www.kolzchut.org.il/he/נקודות_זיכוי_ממס_הכנסה
-// - Oleh Hadash (nouveau schedule 2022+) :
+// Last verified: 2026-04-16 (audit fraîcheur — memory/audit_fraicheur.md)
+//
+// Sources officielles 2026 :
+// - Barèmes d'impôt Rashut HaMisim (tranches gelées sauf 20% élargie) :
+//   https://www.gov.il/en/pages/income-tax-monthly-deductions-booklet
+//   https://www.cwsisrael.com/israeli-tax-changes-2026-complete-guide/
+// - Nekudot Zikui (point gelé à 242 ₪/mois = 2 904 ₪/an pour 2026) :
+//   https://www.kolzchut.org.il/he/נקודות_זיכוי_ממס_הכנסה
+// - Oleh Hadash (schedule post-réforme 2022+) :
 //   https://www.kolzchut.org.il/en/Income_Tax_Credit_Points_for_New_Immigrants
 
-// Brackets 2025-2027 (geles)
+export const LAST_VERIFIED_DATE = '2026-04-16'
+export const TAX_YEAR = 2026
+
+// Brackets 2026 — tranche 20% élargie (jusqu'à 228 000/an = 19 000/mois),
+// tranche 31% décalée (228 000–301 200/an). Tranches supérieures inchangées.
 const TAX_BRACKETS = [
-  { from: 0, to: 84_120, rate: 0.10 },
-  { from: 84_120, to: 120_720, rate: 0.14 },
-  { from: 120_720, to: 193_800, rate: 0.20 },
-  { from: 193_800, to: 269_280, rate: 0.31 },
-  { from: 269_280, to: 560_280, rate: 0.35 },
-  { from: 560_280, to: 721_560, rate: 0.47 },
+  { from: 0,       to: 84_120,   rate: 0.10 },
+  { from: 84_120,  to: 120_720,  rate: 0.14 },
+  { from: 120_720, to: 228_000,  rate: 0.20 },  // élargi (était 193 800)
+  { from: 228_000, to: 301_200,  rate: 0.31 },  // décalé (était 193 800–269 280)
+  { from: 301_200, to: 560_280,  rate: 0.35 },  // début décalé (était 269 280)
+  { from: 560_280, to: 721_560,  rate: 0.47 },
   { from: 721_560, to: Infinity, rate: 0.50 },
 ]
 const SURTAX_THRESHOLD = 721_560
 const SURTAX_RATE = 0.03
-const CREDIT_POINT_VALUE_ANNUAL = 242 * 12  // 2904 NIS/an par point (2025)
+const CREDIT_POINT_VALUE_ANNUAL = 242 * 12  // 2 904 ₪/an par point — gelé 2026
 
 export interface CreditPointsCalculation {
   residentBase: number       // 2.25 pour tout resident israelien
