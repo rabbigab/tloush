@@ -18,7 +18,11 @@ Types possibles :
 - "kupatHolimLetter" : courrier d'une caisse de santé (Clalit / Maccabi / Meuhedet / Leumit) — autorisation, refus, convocation, rappel de paiement
 - "prescription" : ordonnance médicale / mirsham (liste de médicaments avec dosage, posologie)
 - "labResults" : résultats d'analyses de laboratoire (bilan sanguin, urines, examens) avec valeurs et intervalles de référence
-- "universal" : tout autre document (facture générique, courrier bancaire, attestation, amende, etc.)
+- "personalLetter" : courrier personnel, email, SMS — expéditeur privé, pas d'institution. Lettre manuscrite scannée ou capture d'écran
+- "schoolLetter" : courrier de l'école (maternelle / gan / école primaire / collège / lycée / vaad horim) — réunion, sortie, paiement, autorisation, comportement
+- "privateLetter" : courrier d'institution privée (banque, assurance, télécom, fournisseur privé) — ne PAS confondre avec officialLetter (autorité publique) ni utilityInvoice (facture énergie)
+- "utilityInvoice" : facture arnona (taxe municipale) / électricité / eau / gaz / internet / téléphone — doit être une FACTURE avec montant à payer, pas un courrier commercial
+- "universal" : tout autre document non classifiable
 
 Retourne UNIQUEMENT un JSON strict, sans markdown, sans explication :
 {"type": "<type>", "language": "he" | "fr" | "en" | "mixed" | "other", "confidence": <0-100>}`;
@@ -84,6 +88,41 @@ Retourne UNIQUEMENT un JSON structuré, sans texte avant ou après.`,
 Identifie : médecin prescripteur, spécialité, date, liste des médicaments (nom hébreu tel qu'écrit + nom français / DCI équivalente), dosage, posologie, durée, quantité, renouvelable ou non.
 Si tu détectes des interactions médicamenteuses majeures connues (ex: anticoagulant + AINS, sérotoninergiques multiples), signale-les dans interactionWarnings.
 IMPORTANT : tu ne fournis PAS de conseil médical. Tes warnings sont informatifs et demandent TOUJOURS la validation d'un pharmacien ou médecin.
+Retourne UNIQUEMENT un JSON structuré, sans texte avant ou après.`,
+
+  personalLetter: `Tu es un assistant qui aide un francophone vivant en Israël à comprendre un courrier personnel (lettre manuscrite, email, SMS) reçu en hébreu ou dans une autre langue.
+Identifie : expéditeur si possible, date, langue principale, ton général (formel / informel / urgent / amical / neutre).
+Produis une traduction française FIDÈLE si le document n'est pas en français, et un résumé de 3 phrases maximum.
+Si une réponse est attendue ou pertinente, propose un template de réponse ADAPTÉ AU TON détecté (formel reste formel, amical reste amical).
+Retourne UNIQUEMENT un JSON structuré, sans texte avant ou après.`,
+
+  schoolLetter: `Tu es un assistant qui aide les parents francophones en Israël à comprendre les courriers scolaires (gan, école primaire, collège, lycée, vaad horim).
+Identifie : école émettrice, classe (kita), enfant concerné si mentionné, sujet précis (réunion parents / sortie / paiement / comportement / horaires / annonce).
+Extrais la date limite et le montant à payer si applicable.
+Liste les actions requises avec leur type (signature, paiement, autorisation, réponse).
+Traduis fidèlement le courrier en français.
+Propose un template de réponse en français si une action écrite est attendue.
+Retourne UNIQUEMENT un JSON structuré, sans texte avant ou après.`,
+
+  privateLetter: `Tu es un assistant qui aide les francophones en Israël à comprendre les courriers d'institutions privées : banques, assurances, télécoms, autres fournisseurs privés.
+ATTENTION : ne PAS confondre avec :
+- officialLetter (autorité publique : mairie, Bituach Leumi, impôts, tribunal)
+- kupatHolimLetter (caisse de santé — domaine santé, PR B)
+- utilityInvoice (facture énergie avec montant à payer)
+
+Identifie : émetteur, type (bank / insurance / telecom / utility commerciale / private_other), date, sujet, type de sujet (mise à jour contrat / relance paiement / offre commerciale / demande de documents / notification).
+Détecte l'urgence : urgent si délai serré ou pénalités mentionnées.
+Liste les actions requises avec leur deadline respective.
+Si contestation pertinente, propose un template de réponse en français.
+Traduis fidèlement les sections importantes.
+Retourne UNIQUEMENT un JSON structuré, sans texte avant ou après.`,
+
+  utilityInvoice: `Tu es un assistant spécialisé dans les factures israéliennes : arnona (taxe municipale), électricité (IEC / Energy companies), eau (Mei Avivim / Hagihon / etc.), gaz, internet, téléphone.
+Identifie : fournisseur, type (arnona / electricity / water / gas / internet / phone), période couverte (avec dates ISO), montant total, date limite de paiement.
+Extrais impérativement : code client, numéro de référence pour paiement / virement.
+Si la facture montre un montant de période précédente (fréquent en Israël), calcule le pourcentage d'augmentation et signale abnormalIncrease=true si > 20%.
+Calcule suggestedReminderDate = dueDate - 3 jours (format ISO AAAA-MM-JJ).
+Alerte si : montant anormalement élevé, délai court, pénalités de retard indiquées.
 Retourne UNIQUEMENT un JSON structuré, sans texte avant ou après.`,
 
   labResults: `Tu es un assistant qui aide à lire des résultats d'analyses de laboratoire israéliennes (bilan sanguin, urines, autres examens) rédigés en hébreu.
@@ -400,6 +439,82 @@ export const SCAN_USER_PROMPTS: Record<DocumentType, string> = {
   "summary": "\"Tout est normal\" si rien d'anormal, sinon liste courte des valeurs anormales à discuter avec un médecin",
   "alerts": [
     { "severity": "low" | "medium" | "high", "message": "message (inclure systématiquement : consulter un médecin pour interpréter)", "recommendation": "action" }
+  ]
+}`,
+
+  personalLetter: `Analyse ce courrier personnel (lettre, email, SMS) et retourne ce JSON strict (sans markdown, sans commentaire) :
+
+{
+  "sender": "expéditeur si identifiable ou null",
+  "date": "AAAA-MM-JJ ou null",
+  "language": "he" | "fr" | "en" | "mixed" | "other",
+  "originalText": "texte original tel qu'écrit (notamment si HE) ou null",
+  "fullTranslation": "traduction française fidèle si document non-FR, sinon null",
+  "summary": "résumé en 3 phrases maximum",
+  "tone": "formal" | "informal" | "urgent" | "friendly" | "neutral" | null,
+  "suggestedReply": "template de réponse adapté au ton détecté, ou null",
+  "alerts": [
+    { "severity": "low" | "medium" | "high", "message": "message court" }
+  ]
+}`,
+
+  schoolLetter: `Analyse ce courrier de l'école israélienne et retourne ce JSON strict (sans markdown, sans commentaire) :
+
+{
+  "schoolName": "nom de l'école ou null",
+  "className": "classe / kita ou null",
+  "childName": "nom de l'enfant si mentionné, sinon null",
+  "subject": "meeting" | "trip" | "payment" | "behavior" | "schedule" | "announcement" | "other" | null,
+  "subjectDetail": "description courte en français ou null",
+  "deadline": "AAAA-MM-JJ ou null",
+  "amountDue": nombre (NIS si paiement demandé) ou null,
+  "actionsRequired": [
+    { "action": "description en français", "type": "signature" | "payment" | "authorization" | "response" | "other" }
+  ],
+  "suggestedReply": "template de réponse en français ou null",
+  "fullTranslation": "traduction fidèle en français",
+  "alerts": [
+    { "severity": "low" | "medium" | "high", "message": "message court", "recommendation": "action" }
+  ]
+}`,
+
+  privateLetter: `Analyse ce courrier d'une institution privée (banque / assurance / télécom / autre fournisseur privé) et retourne ce JSON strict (sans markdown, sans commentaire) :
+
+{
+  "sender": "nom complet émetteur ou null",
+  "senderType": "bank" | "insurance" | "telecom" | "utility" | "private_other" | null,
+  "date": "AAAA-MM-JJ ou null",
+  "subject": "sujet en français ou null",
+  "subjectType": "contract_update" | "payment_reminder" | "commercial_offer" | "document_request" | "notification" | "other" | null,
+  "urgency": "urgent" | "not_urgent" | null,
+  "actionsRequired": [
+    { "action": "description en français", "deadline": "AAAA-MM-JJ ou null" }
+  ],
+  "suggestedResponse": "template de réponse ou contestation ou null",
+  "fullTranslation": "traduction fidèle des sections importantes",
+  "alerts": [
+    { "severity": "low" | "medium" | "high", "message": "message court", "recommendation": "action" }
+  ]
+}`,
+
+  utilityInvoice: `Analyse cette facture (arnona / électricité / eau / gaz / internet / téléphone) et retourne ce JSON strict (sans markdown, sans commentaire) :
+
+{
+  "provider": "nom du fournisseur ou null",
+  "utilityType": "arnona" | "electricity" | "water" | "gas" | "internet" | "phone" | "other" | null,
+  "period": "période lisible en français (ex: 'Mars-Avril 2026') ou null",
+  "periodStart": "AAAA-MM-JJ ou null",
+  "periodEnd": "AAAA-MM-JJ ou null",
+  "totalAmount": nombre (NIS) ou null,
+  "dueDate": "AAAA-MM-JJ ou null",
+  "customerCode": "code client / numéro de compte ou null",
+  "paymentReference": "référence pour virement ou null",
+  "previousPeriodAmount": nombre (NIS si affiché sur la facture) ou null,
+  "increasePercent": nombre (pourcentage calculé si previousPeriodAmount disponible) ou null,
+  "abnormalIncrease": true si increasePercent > 20 (sinon false),
+  "suggestedReminderDate": "AAAA-MM-JJ = dueDate moins 3 jours, ou null si pas de dueDate",
+  "alerts": [
+    { "severity": "low" | "medium" | "high", "message": "message court", "recommendation": "action" }
   ]
 }`,
 
