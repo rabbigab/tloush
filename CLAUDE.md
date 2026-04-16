@@ -184,13 +184,28 @@ Dans `matchProfile()`, plusieurs checks incrémentent `totalChecks` sans incrém
 
 ### Migrations Supabase à appliquer
 
-Avant le merge des branches `lot2` et `lot3`, appliquer dans le SQL Editor Supabase (prod + staging) :
-- `supabase/migrations/20260417_rights_detector.sql` — table `detected_rights` (requise pour `/api/rights-detector`).
-- `supabase/migrations/20260418_profile_enrichment_v2.sql` — enrichissement `user_profiles`.
-- `supabase/migrations/20260419_experts_waitlist.sql` — table `experts_waitlist` (requise pour `/experts`).
-- `supabase/migrations/20260420_provider_applications_consent.sql` — colonnes `consent_public` + `consent_cgv` sur `provider_applications`.
+Avant le merge des branches `lot2` / `lot3` / `lot4`, 4 migrations doivent être appliquées dans le SQL Editor Supabase (prod + staging) :
 
-Vérifier avec `psql \d detected_rights` / `\d provider_applications` après application.
+1. `supabase/migrations/20260417_rights_detector.sql` — table `detected_rights` (requise pour `/api/rights-detector`).
+2. `supabase/migrations/20260418_profile_enrichment_v2.sql` — enrichissement `user_profiles` (~35 colonnes).
+3. `supabase/migrations/20260419_experts_waitlist.sql` — table `experts_waitlist` (requise pour `/experts`).
+4. `supabase/migrations/20260420_provider_applications_consent.sql` — colonnes `consent_public` + `consent_cgv` sur `provider_applications`.
+
+**Runbook détaillé** : [`docs/audits/migrations-runbook.md`](docs/audits/migrations-runbook.md) — contient le SQL à coller, les queries de vérification et le troubleshooting étape par étape.
+
+Vérification globale une fois les 4 appliquées (cf. runbook Étape 5) :
+```sql
+SELECT 'detected_rights' AS check_name, EXISTS (
+  SELECT 1 FROM information_schema.tables WHERE table_name = 'detected_rights'
+) AS ok
+UNION ALL SELECT 'user_profiles.birth_date', EXISTS (
+  SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'birth_date')
+UNION ALL SELECT 'experts_waitlist', EXISTS (
+  SELECT 1 FROM information_schema.tables WHERE table_name = 'experts_waitlist')
+UNION ALL SELECT 'provider_applications.consent_public', EXISTS (
+  SELECT 1 FROM information_schema.columns WHERE table_name = 'provider_applications' AND column_name = 'consent_public');
+-- Attendu : 4 lignes toutes avec ok = true
+```
 
 ### Boîte mail à créer
 
