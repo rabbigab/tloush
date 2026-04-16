@@ -2,7 +2,10 @@
 
 > Référence complète de toutes les fiches produites.
 > Fiches complètes (12 sections) : `outputs/docs/rights-drafts/_pending/{slug}.md`
-> Dernière mise à jour : 2026-04-16
+> Dernière mise à jour : 2026-04-16 (audit fraîcheur — voir `memory/audit_fraicheur.md`)
+>
+> **Taux de change de référence** : 1 EUR = 3,5268 NIS (Bank of Israel, représentatif 16/04/2026).
+> **Valeur du point fiscal (nekudat zikui) 2026** : 242 NIS/mois = 2 904 NIS/an (gelé, identique 2024-2025).
 
 ---
 
@@ -134,7 +137,7 @@
 
 | Slug | Nom FR | Montant 2026 | Type | Conditions clés |
 |---|---|---|---|---|
-| `nekudot_zikui_toshav` | Crédits toshav | 2,25–2,75 pts = 5 436–6 636 NIS/an | annuel | résident |
+| `nekudot_zikui_toshav` | Crédits toshav | 2,25–2,75 pts = 6 534–7 986 NIS/an (2 904 NIS/pt — gelé 2026) | annuel | résident |
 | `nekudot_zikui_yeladim` | Crédits enfants | 2–4,5 pts / enfant | annuel | enfants 0-18 ans |
 | `nekudot_zikui_horim_yehidim` | Crédits parent isolé/divorcé | pts supplémentaires | annuel | parent isolé |
 | `petur_mas_nakhut` | Exonération impôt invalidité | 100% impôt | annuel | disability≥90% |
@@ -154,7 +157,7 @@
 |---|---|---|---|---|
 | `gmala_niztolei_shoah_misrad_haotzer` | Pension mensuelle Shoah (Misrad HaOtzer) | 2 861–7 184 NIS/mois | mensuel | is_shoah_survivor + handicap |
 | `tagmul_niztolei_shoah_vatik` | Pension pré-1953 | 2 861–7 184 NIS/mois | mensuel | Shoah + immigration avant 1953 |
-| `kitzva_keren_sif2_claims` | Keren Sif 2 (Claims Conf.) via Rashut | ~2 670 NIS/mois | mensuel | Shoah + ex-URSS/Roumanie |
+| `kitzva_keren_sif2_claims` | Keren Sif 2 (Claims Conf.) via Rashut | ~2 353 NIS/mois (667 EUR × 3,5268 BoI 16/04/2026) | mensuel | Shoah + ex-URSS/Roumanie |
 | `gmala_hashlama_sif2` | Supplément israélien Keren Sif 2 | variable | mensuel | keren_sif2 + conditions revenus |
 | `maanak_matzeva_shoah` | Grant pierre tombale | 2 022 NIS | one-shot | is_shoah_survivor + décès |
 | `maanak_shnati_shoah` | Grant annuel Shoah | 7 688 NIS/an | annuel | is_shoah_survivor |
@@ -252,8 +255,8 @@
 
 | Slug | Nom FR | Montant 2026 | Type | Conditions clés |
 |---|---|---|---|---|
-| `maanak_hardship_fund_claims` | Hardship Fund + Supplemental | ~10 500 NIS + 5 540 NIS/an | one-shot + annuel | Shoah, sans pension allemande mensuelle |
-| `keren_sif2_article2_fund` | Article 2 Fund / Keren Sif 2 | 667 EUR/mois (~2 734 NIS) | mensuel | Shoah, sans gmala israélienne, sans BEG |
+| `maanak_hardship_fund_claims` | Hardship Fund + Supplemental | ~8 817 NIS + ~4 655 NIS/an (2 500 EUR + 1 320 EUR/an × 3,5268 BoI 16/04/2026) | one-shot + annuel | Shoah, sans pension allemande mensuelle |
+| `keren_sif2_article2_fund` | Article 2 Fund / Keren Sif 2 | 667 EUR/mois (~2 353 NIS au taux BoI 16/04/2026) | mensuel | Shoah, sans gmala israélienne, sans BEG |
 
 ---
 
