@@ -5529,9 +5529,9 @@ export function getCatalogStats() {
  * Metadata du catalogue pour le dashboard admin.
  */
 export const CATALOG_METADATA = {
-  version: '1.0.0',
-  last_updated: '2026-04-12',
-  total_benefits: 35,  // mis a jour a chaque ajout
+  version: '2.0.0',
+  last_updated: '2026-04-16',
+  total_benefits: 125,  // mis a jour a chaque ajout (etape C : +68 vs 1.0.0)
   data_sources: [
     'https://www.btl.gov.il/',
     'https://www.kolzchut.org.il/',
@@ -5549,7 +5549,7 @@ export const CATALOG_METADATA = {
  * Version statistiques utilisee par /admin/legal-watch.
  */
 export const CATALOG_SUMMARY = {
-  total: 35,
+  total: 125,
   high_confidence: 0,  // Sera calcule dynamiquement
   needs_verification: 0,
   by_category: {
