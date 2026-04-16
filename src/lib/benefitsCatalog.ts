@@ -4832,6 +4832,130 @@ const SENIORS_EXTRAS_BENEFITS: BenefitDefinition[] = [
     tax_year: 2026,
     notes: 'Ajout catalogue 16/04/2026 (etape C9). Aide plus technique qu\'urgente — utile pour les salarie-es a haut revenu souhaitant optimiser leur fiscalite. Valeur 8k NIS/an est indicative pour un salaire median (~14k NIS/mois brut).',
   },
+  {
+    slug: 'demi_bituakh_briut_kitzvat_zikna',
+    category: 'health',
+    authority: 'bituach_leumi',
+    title_fr: 'Cotisation sante reduite pensionnes (Demi Bituakh Briut)',
+    title_he: 'דמי ביטוח בריאות מופחתים לקצבת זקנה',
+    description_fr:
+      'Les beneficiaires de Kitzbat Zikna paient une cotisation sante reduite (123-340 NIS/mois au lieu de 500-800 NIS pour un salarie), deduite directement de la pension.',
+    full_description_fr:
+      'Les retraites (Kitzbat Zikna) beneficient d\'un regime de cotisation sante allege : ' +
+      'Montants 2026 (deduits automatiquement de la pension) : ' +
+      '- Retraite minimale (pension uniquement)          : 123 NIS/mois ' +
+      '- Retraite moyenne (pension + autres revenus)      : 200-280 NIS/mois ' +
+      '- Retraite elevee (avec revenus complementaires)   : jusqu\'a 340 NIS/mois ' +
+      'Comparaison avec un salarie : un salarie paie 3.1 % du salaire (jusqu\'a ~800 NIS/mois pour ' +
+      'salaire median) + son employeur cotise de son cote (~3.45 %). ' +
+      'Le retraite paie donc 50-70 % de moins, economie mensuelle de 300-500 NIS soit 3 600-6 000 NIS/an. ' +
+      'Automatique : BTL deduit directement de la pension versee. Pas de demande a faire. ' +
+      'Cumulable avec : ' +
+      '- Hanakha Trufot Havtakhat Hakhnasa (reduction 50% medicaments, cf. slug suivant) ' +
+      '- Tipulei Shinayim Vatikim (soins dentaires seniors, qui sera en C10) ' +
+      '- Hanakha sur implants auditifs / prothèses (sal briut)',
+    conditions: {
+      min_age: 67,
+      requires_resident: true,
+    },
+    estimated_annual_value: 5000,  // economie typique
+    value_unit: 'NIS/an (economie vs cotisation salarie)',
+    application_url: 'https://www.btl.gov.il/benefits/Health_insurance/Pages/default.aspx',
+    action_label: 'Verifier cotisation sante',
+    info_url: 'https://www.kolzchut.org.il/he/דמי_ביטוח_בריאות_לקצבת_זקנה',
+    disclaimer:
+      'Automatique pour les retraites avec Kitzbat Zikna. Si vous etes retraite mais continuez a ' +
+      'travailler, verifiez sur votre bulletin de paie que votre cotisation sante est bien au taux ' +
+      'reduit (pas 3.1 % comme un salarie lambda). Sinon, contactez BTL.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C9). Economie "silencieuse" — les retraites ne voient pas la deduction car elle est automatique, mais elle represente plusieurs milliers de NIS/an.',
+  },
+  {
+    slug: 'hanakha_trufot_havtakhat_hakhnasa',
+    category: 'health',
+    authority: 'bituach_leumi',
+    title_fr: 'Reduction medicaments Havtakhat Hakhnasa (Hanakha Trufot)',
+    title_he: 'הנחה בתרופות למקבלי הבטחת הכנסה',
+    description_fr:
+      'Reduction permanente de 50 a 55 % sur tous les medicaments prescrits pour les beneficiaires de Havtakhat Hakhnasa (revenu minimum BTL) ou de pension complet a faibles revenus.',
+    full_description_fr:
+      'Dispositif cofinance Misrad HaBriut + BTL + Kupot Holim pour les menages a tres faibles revenus : ' +
+      '- Reduction de 50 % sur les medicaments listes au Sal HaBriut (medicaments rembourses) ' +
+      '- Reduction de 55 % pour les seniors 67+ percevant Hashlamat Hachnasa (cumul +5 %) ' +
+      '- Appliquee automatiquement a la pharmacie avec la carte kupat holim marquee " הנחה " ' +
+      'Economie typique pour un senior avec plusieurs traitements chroniques : 200-500 NIS/mois, ' +
+      'soit 2 400-6 000 NIS/an. ' +
+      'Conditions (l\'une des 3) : ' +
+      '- Beneficiaire de Havtachat Hakhnasa (revenu minimum garanti BTL) ' +
+      '- Beneficiaire de Hashlamat Hachnasa (complement retraite) ' +
+      '- Beneficiaire de pension survivant a faible revenu ' +
+      'Activation : contacter la kupat holim avec attestation BTL (Teudat Zakaut) pour activer le ' +
+      'profil beneficiaire. Pas de demande a renouveler tant que le statut BTL est actif.',
+    conditions: {
+      min_age: 67,
+      max_monthly_income: 4375,
+      requires_resident: true,
+    },
+    estimated_annual_value: 3600,  // 300 NIS/mois mediane
+    value_unit: 'NIS/an (economie sur medicaments prescrits)',
+    application_url: 'https://www.btl.gov.il/benefits/Health_insurance/Pages/default.aspx',
+    action_label: 'Activer profil reduction',
+    info_url: 'https://www.kolzchut.org.il/he/הנחה_בתרופות',
+    disclaimer:
+      'Necessite d\'activer le profil beneficiaire aupres de la kupat holim avec l\'attestation BTL. ' +
+      'Automatique ensuite a la pharmacie. Sale recontrole regulier : si le statut BTL change (revenus ' +
+      'augmentent au-dessus du seuil), la reduction s\'arrete. Cumulable avec demi_bituakh_briut_kitzvat_zikna.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C9). Utilise max_monthly_income: 4375 (seuil Hashlamat Hachnasa individu) comme proxy. Economie substantielle pour les seniors en ALD (affections longue duree).',
+  },
+  {
+    slug: 'hanakha_kupat_holim_olim',
+    category: 'health',
+    authority: 'bituach_leumi',
+    title_fr: 'Reduction plafond sante olim 1ere annee (Hanakha Kupat Holim Olim)',
+    title_he: 'הנחה בתקרת השתתפות לעולים',
+    description_fr:
+      'Le plafond trimestriel de franchises (Stromat Tikra) est reduit de 50% pour les olim dans leurs 6 premiers mois, limitant les depenses sante.',
+    full_description_fr:
+      'Dispositif cofinance Misrad HaKlita + Misrad HaBriut pour les olim nouvellement arrives : ' +
+      'Regle standard : le plafond trimestriel des franchises kupat holim (Tikrat Hishtatfut Atsmit) ' +
+      'limite le total que chaque assure paie en franchise (consultations, imagerie, tests). ' +
+      'Plafonds 2026 : ~465 NIS/trimestre pour un adulte actif, ~230 NIS pour les seniors/invalides. ' +
+      'Reduction olim : pendant les 6 premiers mois, ce plafond est reduit de 50 %, soit ' +
+      '~230 NIS/trimestre pour les olim adultes (au lieu de 465). ' +
+      'Economie : ~940 NIS sur les 6 premiers mois. ' +
+      'Automatique : applique par la kupat holim des l\'inscription (bituach_briut_olim = les 6 mois ' +
+      'd\'assurance sante gratuite s\'appliquent en parallele). ' +
+      'Conditions : ' +
+      '- Oleh Hadash dans les 6 premiers mois ' +
+      '- Inscrit a une kupat holim israelienne ' +
+      'Cumulable avec les autres aides olim (sal_klita, ulpan, rental_assistance_olim).',
+    conditions: {
+      requires_oleh: true,
+      aliyah_years_range: [0, 1],
+      requires_resident: true,
+    },
+    estimated_annual_value: 940,
+    value_unit: 'NIS (economie totale sur 6 premiers mois)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_health',
+    action_label: 'Infos franchises olim',
+    info_url: 'https://www.kolzchut.org.il/he/זכויות_בריאות_לעולים',
+    disclaimer:
+      'Automatique a l\'inscription kupat holim. Si vous payez des franchises plein tarif pendant ' +
+      'les 6 premiers mois, demander a votre kupat holim de verifier votre profil olim. La reduction ' +
+      'cesse automatiquement apres 6 mois (passage au regime standard).',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C9). Aide modeste mais meconnue — beaucoup d\'olim savent que bituach_briut_olim est gratuit les 6 premiers mois mais ignorent que le plafond reste reduit.',
+  },
 ]
 
 // =====================================================
