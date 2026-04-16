@@ -3018,6 +3018,148 @@ const BTL_ACCIDENT_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION C3 — Shoah complet (S5 + S14 + S15 du glossaire)
+// =====================================================
+// Sources :
+// - https://www.rashut-shoa.gov.il/ (Rashut leNiztolei HaShoah)
+// - https://www.claimscon.org/
+// - https://www.k-shoa.org/ (Foundation for the Benefit of Holocaust Victims)
+// - https://www.gov.il/he/departments/the_authority_for_the_rights_of_holocaust_survivors
+//
+// Ces 11 aides discriminent les 3 categories de survivants (pre_1953,
+// post_1953, ex_urss) via le champ profile.shoah_period ajoute en etape B.
+// Complementaires aux 3 entrees Shoah deja presentes :
+// - holocaust_monthly_stipend    (pension generique, SECTION 16)
+// - holocaust_in_home_services   (services a domicile, SECTION 16)
+// - holocaust_arnona_full_exemption (arnona, SECTION 16)
+
+const HOLOCAUST_EXTRAS_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'tagmul_niztolei_shoah_vatik',
+    category: 'special',
+    authority: 'other',  // Rashut leNiztolei HaShoah (Misrad HaOtzer)
+    title_fr: 'Pension Shoah pre-1953 (Tagmul Niztolei Shoah Vatik)',
+    title_he: 'תגמול ניצולי שואה ותיקים',
+    description_fr:
+      'Pension mensuelle majoree versee par Rashut leNiztolei HaShoah aux survivants immigres en Israel avant le 01/10/1953 (olim "vatikim") n\'ayant pas recu de BEG allemand.',
+    full_description_fr:
+      'Loi sur les Benefices aux Survivants de la Shoah (Chok Nitzolei HaShoah). ' +
+      'Categorie "vatikim" (anciens) : olim arrives en Israel avant le 01/10/1953 qui n\'ont pas ' +
+      'pu deposer de dossier de reparation allemande (BEG) parce qu\'ils n\'etaient pas encore en ' +
+      'Allemagne de l\'Ouest a ce moment-la. ' +
+      'Montants officiels 2026 (verifies gov.il / rashut-shoa.gov.il) : ' +
+      '- Base individu                          : 2 861 NIS/mois ' +
+      '- Handicap reconnu 25-50%                : 3 500-5 000 NIS/mois ' +
+      '- Handicap reconnu ≥ 50%                 : 5 000-7 184 NIS/mois ' +
+      '- Avec conjoint survivant a charge       : +620 NIS/mois ' +
+      'Cumulable avec : Maanak Shnati (grant annuel), Kitzbat Zikna (retraite BTL), Arnona Shoah, ' +
+      'Tarifs reduits utilities, Hatavot Refuiot. ' +
+      'Procedure : dossier a deposer a Rashut leNiztolei HaShoah avec preuve d\'alyah avant 1953 ' +
+      '(Teudat Oleh, archives Sokhnut, recensement 1951-1954).',
+    conditions: {
+      required_shoah_period: 'pre_1953',
+      requires_resident: true,
+    },
+    estimated_annual_value: 2861 * 12,
+    typical_monthly_amount: 2861,
+    value_unit: 'NIS/mois (2 861-7 184 selon taux invalidite)',
+    application_url: 'https://www.gov.il/he/departments/the_authority_for_the_rights_of_holocaust_survivors',
+    action_label: 'Demande pension Shoah vatik',
+    info_url: 'https://www.kolzchut.org.il/he/ניצולי_שואה_ותיקים',
+    disclaimer:
+      'Reserve aux olim arrives AVANT le 01/10/1953. Si vous etes arrive apres, voir plutot ' +
+      'tagmul_niztolei_shoah_vatik (ou le regime Article 2 Fund / Keren Sif 2). Le champ profile ' +
+      'shoah_period=pre_1953 discrimine automatiquement.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Utilise le champ shoah_period ajoute en etape B pour discriminer les 3 categories (pre/post 1953 / ex-URSS).',
+  },
+  {
+    slug: 'kitzva_keren_sif2_claims',
+    category: 'special',
+    authority: 'claims_conference',
+    title_fr: 'Keren Sif 2 / Article 2 Fund (Claims Conference)',
+    title_he: 'קרן סעיף 2 - כספי גרמניה',
+    description_fr:
+      'Pension mensuelle versee par la Claims Conference aux survivants de la Shoah originaires d\'ex-URSS, Roumanie ou pays de l\'Est, n\'ayant pas recu de BEG direct allemand.',
+    full_description_fr:
+      'Article 2 Fund (aussi appele "Keren Sif 2" en hebreu administratif) : pension financee par ' +
+      'l\'Allemagne a travers la Claims Conference, destinee aux survivants qui ne pouvaient pas ' +
+      'beneficier du BEG classique (ex-URSS, Roumanie, pays du bloc sovietique, Europe de l\'Est). ' +
+      'Montant 2026 : 667 EUR/mois (~2 670 NIS au taux actuel). ' +
+      'Conditions d\'eligibilite : ' +
+      '- Avoir survecu a : camp de concentration / ghetto (≥ 6 mois) / cachette (≥ 18 mois) ' +
+      '- NE PAS recevoir deja une pension BEG allemande mensuelle ' +
+      '- NE PAS recevoir deja la gmala mensuelle Rashut leNiztolei HaShoah israelienne ' +
+      '- Residence actuelle : Israel, USA, Europe, autre pays reconnu ' +
+      'Financement : gouvernement allemand, verse directement aux beneficiaires par Claims Conference ' +
+      '(pas par BTL ni Rashut leNiztolei HaShoah). Exempte d\'impot en Israel et en Allemagne.',
+    conditions: {
+      required_shoah_period: 'ex_urss',
+      requires_resident: true,
+    },
+    estimated_annual_value: 2670 * 12,
+    typical_monthly_amount: 2670,
+    value_unit: 'NIS/mois (~667 EUR converti)',
+    application_url: 'https://www.claimscon.org/applynow',
+    action_label: 'Demande Claims Conference',
+    info_url: 'https://www.kolzchut.org.il/he/קרן_סעיף_2',
+    disclaimer:
+      'NE PAS confondre avec la gmala israelienne Rashut leNiztolei HaShoah (les deux ne sont pas ' +
+      'cumulables). Si vous avez deja une BEG allemande mensuelle, ce fonds ne vous est pas ouvert. ' +
+      'Procedure gratuite via Claims Conference (pas besoin d\'avocat). Delai moyen de reponse : 6-12 mois.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Cible les survivants d\'ex-URSS / Roumanie via shoah_period=ex_urss. Deux slugs dans le glossaire (kitzva_keren_sif2_claims + keren_sif2_article2_fund) pour le meme fonds, vu sous 2 angles (BL vs Claims) — on garde le nom administratif israelien ici, l\'autre slug sera une entree complementaire.',
+  },
+  {
+    slug: 'gmala_hashlama_sif2',
+    category: 'special',
+    authority: 'other',  // Rashut leNiztolei HaShoah
+    title_fr: 'Supplement israelien Keren Sif 2 (Gmala Hashlama)',
+    title_he: 'גמלת השלמה לקרן סעיף 2',
+    description_fr:
+      'Supplement mensuel verse par l\'Etat israelien (Rashut leNiztolei HaShoah) aux beneficiaires Keren Sif 2 / Article 2 Fund a revenus tres faibles, pour atteindre un plancher de revenu.',
+    full_description_fr:
+      'Beneficiant deja de la pension Keren Sif 2 / Article 2 Fund (~667 EUR/mois) les survivants ' +
+      'ex-URSS / Roumanie qui vivent en Israel peuvent demander un supplement israelien pour atteindre ' +
+      'un plancher de revenu comparable aux vatikim. ' +
+      'Montant 2026 : variable selon revenus du foyer (et Kitzbat Zikna BTL) — typiquement 500 a 2 500 ' +
+      'NIS/mois en complement des 2 670 NIS Keren Sif 2. Plancher cible : ~4 500 NIS/mois total (2026). ' +
+      'Conditions : ' +
+      '- Beneficier deja de Keren Sif 2 (dossier Claims Conference valide) ' +
+      '- Residence en Israel ' +
+      '- Revenus du foyer sous un plafond (~6 000 NIS/mois pour individu, ~8 500 pour couple) ' +
+      'Procedure : dossier Rashut leNiztolei HaShoah avec justificatifs de la pension Claims Conference ' +
+      'et releves bancaires 3 derniers mois.',
+    conditions: {
+      required_shoah_period: 'ex_urss',
+      requires_resident: true,
+      max_monthly_income: 6000,
+    },
+    estimated_annual_value: 1500 * 12,
+    typical_monthly_amount: 1500,
+    value_unit: 'NIS/mois (variable selon ecart au plancher)',
+    application_url: 'https://www.gov.il/he/departments/the_authority_for_the_rights_of_holocaust_survivors',
+    action_label: 'Demande supplement Keren Sif 2',
+    info_url: 'https://www.kolzchut.org.il/he/קרן_סעיף_2',
+    disclaimer:
+      'Supplement conditionne a des revenus faibles. Les beneficiaires Keren Sif 2 qui ont aussi une ' +
+      'pension BTL / retraite confortable n\'y ont pas droit. A examiner individuellement avec ' +
+      'Rashut leNiztolei HaShoah. Cumulable avec Kitzbat Zikna et Havtachat Hakhnasa.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Plafond revenus approximatif — a confirmer avec Rashut officielle. Niche mais critique pour les olim sovietiques ages a revenus tres faibles.',
+  },
+]
+
+// =====================================================
 // SECTION 21 — Helper functions
 // =====================================================
 
@@ -3155,6 +3297,7 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...UTILITY_BENEFITS,
   ...BTL_FAMILY_EXTRAS_BENEFITS,
   ...BTL_ACCIDENT_BENEFITS,
+  ...HOLOCAUST_EXTRAS_BENEFITS,
 ]
 
 // Calcul dynamique des stats au chargement
