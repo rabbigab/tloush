@@ -4468,6 +4468,181 @@ const HOUSING_EXTRAS_BENEFITS: BenefitDefinition[] = [
     tax_year: 2026,
     notes: 'Ajout catalogue 16/04/2026 (etape C8). Valeur typique 500 NIS/mois est le supplement seul — la valeur totale percue inclut aussi la base siyua_shkhar_dira (~1 500 NIS/mois).',
   },
+  {
+    slug: 'siyua_mugdal_dira_tziburit',
+    category: 'housing',
+    authority: 'misrad_hashikun',
+    title_fr: 'Aide renforcee logement public handicape (Siyua Mugdal)',
+    title_he: 'סיוע מוגדל בדיור ציבורי לנכים',
+    description_fr:
+      'Aide renforcee (logement prioritaire, adaptation gratuite, loyer davantage reduit) pour les personnes handicapees dans le circuit du logement public ou privé subventionné.',
+    full_description_fr:
+      'Misrad HaShikun offre aux personnes handicapees reconnues un paquet d\'aides renforcees : ' +
+      '- Priorite dans les listes d\'attente Dira Tziburit (en moyenne -50 % de delai) ' +
+      '- Adaptation gratuite du logement : jusqu\'a 150 000 NIS pris en charge (rampes, monte-escalier, ' +
+      '  salle de bains accessible, cuisine abaissee, elargissement portes, ascenseur residentiel) ' +
+      '- Loyer davantage reduit dans Dira Tziburit (jusqu\'a 30 % de plus sur la subvention) ' +
+      '- Aide au demenagement : 5 000-15 000 NIS one-shot si relocation vers logement adapte ' +
+      '- Cumul avec siyua_shkhar_dira + siyua_shkhar_dira_khad_horiot ' +
+      'Conditions : ' +
+      '- Taux d\'invalidite reconnu ≥ 60% (Nakhut Klalit BTL, Nakhei Tsahal, Sherutim Meyukhadim) ' +
+      '- Avis medical sur les besoins d\'adaptation (ergotherapeute agree) ' +
+      '- Residence israelienne ' +
+      'Les adaptations se demandent via un ergotherapeute agree qui dessine le plan et obtient ' +
+      'l\'accord de Misrad HaShikun + eventuellement de la mairie.',
+    conditions: {
+      min_disability: 60,
+      requires_resident: true,
+    },
+    estimated_annual_value: 20000,  // aide amortie sur adaptation
+    value_unit: 'NIS (adaptations jusqu\'a 150 000 NIS + reductions recurrentes)',
+    application_url: 'https://www.gov.il/he/service/housing_adaptation_for_disabled',
+    action_label: 'Demande adaptation logement',
+    info_url: 'https://www.kolzchut.org.il/he/סיוע_בדיור_לנכים',
+    disclaimer:
+      'Necessite une evaluation par un ergotherapeute agree + attestation d\'invalidite. Les olim avec ' +
+      'handicap peuvent aussi cumuler avec la mashkanta_olim pour l\'achat d\'un logement deja adapte. ' +
+      'Delai de traitement : 3-9 mois pour les grandes adaptations.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C8). Valeur 20k NIS/an est une moyenne annuelle ; les adaptations one-shot peuvent atteindre 150k NIS.',
+  },
+  {
+    slug: 'siyua_diyur_niztolei_shoah',
+    category: 'housing',
+    authority: 'misrad_hashikun',
+    title_fr: 'Logement survivants Shoah (Siyua Dyur Niztolei Shoah)',
+    title_he: 'סיוע בדיור לניצולי שואה',
+    description_fr:
+      'Paquet d\'aides au logement pour les survivants de la Shoah reconnus : priorite Dira Tziburit, aide au loyer renforcee, adaptations gratuites, subvention deplacement en maison de retraite.',
+    full_description_fr:
+      'Misrad HaShikun + Rashut leNiztolei HaShoah cofinancent un paquet specifique pour les survivants ' +
+      'de la Shoah : ' +
+      '- Priorite tres elevee dans Dira Tziburit (attribution typique en 6-18 mois vs 3-10 ans general) ' +
+      '- Aide au loyer renforcee : jusqu\'a 2 500-4 000 NIS/mois dans le prive (vs 700-3 200 pour le ' +
+      '  general) ' +
+      '- Adaptation du logement entierement prise en charge (pas de plafond 150k NIS) ' +
+      '- Maison de retraite subventionnee : prise en charge partielle par Rashut Shoah des frais de ' +
+      '  beit avot (~8 000-15 000 NIS/mois economies) ' +
+      '- Frais de demenagement pris en charge ' +
+      'Conditions : ' +
+      '- Reconnaissance formelle survivant Shoah (Rashut ou Claims Conference) ' +
+      '- Age tres eleve (majoritairement 80+ ans) ' +
+      '- Residence israelienne ' +
+      'Procedure : dossier via Misrad HaShikun avec copie de l\'attestation Rashut Shoah.',
+    conditions: {
+      requires_holocaust_survivor: true,
+      requires_resident: true,
+      min_age: 75,  // les survivants encore en vie sont majoritairement 80+
+    },
+    estimated_annual_value: 3000 * 12,
+    typical_monthly_amount: 3000,
+    value_unit: 'NIS/mois (economie totale via subventions cumulees)',
+    application_url: 'https://www.gov.il/he/service/housing_assistance_holocaust_survivors',
+    action_label: 'Demande logement survivant',
+    info_url: 'https://www.kolzchut.org.il/he/סיוע_בדיור_לניצולי_שואה',
+    disclaimer:
+      'Beaucoup de survivants agees connaissent uniquement Dira Tziburit et ignorent la branche ' +
+      'renforcee Shoah. Les coordinateurs Rashut Shoah et les travailleurs sociaux Yad Vashem peuvent ' +
+      'accompagner gratuitement. Cumulable avec l\'ensemble des autres aides Shoah (gmala, arnona, ' +
+      'services domicile).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C8). Complementaire a holocaust_monthly_stipend / holocaust_in_home_services / holocaust_arnona_full_exemption (SECTION 16).',
+  },
+  {
+    slug: 'mashkanta_zkaim',
+    category: 'housing',
+    authority: 'misrad_hashikun',
+    title_fr: 'Aide hypothecaire seniors (Mashkanta Zkaim)',
+    title_he: 'משכנתא לזקנים',
+    description_fr:
+      'Pret hypothecaire subventionne (taux inferieur au marche + garantie Misrad HaShikun) pour les seniors 67+ souhaitant acheter un logement adapte a leur vieillesse.',
+    full_description_fr:
+      'Misrad HaShikun propose une mashkanta specifique pour les seniors qui souhaitent acheter un ' +
+      'logement plus petit / plus adapte a leur autonomie (logements accessibles, Beit Horim, etc.) : ' +
+      '- Montant : jusqu\'a 600 000 NIS (2026, reevaluable) ' +
+      '- Taux d\'interet subventionne : 2-3 % vs 5-6 % marche ' +
+      '- Duree : jusqu\'a 30 ans ou a vie (amortissement au deces avec recuperation sur succession) ' +
+      '- Garantie Misrad HaShikun pour les banques (facilite obtention) ' +
+      'Conditions : ' +
+      '- Age ≥ 67 ans ' +
+      '- Revenus limites (typiquement pension vieillesse + complements < 12 000 NIS/mois) ' +
+      '- Pas de bien immobilier principal (vente prealable autorisee) ' +
+      '- Acte d\'achat pour logement resident principal (pas investissement) ' +
+      'Particularite : la mashkanta peut etre viagere (remboursement au deces sur le bien) — utile ' +
+      'pour les seniors sans heritiers directs souhaitant s\'installer dans un logement adapte sans ' +
+      'impacter leur pension.',
+    conditions: {
+      min_age: 67,
+      requires_resident: true,
+      max_monthly_income: 12000,
+    },
+    estimated_annual_value: 12000,  // economie interets vs marche
+    value_unit: 'NIS/an (economie interets)',
+    application_url: 'https://www.gov.il/he/service/senior_mortgage',
+    action_label: 'Demande mashkanta zkaim',
+    info_url: 'https://www.kolzchut.org.il/he/משכנתא_לזקנים',
+    disclaimer:
+      'Moins connu des olim que la mashkanta_olim (pour les nouveaux arrivants). Demande via les ' +
+      'banques conventionnees (Hapoalim, Leumi, Mizrahi) avec lettre d\'eligibilite Misrad HaShikun. ' +
+      'Cumulable avec les autres aides seniors (Kitzbat Zikna, Hashlamat Hachnasa, arnona_retiree).',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C8). Plafond 600 000 NIS est indicatif — la valeur exacte 2026 doit etre confirmee aupres de Misrad HaShikun. Economie annuelle 12k NIS calculee sur ecart taux 2-3 % vs 5-6 %.',
+  },
+  {
+    slug: 'yivua_meshek_bayit',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Exoneration economie domestique (Yivua Meshek Bayit)',
+    title_he: 'ייבוא משק בית',
+    description_fr:
+      'Regime fiscal special pour les petites activites economiques geree a domicile (location partielle, famille d\'accueil senior, micro-commerce residentiel), complementaire a petur_mas_shkhirat_dira.',
+    full_description_fr:
+      'Article 122B du Pkudat Mas Hakhnasa : regime simplifie de taxation forfaitaire (10 %) pour ' +
+      'les petites activites economiques a domicile, ouvert en complement de petur_mas_shkhirat_dira ' +
+      'pour les bailleurs residentiels depassant le plafond 5 654 NIS/mois. ' +
+      'Activites eligibles : ' +
+      '- Location residentielle au-dela du plafond petur ' +
+      '- Sous-location partielle (chambre, studio dans l\'appart principal) ' +
+      '- Accueil d\'une personne agee / handicapee au foyer (omna adultes) ' +
+      '- Garde d\'enfants a domicile (mishpachton agree) ' +
+      '- Petit commerce residentiel (atelier, cours particuliers) ' +
+      'Regime : impot forfaitaire de 10 % sur le revenu brut, sans possibilite de deduire des ' +
+      'charges (interets mashkanta, travaux, amortissement). Alternative : declaration normale avec ' +
+      'taux marginal + deduction charges (rarement avantageux sous 20 000 NIS/an de revenu). ' +
+      'Conditions : ' +
+      '- Proprietaire ou locataire principal ' +
+      '- Revenu brut de l\'activite < 366 000 NIS/an (2026) ' +
+      '- Pas de salarie pour l\'activite (micro, a domicile) ',
+    conditions: {
+      requires_landlord: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 8000,  // economie vs taux marginal sur 40k NIS/an
+    value_unit: 'NIS/an (economie vs taux marginal)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Infos yivua meshek bayit',
+    info_url: 'https://www.kolzchut.org.il/he/מיסוי_פעילות_עסקית_קטנה',
+    disclaimer:
+      'Alternative au petur_mas_shkhirat_dira pour les bailleurs depassant le plafond 5 654 NIS/mois. ' +
+      'Les deux regimes sont exclusifs (impossible de mixer). Un yoetz mas peut aider a choisir le ' +
+      'plus avantageux selon les charges deductibles. La condition requires_landlord est large — peut ' +
+      'generer des faux positifs pour les bailleurs sous le plafond petur (qui ont interet a rester sur ' +
+      'petur_mas_shkhirat_dira).',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C8). Doublon partiel avec petur_mas_shkhirat_dira (C7) — les deux sont mutuellement exclusifs mais couvrent des situations differentes. Le glossaire les range dans HaShikun (logement) mais fiscalement c\'est HaMisim (impots) — on garde le slug cote fiscal.',
+  },
 ]
 
 // =====================================================
