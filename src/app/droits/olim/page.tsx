@@ -102,7 +102,7 @@ export default function OlimRightsPage() {
   };
 
   const handleShare = () => {
-    const text = `Découvrez tous les droits et aides auxquels vous avez droit en tant que nouvel olim en Israël! Utilisez le calculateur Tloush: ${window.location.origin}/droits-olim`;
+    const text = `Découvrez tous les droits et aides auxquels vous avez droit en tant que nouvel olim en Israël! Utilisez le calculateur Tloush: ${window.location.origin}/droits/olim`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(whatsappUrl, "_blank");
   };
