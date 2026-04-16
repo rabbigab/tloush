@@ -13,6 +13,7 @@ import type {
   KupatHolim,
   HousingStatus,
   EducationLevel,
+  ShoahPeriod,
 } from '@/types/userProfile'
 import {
   GENDER_LABELS,
@@ -21,6 +22,7 @@ import {
   KUPAT_HOLIM_LABELS,
   HOUSING_STATUS_LABELS,
   EDUCATION_LEVEL_LABELS,
+  SHOAH_PERIOD_LABELS,
 } from '@/types/userProfile'
 
 const INPUT_CLS = 'w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
@@ -42,7 +44,7 @@ const EDITABLE_FIELDS: (keyof UserProfileUpdate)[] = [
   'is_active_reservist', 'is_bereaved_family',
   'education_level', 'is_current_student', 'institution_name',
   'kupat_holim', 'disability_level',
-  'is_holocaust_survivor', 'is_caregiver', 'chronic_illness',
+  'is_holocaust_survivor', 'shoah_period', 'is_caregiver', 'chronic_illness',
   'has_mobility_limitation', 'has_disabled_child',
   'city', 'municipality', 'housing_status', 'home_size_sqm', 'has_mortgage',
   'receives_kitsbat_yeladim', 'receives_old_age_pension', 'receives_disability_pension',
@@ -545,11 +547,31 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
               <input
                 type="checkbox"
                 checked={profile.is_holocaust_survivor}
-                onChange={(e) => update('is_holocaust_survivor', e.target.checked)}
+                onChange={(e) => {
+                  update('is_holocaust_survivor', e.target.checked)
+                  if (!e.target.checked) update('shoah_period', null)
+                }}
                 className="w-4 h-4 rounded"
               />
               <span className="text-sm text-slate-700 dark:text-slate-300">Survivant de la Shoah (ou conjoint)</span>
             </label>
+            {profile.is_holocaust_survivor && (
+              <div className="pl-7 pt-1 pb-2">
+                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">
+                  Période / catégorie (permet d&apos;orienter vers les bonnes aides)
+                </label>
+                <select
+                  value={profile.shoah_period ?? ''}
+                  onChange={(e) => update('shoah_period', (e.target.value || null) as ShoahPeriod | null)}
+                  className={INPUT_CLS}
+                >
+                  <option value="">— Sélectionner —</option>
+                  {(Object.keys(SHOAH_PERIOD_LABELS) as ShoahPeriod[]).map(p => (
+                    <option key={p} value={p}>{SHOAH_PERIOD_LABELS[p]}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <label className={CHECKBOX_LABEL_CLS}>
               <input
                 type="checkbox"

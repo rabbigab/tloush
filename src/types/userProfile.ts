@@ -9,6 +9,7 @@ export type EmploymentStatus = 'employed' | 'self_employed' | 'unemployed' | 'st
 export type KupatHolim = 'clalit' | 'maccabi' | 'meuhedet' | 'leumit'
 export type HousingStatus = 'renter' | 'owner' | 'living_with_family' | 'public_housing' | 'other'
 export type EducationLevel = 'none' | 'high_school' | 'vocational' | 'ba' | 'ma' | 'phd' | 'other'
+export type ShoahPeriod = 'pre_1953' | 'post_1953' | 'ex_urss'
 
 export interface UserProfile {
   user_id: string
@@ -56,6 +57,7 @@ export interface UserProfile {
   disability_level: number | null
   kupat_holim: KupatHolim | null
   is_holocaust_survivor: boolean
+  shoah_period: ShoahPeriod | null
   is_caregiver: boolean
   chronic_illness: boolean
   has_mobility_limitation: boolean
@@ -141,4 +143,10 @@ export const EDUCATION_LEVEL_LABELS: Record<EducationLevel, string> = {
   ma: 'Master / MA',
   phd: 'Doctorat / PhD',
   other: 'Autre',
+}
+
+export const SHOAH_PERIOD_LABELS: Record<ShoahPeriod, string> = {
+  pre_1953: 'Immigré(e) avant 1953',
+  post_1953: 'Immigré(e) après 1953',
+  ex_urss: 'Survivant(e) ex-URSS / Roumanie (Keren Sif 2)',
 }

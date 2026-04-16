@@ -9,6 +9,7 @@ import type {
   HousingStatus,
   Gender,
   EducationLevel,
+  ShoahPeriod,
 } from '@/types/userProfile'
 
 // =====================================================
@@ -45,6 +46,7 @@ const VALID_EMPLOYMENT: EmploymentStatus[] = ['employed', 'self_employed', 'unem
 const VALID_KUPAT: KupatHolim[] = ['clalit', 'maccabi', 'meuhedet', 'leumit']
 const VALID_HOUSING: HousingStatus[] = ['renter', 'owner', 'living_with_family', 'public_housing', 'other']
 const VALID_EDUCATION: EducationLevel[] = ['none', 'high_school', 'vocational', 'ba', 'ma', 'phd', 'other']
+const VALID_SHOAH_PERIOD: ShoahPeriod[] = ['pre_1953', 'post_1953', 'ex_urss']
 
 function num(v: unknown, min?: number, max?: number): number | null | 'error' {
   if (v === null || v === undefined || v === '') return null
@@ -168,6 +170,7 @@ function validateUpdate(body: unknown): UserProfileUpdate | { error: string } {
   }
   if ('kupat_holim' in b) clean.kupat_holim = enumCheck(b.kupat_holim, VALID_KUPAT)
   if ('is_holocaust_survivor' in b) clean.is_holocaust_survivor = bool(b.is_holocaust_survivor)
+  if ('shoah_period' in b) clean.shoah_period = enumCheck(b.shoah_period, VALID_SHOAH_PERIOD)
   if ('is_caregiver' in b) clean.is_caregiver = bool(b.is_caregiver)
   if ('chronic_illness' in b) clean.chronic_illness = bool(b.chronic_illness)
   if ('has_mobility_limitation' in b) clean.has_mobility_limitation = bool(b.has_mobility_limitation)
