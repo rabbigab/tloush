@@ -200,6 +200,25 @@ export interface BenefitDefinition {
 }
 
 // =====================================================
+// SECTION 1.5 — Constantes de conversion de devises
+// =====================================================
+// Taux de change EUR/NIS (shaar yatzig Bank of Israel).
+// Utilisé pour convertir les pensions Shoah versées en EUR
+// (Claims Conference / BEG / Hardship Fund) en équivalent NIS.
+//
+// IMPORTANT : ces montants ne sont qu'indicatifs — le taux de change
+// évolue quotidiennement. Re-vérifier lors de l'audit trimestriel.
+//
+// Source : Bank of Israel (https://www.boi.org.il/en/economic-roles/financial-markets/exchange-rates/euro/)
+export const EXCHANGE_RATE_EUR_NIS = 3.5268
+export const EXCHANGE_RATE_EUR_NIS_VERIFIED_AT = '2026-04-16'
+
+/** Convertit un montant EUR en NIS au taux BoI courant (arrondi à l'entier). */
+export function eurToNis(eurAmount: number): number {
+  return Math.round(eurAmount * EXCHANGE_RATE_EUR_NIS)
+}
+
+// =====================================================
 // SECTION 2 — Kitsbat Yeladim (allocation enfants) 2026
 // =====================================================
 // Source : https://www.btl.gov.il/About/news/Pages/hadasaidkonkitzva2026.aspx
@@ -3088,7 +3107,7 @@ const HOLOCAUST_EXTRAS_BENEFITS: BenefitDefinition[] = [
       'Article 2 Fund (aussi appele "Keren Sif 2" en hebreu administratif) : pension financee par ' +
       'l\'Allemagne a travers la Claims Conference, destinee aux survivants qui ne pouvaient pas ' +
       'beneficier du BEG classique (ex-URSS, Roumanie, pays du bloc sovietique, Europe de l\'Est). ' +
-      'Montant 2026 : 667 EUR/mois (~2 670 NIS au taux actuel). ' +
+      'Montant 2026 : 667 EUR/mois (~2 353 NIS au taux BoI du 16/04/2026 : 3,5268 NIS/EUR). ' +
       'Conditions d\'eligibilite : ' +
       '- Avoir survecu a : camp de concentration / ghetto (≥ 6 mois) / cachette (≥ 18 mois) ' +
       '- NE PAS recevoir deja une pension BEG allemande mensuelle ' +
@@ -3100,9 +3119,9 @@ const HOLOCAUST_EXTRAS_BENEFITS: BenefitDefinition[] = [
       required_shoah_period: 'ex_urss',
       requires_resident: true,
     },
-    estimated_annual_value: 2670 * 12,
-    typical_monthly_amount: 2670,
-    value_unit: 'NIS/mois (~667 EUR converti)',
+    estimated_annual_value: eurToNis(667) * 12,
+    typical_monthly_amount: eurToNis(667),
+    value_unit: 'NIS/mois (~667 EUR converti au taux BoI 16/04/2026)',
     application_url: 'https://www.claimscon.org/applynow',
     action_label: 'Demande Claims Conference',
     info_url: 'https://www.kolzchut.org.il/he/קרן_סעיף_2',
@@ -3129,7 +3148,7 @@ const HOLOCAUST_EXTRAS_BENEFITS: BenefitDefinition[] = [
       'ex-URSS / Roumanie qui vivent en Israel peuvent demander un supplement israelien pour atteindre ' +
       'un plancher de revenu comparable aux vatikim. ' +
       'Montant 2026 : variable selon revenus du foyer (et Kitzbat Zikna BTL) — typiquement 500 a 2 500 ' +
-      'NIS/mois en complement des 2 670 NIS Keren Sif 2. Plancher cible : ~4 500 NIS/mois total (2026). ' +
+      'NIS/mois en complement des ~2 353 NIS Keren Sif 2 (taux BoI 16/04/2026). Plancher cible : ~4 500 NIS/mois total (2026). ' +
       'Conditions : ' +
       '- Beneficier deja de Keren Sif 2 (dossier Claims Conference valide) ' +
       '- Residence en Israel ' +
@@ -3368,14 +3387,14 @@ const HOLOCAUST_EXTRAS_BENEFITS: BenefitDefinition[] = [
     title_fr: 'Hardship Fund + Supplemental (Claims Conference)',
     title_he: 'קרן הקושי - כספי גרמניה',
     description_fr:
-      'Paiement unique (~10 500 NIS) + supplement annuel (~5 540 NIS/an) verses par la Claims Conference aux survivants de la Shoah n\'ayant jamais recu de BEG mensuel allemand.',
+      'Paiement unique (~8 817 NIS) + supplement annuel (~4 655 NIS/an) verses par la Claims Conference aux survivants de la Shoah n\'ayant jamais recu de BEG mensuel allemand. (Taux BoI 16/04/2026 : 3,5268 NIS/EUR.)',
     full_description_fr:
       'Hardship Fund (fonds d\'aide d\'urgence) cree en 1980 par la Claims Conference pour les survivants ' +
       'qui n\'avaient pas pu beneficier du BEG directement (olim arrives en Israel avant 1953, ou ' +
       'vivants dans des pays communistes). ' +
       'Prestations : ' +
-      '- Hardship Fund (one-shot) : ~2 500 EUR (~10 500 NIS au taux actuel) a la reconnaissance ' +
-      '- Hardship Supplemental : ~1 320 EUR/an (~5 540 NIS/an) verse chaque annee aux beneficiaires ' +
+      '- Hardship Fund (one-shot) : ~2 500 EUR (~8 817 NIS au taux BoI 16/04/2026) a la reconnaissance ' +
+      '- Hardship Supplemental : ~1 320 EUR/an (~4 655 NIS/an au taux BoI 16/04/2026) verse chaque annee aux beneficiaires ' +
       '  du Hardship Fund qui n\'ont pas d\'autre pension allemande mensuelle ' +
       'Conditions : ' +
       '- Avoir survecu a : camp / ghetto / cachette / exode force ' +
@@ -3387,8 +3406,8 @@ const HOLOCAUST_EXTRAS_BENEFITS: BenefitDefinition[] = [
       requires_holocaust_survivor: true,
       requires_resident: true,
     },
-    estimated_annual_value: 5540,  // supplement annuel recurrent
-    value_unit: 'NIS/an (supplement) + one-shot 10 500 NIS',
+    estimated_annual_value: eurToNis(1320),  // supplement annuel recurrent (1 320 EUR)
+    value_unit: 'NIS/an (supplement) + one-shot ~8 817 NIS (2 500 EUR)',
     application_url: 'https://www.claimscon.org/applynow',
     action_label: 'Demande Hardship Fund',
     info_url: 'https://www.claimscon.org/survivor-services/compensation-and-restitution/',
@@ -3412,7 +3431,7 @@ const HOLOCAUST_EXTRAS_BENEFITS: BenefitDefinition[] = [
     description_fr:
       'Meme fonds que kitzva_keren_sif2_claims, mais accessible via la Claims Conference directement (utile pour les survivants ex-URSS residant hors Israel ou en diaspora).',
     full_description_fr:
-      'Article 2 Fund : pension mensuelle de 667 EUR (~2 734 NIS) versee par la Claims Conference ' +
+      'Article 2 Fund : pension mensuelle de 667 EUR (~2 353 NIS au taux BoI 16/04/2026 : 3,5268) versee par la Claims Conference ' +
       'aux survivants de la Shoah ayant survecu a un camp / ghetto / cachette en zone d\'occupation ' +
       'nazie ou sovietique. Financement : gouvernement allemand. ' +
       'Double entree dans le catalogue : ' +
@@ -3428,9 +3447,9 @@ const HOLOCAUST_EXTRAS_BENEFITS: BenefitDefinition[] = [
       required_shoah_period: ['ex_urss', 'post_1953'],
       requires_resident: true,
     },
-    estimated_annual_value: 2734 * 12,
-    typical_monthly_amount: 2734,
-    value_unit: 'NIS/mois (~667 EUR convertis)',
+    estimated_annual_value: eurToNis(667) * 12,
+    typical_monthly_amount: eurToNis(667),
+    value_unit: 'NIS/mois (~667 EUR convertis au taux BoI 16/04/2026)',
     application_url: 'https://www.claimscon.org/applynow',
     action_label: 'Demande Article 2 Fund',
     info_url: 'https://www.claimscon.org/our-work/compensation/background/article-2/',
