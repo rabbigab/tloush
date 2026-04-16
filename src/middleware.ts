@@ -25,7 +25,8 @@ const PROTECTED_ROUTES = [
   // '/help' retire : la page a ete supprimee, /aide (public) est desormais
   // la source unique du centre d'aide (Chantier 1 P0).
   '/letters',
-  '/bituach-leumi',
+  // '/bituach-leumi' retire : redirige 308 vers /aides (consolidation
+  // avec le catalogue 125 aides — cf. memory/audit_interface.md fusion).
   '/freelance',
   '/mashkanta',
   '/assurances',
@@ -33,9 +34,9 @@ const PROTECTED_ROUTES = [
 ]
 
 // Routes publiques qui n'ont pas besoin du middleware auth.
-// Note: '/droits' couvre aussi /droits/guides, /droits/olim, /droits/[slug]
-// via le matching startsWith(). Ancienne route '/droits-olim' redirigee
-// 308 vers /droits/olim par next.config.js (Chantier 1 P1 PR #2B).
+// Note: '/droits' couvre /droits/guides + /droits/[slug]. Le questionnaire
+// olim a ete deplace dans /aides/olim (zone auth) lors de la consolidation
+// /aides — cf. memory/audit_interface.md.
 // Note: '/annuaire' couvre aussi /annuaire/artisans, /annuaire/professionnels
 // via startsWith(). Ancienne route '/experts' redirigee 308 vers
 // /annuaire/professionnels par next.config.js (Chantier 1 P1 PR #2C).

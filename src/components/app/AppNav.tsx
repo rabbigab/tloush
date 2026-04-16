@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
-import { LayoutDashboard, MessageSquare, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Building2, Briefcase, Landmark, Wrench, ChevronDown, Search, HeartPulse, GitCompareArrows, FileSpreadsheet, Star, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react'
+import { LayoutDashboard, MessageSquare, Scale, Users, User, MoreHorizontal, X, Wallet, Folder, Gift, HelpCircle, Calculator, Shield, FileText, Briefcase, Landmark, Wrench, ChevronDown, Search, HeartPulse, GitCompareArrows, FileSpreadsheet, Star, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react'
 
 // Desktop: core items always visible + "Outils" dropdown
 const CORE_NAV = [
@@ -29,9 +29,8 @@ const TOOLS_SECTIONS = [
     items: [
       { label: 'Detecter mes aides', href: '/aides', icon: Sparkles },
       { label: 'Droits du salarie', href: '/aides?tab=travail', icon: Shield },
-      { label: 'Droits olim', href: '/droits/olim', icon: Scale },
+      { label: 'Droits olim', href: '/aides/olim', icon: Scale },
       { label: 'Miluim', href: '/miluim', icon: ShieldCheck },
-      { label: 'Bituach Leumi', href: '/bituach-leumi', icon: Building2 },
       { label: 'Guide assurances', href: '/assurances', icon: HeartPulse },
       { label: 'Courriers', href: '/letters', icon: FileText },
     ],
@@ -39,7 +38,7 @@ const TOOLS_SECTIONS = [
   {
     title: 'Finances',
     items: [
-      { label: 'Remboursement impots', href: '/tax-refund', icon: Calculator },
+      { label: 'Remboursement impots', href: '/aides/tax-refund', icon: Calculator },
       { label: 'Mashkanta', href: '/mashkanta', icon: Landmark },
       { label: 'Import bancaire', href: '/bank-import', icon: FileSpreadsheet },
     ],
@@ -99,8 +98,7 @@ const MOBILE_SECTIONS = [
     items: [
       { label: 'Detecter mes aides', href: '/aides', icon: Sparkles },
       { label: 'Droits du salarie', href: '/aides?tab=travail', icon: Shield },
-      { label: 'Droits olim', href: '/droits/olim', icon: Scale },
-      { label: 'Bituach Leumi', href: '/bituach-leumi', icon: Building2 },
+      { label: 'Droits olim', href: '/aides/olim', icon: Scale },
       { label: 'Guide assurances', href: '/assurances', icon: HeartPulse },
       { label: 'Courriers', href: '/letters', icon: FileText },
     ],
@@ -108,7 +106,7 @@ const MOBILE_SECTIONS = [
   {
     title: 'Finances',
     items: [
-      { label: 'Remboursement impots', href: '/tax-refund', icon: Calculator },
+      { label: 'Remboursement impots', href: '/aides/tax-refund', icon: Calculator },
       { label: 'Mashkanta', href: '/mashkanta', icon: Landmark },
       { label: 'Import bancaire', href: '/bank-import', icon: FileSpreadsheet },
     ],

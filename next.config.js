@@ -24,10 +24,16 @@ const nextConfig = {
         destination: '/aides?tab=travail',
         permanent: true,
       },
-      // Chantier 1 P1 (PR #2B) : /droits-olim deplace sous le hub /droits.
+      // /droits-olim (legacy) et /droits/olim (PR #2B) sont desormais
+      // tous deux rediriges vers /aides/olim (consolidation /aides).
       {
         source: '/droits-olim',
-        destination: '/droits/olim',
+        destination: '/aides/olim',
+        permanent: true,
+      },
+      {
+        source: '/droits/olim',
+        destination: '/aides/olim',
         permanent: true,
       },
       // Chantier 1 P1 (PR #2C) : harmonisation des annuaires.
@@ -63,6 +69,17 @@ const nextConfig = {
       {
         source: '/experts/rejoindre',
         destination: '/annuaire/professionnels/rejoindre',
+        permanent: true,
+      },
+      // Consolidation autour de /aides : 3 routes fusionnees.
+      {
+        source: '/bituach-leumi',
+        destination: '/aides',
+        permanent: true,
+      },
+      {
+        source: '/tax-refund',
+        destination: '/aides/tax-refund',
         permanent: true,
       },
     ];

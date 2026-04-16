@@ -41,13 +41,13 @@ const DISALLOW_ROUTES = [
   // '/help' retire : page supprimee, /aide (public) est desormais la
   // source unique (Chantier 1 P0) et doit etre indexable.
   '/letters',
-  '/bituach-leumi',
+  // '/bituach-leumi' retire : redirige vers /aides (deja en disallow).
   '/freelance',
   '/mashkanta',
   '/assurances',
   '/bank-import',
   '/miluim',
-  '/tax-refund',
+  // '/tax-refund' couvert par '/aides' (deplace dans /aides/tax-refund).
   '/family',
   '/payslips',
   // Pages vides ou en construction — noindex additionnel via leur

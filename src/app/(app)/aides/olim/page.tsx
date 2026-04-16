@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import AidesTabsNav from "../AidesTabsNav";
 import {
   OLIM_RIGHTS,
   filterRightsByProfile,
@@ -102,7 +101,7 @@ export default function OlimRightsPage() {
   };
 
   const handleShare = () => {
-    const text = `Découvrez tous les droits et aides auxquels vous avez droit en tant que nouvel olim en Israël! Utilisez le calculateur Tloush: ${window.location.origin}/droits/olim`;
+    const text = `Découvrez tous les droits et aides auxquels vous avez droit en tant que nouvel olim en Israël! Utilisez le calculateur Tloush: ${window.location.origin}/aides/olim`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(whatsappUrl, "_blank");
   };
@@ -112,8 +111,8 @@ export default function OlimRightsPage() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col bg-neutral-50">
-      <Header />
+    <div className="min-h-screen flex flex-col bg-neutral-50">
+      <AidesTabsNav activeTab="olim" />
 
       {/* STEP 1: QUESTIONNAIRE */}
       {step === "questions" && (
@@ -789,7 +788,6 @@ export default function OlimRightsPage() {
         </motion.div>
       )}
 
-      <Footer />
-    </main>
+    </div>
   );
 }
