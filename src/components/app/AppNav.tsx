@@ -58,7 +58,7 @@ const ALL_TOOLS = TOOLS_SECTIONS.flatMap(s => s.items)
 
 const SECONDARY_NAV = [
   { label: 'Annuaire', href: '/annuaire', icon: Star },
-  { label: 'Experts', href: '/experts', icon: Users },
+  { label: 'Professionnels', href: '/annuaire/professionnels', icon: Users },
   { label: 'Profil', href: '/profile', icon: User },
 ]
 
@@ -117,7 +117,7 @@ const MOBILE_SECTIONS = [
     title: 'Autres',
     items: [
       { label: 'Recherche', href: '/search', icon: Search },
-      { label: 'Experts', href: '/experts', icon: Users },
+      { label: 'Professionnels', href: '/annuaire/professionnels', icon: Users },
       { label: 'Parrainage', href: '/referral', icon: Gift },
       { label: 'Aide', href: '/aide', icon: HelpCircle },
     ],

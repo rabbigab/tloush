@@ -138,7 +138,7 @@ export default function InscriptionPrestatairePage() {
             <li>Vous recevez vos premiers contacts !</li>
           </ol>
         </div>
-        <Link href="/annuaire" className="text-brand-600 hover:underline text-sm">
+        <Link href="/annuaire/artisans" className="text-brand-600 hover:underline text-sm">
           Retour à l&apos;annuaire
         </Link>
       </div>
@@ -149,7 +149,7 @@ export default function InscriptionPrestatairePage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12">
-      <Link href="/annuaire" className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-brand-600 mb-8">
+      <Link href="/annuaire/artisans" className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-brand-600 mb-8">
         <ArrowLeft size={14} /> Retour à l&apos;annuaire
       </Link>
 

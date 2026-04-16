@@ -212,7 +212,7 @@ export default function GuidePage({
             </p>
           </div>
           <Link
-            href="/experts"
+            href="/annuaire/professionnels"
             className="bg-white text-brand-700 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-brand-50 transition-colors shrink-0"
           >
             Trouver un expert

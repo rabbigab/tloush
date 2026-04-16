@@ -728,7 +728,7 @@ export default function MaterniteLeaveCalculator() {
                 Un expert peut vous guider pour optimiser votre congé et vos allocations.
               </p>
               <Link
-                href="/experts"
+                href="/annuaire/professionnels"
                 className="inline-block bg-white text-brand-600 font-semibold px-6 py-2 rounded-lg hover:bg-brand-50 transition-colors"
               >
                 Consultez un expert →

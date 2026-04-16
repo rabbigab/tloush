@@ -151,7 +151,7 @@ export default function DirectoryProviderClient({
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/annuaire/${categorySlug}/${provider.slug}?reveal=1`,
+        redirectTo: `${window.location.origin}/annuaire/artisans/${categorySlug}/${provider.slug}?reveal=1`,
       },
     })
   }
@@ -175,7 +175,7 @@ export default function DirectoryProviderClient({
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       {/* Breadcrumb */}
       <Link
-        href={`/annuaire/${categorySlug}`}
+        href={`/annuaire/artisans/${categorySlug}`}
         className="inline-flex items-center gap-1.5 text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 mb-6"
       >
         <ArrowLeft size={14} />

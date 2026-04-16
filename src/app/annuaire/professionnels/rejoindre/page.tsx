@@ -52,7 +52,7 @@ export default function RejoindreExpertsPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6 w-full">
       <Link
-        href="/experts"
+        href="/annuaire/professionnels"
         className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-blue-600 transition-colors"
       >
         <ChevronLeft size={14} />

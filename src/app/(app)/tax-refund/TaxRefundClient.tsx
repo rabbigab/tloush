@@ -329,7 +329,7 @@ export default function TaxRefundClient({ profileComplete }: { profileComplete: 
               Nouveau calcul
             </button>
             <Link
-              href="/experts"
+              href="/annuaire/professionnels"
               className="flex-1 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 text-sm text-center flex items-center justify-center gap-2"
             >
               <FileText size={14} />

@@ -25,7 +25,7 @@ export default function LegalDisclaimer({
   topic,
   official_url,
   official_label = 'Source officielle',
-  expert_url = '/experts',
+  expert_url = '/annuaire/professionnels',
   expert_label = 'Consulter un expert',
 }: LegalDisclaimerProps) {
   const config = {
