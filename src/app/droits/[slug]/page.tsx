@@ -95,11 +95,11 @@ export default function GuidePage({
       <div className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-8">
         {/* Breadcrumb */}
         <Link
-          href="/droits"
+          href="/droits/guides"
           className="inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-brand-600 transition-colors mb-6"
         >
           <ChevronLeft size={14} />
-          Tous les guides
+          Retour aux guides
         </Link>
 
         {/* Header article */}

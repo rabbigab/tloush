@@ -24,6 +24,12 @@ const nextConfig = {
         destination: '/aides?tab=travail',
         permanent: true,
       },
+      // Chantier 1 P1 (PR #2B) : /droits-olim deplace sous le hub /droits.
+      {
+        source: '/droits-olim',
+        destination: '/droits/olim',
+        permanent: true,
+      },
     ];
   },
   async headers() {

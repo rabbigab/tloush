@@ -29,7 +29,7 @@ const TOOLS_SECTIONS = [
     items: [
       { label: 'Detecter mes aides', href: '/aides', icon: Sparkles },
       { label: 'Droits du salarie', href: '/aides?tab=travail', icon: Shield },
-      { label: 'Droits olim', href: '/droits-olim', icon: Scale },
+      { label: 'Droits olim', href: '/droits/olim', icon: Scale },
       { label: 'Miluim', href: '/miluim', icon: ShieldCheck },
       { label: 'Bituach Leumi', href: '/bituach-leumi', icon: Building2 },
       { label: 'Guide assurances', href: '/assurances', icon: HeartPulse },
@@ -99,7 +99,7 @@ const MOBILE_SECTIONS = [
     items: [
       { label: 'Detecter mes aides', href: '/aides', icon: Sparkles },
       { label: 'Droits du salarie', href: '/aides?tab=travail', icon: Shield },
-      { label: 'Droits olim', href: '/droits-olim', icon: Scale },
+      { label: 'Droits olim', href: '/droits/olim', icon: Scale },
       { label: 'Bituach Leumi', href: '/bituach-leumi', icon: Building2 },
       { label: 'Guide assurances', href: '/assurances', icon: HeartPulse },
       { label: 'Courriers', href: '/letters', icon: FileText },

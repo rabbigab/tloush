@@ -36,13 +36,13 @@ export interface OlimRight {
 
 /**
  * Date globale de derniere verification des baremes olim-rights.
- * Affichee sur /droits-olim pour transparence (audit #23).
+ * Affichee sur /droits/olim pour transparence (audit #23).
  */
 export const OLIM_RIGHTS_VERIFIED_AT = '2026-04-01';
 
 /**
  * Ressources officielles pour les olim. Rendues en bas de
- * /droits-olim pour que l'utilisateur puisse verifier les montants
+ * /droits/olim pour que l'utilisateur puisse verifier les montants
  * et completer sa demarche (audit #23).
  */
 export const OFFICIAL_OLIM_RESOURCES: Array<{
