@@ -10,6 +10,7 @@ export type KupatHolim = 'clalit' | 'maccabi' | 'meuhedet' | 'leumit'
 export type HousingStatus = 'renter' | 'owner' | 'living_with_family' | 'public_housing' | 'other'
 export type EducationLevel = 'none' | 'high_school' | 'vocational' | 'ba' | 'ma' | 'phd' | 'other'
 export type ShoahPeriod = 'pre_1953' | 'post_1953' | 'ex_urss'
+export type DisabilitySource = 'idf' | 'work' | 'general'
 
 export interface UserProfile {
   user_id: string
@@ -55,6 +56,7 @@ export interface UserProfile {
 
   // Sante / situations speciales
   disability_level: number | null
+  disability_source: DisabilitySource | null
   kupat_holim: KupatHolim | null
   is_holocaust_survivor: boolean
   shoah_period: ShoahPeriod | null
@@ -150,4 +152,10 @@ export const SHOAH_PERIOD_LABELS: Record<ShoahPeriod, string> = {
   pre_1953: 'Immigré(e) avant 1953',
   post_1953: 'Immigré(e) après 1953',
   ex_urss: 'Survivant(e) ex-URSS / Roumanie (Keren Sif 2)',
+}
+
+export const DISABILITY_SOURCE_LABELS: Record<DisabilitySource, string> = {
+  idf: 'Invalide de Tsahal (Nakhei Tsahal)',
+  work: 'Accident du travail (Nifgaei Avoda)',
+  general: 'Invalidité générale (Nakhut Klalit)',
 }

@@ -65,6 +65,13 @@ export interface EligibilityConditions {
   required_employment?: Array<'employed' | 'self_employed' | 'unemployed' | 'student' | 'retired' | 'reservist' | 'parental_leave'>
   /** Taux d'invalidite minimum (%) */
   min_disability?: number
+  /**
+   * Origine de l'invalidite requise.
+   * - 'idf'     : invalide de Tsahal (Misrad HaBitahon — Nakhei Tsahal)
+   * - 'work'    : accident du travail (BL Nifgaei Avoda)
+   * - 'general' : invalidite generale (BL Nakhut Klalit)
+   */
+  required_disability_source?: 'idf' | 'work' | 'general'
   /** Revenu mensuel maximum (pour aides conditionnees) */
   max_monthly_income?: number
   /** Le beneficiaire doit etre olim */
