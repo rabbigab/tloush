@@ -1,18 +1,18 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ShieldCheck, AlertCircle } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
+
+// Note (audit #15) : le disclaimer "pas un cabinet juridique ni
+// expert-comptable" a ete retire du footer global car il apparaissait
+// hors contexte sur les pages d'annuaire (fiches plombier, etc.).
+// Les pages qui en ont besoin (homepage, /scanner, /calculateurs,
+// /droits, /droits-olim, /modeles) rendent leur propre
+// <DisclaimerBlock /> explicitement.
 
 export default function Footer() {
   return (
     <footer className="bg-white dark:bg-slate-900 border-t border-neutral-100 dark:border-slate-700 mt-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
-        <div className="flex items-start gap-3 bg-neutral-50 dark:bg-slate-800 rounded-xl p-4 mb-8 border border-neutral-200 dark:border-slate-700">
-          <AlertCircle size={18} className="text-neutral-400 dark:text-slate-500 mt-0.5 shrink-0" />
-          <p className="text-xs text-neutral-500 dark:text-slate-400 leading-relaxed">
-            <strong className="text-neutral-600 dark:text-slate-300">Analyse indicative uniquement.</strong>{" "}
-            Tloush est un outil d&apos;aide à la compréhension, pas un cabinet juridique ni un expert-comptable.
-          </p>
-        </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-3">

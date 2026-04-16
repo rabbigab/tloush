@@ -170,7 +170,7 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
       {/* Outils rapides */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
-          { label: 'Salaire brut/net', href: '/calculator', icon: Calculator, color: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600' },
+          { label: 'Salaire brut/net', href: '/calculateurs/brut-net', icon: Calculator, color: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600' },
           { label: 'Freelance', href: '/freelance', icon: Briefcase, color: 'bg-green-50 dark:bg-green-950/30 text-green-600' },
           { label: 'Mashkanta', href: '/mashkanta', icon: Landmark, color: 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600' },
           { label: 'Mes droits', href: '/rights-check', icon: Shield, color: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600' },

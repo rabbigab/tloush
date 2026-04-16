@@ -13,7 +13,8 @@ const PROTECTED_ROUTES = [
   '/expenses',
   '/search',
   '/admin',
-  '/calculator',
+  // '/calculator' retire : la route redirige maintenant vers
+  // /calculateurs/brut-net (public) cf. audit technical-mapping #17.
   '/rights-check',
   '/referral',
   '/help',

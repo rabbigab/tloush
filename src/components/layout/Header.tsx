@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { ShieldCheck, LayoutDashboard, Moon, Sun, CreditCard, Scale, Menu, X, Star, Home } from "lucide-react";
+import { ShieldCheck, LayoutDashboard, Moon, Sun, CreditCard, Scale, Menu, X, Star, Calculator } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -30,13 +30,9 @@ export default function Header() {
 
         {/* Desktop nav */}
         <nav className="hidden sm:flex items-center gap-1 lg:gap-2">
-          <Link
-            href="/immobilier"
-            className="flex items-center gap-1.5 text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors px-2 py-1.5 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-950/30"
-          >
-            <Home size={14} />
-            <span className="hidden lg:inline">Immobilier</span>
-          </Link>
+          {/* /immobilier retire de la nav tant que la feature est en
+              construction (audit #11). Reactiver quand la DB listings
+              est populate et le rendu fix. */}
           <Link
             href="/annuaire"
             className="flex items-center gap-1.5 text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors px-2 py-1.5 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-950/30"
@@ -50,6 +46,13 @@ export default function Header() {
           >
             <Scale size={14} />
             <span className="hidden lg:inline">Droits olim</span>
+          </Link>
+          <Link
+            href="/calculateurs"
+            className="flex items-center gap-1.5 text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors px-2 py-1.5 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-950/30"
+          >
+            <Calculator size={14} />
+            <span className="hidden lg:inline">Calculateurs</span>
           </Link>
           <Link
             href="/pricing"
@@ -108,10 +111,8 @@ export default function Header() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="sm:hidden bg-white dark:bg-slate-900 border-t border-neutral-100 dark:border-slate-700 px-4 py-4 space-y-1">
-          <Link href="/immobilier" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 rounded-lg">
-            <Home size={16} />
-            Immobilier
-          </Link>
+          {/* /immobilier retire du menu mobile tant que la feature
+              est en construction (audit #11) */}
           <Link href="/annuaire" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 rounded-lg">
             <Star size={16} />
             Annuaire
@@ -119,6 +120,10 @@ export default function Header() {
           <Link href="/droits-olim" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 rounded-lg">
             <Scale size={16} />
             Droits des olim
+          </Link>
+          <Link href="/calculateurs" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 rounded-lg">
+            <Calculator size={16} />
+            Calculateurs
           </Link>
           <Link href="/pricing" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 rounded-lg">
             <CreditCard size={16} />

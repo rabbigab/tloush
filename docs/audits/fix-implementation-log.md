@@ -279,15 +279,15 @@
 - **#7 CGV identité légale + TVA** : insérer le bloc identité au début de l'article 1 ; ajouter la mention TVA Ma'am dans l'article 4. **Estimation : 1 commit de ~15 lignes.**
 - **Migration vers `LEGAL_ENTITY`** : refactoriser `/cgv` et `/mentions-legales` pour importer depuis `src/lib/legalEntity.ts` au lieu de hardcoder (après remplissage des placeholders). **Estimation : 1 commit de ~40 lignes.**
 
-### Lot 3 / Phase Q2 (à démarrer après Lot 2)
-- #11 /immobilier masquage ou fix rendu
-- #12 /annuaire catégories vides → noindex dynamique
-- #14 Fiches prestataires typos + script normalization
-- #15 Fiches prestataires disclaimer hors contexte
-- #17 /calculator → redirect /calculateurs/brut-net + nav publique
-- #26 /scanner payslip + pré-warning auth + skeleton UI
-- #27 robots.txt → `src/app/robots.ts` dynamique
-- #28 sitemap.ts pages manquantes
+### Lot 3 / Phase Q2 (UX / SEO / conversion) — FAIT
+- #11 /immobilier masquage noindex + landing "en construction" → Q2.7
+- #12 /annuaire catégories vides → noindex dynamique → Q2.4
+- #14 Fiches prestataires typos + helper providerDisplay → Q2.2
+- #15 Fiches prestataires disclaimer hors contexte + 0 avis → Q2.3
+- #17 /calculator → redirect + nav publique → Q2.1
+- #26 /scanner payslip + pré-warning auth → Q2.6
+- #27 robots.txt → `src/app/robots.ts` dynamique → Q2.5
+- #28 sitemap.ts filtre catégories vides → Q2.4
 
 ### Lot 4 / Phase Q3 (contenu produit)
 - #21 /modeles étoffement (5 → 12+)
@@ -297,4 +297,178 @@
 - #19 /calculateurs/maternite seuils BL
 - #20 /calculateurs/indemnites article 14 + démission équiv.
 - #18 /calculateurs sources barème + date vérification
+
+---
+
+## Lot 3 — Phase Q2 (UX / SEO / conversion)
+
+**Contenu prévu** : 8 items de la Phase Q2 du mapping, non bloqués.
+**Branche** : `claude/lot3-q2-fixes` (basée sur `claude/lot2-q1-fixes`).
+
+---
+
+## Fix #17 — /calculator → redirect /calculateurs/brut-net + nav publique
+
+- **Problème** : doublon de routes (`/calculator` auth-gated et `/calculateurs/brut-net` public) produisant le même outil. Nav publique Header ne listait pas `/calculateurs`.
+- **Fichiers modifiés** :
+  - `src/app/(app)/calculator/page.tsx` (rewrite → redirect, -8 lignes)
+  - `src/middleware.ts` (retrait de `/calculator` de `PROTECTED_ROUTES`)
+  - `src/components/app/AppNav.tsx` (2 occurrences `/calculator` → `/calculateurs/brut-net`)
+  - `src/app/(app)/dashboard/DashboardClient.tsx` (shortcut ligne 173)
+  - `src/components/layout/Header.tsx` (ajout lien desktop + mobile)
+- **Correction** : `/calculator` devient `redirect('/calculateurs/brut-net')`, retiré du middleware protégé → les users non connectés sont redirigés vers la page publique. Nav publique gagne une entrée "Calculateurs" (icon Calculator de lucide).
+- **Risque** : faible. Si `/calculator` avait des features exclusives (sauvegarde utilisateur, history), elles sont perdues. À confirmer. `CalculatorClient.tsx` reste dans le repo, non utilisé, à nettoyer plus tard.
+- **Test** : `npx tsc --noEmit` → 0 erreur.
+- **Résultat** : ✅ commit `ea912c4`.
+- **À vérifier** : qu'aucune page n'attend spécifiquement `CalculatorClient` (sauvegarde, comparaison) — si oui, la feature doit être ré-intégrée dans `/calculateurs/brut-net`.
+
+---
+
+## Fix #14 — Fiches prestataires : normalisation des noms + accents meta
+
+- **Problème** : `src/app/annuaire/[categorie]/[slug]/page.tsx:31` hardcodait `"a ${city}"` sans accent et `provider.last_name.charAt(0)` sans `toUpperCase()`. Pas de source de vérité pour le display.
+- **Fichiers modifiés** :
+  - `src/lib/providerDisplay.ts` (nouveau, +99)
+  - `src/types/directory.ts` (re-export)
+  - `src/app/annuaire/[categorie]/[slug]/page.tsx` (usage helper)
+  - `src/components/directory/ProviderCard.tsx` (initial helper)
+  - `src/components/directory/ProviderSchema.tsx` (JSON-LD SEO)
+  - `src/app/annuaire/[categorie]/[slug]/DirectoryProviderClient.tsx` (5 usages + `displayFirstName`)
+- **Correction** : nouveau module `providerDisplay.ts` avec `toTitleCase()` (gère particules françaises + tirets), `normalizeFirstName()`, `normalizeLastInitial()`, `getProviderDisplayName()`, `getProviderInitial()`. Tous les rendus publics (fiche, carte, JSON-LD, WhatsApp link, modal gate, CTA, stats contacts) passent maintenant par ce helper. Meta title fix : `a` → `à`, `'Israel'` → `'Israël'` dans le fallback city. Le CTA "Obtenir le numero de X" devient "Obtenir le numero de X (compte gratuit requis)" → annonce la friction auth (fix partiel #15 inclus ici).
+- **Risque** : faible — pur fix de display, aucun impact data ou logique métier.
+- **Test** : `npx tsc --noEmit` → 0 erreur.
+- **Résultat** : ✅ commit `091fef0`.
+- **À vérifier** : les données DB (descriptions avec `electrien`, `Recommande` sans accent) ne sont PAS corrigées par ce fix — elles nécessitent un script SQL de normalisation séparé. Documenté dans le commit comme point ouvert.
+
+---
+
+## Fix #15 — Disclaimer juridique hors contexte + 0 avis state
+
+- **Problème** : le Footer global affichait `"Analyse indicative uniquement. Tloush n'est pas un cabinet juridique ni expert-comptable"` sur toutes les pages, y compris les fiches prestataires (plombier, peintre, etc.) → hors contexte. Les fiches avec 0 avis affichaient un bloc vide.
+- **Fichiers modifiés** :
+  - `src/components/layout/Footer.tsx` (retrait bloc disclaimer + import AlertCircle)
+  - `src/app/annuaire/[categorie]/[slug]/DirectoryProviderClient.tsx` (empty state reviews)
+- **Correction** : retrait du bloc disclaimer global du Footer. Les pages qui en ont besoin (homepage, scanner, calculateurs, droits, droits-olim, modeles) rendent déjà leur propre `<DisclaimerBlock />` explicitement. Les fiches prestataires et pages annuaire n'ont plus de disclaimer parasite. Empty state reviews : `reviews.length === 0` → carte dashed "Aucun avis pour le moment. Vous avez fait appel à {displayFirstName} ? Votre avis aide la communauté francophone."
+- **Risque** : faible. Vérification faite : toutes les pages "critiques" (analyse indicative) ont leur propre disclaimer inline.
+- **Test** : `npx tsc --noEmit` → 0 erreur.
+- **Résultat** : ✅ commit `1dfe9fb`.
+
+---
+
+## Fix #12 + #28 — Sitemap dynamique + noindex catégories vides
+
+- **Problème** :
+  - #28 : `sitemap.ts` listait les 6 catégories annuaire en dur, incluant 3 catégories vides (electricien, serrurier, bricoleur) → coquilles SEO.
+  - #12 : les pages `/annuaire/[categorie]` vides n'avaient pas de `noindex` → indexées quand même par Google.
+- **Fichiers modifiés** :
+  - `src/app/sitemap.ts` (rewrite boucle catégories, +26/-16)
+  - `src/app/annuaire/[categorie]/page.tsx` (metadata.robots dynamique)
+- **Correction** :
+  - Sitemap : `ALL_PROVIDER_CATEGORY_SLUGS` filtré via `categoriesWithActiveProviders` (Set construit depuis les providers fetched). `lastMod` des catégories = max des `updated_at` des providers de cette catégorie (plus précis que `new Date()` générique).
+  - Page catégorie : `generateMetadata()` fait un `COUNT(*)` des providers actifs. Si `count === 0`, `metadata.robots = { index: false, follow: true }` → noindex Google, liens toujours suivis. Page reste accessible par URL directe.
+- **Risque** : faible-moyen. Overhead d'un `COUNT(*)` supplémentaire par metadata, mais `revalidate = 1800` déjà en place donc le count est caché. Si la DB n'est pas dispo au build, le sitemap skip silencieusement les catégories (fallback existant).
+- **Test** : `npx tsc --noEmit` → 0 erreur.
+- **Résultat** : ✅ commit `b6e8229`.
+- **Effet attendu** : Google va désindexer les 3 catégories vides au prochain crawl (48h-7j). Au prochain build qui inclut un prestataire dans une nouvelle catégorie, elle redevient automatiquement indexable.
+
+---
+
+## Fix #27 — robots.txt → src/app/robots.ts dynamique
+
+- **Problème** : `public/robots.txt` statique désynchronisé avec le vrai routing. `/inbox` en Disallow (obsolète), ~15 routes `(app)/` crawlables car non listées.
+- **Fichiers modifiés** :
+  - `public/robots.txt` (supprimé, -11 lignes)
+  - `src/app/robots.ts` (nouveau, +67 lignes)
+- **Correction** : nouvelle metadata route Next.js 14 qui génère `robots.txt` à la volée. `DISALLOW_ROUTES` aligné manuellement sur `PROTECTED_ROUTES` du middleware + ajoute `/rights-detector` + `/immobilier`. `/inbox` retiré. Sitemap + host explicites.
+- **Risque** : faible. Next.js 14 donne priorité aux metadata routes sur les fichiers statiques du dossier public — suppression de `public/robots.txt` évite toute ambiguïté.
+- **Limitation** : la liste doit être maintenue en parallèle de `middleware.ts`. Un test d'intégrité qui importe les 2 listes et vérifie leur cohérence est possible mais hors scope minimal.
+- **Test** : `npx tsc --noEmit` → 0 erreur.
+- **Résultat** : ✅ commit `c491297`.
+
+---
+
+## Fix #26 — /scanner payslip + pré-warning auth
+
+- **Problème** :
+  1. Scanner supportait 5 types (contract, letter, tax, lease, termination) MAIS pas `payslip`. La homepage (Hero H1) promet "Votre fiche de paie en hebreu ?" → feature-product mismatch.
+  2. Pas de pré-warning auth → l'utilisateur sélectionnait un type, uploadait, puis recevait 401 → UX cassée.
+- **Fichiers modifiés** :
+  - `src/types/scanner.ts` (type + interface `PayslipAnalysis` + card)
+  - `src/lib/prompts/scan.ts` (system + user prompts pour payslip)
+  - `src/app/scanner/page.tsx` (import + switch case + `PayslipResults` + banner warning)
+- **Correction** :
+  - **Type et interface** : `PayslipAnalysis` avec `period`, `grossSalary`, `netSalary`, `workingDays/Hours`, `deductions` (incomeTax, bituahLeumi, healthInsurance, pension, kerenHishtalmut, other[]), `benefits` (transport, meal, overtime, other[]), `leaveBalance`, `sickBalance`, `seniority`, `cumulativeYear`, `alerts[]`. Union `DocumentAnalysis` étendue. `DOCUMENT_TYPES` carte en tête avec icon 💵.
+  - **Prompts Claude** : `SCAN_SYSTEM_PROMPTS.payslip` expert en fiches de paie israéliennes avec constantes clés (salaire min 2026, taux BL, plafond, pension obligatoire, havraa) pour guider vers détection d'anomalies. `SCAN_USER_PROMPTS.payslip` JSON schema complet.
+  - **Rendu** : `PayslipResults` (130 lignes) qui affiche header metadata + synthèse Brut/Net en bandeau + retenues détaillées (rouge) + primes (vert) + soldes jours.
+  - **Pre-warning auth** : bannière bleue avant les cards type : `"Compte gratuit requis. Après le choix du type, vous serez invité a créer un compte (3 analyses offertes) avant l'upload. Aucune carte bancaire demandée."`
+- **Risque** : moyen-élevé. Le prompt payslip n'a jamais été testé en conditions réelles — Claude pourrait retourner un JSON mal structuré. Le rendu `PayslipResults` présuppose que la structure renvoyée correspond au schéma `PayslipAnalysis`. Une erreur de parsing déclenche le try/catch existant et affiche une erreur générique.
+- **Test** : `npx tsc --noEmit` → 0 erreur.
+- **Résultat** : ✅ commit `2ebac9e`.
+- **À valider manuellement** :
+  - Uploader une vraie fiche de paie israélienne, vérifier que Claude retourne un JSON parsable.
+  - Vérifier que `PayslipResults` affiche toutes les sections attendues.
+  - Ajuster le prompt si Claude hallucine des montants ou omet des champs.
+
+---
+
+## Fix #11 — /immobilier masquage noindex + landing "en construction"
+
+- **Problème** : page vide (0 listings en DB), bug de rendu (fragments Next.js visibles), promue dans la nav Header → SEO cassé + confiance érodée.
+- **Fichiers modifiés** :
+  - `src/app/immobilier/layout.tsx` (metadata.robots noindex + title updated)
+  - `src/app/immobilier/page.tsx` (rewrite complet, server component, -196 lignes → +81 lignes)
+  - `src/components/layout/Header.tsx` (retrait desktop + mobile + import Home)
+- **Correction** :
+  - `layout.tsx` : `robots: { index: false, follow: true }`. Title rebrandé "Immobilier Israel — Bientôt disponible". Commentaire explicatif pour la réactivation.
+  - `page.tsx` : remplacement du client component Zustand/Leaflet par un server component statique. Landing propre : H1 "Immobilier Israël", paragraphe explicatif, bloc "Disponible prochainement" avec lien mailto waitlist, bouton retour accueil. Ancien code (useListingsStore, ListingsMap, ListingCard, ListingsFilters, ListingsPagination, API) **conservé dans le repo** pour reprise future — seule la `page.tsx` est réécrite.
+  - Header : retrait du lien `/immobilier` desktop + mobile + import `Home` (plus utilisé).
+- **Risque** : faible. Le retrait est réversible : un seul commit pour restaurer `page.tsx` + layout + nav.
+- **Test** : `npx tsc --noEmit` → 0 erreur.
+- **Résultat** : ✅ commit `59634de`.
+- **À faire plus tard** : quand la feature est prête (dataset populate + fix rendu Leaflet SSR), il faut :
+  1. Restaurer le client component dans `page.tsx`
+  2. Retirer `robots: noindex` du layout
+  3. Retirer `/immobilier` de `DISALLOW_ROUTES` dans `robots.ts`
+  4. Re-ajouter le lien dans Header desktop + mobile
+  5. Ajouter `/immobilier` au sitemap
+
+---
+
+# Résumé Lot 3
+
+## Fixes faits (8/8 items Q2)
+
+| # | Fix | Commit |
+|---|---|---|
+| #17 | /calculator redirect + nav publique | `ea912c4` |
+| #14 | Providers display normalization | `091fef0` |
+| #15 | Footer disclaimer + 0 avis state | `1dfe9fb` |
+| #12 + #28 | Sitemap dynamique + noindex catégories vides | `b6e8229` |
+| #27 | robots.ts dynamique | `c491297` |
+| #26 | Scanner payslip + pre-warning auth | `2ebac9e` |
+| #11 | /immobilier landing + noindex | `59634de` |
+
+**7 commits sur branche `claude/lot3-q2-fixes` (basée sur `claude/lot2-q1-fixes`).**
+
+## Tests passés
+- `npx tsc --noEmit` : **0 erreur** sur chaque commit.
+
+## Blocages restants
+- Aucun blocage interne dans le Lot 3.
+- ⛔ **#6 + #7** (Lot 2) toujours bloqués sur infos légales externes.
+- ⚠️ **Prérequis opérationnels** : cf. Lot 1 & 2 (migrations Supabase à appliquer + mailbox privacy@ à créer).
+
+## À valider manuellement
+1. **Scanner payslip** : uploader une vraie fiche de paie, vérifier le rendu `PayslipResults` et la qualité du JSON Claude. Ajuster prompt si nécessaire.
+2. **Title meta `| Tloush`** : vérifier en navigateur qu'aucune page ne contient `Tloush | Tloush`.
+3. **Sitemap dynamique** : GET `/sitemap.xml` en preview → vérifier qu'il ne liste pas les catégories vides.
+4. **robots.txt dynamique** : GET `/robots.txt` en preview → vérifier les disallows.
+5. **/immobilier** : vérifier que la landing "en construction" s'affiche + noindex en DevTools.
+6. **/calculateurs hub** : vérifier le lien depuis la nav publique Header.
+7. **Fiches prestataires** : vérifier que les noms sont bien capitalisés (ex. "Benjamin L." au lieu de "Benjamin l.").
+8. **Scanner pre-warning** : vérifier que la bannière auth s'affiche bien avant les cards type.
+
+## Prochaines phases
+- **Lot 2 à compléter** : #6 + #7 dès réception des infos légales (~3 commits courts).
+- **Lot 4 / Phase Q3** : contenu produit (/modeles, /droits, /droits-olim, /experts, calculateurs rigueur légale).
 
