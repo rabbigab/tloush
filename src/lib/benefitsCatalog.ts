@@ -4646,6 +4646,195 @@ const HOUSING_EXTRAS_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION C9 — Retraite / seniors + Kupot Holim (S1 Retraite + S12)
+// =====================================================
+// Sources :
+// - https://www.btl.gov.il/benefits/Old_age/Pages/default.aspx
+// - https://www.kolzchut.org.il/he/קצבת_זקנה
+// - https://www.kolzchut.org.il/he/הטבות_רפואיות_לקשישים
+//
+// Ces 7 aides completent old_age_pension + old_age_income_supplement deja
+// presents (SECTION 4) : pension olim specifique, bonifications, prime
+// chauffage, reductions kupot holim.
+
+const SENIORS_EXTRAS_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'gimlat_ezrach_vatik_meyukhedet',
+    category: 'retirement',
+    authority: 'bituach_leumi',
+    title_fr: 'Pension olim speciale (Gimlat Ezrach Vatik Meyukhedet)',
+    title_he: 'גמלת אזרח ותיק מיוחדת לעולים',
+    description_fr:
+      'Pension vieillesse speciale versee aux olim arrives apres l\'age de la retraite et n\'ayant pas pu cotiser assez a BTL pour la Kitzbat Zikna standard.',
+    full_description_fr:
+      'Regime alternatif a la Kitzbat Zikna classique (old_age_pension) : les olim qui ont fait leur ' +
+      'alyah apres avoir deja atteint l\'age de la retraite dans leur pays d\'origine n\'ont pas eu le ' +
+      'temps de cotiser a BTL pendant les annees requises. Pour ne pas les laisser sans pension, BTL ' +
+      'verse une pension speciale finances par le Tresor. ' +
+      'Montants officiels 2026 (verifies kolzchut / btl) : ' +
+      '- Individu oleh vatik           : 2 282 NIS/mois (base) ' +
+      '- Couple oleh vatik              : 3 133 NIS/mois ' +
+      '- Complements possibles         : anciennete en Israel (2% par annee), age 80+, conjoint a charge ' +
+      'Conditions : ' +
+      '- Age legal de retraite atteint (67 H / 62 F+ selon date naissance) ' +
+      '- Residence permanente en Israel + statut oleh ' +
+      '- Ne pas avoir cotise suffisamment pour la Kitzbat Zikna standard ' +
+      '- Ne pas avoir de pension etrangere equivalente (sinon amnat_beinleumiyot — coordination) ' +
+      'Cumulable avec : Hashlamat Hachnasa (complement revenus si tres faibles), arnona_retiree, ' +
+      'hanacha_hashmal, rav_kav_senior_free (67+).',
+    conditions: {
+      min_age_female: 62,
+      min_age_male: 67,
+      requires_oleh: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2282 * 12,
+    typical_monthly_amount: 2282,
+    value_unit: 'NIS/mois (2 282 individu / 3 133 couple)',
+    application_url: 'https://www.btl.gov.il/benefits/Old_age/Pages/default.aspx',
+    action_label: 'Demande pension oleh vatik',
+    info_url: 'https://www.kolzchut.org.il/he/גמלת_אזרח_ותיק_מיוחדת',
+    disclaimer:
+      'Specifique aux olim vatik ayant fait alyah apres 60 ans et n\'ayant pas pu cotiser assez a BTL. ' +
+      'Pour les olim plus jeunes qui ont cotise le minimum, c\'est old_age_pension standard. ' +
+      'Delai de depot : a faire dans les 12 mois apres atteinte de l\'age legal, sinon perte de ' +
+      'retroactivite.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C9). Montants 2026 confirmes via glossaire. Complementaire a old_age_pension (regime classique) — les olim ages doivent verifier laquelle des deux leur est applicable.',
+  },
+  {
+    slug: 'tosefet_dkhiyat_kitzva',
+    category: 'retirement',
+    authority: 'bituach_leumi',
+    title_fr: 'Bonification report retraite (Tosefet Dkhiyat Kitzva)',
+    title_he: 'תוספת דחיית קצבה',
+    description_fr:
+      'Bonification permanente de la pension vieillesse BTL pour les seniors qui reportent volontairement leur demande de retraite au-dela de l\'age legal (67 H / 62-65 F), +5% par annee reportee.',
+    full_description_fr:
+      'Mecanisme incitatif BTL pour encourager le report de la demande de pension apres l\'age legal ' +
+      '(utile pour les seniors qui travaillent encore et ne veulent pas perdre le benefice du test ' +
+      'de revenu applique entre 67 et 70 ans). ' +
+      'Regle : +5 % de pension permanente par annee reportee, jusqu\'a l\'age de 70 ans (au-dela, la ' +
+      'pension devient automatique de toute facon). ' +
+      'Exemples : ' +
+      '- Homme 67 ans reportant jusqu\'a 70 ans : +15 % pension permanente (3 annees x 5%) ' +
+      '- Femme 65 ans reportant jusqu\'a 70 ans : +25 % pension permanente (5 annees x 5%) ' +
+      'Soit pour une pension de base 1 795 NIS/mois, un report de 3 ans donne : ' +
+      '1 795 + (1 795 × 15%) = 2 064 NIS/mois pour le restant de la vie (~270 NIS/mois de plus). ' +
+      'Conditions : ' +
+      '- Age legal atteint mais demande non faite ' +
+      '- Pas encore 70 ans (au-dela, plus de bonification) ' +
+      '- Au moment de la demande, la bonification est calculee et appliquee pour toujours.',
+    conditions: {
+      min_age: 67,
+      max_age: 70,  // la bonification n\'est plus possible apres
+      requires_resident: true,
+    },
+    estimated_annual_value: 1795 * 0.15 * 12,  // bonification 15% sur pension moyenne
+    typical_monthly_amount: 270,  // bonification mensuelle moyenne
+    value_unit: 'NIS/mois (bonification permanente a vie)',
+    application_url: 'https://www.btl.gov.il/benefits/Old_age/Pages/default.aspx',
+    action_label: 'Infos report retraite',
+    info_url: 'https://www.kolzchut.org.il/he/תוספת_דחיית_קצבה',
+    disclaimer:
+      'Decision strategique : reporter la retraite est interessant si on continue a travailler (evite ' +
+      'le test de revenu 67-70 ans) ET si on a une esperance de vie > 10 ans apres la retraite (pour ' +
+      'amortir la bonification). Pour les seniors qui arretent de travailler a 67 ans, preferer la ' +
+      'demande immediate (eviter de perdre des annees de pension).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C9). Modelisation : max_age: 70 pour suggerer uniquement aux seniors dans la fenetre utile (67-70). Apres, plus de bonification possible.',
+  },
+  {
+    slug: 'maanak_khimum',
+    category: 'welfare',
+    authority: 'bituach_leumi',
+    title_fr: 'Prime chauffage seniors (Maanak Khimum)',
+    title_he: 'מענק חימום',
+    description_fr:
+      'Prime annuelle (~700 NIS) versee automatiquement en hiver aux retraites a revenus tres faibles beneficiaires de Hashlamat Hachnasa, pour couvrir le chauffage.',
+    full_description_fr:
+      'Aide saisonniere versee une fois par an (octobre-decembre) aux seniors a tres faibles revenus. ' +
+      'Montant 2026 : ~700 NIS (indexe CPI, versement unique). ' +
+      'Conditions cumulatives : ' +
+      '- Age ≥ 67 ans ' +
+      '- Beneficiaire de Kitzbat Zikna + Hashlamat Hachnasa (complement revenu retraite) ' +
+      '- OU beneficiaire de Havtachat Hakhnasa (revenu minimum garanti) ' +
+      '- Residence en Israel ' +
+      'Versement automatique : si vous etes eligible, BTL verse en octobre-decembre sans demande. ' +
+      'Verifiez votre compte ~novembre. ' +
+      'Dans certaines villes montagnardes (Jerusalem, Safed, Metoula), la prime peut etre majoree ' +
+      'ou completee par la mairie.',
+    conditions: {
+      min_age: 67,
+      max_monthly_income: 4375,  // proxy : seuil Hashlamat Hachnasa individu
+      requires_resident: true,
+    },
+    estimated_annual_value: 700,
+    value_unit: 'NIS/an (versement unique en hiver)',
+    application_url: 'https://www.btl.gov.il/benefits/Heating_grant/Pages/default.aspx',
+    action_label: 'Verifier prime chauffage',
+    info_url: 'https://www.kolzchut.org.il/he/מענק_חימום',
+    disclaimer:
+      'Versement automatique pour les ayants-droit identifies par BTL (beneficiaires Hashlamat ou ' +
+      'Havtachat). Si vous etes beneficiaire mais n\'avez rien recu : contacter BTL. Dans les villes ' +
+      'froides (Jerusalem, Safed), demander aussi a la mairie s\'il existe un supplement local.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C9). Aide modeste mais meconnue — beaucoup de seniors ne verifient pas leur compte en novembre.',
+  },
+  {
+    slug: 'hatavot_mas_pensia_atzmai',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Deductions cotisations retraite volontaires (Hatavot Mas Pensia Atzmai)',
+    title_he: 'הטבות מס הפרשה לפנסיה',
+    description_fr:
+      'Deductions fiscales pouvant atteindre 35% sur les cotisations volontaires a des kupot gemel, keren hishtalmut ou keren pensia, plafonnees selon le revenu du contribuable.',
+    full_description_fr:
+      'Article 47 du Pkudat Mas Hakhnasa : le contribuable peut deduire de son revenu imposable les ' +
+      'cotisations volontaires a des plans de retraite complementaire, dans la limite de plafonds ' +
+      'annuels : ' +
+      'Plafonds 2026 (indexes) : ' +
+      '- Keren Pensia Mekifa (plan complet) : jusqu\'a 7 % du revenu (plafonne a 27 500 NIS/an) ' +
+      '- Kupat Gemel (epargne defiscalisee) : jusqu\'a 16 % du revenu (plafonne a 35 700 NIS/an) ' +
+      '- Keren Hishtalmut (fonds de perfectionnement) : 2,5 % du revenu (plafond 20 800 NIS/an, ' +
+      '  retrait apres 6 ans en exoneration totale) ' +
+      'Taux effectif de l\'avantage : depend de la tranche marginale : ' +
+      '- Tranche 30 % : economie de 30 % de la cotisation versee ' +
+      '- Tranche 40 % : economie de 40 % de la cotisation versee ' +
+      '- Tranche 50 % : economie de 50 % de la cotisation versee ' +
+      'Cumulable entre les 3 types (Pensia + Gemel + Hishtalmut). ' +
+      'Applicable aux salaries comme aux independants (mais plafonds leves differemment).',
+    conditions: {
+      required_employment: ['employed', 'self_employed'],
+      requires_resident: true,
+    },
+    estimated_annual_value: 8000,  // economie typique pour revenu median
+    value_unit: 'NIS/an (economie fiscale selon tranche et cotisations)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Optimiser epargne retraite',
+    info_url: 'https://www.kolzchut.org.il/he/ניכוי_לפנסיה',
+    disclaimer:
+      'Necessite l\'ouverture d\'un compte Kupat Gemel / Keren Pensia / Keren Hishtalmut dans une ' +
+      'banque ou assureur. Tres efficace pour les hauts revenus (tranches 40-50 %). Un yoetz mas ou ' +
+      'conseiller financier peut optimiser le mix (Pensia vs Gemel vs Hishtalmut selon horizon).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C9). Aide plus technique qu\'urgente — utile pour les salarie-es a haut revenu souhaitant optimiser leur fiscalite. Valeur 8k NIS/an est indicative pour un salaire median (~14k NIS/mois brut).',
+  },
+]
+
+// =====================================================
 // SECTION 21 — Helper functions
 // =====================================================
 
@@ -4789,6 +4978,7 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...DISCHARGED_SOLDIERS_BENEFITS,
   ...TAX_EXTRAS_BENEFITS,
   ...HOUSING_EXTRAS_BENEFITS,
+  ...SENIORS_EXTRAS_BENEFITS,
 ]
 
 // Calcul dynamique des stats au chargement
