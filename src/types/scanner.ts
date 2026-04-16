@@ -9,7 +9,11 @@ export type DocumentType =
   | "officialLetter"   // Lettre officielle
   | "taxNotice"        // Avis d'imposition
   | "lease"            // Contrat de location
-  | "termination";     // Lettre de licenciement
+  | "termination"      // Lettre de licenciement
+  | "universal";       // Fallback : analyse générique pour tout autre document
+
+// Types spécialisés (= tous sauf "universal")
+export type SpecializedDocumentType = Exclude<DocumentType, "universal">;
 
 // ------ Contract (Contrat de travail) ------
 export interface ContractAnalysis {
@@ -175,6 +179,51 @@ export interface PayslipAnalysis {
   }>;
 }
 
+// ------ Universal (fallback) ------
+// Produit par le mode "universal" quand le document ne correspond à aucun
+// type spécialisé. Toujours renvoie :
+// - résumé FR + traduction HE→FR complète si document en hébreu
+// - éléments clés (dates, montants, noms, institutions)
+// - actions suggérées : reminder (échéance, RDV) ou reply (réponse type)
+export interface UniversalAnalysis {
+  /** Type effectivement détecté par Claude (peut être un type spécialisé si la détection a sur-classifié). */
+  detectedType: DocumentType;
+  /** Catégorie lisible en français (ex: "Facture EDF", "RDV médical"). */
+  documentCategory: string | null;
+  /** Langue principale du document. */
+  language: "he" | "fr" | "en" | "mixed" | "other";
+  /** Résumé clair en français, 3 à 5 phrases. */
+  summary: string;
+  /** Traduction complète HE→FR si le document est en hébreu. null sinon. */
+  translation: string | null;
+  /** Éléments clés détectés automatiquement. */
+  keyElements: {
+    dates: Array<{ label: string; value: string; iso: string | null }>;
+    amounts: Array<{ label: string; amount: number; currency: string }>;
+    names: Array<{ label: string; name: string }>;
+    institutions: Array<{ label: string; name: string }>;
+  };
+  /** Actions suggérées — reminder (tâche/échéance) ou reply (template de réponse). */
+  suggestedActions: Array<
+    | {
+        type: "reminder";
+        title: string;
+        description: string;
+        dueDate: string | null; // ISO
+      }
+    | {
+        type: "reply";
+        title: string;
+        description: string;
+        responseTemplate: string;
+      }
+  >;
+  alerts: Array<{
+    severity: "low" | "medium" | "high";
+    message: string;
+  }>;
+}
+
 // ------ Union type for any document analysis ------
 export type DocumentAnalysis =
   | PayslipAnalysis
@@ -182,7 +231,15 @@ export type DocumentAnalysis =
   | OfficialLetterAnalysis
   | TaxNoticeAnalysis
   | LeaseAnalysis
-  | TerminationAnalysis;
+  | TerminationAnalysis
+  | UniversalAnalysis;
+
+// ------ Detection result (first pass) ------
+export interface DocumentDetection {
+  type: DocumentType;
+  language: "he" | "fr" | "en" | "mixed" | "other";
+  confidence: number; // 0–100
+}
 
 // ------ API Response ------
 export interface ScanApiResponse {
@@ -190,6 +247,8 @@ export interface ScanApiResponse {
   data: DocumentAnalysis;
   confidenceScore: number;            // 0–100
   processingTime: number;             // milliseconds
+  /** Résultat de la détection auto (null si type imposé côté client). */
+  detection: DocumentDetection | null;
 }
 
 // ------ Document Type Metadata ------
@@ -243,5 +302,12 @@ export const DOCUMENT_TYPES: DocumentTypeCard[] = [
     label: "Lettre de licenciement",
     description: "Vérifiez votre indemnité de fin de contrat",
     color: "danger",
+  },
+  {
+    id: "universal",
+    icon: "📎",
+    label: "Document général",
+    description: "Résumé, traduction et actions suggérées pour tout document",
+    color: "info",
   },
 ];

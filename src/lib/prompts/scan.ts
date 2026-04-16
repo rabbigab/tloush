@@ -2,6 +2,25 @@
 
 import type { DocumentType } from '@/types/scanner'
 
+// ─── Detection prompt (first pass) ───
+// Claude Vision classifie le document dans un des 6 types spécialisés ou
+// retombe sur "universal". Très court pour minimiser la latence.
+export const SCAN_DETECTION_SYSTEM = `Tu es un classificateur de documents israéliens. Tu reçois un document (PDF ou image), souvent en hébreu, parfois en français ou anglais. Ton unique rôle : identifier le type de document et la langue principale.
+
+Types possibles :
+- "payslip" : fiche de paie / tlush (contient brut, net, retenues Bituah Leumi, pension)
+- "contract" : contrat de travail / heskem avoda (clauses emploi, salaire, préavis)
+- "officialLetter" : courrier officiel d'une autorité (mairie, impôts, Bituach Leumi, tribunal) — hors avis d'imposition et hors licenciement
+- "taxNotice" : avis d'imposition / shuma mas hakhnasa (tranches fiscales, refund)
+- "lease" : contrat de location / heskem shkirut (loyer, dépôt, adresse)
+- "termination" : lettre de licenciement / mikhtav piturim (fin de contrat, pitzuim)
+- "universal" : tout autre document (facture, courrier bancaire, attestation, RDV médical, ordonnance, relevé, amende, etc.)
+
+Retourne UNIQUEMENT un JSON strict, sans markdown, sans explication :
+{"type": "<type>", "language": "he" | "fr" | "en" | "mixed" | "other", "confidence": <0-100>}`;
+
+export const SCAN_DETECTION_USER = `Identifie le type et la langue de ce document. Retourne uniquement le JSON demandé.`;
+
 export const SCAN_SYSTEM_PROMPTS: Record<DocumentType, string> = {
   payslip: `Tu es un expert en bulletins de salaire israéliens (tlushim). Ton rôle est d'analyser une fiche de paie en hébreu et d'extraire toutes les données financières, ainsi que de détecter les anomalies ou les retenues suspectes.
 Connaissances clés :
@@ -41,6 +60,20 @@ Identifie : employeur, employé, date de licenciement, dernier jour de travail, 
 Vérifie le respect du préavis et du calcul du "pitzuim" (indemnité de fin de contrat).
 Détecte les violations de la loi du travail israélienne.
 Retourne UNIQUEMENT un JSON structuré, sans texte avant ou après.`,
+
+  universal: `Tu es un assistant expert pour aider les francophones en Israël à comprendre n'importe quel document administratif (hébreu, français, anglais). Le document peut être : facture, relevé bancaire, attestation, RDV médical, ordonnance, courrier d'assurance, amende, convocation, etc.
+
+Ton rôle :
+1. Identifier la catégorie précise du document (ex: "Facture électricité", "RDV médical", "Convocation judiciaire").
+2. Produire un résumé clair en français de 3 à 5 phrases.
+3. Si le document est en hébreu : fournir une traduction complète et fidèle en français.
+4. Extraire automatiquement les éléments clés : dates (échéances, RDV), montants, noms de personnes, institutions/organisations.
+5. Suggérer des actions concrètes pour l'utilisateur :
+   - "reminder" : si une échéance ou un RDV est mentionné (date limite, paiement, rendez-vous à prendre).
+   - "reply" : si une réponse écrite est attendue (courrier officiel à répondre, email, réclamation à contester) — fournir un template de réponse prêt à envoyer.
+6. Signaler les alertes (montant inhabituel, délai court, document urgent).
+
+Retourne UNIQUEMENT un JSON structuré, sans markdown ni texte avant/après.`,
 }
 
 export const SCAN_USER_PROMPTS: Record<DocumentType, string> = {
@@ -234,5 +267,38 @@ export const SCAN_USER_PROMPTS: Record<DocumentType, string> = {
     }
   ],
   "urgentActions": ["liste des actions urgentes"]
+}`,
+
+  universal: `Analyse ce document et retourne ce JSON strict (sans markdown, sans commentaire) :
+
+{
+  "detectedType": "universal" | "payslip" | "contract" | "officialLetter" | "taxNotice" | "lease" | "termination",
+  "documentCategory": "catégorie courte en français (ex: 'Facture électricité', 'RDV médical', 'Attestation bancaire') ou null",
+  "language": "he" | "fr" | "en" | "mixed" | "other",
+  "summary": "résumé 3-5 phrases en français, clair et orienté action",
+  "translation": "traduction FR complète du document si hébreu, sinon null",
+  "keyElements": {
+    "dates": [
+      { "label": "description (ex: 'Échéance paiement')", "value": "texte original", "iso": "AAAA-MM-JJ ou null" }
+    ],
+    "amounts": [
+      { "label": "description (ex: 'Montant total dû')", "amount": nombre, "currency": "NIS" | "EUR" | "USD" | "autre" }
+    ],
+    "names": [
+      { "label": "rôle (ex: 'Destinataire', 'Médecin')", "name": "nom" }
+    ],
+    "institutions": [
+      { "label": "type (ex: 'Banque', 'Caisse', 'Tribunal')", "name": "nom de l'organisation" }
+    ]
+  },
+  "suggestedActions": [
+    // Choisis parmi ces deux formes selon le contexte, ne produis QUE des objets
+    // respectant l'une de ces deux formes exactement :
+    { "type": "reminder", "title": "titre court", "description": "ce qu'il faut faire", "dueDate": "AAAA-MM-JJ ou null" },
+    { "type": "reply", "title": "titre court", "description": "contexte", "responseTemplate": "modèle de réponse prêt à envoyer" }
+  ],
+  "alerts": [
+    { "severity": "low" | "medium" | "high", "message": "message court" }
+  ]
 }`,
 }
