@@ -11,6 +11,7 @@ import type {
   EducationLevel,
   ShoahPeriod,
   DisabilitySource,
+  CityPriorityZone,
 } from '@/types/userProfile'
 
 // =====================================================
@@ -49,6 +50,7 @@ const VALID_HOUSING: HousingStatus[] = ['renter', 'owner', 'living_with_family',
 const VALID_EDUCATION: EducationLevel[] = ['none', 'high_school', 'vocational', 'ba', 'ma', 'phd', 'other']
 const VALID_SHOAH_PERIOD: ShoahPeriod[] = ['pre_1953', 'post_1953', 'ex_urss']
 const VALID_DISABILITY_SOURCE: DisabilitySource[] = ['idf', 'work', 'general']
+const VALID_CITY_PRIORITY_ZONE: CityPriorityZone[] = ['a', 'b', 'c']
 
 function num(v: unknown, min?: number, max?: number): number | null | 'error' {
   if (v === null || v === undefined || v === '') return null
@@ -158,6 +160,7 @@ function validateUpdate(body: unknown): UserProfileUpdate | { error: string } {
     if (r === 'error') return { error: 'miluim_days_current_year invalide' }
     clean.miluim_days_current_year = r === null ? 0 : r
   }
+  if ('discharge_date' in b) clean.discharge_date = str(b.discharge_date, 10)
 
   // Education
   if ('education_level' in b) clean.education_level = enumCheck(b.education_level, VALID_EDUCATION)
@@ -195,6 +198,8 @@ function validateUpdate(body: unknown): UserProfileUpdate | { error: string } {
     if (r === 'error') return { error: 'home_size_sqm invalide' }
     clean.home_size_sqm = r
   }
+  if ('city_priority_zone' in b) clean.city_priority_zone = enumCheck(b.city_priority_zone, VALID_CITY_PRIORITY_ZONE)
+  if ('is_landlord' in b) clean.is_landlord = bool(b.is_landlord)
 
   // Allocations recues
   const receiptFlags = [

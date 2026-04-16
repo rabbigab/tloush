@@ -11,6 +11,7 @@ export type HousingStatus = 'renter' | 'owner' | 'living_with_family' | 'public_
 export type EducationLevel = 'none' | 'high_school' | 'vocational' | 'ba' | 'ma' | 'phd' | 'other'
 export type ShoahPeriod = 'pre_1953' | 'post_1953' | 'ex_urss'
 export type DisabilitySource = 'idf' | 'work' | 'general'
+export type CityPriorityZone = 'a' | 'b' | 'c'
 
 export interface UserProfile {
   user_id: string
@@ -45,6 +46,7 @@ export interface UserProfile {
   // Service militaire / reserviste
   served_in_idf: boolean
   military_discharge_year: number | null
+  discharge_date: string | null
   is_combat_veteran: boolean
   is_active_reservist: boolean
   miluim_days_current_year: number
@@ -77,6 +79,8 @@ export interface UserProfile {
   municipality: string | null
   housing_status: HousingStatus | null
   home_size_sqm: number | null
+  city_priority_zone: CityPriorityZone | null
+  is_landlord: boolean
 
   // Allocations en cours (pour eviter de re-detecter)
   receives_kitsbat_yeladim: boolean | null
@@ -158,4 +162,10 @@ export const DISABILITY_SOURCE_LABELS: Record<DisabilitySource, string> = {
   idf: 'Invalide de Tsahal (Nakhei Tsahal)',
   work: 'Accident du travail (Nifgaei Avoda)',
   general: 'Invalidité générale (Nakhut Klalit)',
+}
+
+export const CITY_PRIORITY_ZONE_LABELS: Record<CityPriorityZone, string> = {
+  a: 'Zone A (haute priorité — Negev / Galil éloigné / Eilat)',
+  b: 'Zone B (priorité intermédiaire)',
+  c: 'Zone C (priorité basse / zone limitrophe)',
 }

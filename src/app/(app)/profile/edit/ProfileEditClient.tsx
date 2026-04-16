@@ -15,6 +15,7 @@ import type {
   EducationLevel,
   ShoahPeriod,
   DisabilitySource,
+  CityPriorityZone,
 } from '@/types/userProfile'
 import {
   GENDER_LABELS,
@@ -25,7 +26,9 @@ import {
   EDUCATION_LEVEL_LABELS,
   SHOAH_PERIOD_LABELS,
   DISABILITY_SOURCE_LABELS,
+  CITY_PRIORITY_ZONE_LABELS,
 } from '@/types/userProfile'
+import { inferPriorityZoneFromCity } from '@/lib/priorityZones'
 
 const INPUT_CLS = 'w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
 const CHECKBOX_LABEL_CLS = 'flex items-center gap-2 cursor-pointer p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg'
@@ -42,13 +45,14 @@ const EDITABLE_FIELDS: (keyof UserProfileUpdate)[] = [
   'children_count', 'children_with_disabilities', 'children_in_daycare',
   'aliyah_year', 'country_of_origin', 'israeli_citizen',
   'employment_status', 'employer_sector', 'monthly_income', 'household_income_monthly',
-  'served_in_idf', 'military_discharge_year', 'is_combat_veteran',
+  'served_in_idf', 'military_discharge_year', 'discharge_date', 'is_combat_veteran',
   'is_active_reservist', 'is_bereaved_family',
   'education_level', 'is_current_student', 'institution_name',
   'kupat_holim', 'disability_level', 'disability_source',
   'is_holocaust_survivor', 'shoah_period', 'is_caregiver', 'chronic_illness',
   'has_mobility_limitation', 'has_disabled_child', 'is_7octobre_victim',
   'city', 'municipality', 'housing_status', 'home_size_sqm', 'has_mortgage',
+  'city_priority_zone', 'is_landlord',
   'receives_kitsbat_yeladim', 'receives_old_age_pension', 'receives_disability_pension',
   'receives_income_support', 'receives_rental_assistance', 'receives_ulpan',
   'receives_shoah_benefits',
@@ -381,6 +385,18 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
               </select>
             </Field>
 
+            <Field label="Date précise de démobilisation (optionnel)">
+              <input
+                type="date"
+                value={profile.discharge_date ?? ''}
+                onChange={(e) => update('discharge_date', e.target.value || null)}
+                className={INPUT_CLS}
+              />
+              <p className="text-xs text-slate-400 mt-1">
+                Nécessaire pour les aides à fenêtre post-service : Rav-Kav gratuit (+12 mois), crédits fiscaux soldat libéré (+36 mois), exemption BL (+2 mois).
+              </p>
+            </Field>
+
             <Field label="Situations particulieres">
               <div className="space-y-1">
                 <label className={CHECKBOX_LABEL_CLS}>
@@ -653,7 +669,15 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
           <input
             type="text"
             value={profile.city || ''}
-            onChange={(e) => update('city', e.target.value || null)}
+            onChange={(e) => {
+              const next = e.target.value || null
+              update('city', next)
+              // Auto-suggère la zone de priorité si elle n'est pas encore fixée
+              if (!profile.city_priority_zone) {
+                const inferred = inferPriorityZoneFromCity(next)
+                if (inferred) update('city_priority_zone', inferred)
+              }
+            }}
             placeholder="Ex: Tel Aviv, Jerusalem, Netanya..."
             className={INPUT_CLS}
           />
@@ -696,7 +720,32 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
           />
         </Field>
 
-        <Field label="Financier">
+        <Field label="Zone de priorité nationale">
+          <select
+            value={profile.city_priority_zone ?? ''}
+            onChange={(e) => update('city_priority_zone', (e.target.value || null) as CityPriorityZone | null)}
+            className={INPUT_CLS}
+          >
+            <option value="">Non précisé / hors périphérie</option>
+            {(Object.keys(CITY_PRIORITY_ZONE_LABELS) as CityPriorityZone[]).map(z => (
+              <option key={z} value={z}>{CITY_PRIORITY_ZONE_LABELS[z]}</option>
+            ))}
+          </select>
+          <p className="text-xs text-slate-400 mt-1">
+            {(() => {
+              const inferred = inferPriorityZoneFromCity(profile.city)
+              if (inferred && !profile.city_priority_zone) {
+                return `Suggestion automatique depuis "${profile.city}" : ${CITY_PRIORITY_ZONE_LABELS[inferred]}. Sélectionnez pour confirmer.`
+              }
+              if (inferred && profile.city_priority_zone && inferred !== profile.city_priority_zone) {
+                return `Notre base suggère ${CITY_PRIORITY_ZONE_LABELS[inferred]} pour "${profile.city}".`
+              }
+              return 'Débloque les crédits fiscaux périphérie + certains baremes arnona majorés.'
+            })()}
+          </p>
+        </Field>
+
+        <Field label="Financier / bailleur">
           <div className="space-y-1">
             <label className={CHECKBOX_LABEL_CLS}>
               <input
@@ -706,6 +755,15 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
                 className="w-4 h-4 rounded"
               />
               <span className="text-sm text-slate-700 dark:text-slate-300">J'ai un mashkanta (pret immobilier)</span>
+            </label>
+            <label className={CHECKBOX_LABEL_CLS}>
+              <input
+                type="checkbox"
+                checked={profile.is_landlord}
+                onChange={(e) => update('is_landlord', e.target.checked)}
+                className="w-4 h-4 rounded"
+              />
+              <span className="text-sm text-slate-700 dark:text-slate-300">Je suis bailleur (je loue un bien résidentiel)</span>
             </label>
           </div>
         </Field>
