@@ -1,5 +1,5 @@
 /**
- * Israeli Payroll Calculator — 2025
+ * Israeli Payroll Calculator — 2026
  *
  * Calculates gross-to-net salary with all mandatory Israeli deductions:
  * - Income tax (mas hachnasa) with progressive brackets
@@ -8,45 +8,61 @@
  * - Pension contributions
  * - Tax credit points (nekudot zikui)
  *
- * Sources:
- *   - Bituah Leumi official rates: https://www.btl.gov.il
- *   - Israel Tax Authority brackets: https://www.gov.il/he/departments/israel_tax_authority
- *   - Last verified: January 2025
+ * Last verified: 2026-04-16 (audit fraîcheur — cf. memory/audit_fraicheur.md)
+ *
+ * Official sources (2026) :
+ *   - Israel Tax Authority (brackets) : https://www.gov.il/en/pages/income-tax-monthly-deductions-booklet
+ *   - Bituah Leumi (BL + santé) : https://www.btl.gov.il/English%20Homepage/About/News/Pages/hadasaidkonkitzva2026.aspx
+ *   - Average wage 2026 : https://www.btl.gov.il (schar memutza)
+ *   - Widened 20% bracket 2026 : https://www.cwsisrael.com/israeli-tax-changes-2026-complete-guide/
  */
 
-// ─── 2025 Tax Brackets (Annual Income) ───
-// Source: Israel Tax Authority, effective January 2025
-const TAX_BRACKETS_2025 = [
-  { from: 0, to: 84_120, rate: 0.10 },
-  { from: 84_120, to: 120_720, rate: 0.14 },
-  { from: 120_720, to: 193_800, rate: 0.20 },
-  { from: 193_800, to: 269_280, rate: 0.31 },
-  { from: 269_280, to: 560_280, rate: 0.35 },
-  { from: 560_280, to: 721_560, rate: 0.47 },
-  { from: 721_560, to: Infinity, rate: 0.50 },
+export const TAX_YEAR = 2026
+
+// ─── 2026 Tax Brackets (Annual Income) ───
+// Source : Israel Tax Authority — applicables à partir du 1er janvier 2026.
+// Nouveauté 2026 : la tranche 20% a été ÉLARGIE (19 000 ₪/mois au lieu
+// de 16 150 ₪/mois), et la tranche 31% décalée à 25 100 ₪/mois
+// (301 200 ₪/an) au lieu de 22 440 ₪/mois (269 280 ₪/an).
+// Les tranches supérieures (35/47/50%) sont GELÉES (pas d'indexation CPI).
+// Réf : https://www.cwsisrael.com/israeli-tax-changes-2026-complete-guide/
+//       https://www.globes.co.il/ "Changes that will affect personal finances in 2026"
+//       https://www.jpost.com/ "Revised income tax brackets boost March salary"
+const TAX_BRACKETS_2026 = [
+  { from: 0,       to: 84_120,   rate: 0.10 },  // inchangé
+  { from: 84_120,  to: 120_720,  rate: 0.14 },  // inchangé
+  { from: 120_720, to: 228_000,  rate: 0.20 },  // ÉLARGI (était 193 800)
+  { from: 228_000, to: 301_200,  rate: 0.31 },  // DÉCALÉ (était 193 800–269 280)
+  { from: 301_200, to: 560_280,  rate: 0.35 },  // DÉCALÉ (début remonté de 269 280)
+  { from: 560_280, to: 721_560,  rate: 0.47 },  // inchangé
+  { from: 721_560, to: Infinity, rate: 0.50 },  // inchangé (47% + surtax 3% = 50%)
 ]
-// Surtax (mas yoter): additional 3% above 721,560₪/year (effective 53%)
+// Surtax (mas yoter) : 3% additionnel au-dessus de 721 560 ₪/an (taux total 50%)
 const SURTAX_THRESHOLD_ANNUAL = 721_560
 const SURTAX_RATE = 0.03
 
-// ─── Bituah Leumi (National Insurance) 2025 ───
-// Employee rates - salaried workers
-// Source: https://www.btl.gov.il — effective January 2025
-// 60% of average wage (שכר ממוצע) = 12,536 × 0.6 = 7,522
-const BL_RATES_2025 = {
-  reducedThresholdMonthly: 7_522,  // 60% of average wage 2025
-  reducedRate: 0.004,   // 0.4% employee NI (reduced bracket)
-  normalRate: 0.07,     // 7% employee NI (normal bracket)
-  maxInsurableMonthly: 50_695,     // 5× average wage ceiling 2025
+// ─── Bituah Leumi (National Insurance) 2026 ───
+// Employee rates — salariés.
+// Salaire moyen 2026 (schar memutza) ≈ 12 838 ₪/mois (BL, indexé CPI).
+// Seuil bas (60% du salaire moyen) = 7 703 ₪/mois (était 7 522 en 2025).
+// Plafond assurable = 51 910 ₪/mois (était 50 695 en 2025).
+// Réf : https://www.btl.gov.il/English%20Homepage/Insurance/National%20Insurance/Detailsoftypes/Employees/Pages/rates.aspx
+//       https://remotepeople.com/countries/israel/hire-employees/payroll-tax/ (2026)
+const BL_RATES_2026 = {
+  reducedThresholdMonthly: 7_703,  // 60% du salaire moyen 2026
+  reducedRate: 0.004,              // 0.4% (tranche basse) — inchangé
+  normalRate: 0.07,                // 7%   (tranche normale) — inchangé
+  maxInsurableMonthly: 51_910,     // plafond d'assurance BL 2026
 }
 
-// ─── Health Insurance (Mas Briut) 2025 ───
-// Source: https://www.btl.gov.il — effective January 2025
-const HEALTH_RATES_2025 = {
-  reducedThresholdMonthly: 7_522,  // Same threshold as BL
-  reducedRate: 0.0323,  // 3.23% (updated from 3.1%)
-  normalRate: 0.052,    // 5.2% (updated from 5%)
-  maxInsurableMonthly: 50_695,
+// ─── Health Insurance (Mas Briut) 2026 ───
+// Mêmes seuils que BL. Taux inchangés depuis la réforme 2024 (3.23% / 5.2%).
+// Réf : https://www.btl.gov.il — effective janvier 2026.
+const HEALTH_RATES_2026 = {
+  reducedThresholdMonthly: 7_703,  // aligné sur BL 2026
+  reducedRate: 0.0323,             // 3.23% (inchangé)
+  normalRate: 0.052,               // 5.2%  (inchangé)
+  maxInsurableMonthly: 51_910,     // aligné sur BL 2026
 }
 
 // ─── Pension 2025 ───
@@ -66,9 +82,11 @@ const KEREN_HISHTALMUT_DEFAULTS = {
   annualCeiling: 15_712, // Tax-free gains ceiling
 }
 
-// ─── Tax Credit Points (Nekudot Zikui) 2025 ───
-// Value of one credit point per month
-const CREDIT_POINT_VALUE_MONTHLY = 242 // ~₪2,904/year ÷ 12
+// ─── Tax Credit Points (Nekudot Zikui) 2026 ───
+// 242 ₪/mois = 2 904 ₪/an par point — valeur 2025, non confirmée 2026 —
+// à revérifier quand taxes.gov.il publiera la brochure officielle 2026.
+// Réf : https://www.cwsisrael.com/israeli-tax-changes-2026-complete-guide/
+const CREDIT_POINT_VALUE_MONTHLY = 242 // = 2 904 ₪/an / 12
 
 // Default credit points for Israeli resident
 // Schedule olim post-reforme janvier 2022 (source : cpa-dray.com, verifie 13/04/2026) :
@@ -348,7 +366,7 @@ export function calculateNetSalary(input: PayrollInput): PayrollResult {
 
 function calculateIncomeTax(annualGross: number): number {
   let tax = 0
-  for (const bracket of TAX_BRACKETS_2025) {
+  for (const bracket of TAX_BRACKETS_2026) {
     if (annualGross <= bracket.from) break
     const taxableInBracket = Math.min(annualGross, bracket.to) - bracket.from
     tax += taxableInBracket * bracket.rate
@@ -361,21 +379,21 @@ function calculateIncomeTax(annualGross: number): number {
 }
 
 function calculateBituahLeumi(monthlyGross: number): number {
-  const capped = Math.min(monthlyGross, BL_RATES_2025.maxInsurableMonthly)
-  const threshold = BL_RATES_2025.reducedThresholdMonthly
+  const capped = Math.min(monthlyGross, BL_RATES_2026.maxInsurableMonthly)
+  const threshold = BL_RATES_2026.reducedThresholdMonthly
 
   if (capped <= threshold) {
-    return round2(capped * BL_RATES_2025.reducedRate)
+    return round2(capped * BL_RATES_2026.reducedRate)
   }
 
-  const reducedPart = threshold * BL_RATES_2025.reducedRate
-  const normalPart = (capped - threshold) * BL_RATES_2025.normalRate
+  const reducedPart = threshold * BL_RATES_2026.reducedRate
+  const normalPart = (capped - threshold) * BL_RATES_2026.normalRate
   return round2(reducedPart + normalPart)
 }
 
 function calculateBituahLeumiEmployer(monthlyGross: number): number {
-  const capped = Math.min(monthlyGross, BL_RATES_2025.maxInsurableMonthly)
-  const threshold = BL_RATES_2025.reducedThresholdMonthly
+  const capped = Math.min(monthlyGross, BL_RATES_2026.maxInsurableMonthly)
+  const threshold = BL_RATES_2026.reducedThresholdMonthly
 
   // Employer rates: NI + health (separate, then combined)
   // Source: Bituah Leumi employer rates 2025
@@ -392,15 +410,15 @@ function calculateBituahLeumiEmployer(monthlyGross: number): number {
 }
 
 function calculateHealthInsurance(monthlyGross: number): number {
-  const capped = Math.min(monthlyGross, HEALTH_RATES_2025.maxInsurableMonthly)
-  const threshold = HEALTH_RATES_2025.reducedThresholdMonthly
+  const capped = Math.min(monthlyGross, HEALTH_RATES_2026.maxInsurableMonthly)
+  const threshold = HEALTH_RATES_2026.reducedThresholdMonthly
 
   if (capped <= threshold) {
-    return round2(capped * HEALTH_RATES_2025.reducedRate)
+    return round2(capped * HEALTH_RATES_2026.reducedRate)
   }
 
-  const reducedPart = threshold * HEALTH_RATES_2025.reducedRate
-  const normalPart = (capped - threshold) * HEALTH_RATES_2025.normalRate
+  const reducedPart = threshold * HEALTH_RATES_2026.reducedRate
+  const normalPart = (capped - threshold) * HEALTH_RATES_2026.normalRate
   return round2(reducedPart + normalPart)
 }
 
@@ -623,32 +641,38 @@ export function calculateSeverance(lastMonthlySalary: number, yearsOfService: nu
 }
 
 // ============================================================
-// Metadata de verification (audit #18)
+// Metadata de verification (audit #18 + audit fraicheur 2026-04-16)
 // ============================================================
 // Date de la derniere verification manuelle des baremes contre les
 // sources officielles. Affichee sur les pages de calculateurs pour
-// transparence. Les brackets fiscaux sont geles par la loi des
-// finances jusqu'a 2027, donc pas de mise a jour attendue avant.
+// transparence. Les tranches 35/47/50% sont gelees par la loi des
+// finances 2025-2027, mais la tranche 20% a ete ELARGIE en 2026
+// (jusqu'a 19 000 NIS/mois) — cf. commentaire TAX_BRACKETS_2026.
 
-export const LAST_VERIFIED_DATE = '2026-04-01'
+export const LAST_VERIFIED_DATE = '2026-04-16'
 
 /** Sources officielles utilisees pour les baremes. Cles affichees en UI. */
 export const OFFICIAL_SOURCES = [
   {
     label: 'Rashut HaMisim (impot sur le revenu)',
-    url: 'https://www.taxes.gov.il',
-    scope: 'Tranches d\'impot, points de credit, plafonds',
+    url: 'https://www.gov.il/en/pages/income-tax-monthly-deductions-booklet',
+    scope: 'Tranches d\'impot 2026, points de credit, plafonds',
   },
   {
-    label: 'Bituah Leumi (securite sociale)',
-    url: 'https://www.btl.gov.il',
-    scope: 'Taux BL + assurance sante, plafond assurable',
+    label: 'Bituah Leumi (securite sociale 2026)',
+    url: 'https://www.btl.gov.il/English%20Homepage/About/News/Pages/hadasaidkonkitzva2026.aspx',
+    scope: 'Taux BL + assurance sante, plafond assurable 2026',
+  },
+  {
+    label: 'Reforme fiscale 2026 (tranche 20% elargie)',
+    url: 'https://www.cwsisrael.com/israeli-tax-changes-2026-complete-guide/',
+    scope: 'Elargissement tranche 20% a 19 000 NIS/mois',
   },
   {
     label: 'Loi des finances 2025-2027',
     url: 'https://www.nevo.co.il',
-    scope: 'Gel des tranches d\'impot',
+    scope: 'Gel des tranches superieures (35/47/50%)',
   },
 ] as const
 
-export { TAX_BRACKETS_2025, BL_RATES_2025, HEALTH_RATES_2025, PENSION_RATES, DEFAULT_CREDIT_POINTS, CREDIT_POINT_VALUE_MONTHLY, KEREN_HISHTALMUT_DEFAULTS, NOTICE_PERIODS }
+export { TAX_BRACKETS_2026, BL_RATES_2026, HEALTH_RATES_2026, PENSION_RATES, DEFAULT_CREDIT_POINTS, CREDIT_POINT_VALUE_MONTHLY, KEREN_HISHTALMUT_DEFAULTS, NOTICE_PERIODS }
