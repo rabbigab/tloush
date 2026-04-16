@@ -3969,6 +3969,194 @@ const DISCHARGED_SOLDIERS_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION C7 — Rashut HaMisim / Fiscalite (S4 du glossaire)
+// =====================================================
+// Sources :
+// - https://www.gov.il/he/departments/israel_tax_authority
+// - https://www.kolzchut.org.il/he/נקודות_זיכוי_ממס_הכנסה
+// - https://www.kolzchut.org.il/he/פטור_ממס_הכנסה_לנכים
+//
+// Ces 8 aides couvrent les credits fiscaux generaux + discriminations par
+// city_priority_zone (zone periphere) et is_landlord (bailleur) ajoutes en
+// etape B. Elles completent les credits fiscaux deja presents dans
+// SECTION 10 (credit_woman, credit_academic_degree, credit_young_child,
+// credit_disabled_child, hachzar_mas).
+
+const TAX_EXTRAS_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'nekudot_zikui_toshav',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Credits fiscaux resident (Nekudot Zikui Toshav)',
+    title_he: 'נקודות זיכוי תושב',
+    description_fr:
+      'Credits fiscaux de base accordes a tout resident israelien : 2,25 pts (hommes) ou 2,75 pts (femmes) = 6 534-7 986 NIS/an deduits directement de l\'impot sur le revenu.',
+    full_description_fr:
+      'Credits fiscaux de base attribues a tout resident israelien (toshav), declinant le principe ' +
+      'que les 6 534 premiers NIS/an de revenu ne sont pas imposes. ' +
+      'Valeurs 2026 (1 pt = 2 904 NIS/an) : ' +
+      '- Homme resident      : 2,25 points = 6 534 NIS/an ' +
+      '- Femme residente     : 2,75 points = 7 986 NIS/an (0,5 pt bonus "femme") ' +
+      'Applique automatiquement via Tofes 101 a chaque prise de poste ou periodiquement par ' +
+      'l\'employeur. Pas de demande specifique. ' +
+      'Cumulable avec : ' +
+      '- Nekudot Zikui Yeladim (enfants, cf. slug suivant) ' +
+      '- Credit academic degree (licence/master/phd, deja au catalogue) ' +
+      '- Nekudot Zikui Meshukhrar (36 mois post-service, cf. C6) ' +
+      '- Credit parent isole (horim yekhidim, cf. slug suivant) ' +
+      '- Credits lies a la zone periferique (zikuy_mas_priferia)',
+    conditions: {
+      requires_resident: true,
+    },
+    estimated_annual_value: 6534,  // homme base
+    value_unit: 'NIS/an (6 534 H / 7 986 F)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Verifier Tofes 101',
+    info_url: 'https://www.kolzchut.org.il/he/נקודות_זיכוי_ממס_הכנסה',
+    disclaimer:
+      'Automatique via Tofes 101 rempli chez l\'employeur. Si vous decouvrez que votre bulletin de ' +
+      'paie ne tient pas compte de vos points (par exemple vous avez change d\'employeur et oublie ' +
+      'de remplir Tofes 101), vous pouvez reclamer via Hachzar Mas Hakhnasa jusqu\'a 6 ans en arriere.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C7). Complete le socle de credits fiscaux deja present (credit_woman, credit_academic_degree, etc.) avec la base toshav que toute personne doit verifier.',
+  },
+  {
+    slug: 'nekudot_zikui_yeladim',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Credits fiscaux enfants (Nekudot Zikui Yeladim)',
+    title_he: 'נקודות זיכוי בגין ילדים',
+    description_fr:
+      'Points de credit fiscaux attribues aux parents pour chaque enfant de 0 a 18 ans, graduels selon l\'age et le sexe du parent declarant.',
+    full_description_fr:
+      'Credits fiscaux attribues aux parents de chaque enfant mineur (0-18 ans). ' +
+      'Grille 2026 (1 pt = 2 904 NIS/an) : ' +
+      'Pour la MERE (par enfant) : ' +
+      '- Enfant 0-1 an   : 1,5 pt = 4 356 NIS/an ' +
+      '- Enfant 1-5 ans  : 2,5 pts = 7 260 NIS/an ' +
+      '- Enfant 6-17 ans : 1 pt = 2 904 NIS/an ' +
+      '- Annee des 18 ans: 0,5 pt = 1 452 NIS/an ' +
+      'Pour le PERE (par enfant, dans certains cas) : ' +
+      '- Enfant 0-1 an   : 1 pt = 2 904 NIS/an ' +
+      '- Enfant 1-3 ans  : 2 pts = 5 808 NIS/an ' +
+      '- Pas de credit au-dela de 3 ans cote pere (sauf parent isole) ' +
+      'Pour une famille avec 3 enfants mineurs (ex. 2 ans / 5 ans / 10 ans), la MERE peut reclamer : ' +
+      '2,5 + 2,5 + 1 = 6 pts = 17 424 NIS/an de credits pour les enfants, + ses 2,75 pts de base ' +
+      '= ~25 400 NIS/an total. ' +
+      'Cumulable avec credit_young_child (deja au catalogue, cible le plus jeune enfant < 6 ans).',
+    conditions: {
+      min_children: 1,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2904 * 2,  // mediane par enfant
+    value_unit: 'NIS/an/enfant (1-7 260 selon age et parent)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Verifier credits enfants',
+    info_url: 'https://www.kolzchut.org.il/he/נקודות_זיכוי_בגין_ילדים',
+    disclaimer:
+      'Automatique via Tofes 101 si vous cochez "parent d\'enfants mineurs" et indiquez leurs dates ' +
+      'de naissance. Cumulable avec credit_young_child (0-6 ans) deja au catalogue. Les parents ' +
+      'divorces se repartissent typiquement les credits selon le jugement (jour de garde majoritaire).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C7). Complete credit_young_child qui ne couvrait que les enfants < 6 ans. Ici on couvre toute la tranche 0-18.',
+  },
+  {
+    slug: 'nekudot_zikui_horim_yehidim',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Credits fiscaux parent isole (Nekudot Zikui Horim Yekhidim)',
+    title_he: 'נקודות זיכוי להורה יחיד',
+    description_fr:
+      'Points de credit fiscaux supplementaires attribues aux parents isoles (celibataires, divorces, separes, veufs) avec enfants mineurs a charge : +1 pt = +2 904 NIS/an.',
+    full_description_fr:
+      'Credit fiscal specifique "parent isole" (Im Khad Horit) : +1 point supplementaire par rapport ' +
+      'au regime standard pour le parent assumant seul la garde des enfants (jour majoritaire ou garde ' +
+      'exclusive). ' +
+      'Valeur 2026 : 2 904 NIS/an cumulatif sur les autres credits. ' +
+      'Conditions : ' +
+      '- Statut Im Khad Horit reconnu par Rashut HaMisim ' +
+      '  (definition : parent divorce / separe / veuf / celibataire assumant seul l\'enfant) ' +
+      '- Au moins 1 enfant mineur a charge ' +
+      '- Pas de vie commune avec un conjoint (meme de fait) ' +
+      'Cumulable avec : tous les autres credits (toshav, yeladim, credit_woman pour la mere isolee, ' +
+      'credit academic degree). Pour une mere isolee avec 2 enfants jeunes, le cumul peut atteindre ' +
+      '25 000-30 000 NIS/an de credits fiscaux, ce qui annule totalement l\'impot sur un salaire ' +
+      'median (~14 000 NIS/mois brut).',
+    conditions: {
+      required_marital_status: ['divorced', 'separated', 'widowed', 'single'],
+      min_children: 1,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2904,
+    value_unit: 'NIS/an (1 pt supplementaire cumulable)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Declarer parent isole',
+    info_url: 'https://www.kolzchut.org.il/he/נקודות_זיכוי_להורה_יחיד',
+    disclaimer:
+      'Statut a cocher dans Tofes 101. Si vous avez ete parent isole(e) dans le passe et n\'avez pas ' +
+      'reclame les credits, vous pouvez le faire retroactivement via Hachzar Mas Hakhnasa (6 ans). ' +
+      'Attention aux parents divorces avec garde partagee : en general, un seul parent peut reclamer ' +
+      'le credit (celui declare par convention aupres de Rashut HaMisim).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C7). Utilise required_marital_status pour discriminer. Attention : celibataire sans enfant n\'est PAS eligible — c\'est le cumul marital_status + min_children qui active le droit.',
+  },
+  {
+    slug: 'petur_mas_nakhut',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Exoneration impot invalidite 90%+ (Petur Mas Nakhut)',
+    title_he: 'פטור ממס הכנסה לנכים',
+    description_fr:
+      'Exemption TOTALE d\'impot sur le revenu pour les personnes reconnues invalides a ≥ 90% (ou 100% fonctionnel), jusqu\'a un plafond tres eleve (~624 000 NIS/an en 2026).',
+    full_description_fr:
+      'Petur Mas Hakhnasa li-Nakhut : exoneration totale d\'impot sur le revenu (Mas Hakhnasa) pour ' +
+      'les contribuables reconnus invalides a 90% ou plus (ou 100% fonctionnel defini par BTL, ' +
+      'Agaf HaShikum, Rashut Shoah, etc.). ' +
+      'Plafond 2026 : ~624 000 NIS/an de revenus totalement exoneres (couvre tous les cas normaux). ' +
+      'Application : ' +
+      '- Salarie : tous les mois, l\'employeur ne retient plus d\'impot (cochage Tofes 101 + joindre ' +
+      '  attestation Vaadat Refuit) ' +
+      '- Independant : exempte du calcul du Mas Hakhnasa dans le bilan annuel (section 9(5)) ' +
+      '- Rente BTL Nakhut Klalit : deja non imposable par defaut (regime specifique) ' +
+      'Tous types d\'invalidite acceptes : ' +
+      '- Nakhut Klalit BTL (invalidite generale) ≥ 90% ou 100% fonctionnel ' +
+      '- Nakhei Tsahal (invalidite IDF) ≥ 90% (Agaf HaShikum) ' +
+      '- Invalidite accidents du travail ≥ 90% (Nifgaei Avoda BTL) ' +
+      '- Shoah (cf. gmala_niztolei_shoah) 90%+ ' +
+      '- Maladie grave reconnue au titre de la section 9(5) ' +
+      'Pour les invalides 19-89%, voir plutot maanak_hashtatafut_mas_tsahal (cf. C5).',
+    conditions: {
+      min_disability: 90,
+      requires_resident: true,
+    },
+    estimated_annual_value: 150000,  // estimation economie pour salaire median impose a 40% marginal
+    value_unit: 'NIS/an (economie totale sur impot revenu)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Demande petur mas nakhut',
+    info_url: 'https://www.kolzchut.org.il/he/פטור_ממס_הכנסה_לנכים',
+    disclaimer:
+      'Conditionne a une invalidite ≥ 90% ou 100% fonctionnel reconnue par une commission medicale ' +
+      'formelle (BTL, Agaf HaShikum, Rashut Shoah). Un justificatif est obligatoire. Si vous avez ' +
+      'paye de l\'impot pendant des annees sans reclamer, vous pouvez reclamer retroactivement via ' +
+      'Hachzar Mas Hakhnasa jusqu\'a 6 ans. Gain potentiel tres eleve — consulter un yoetz mas.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C7). Valeur estimee 150k NIS/an correspond a l\'economie fiscale typique d\'un salaire median (~14k NIS/mois brut) — pour les hauts revenus le gain est considerable (>300k NIS/an).',
+  },
+]
+
+// =====================================================
 // SECTION 21 — Helper functions
 // =====================================================
 
@@ -4110,6 +4298,7 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...KHARVOT_BARZEL_BENEFITS,
   ...NAKHEI_TSAHAL_BENEFITS,
   ...DISCHARGED_SOLDIERS_BENEFITS,
+  ...TAX_EXTRAS_BENEFITS,
 ]
 
 // Calcul dynamique des stats au chargement
