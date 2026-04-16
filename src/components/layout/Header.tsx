@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { ShieldCheck, LayoutDashboard, Moon, Sun, CreditCard, Scale, Menu, X, Star, Calculator } from "lucide-react";
+import { LayoutDashboard, Moon, Sun, CreditCard, Scale, Menu, X, Star, Calculator } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -61,13 +61,8 @@ export default function Header() {
             <CreditCard size={14} />
             <span className="hidden lg:inline">Tarifs</span>
           </Link>
-          <Link
-            href="/privacy"
-            className="flex items-center gap-1.5 text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors px-2 py-1.5 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-950/30"
-          >
-            <ShieldCheck size={14} />
-            <span className="hidden lg:inline">Confidentialit&eacute;</span>
-          </Link>
+          {/* /privacy retire de la nav principale (Chantier 1 P0) — reste
+              accessible depuis le Footer. */}
           <button
             onClick={toggle}
             className="flex items-center justify-center w-9 h-9 text-neutral-500 dark:text-slate-400 hover:text-neutral-700 dark:hover:text-slate-200 hover:bg-neutral-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
@@ -129,10 +124,8 @@ export default function Header() {
             <CreditCard size={16} />
             Tarifs
           </Link>
-          <Link href="/privacy" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 rounded-lg">
-            <ShieldCheck size={16} />
-            Confidentialit&eacute;
-          </Link>
+          {/* /privacy retire du menu mobile (Chantier 1 P0) — reste
+              accessible depuis le Footer. */}
           <div className="border-t border-neutral-100 dark:border-slate-700 pt-2 mt-2">
             <button
               onClick={() => { toggle(); setMenuOpen(false); }}
