@@ -3157,6 +3157,131 @@ const HOLOCAUST_EXTRAS_BENEFITS: BenefitDefinition[] = [
     tax_year: 2026,
     notes: 'Ajout catalogue 16/04/2026 (etape C3). Plafond revenus approximatif — a confirmer avec Rashut officielle. Niche mais critique pour les olim sovietiques ages a revenus tres faibles.',
   },
+  {
+    slug: 'maanak_matzeva_shoah',
+    category: 'special',
+    authority: 'other',  // Rashut leNiztolei HaShoah
+    title_fr: 'Grant pierre tombale survivant Shoah (Maanak Matzeva)',
+    title_he: 'מענק מצבה לניצולי שואה',
+    description_fr:
+      'Grant unique verse a la famille d\'un survivant de la Shoah decede pour couvrir les frais d\'une pierre tombale (matzeva) dans un cimetiere israelien.',
+    full_description_fr:
+      'Aide symbolique mais importante versee par Rashut leNiztolei HaShoah aux ayants-droit d\'un ' +
+      'survivant decede pour contribuer aux frais de pose d\'une pierre tombale (matzeva) dans un ' +
+      'cimetiere israelien. ' +
+      'Montant 2026 : 2 022 NIS (verse une fois). ' +
+      'Cumulable avec : ' +
+      '- Dmei Kvura BTL (~9 000 NIS, allocation funeraire generale) ' +
+      '- Grants Claims Conference pour funerailles si dossier ouvert ' +
+      '- Participation mairie dans certains cas ' +
+      'Conditions : ' +
+      '- Le defunt doit avoir ete reconnu survivant de la Shoah (attestation Rashut ou Claims) ' +
+      '- Sepulture dans un cimetiere israelien reconnu ' +
+      '- Demande par ayants-droit (conjoint, enfant, petit-enfant) dans les 12 mois apres le deces ' +
+      'Procedure : formulaire Rashut avec copie du Teudat Ptira, attestation de reconnaissance ' +
+      'survivant, facture ou devis pose de la matzeva.',
+    conditions: {
+      requires_holocaust_survivor: true,  // indirectement via le defunt, mais proxy
+      requires_resident: true,
+    },
+    estimated_annual_value: 2022,
+    value_unit: 'NIS (versement unique aux ayants-droit)',
+    application_url: 'https://www.gov.il/he/departments/the_authority_for_the_rights_of_holocaust_survivors',
+    action_label: 'Demande grant matzeva',
+    info_url: 'https://www.kolzchut.org.il/he/מענק_מצבה_לניצולי_שואה',
+    disclaimer:
+      'Verse aux ayants-droit du defunt (pas au survivant lui-meme). Modelisation imparfaite : le ' +
+      'catalogue declenche la condition pour tout survivant reconnu, alors que le beneficiaire reel ' +
+      'est sa famille apres deces. A raffiner avec un champ is_bereaved_of_shoah_survivor.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Montant 2 022 NIS confirme via glossaire. Aide modeste mais automatique si demande faite dans les 12 mois.',
+  },
+  {
+    slug: 'maanak_shnati_shoah',
+    category: 'special',
+    authority: 'other',  // Rashut leNiztolei HaShoah
+    title_fr: 'Grant annuel survivants Shoah (Maanak Shnati)',
+    title_he: 'מענק שנתי לניצולי שואה',
+    description_fr:
+      'Grant annuel verse en une fois par Rashut leNiztolei HaShoah a tous les survivants de la Shoah reconnus, independamment de leur categorie pre/post 1953 ou ex-URSS.',
+    full_description_fr:
+      'Depuis 2014, l\'Etat d\'Israel verse un grant annuel unique a tous les survivants de la Shoah ' +
+      'reconnus pour compenser les cout de vie eleves et les besoins specifiques (medicaments, ' +
+      'aides techniques, chauffage). ' +
+      'Montant 2026 : 7 688 NIS/an (indexe sur CPI). ' +
+      'Verse automatiquement en debut d\'annee fiscale (avril) sur le compte bancaire enregistre ' +
+      'aupres de Rashut leNiztolei HaShoah. Pas de demande a faire si deja reconnu. ' +
+      'Eligibilite : ' +
+      '- Toute personne reconnue survivante de la Shoah (pre_1953, post_1953, ex_urss) ' +
+      '- Conjoint survivant a vie si deja reconnu ' +
+      '- Non soumis a condition de revenus ' +
+      'Cumulable avec toutes les autres aides Shoah (gmala mensuelle, Maanak Matzeva, Hatavot Refuiot, ' +
+      'Arnona Shoah, Keren Sif 2).',
+    conditions: {
+      requires_holocaust_survivor: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 7688,
+    value_unit: 'NIS/an (versement unique avril)',
+    application_url: 'https://www.gov.il/he/departments/the_authority_for_the_rights_of_holocaust_survivors',
+    action_label: 'Verifier grant annuel',
+    info_url: 'https://www.kolzchut.org.il/he/מענק_שנתי_לניצולי_שואה',
+    disclaimer:
+      'Verse automatiquement a tous les survivants reconnus, sans demande. Si vous pensez etre ' +
+      'eligible mais ne recevez rien : contacter Rashut leNiztolei HaShoah (03-504-8700) — il manque ' +
+      'probablement une reconnaissance formelle ou un coordonnees bancaires obsoletes.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Montant 7 688 NIS/an confirme via glossaire. Automatique — beaucoup de survivants ignorent qu\'ils l\'ont deja, ou l\'encaissent sans le savoir.',
+  },
+  {
+    slug: 'tagmul_shaarim_niztolei_shoah',
+    category: 'special',
+    authority: 'other',  // Rashut leNiztolei HaShoah
+    title_fr: 'Pension conjoint survivant Shoah (Tagmul Sheirim)',
+    title_he: 'תגמול שאירים לניצולי שואה',
+    description_fr:
+      'Pension mensuelle versee au conjoint survivant d\'un beneficiaire Rashut leNiztolei HaShoah decede, pour maintenir un revenu minimum.',
+    full_description_fr:
+      'Lorsqu\'un survivant de la Shoah beneficiaire de la gmala mensuelle decede, son conjoint a vie ' +
+      '(meme s\'il n\'etait pas lui-meme survivant) peut continuer a percevoir une pension reduite ' +
+      'pour eviter la chute brutale des revenus. ' +
+      'Montants 2026 : ' +
+      '- Conjoint survivant seul                : ~2 000 NIS/mois (60% de la gmala de base) ' +
+      '- Avec handicap reconnu                  : jusqu\'a 3 500 NIS/mois ' +
+      '- Conjoint lui-meme survivant reconnu    : cumulable avec sa propre gmala ' +
+      'Conditions : ' +
+      '- Le defunt etait beneficiaire actif de la gmala Shoah au moment du deces ' +
+      '- Conjoint marie legalement ou en union civile au moment du deces ' +
+      '- Residence israelienne maintenue ' +
+      'Procedure : dossier a deposer a Rashut dans les 12 mois apres le deces avec Teudat Ptira, ' +
+      'attestation de reconnaissance du defunt et preuve de mariage/union.',
+    conditions: {
+      required_marital_status: ['widowed'],
+      requires_resident: true,
+    },
+    estimated_annual_value: 2000 * 12,
+    typical_monthly_amount: 2000,
+    value_unit: 'NIS/mois (pension conjoint survivant)',
+    application_url: 'https://www.gov.il/he/departments/the_authority_for_the_rights_of_holocaust_survivors',
+    action_label: 'Demande pension conjoint survivant',
+    info_url: 'https://www.kolzchut.org.il/he/תגמול_שאירים_לניצולי_שואה',
+    disclaimer:
+      'Reserve aux conjoints d\'un survivant decede qui etait lui-meme beneficiaire actif de la gmala ' +
+      'Shoah. Si le defunt n\'avait pas ouvert de dossier Shoah de son vivant, pas de droit. A noter : ' +
+      'si le conjoint est lui-meme survivant reconnu (cas frequent), sa propre gmala reste versee en ' +
+      'plus de la pension Sheirim.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). La modelisation par marital_status=widowed est imparfaite car elle declenche pour toute veuve/veuf, meme sans conjoint Shoah. A raffiner avec un champ profile is_widow_of_shoah_survivor.',
+  },
 ]
 
 // =====================================================
