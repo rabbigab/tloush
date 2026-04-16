@@ -4154,6 +4154,129 @@ const TAX_EXTRAS_BENEFITS: BenefitDefinition[] = [
     tax_year: 2026,
     notes: 'Ajout catalogue 16/04/2026 (etape C7). Valeur estimee 150k NIS/an correspond a l\'economie fiscale typique d\'un salaire median (~14k NIS/mois brut) — pour les hauts revenus le gain est considerable (>300k NIS/an).',
   },
+  {
+    slug: 'petur_mas_shkhirat_dira',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Exoneration impot loyers residentiels (Petur Mas Shkhirat Dira)',
+    title_he: 'פטור ממס הכנסה על שכר דירה',
+    description_fr:
+      'Les bailleurs d\'un bien residentiel peuvent beneficier d\'une exoneration totale d\'impot sur les loyers percus jusqu\'a 5 654 NIS/mois (67 848 NIS/an) en 2026, sous conditions.',
+    full_description_fr:
+      'Regime special pour les proprietaires-bailleurs residentiels : exoneration totale d\'impot ' +
+      'sur les loyers dans la limite de 5 654 NIS/mois en 2026 (seuil indexe annuellement sur CPI). ' +
+      'Conditions cumulatives : ' +
+      '- Le bien loue est residentiel (pas commercial, pas Airbnb en locations courtes repetees) ' +
+      '- Le locataire est une personne physique (pas une societe) ' +
+      '- Le loyer total est ≤ 5 654 NIS/mois (si plusieurs biens, cumul global) ' +
+      '- Le bailleur utilise le bien en location a l\'annee (bail ecrit ou verbal > 6 mois) ' +
+      'Au-dela de 5 654 NIS/mois : 2 options possibles (a ne pas mixer) : ' +
+      '- Option partielle : impot sur l\'exces (loyers - 5 654) au taux marginal ' +
+      '- Option taux unique 10% : impot forfaitaire de 10 % sur tous les loyers (sans abattement) ' +
+      'Nota : si le bailleur cumule plusieurs biens, la somme de tous les loyers doit respecter le ' +
+      'plafond. Option forfaitaire 10 % souvent plus avantageuse pour les portefeuilles diversifies.',
+    conditions: {
+      requires_landlord: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 12000,  // economie typique pour loyer 4 500 NIS/mois
+    value_unit: 'NIS/an (economie fiscale selon tranche marginale)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Infos petur loyers',
+    info_url: 'https://www.kolzchut.org.il/he/פטור_ממס_הכנסה_על_הכנסה_מהשכרת_דירה',
+    disclaimer:
+      'Plafond 5 654 NIS/mois indexe annuellement — verifier la valeur exacte sur gov.il avant ' +
+      'declaration. Attention : location courte duree repetee (Airbnb > 30 jours/an) est reclassee ' +
+      'en commerce et exclue du regime. Les olim proprietaires-bailleurs ignorent souvent ce droit ' +
+      'et paient l\'impot inutilement.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C7). Premiere utilisation de requires_landlord ajoute en infra etape C. Seuil 5 654 NIS/mois confirme via glossaire. Economie typique 12k NIS/an pour un loyer Tel-Aviv moyen (4-5k NIS/mois) selon tranche marginale.',
+  },
+  {
+    slug: 'zikuy_mas_priferia',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Credit fiscal peripherie (Zikuy Mas Priferia, Chok Yesodot)',
+    title_he: 'זיכוי מס ליישובי פריפריה',
+    description_fr:
+      'Reduction fiscale en pourcentage du revenu imposable pour les residents des zones de priorite nationale A ou B (Negev, Galil, Eilat, frontiere), jusqu\'a 11-12 % selon la ville.',
+    full_description_fr:
+      'Chok Yesodot HaTaktziv (loi budgetaire) : credit fiscal specifique pour encourager l\'installation ' +
+      'en zones de priorite nationale (Negev, Galil, Eilat, cisjordanie, frontiere). ' +
+      'Taux 2026 (a confirmer par circulaire annuelle Rashut HaMisim) : ' +
+      '- Zone A (priorite max, ex. Eilat, Arad, Dimona, Beit Shean, Kiryat Shmona, Sderot, etc.) : ' +
+      '  jusqu\'a 12 % du revenu imposable, dans la limite annuelle (~244 800 NIS de revenus) ' +
+      '- Zone B (priorite intermediaire) : ~7-10 % du revenu imposable, meme plafond ' +
+      '- Zone C (priorite basse / limitrophe) : ~5 % du revenu imposable ' +
+      '- Autres villes (centre) : pas de credit priferia ' +
+      'Cumulable avec tous les autres credits (toshav, yeladim, horim yekhidim, etc.). Pour un ' +
+      'salarie zone A a 15 000 NIS/mois, le credit peut representer jusqu\'a 20 000-22 000 NIS/an ' +
+      'd\'economie nette d\'impot. ' +
+      'Applique automatiquement via Tofes 101 si la ville de residence declaree est en zone A/B/C.',
+    conditions: {
+      required_city_priority_zone: ['a', 'b', 'c'],
+      requires_resident: true,
+    },
+    estimated_annual_value: 15000,
+    value_unit: 'NIS/an (5-12% du revenu imposable selon zone)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Infos credit priferia',
+    info_url: 'https://www.kolzchut.org.il/he/זיכוי_מס_ליישובי_פריפריה',
+    disclaimer:
+      'Taux exacts et liste des villes A/B/C mis a jour annuellement par circulaire Rashut HaMisim. ' +
+      'Consulter la liste officielle avant declaration. Certaines villes peuvent changer de categorie ' +
+      'd\'une annee sur l\'autre. Le champ city_priority_zone doit etre correctement rempli au profil ' +
+      '(la page profil propose une suggestion automatique via src/lib/priorityZones.ts).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C7). Premiere utilisation de required_city_priority_zone ajoute en infra etape C. Valeur indicative 15k NIS/an est une mediane — peut etre 5k (zone C + bas revenu) ou 25k+ (zone A + haut revenu).',
+  },
+  {
+    slug: 'hatavat_mas_gil_60',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Taux reduits revenus capital 60+ (Hatavat Mas Gil 60)',
+    title_he: 'הטבת מס לגיל 60 ומעלה על הכנסות הון',
+    description_fr:
+      'Contribuables ages de 60 ans et plus beneficient de taux d\'imposition reduits (voire 10 % forfait) sur les revenus du capital (interets, dividendes, rentes privees, pensions complementaires).',
+    full_description_fr:
+      'Mekanism de l\'Asara (article 125B-125D du Pkudat Mas Hakhnasa) : a partir de 60 ans, les ' +
+      'contribuables israeliens beneficient de taux reduits sur les revenus hors travail, au lieu ' +
+      'des taux marginaux (jusqu\'a 50 %) applicables aux revenus du travail. ' +
+      'Regimes applicables (selon type de revenu) : ' +
+      '- Interets bancaires / obligations : 15 % au lieu de 25 % ' +
+      '- Dividendes (non controles) : 25 % comme avant mais possibilite d\'integrer a la tranche marginale ' +
+      '  si favorable (rare au-dela de 60 ans) ' +
+      '- Rente privee (Kupat Gemel, Keren Pensia) : barème réduit, souvent 10-20 % effectif ' +
+      '- Location Airbnb / commerciale : pas d\'aménagement 60+ specifique ' +
+      'Conditions : ' +
+      '- Age ≥ 60 ans a la fin de l\'annee fiscale ' +
+      '- Contribuable israelien (toshav) ' +
+      'Cumulable avec tous les autres avantages seniors (Kitzbat Zikna BTL, arnona_retiree, etc.).',
+    conditions: {
+      min_age: 60,
+      requires_resident: true,
+    },
+    estimated_annual_value: 5000,  // economie typique pour epargnant moyen
+    value_unit: 'NIS/an (economie fiscale sur revenus capital)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Infos taux reduits 60+',
+    info_url: 'https://www.kolzchut.org.il/he/מיסוי_הכנסות_מריבית_לגיל_60',
+    disclaimer:
+      'A declarer dans le bilan annuel (Dokh Shnati 1301) en cochant la case "senior 60+". L\'employeur ' +
+      'de revenus n\'applique pas automatiquement le regime — c\'est au contribuable de reclamer le ' +
+      'recalcul en fin d\'annee. Un yoetz mas est utile pour optimiser la strategie fiscale.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C7). Confidence medium car les taux exacts varient selon le type de revenu et sont ajustes chaque annee. Valeur 5k NIS/an est indicative pour un epargnant moyen ; peut etre beaucoup plus pour les retraites a haut patrimoine.',
+  },
 ]
 
 // =====================================================
