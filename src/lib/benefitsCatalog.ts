@@ -83,6 +83,8 @@ export interface EligibilityConditions {
   requires_holocaust_survivor?: boolean
   /** Famille endeuillee */
   requires_bereaved?: boolean
+  /** Victime (ou famille de) du 7 octobre / Kharvot Barzel */
+  requires_7octobre_victim?: boolean
   /** Enfant handicape */
   requires_disabled_child?: boolean
   /** Doit etre aidant familial */

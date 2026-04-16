@@ -176,6 +176,7 @@ function validateUpdate(body: unknown): UserProfileUpdate | { error: string } {
   if ('has_mobility_limitation' in b) clean.has_mobility_limitation = bool(b.has_mobility_limitation)
   if ('has_disabled_child' in b) clean.has_disabled_child = bool(b.has_disabled_child)
   if ('is_bereaved_family' in b) clean.is_bereaved_family = bool(b.is_bereaved_family)
+  if ('is_7octobre_victim' in b) clean.is_7octobre_victim = bool(b.is_7octobre_victim)
 
   // Financier
   if ('is_income_supplement_eligible' in b) clean.is_income_supplement_eligible = bool(b.is_income_supplement_eligible)
