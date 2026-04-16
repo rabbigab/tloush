@@ -140,7 +140,7 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
     }
     const ok = await save(fullPatch)
     if (ok) {
-      router.push('/rights-detector')
+      router.push('/aides')
     }
   }, [profile, save, router])
 

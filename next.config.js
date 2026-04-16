@@ -9,6 +9,23 @@ const nextConfig = {
     serverComponentsExternalPackages: ['playwright-core', '@sparticuz/chromium'],
     optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
+  async redirects() {
+    // Redirections 308 permanentes (equivalent moderne du 301, preserve
+    // la methode HTTP). Chantier 1 P1 : anciennes routes legacy renommees
+    // vers le hub unique /aides (multi-onglets).
+    return [
+      {
+        source: '/rights-detector',
+        destination: '/aides',
+        permanent: true,
+      },
+      {
+        source: '/rights-check',
+        destination: '/aides?tab=travail',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

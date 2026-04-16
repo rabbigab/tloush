@@ -17,7 +17,10 @@ const PROTECTED_ROUTES = [
   '/admin',
   // '/calculator' retire : la route redirige maintenant vers
   // /calculateurs/brut-net (public) cf. audit technical-mapping #17.
-  '/rights-check',
+  // '/rights-check' et '/rights-detector' sont redirigees vers /aides
+  // par next.config.js (308 permanent, Chantier 1 P1). Pas besoin d'entree
+  // middleware dediee (la redirection est appliquee avant l'auth check).
+  '/aides',
   '/referral',
   // '/help' retire : la page a ete supprimee, /aide (public) est desormais
   // la source unique du centre d'aide (Chantier 1 P0).
