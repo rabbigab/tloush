@@ -17,7 +17,6 @@
  *   - Widened 20% bracket 2026 : https://www.cwsisrael.com/israeli-tax-changes-2026-complete-guide/
  */
 
-export const LAST_VERIFIED_DATE = '2026-04-16'
 export const TAX_YEAR = 2026
 
 // ─── 2026 Tax Brackets (Annual Income) ───
@@ -643,31 +642,37 @@ export function calculateSeverance(lastMonthlySalary: number, yearsOfService: nu
 }
 
 // ============================================================
-// Metadata de verification (audit #18)
+// Metadata de verification (audit #18 + audit fraicheur 2026-04-16)
 // ============================================================
 // Date de la derniere verification manuelle des baremes contre les
 // sources officielles. Affichee sur les pages de calculateurs pour
-// transparence. Les brackets fiscaux sont geles par la loi des
-// finances jusqu'a 2027, donc pas de mise a jour attendue avant.
+// transparence. Les tranches 35/47/50% sont gelees par la loi des
+// finances 2025-2027, mais la tranche 20% a ete ELARGIE en 2026
+// (jusqu'a 19 000 NIS/mois) — cf. commentaire TAX_BRACKETS_2026.
 
-export const LAST_VERIFIED_DATE = '2026-04-01'
+export const LAST_VERIFIED_DATE = '2026-04-16'
 
 /** Sources officielles utilisees pour les baremes. Cles affichees en UI. */
 export const OFFICIAL_SOURCES = [
   {
     label: 'Rashut HaMisim (impot sur le revenu)',
-    url: 'https://www.taxes.gov.il',
-    scope: 'Tranches d\'impot, points de credit, plafonds',
+    url: 'https://www.gov.il/en/pages/income-tax-monthly-deductions-booklet',
+    scope: 'Tranches d\'impot 2026, points de credit, plafonds',
   },
   {
-    label: 'Bituah Leumi (securite sociale)',
-    url: 'https://www.btl.gov.il',
-    scope: 'Taux BL + assurance sante, plafond assurable',
+    label: 'Bituah Leumi (securite sociale 2026)',
+    url: 'https://www.btl.gov.il/English%20Homepage/About/News/Pages/hadasaidkonkitzva2026.aspx',
+    scope: 'Taux BL + assurance sante, plafond assurable 2026',
+  },
+  {
+    label: 'Reforme fiscale 2026 (tranche 20% elargie)',
+    url: 'https://www.cwsisrael.com/israeli-tax-changes-2026-complete-guide/',
+    scope: 'Elargissement tranche 20% a 19 000 NIS/mois',
   },
   {
     label: 'Loi des finances 2025-2027',
     url: 'https://www.nevo.co.il',
-    scope: 'Gel des tranches d\'impot',
+    scope: 'Gel des tranches superieures (35/47/50%)',
   },
 ] as const
 
