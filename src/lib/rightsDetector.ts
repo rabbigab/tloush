@@ -390,6 +390,71 @@ function matchProfile(
     }
   }
 
+  // Periode Shoah requise (discriminant pre_1953 / post_1953 / ex_urss)
+  // Implique is_holocaust_survivor === true.
+  if (conditions.required_shoah_period !== undefined) {
+    totalChecks++
+    const required = Array.isArray(conditions.required_shoah_period)
+      ? conditions.required_shoah_period
+      : [conditions.required_shoah_period]
+    if (
+      profile.is_holocaust_survivor &&
+      profile.shoah_period &&
+      (required as string[]).includes(profile.shoah_period)
+    ) {
+      passedChecks++
+      reasons.push(`Periode Shoah: ${profile.shoah_period}`)
+    } else {
+      return { matches: false, score: 0, reasons: [] }
+    }
+  }
+
+  // Zone de priorite nationale (A / B / C)
+  if (conditions.required_city_priority_zone !== undefined) {
+    totalChecks++
+    const required = Array.isArray(conditions.required_city_priority_zone)
+      ? conditions.required_city_priority_zone
+      : [conditions.required_city_priority_zone]
+    if (profile.city_priority_zone && (required as string[]).includes(profile.city_priority_zone)) {
+      passedChecks++
+      reasons.push(`Zone priorite ${profile.city_priority_zone.toUpperCase()}`)
+    } else {
+      return { matches: false, score: 0, reasons: [] }
+    }
+  }
+
+  // Bailleur residentiel (is_landlord)
+  if (conditions.requires_landlord) {
+    totalChecks++
+    if (profile.is_landlord) {
+      passedChecks++
+      reasons.push('Bailleur residentiel')
+    } else {
+      return { matches: false, score: 0, reasons: [] }
+    }
+  }
+
+  // Demobilisation recente (soldats liberes dans les N derniers mois)
+  if (conditions.requires_recent_discharge_months !== undefined) {
+    totalChecks++
+    if (profile.discharge_date) {
+      const discharge = new Date(profile.discharge_date)
+      if (!isNaN(discharge.getTime())) {
+        const months = monthsBetween(discharge, now)
+        if (months >= 0 && months <= conditions.requires_recent_discharge_months) {
+          passedChecks++
+          reasons.push(`Demobilisation recente (${months} mois)`)
+        } else {
+          return { matches: false, score: 0, reasons: [] }
+        }
+      } else {
+        return { matches: false, score: 0, reasons: [] }
+      }
+    } else {
+      return { matches: false, score: 0, reasons: [] }
+    }
+  }
+
   // Enfant handicape
   if (conditions.requires_disabled_child) {
     totalChecks++

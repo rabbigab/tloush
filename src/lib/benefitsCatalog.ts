@@ -48,6 +48,9 @@ export type BenefitAuthority =
 export type ConfidenceLevel = 'high' | 'medium' | 'low'
 export type SourceStatus = 'verified' | 'needs_verification' | 'estimated'
 
+export type RequiredShoahPeriod = 'pre_1953' | 'post_1953' | 'ex_urss'
+export type RequiredCityPriorityZone = 'a' | 'b' | 'c'
+
 export interface EligibilityConditions {
   /** Minimum age (en annees) */
   min_age?: number
@@ -92,6 +95,29 @@ export interface EligibilityConditions {
   requires_bereaved?: boolean
   /** Victime (ou famille de) du 7 octobre / Kharvot Barzel */
   requires_7octobre_victim?: boolean
+  /**
+   * Periode(s) Shoah requise(s) (cf. profile.shoah_period).
+   * - 'pre_1953'  : immigre(e) en Israel avant 1953 (categorie vatik)
+   * - 'post_1953' : immigre(e) apres 1953
+   * - 'ex_urss'   : survivant(e) ex-URSS / Roumanie (Keren Sif 2 / Article 2 Fund)
+   * Implique implicitement `is_holocaust_survivor === true`.
+   */
+  required_shoah_period?: RequiredShoahPeriod | RequiredShoahPeriod[]
+  /**
+   * Zone de priorite nationale requise (cf. profile.city_priority_zone).
+   * Utilise pour zikuy_mas_priferia, mashkanta_olim etc.
+   */
+  required_city_priority_zone?: RequiredCityPriorityZone | RequiredCityPriorityZone[]
+  /**
+   * Exige que le beneficiaire soit bailleur residentiel (profile.is_landlord === true).
+   * Utilise pour petur_mas_shkhirat_dira, yivua_meshek_bayit.
+   */
+  requires_landlord?: boolean
+  /**
+   * Exige que la demobilisation IDF (profile.discharge_date) ait eu lieu dans les N
+   * derniers mois. Utilise pour les aides aux soldats recemment liberes.
+   */
+  requires_recent_discharge_months?: number
   /** Enfant handicape */
   requires_disabled_child?: boolean
   /** Doit etre aidant familial */
