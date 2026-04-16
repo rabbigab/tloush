@@ -7,9 +7,9 @@ import Footer from "@/components/layout/Footer";
 import ProgressStepper from "@/components/shared/ProgressStepper";
 import UploadZone from "@/components/upload/UploadZone";
 import DisclaimerBlock from "@/components/shared/DisclaimerBlock";
-import { Loader2, AlertCircle, CheckCircle, Eye, Bell, Reply, Stethoscope } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle, Eye, Bell, Reply, Stethoscope, TrendingUp } from "lucide-react";
 import clsx from "clsx";
-import type { DocumentAnalysis, ScanApiResponse, PayslipAnalysis, ContractAnalysis, OfficialLetterAnalysis, TaxNoticeAnalysis, LeaseAnalysis, TerminationAnalysis, UniversalAnalysis, MedicalBillAnalysis, KupatHolimLetterAnalysis, PrescriptionAnalysis, LabResultsAnalysis, DocumentType } from "@/types/scanner";
+import type { DocumentAnalysis, ScanApiResponse, PayslipAnalysis, ContractAnalysis, OfficialLetterAnalysis, TaxNoticeAnalysis, LeaseAnalysis, TerminationAnalysis, UniversalAnalysis, MedicalBillAnalysis, KupatHolimLetterAnalysis, PrescriptionAnalysis, LabResultsAnalysis, PersonalLetterAnalysis, SchoolLetterAnalysis, PrivateLetterAnalysis, UtilityInvoiceAnalysis, DocumentType } from "@/types/scanner";
 import { DOCUMENT_TYPES, isHealthDocument } from "@/types/scanner";
 
 const SCANNER_STEPS: import("@/components/shared/ProgressStepper").Step[] = [
@@ -375,6 +375,14 @@ function ScanResultsDisplay({ result }: ScanResultsDisplayProps) {
       return <PrescriptionResults data={data as PrescriptionAnalysis} />;
     case "labResults":
       return <LabResultsResults data={data as LabResultsAnalysis} />;
+    case "personalLetter":
+      return <PersonalLetterResults data={data as PersonalLetterAnalysis} />;
+    case "schoolLetter":
+      return <SchoolLetterResults data={data as SchoolLetterAnalysis} />;
+    case "privateLetter":
+      return <PrivateLetterResults data={data as PrivateLetterAnalysis} />;
+    case "utilityInvoice":
+      return <UtilityInvoiceResults data={data as UtilityInvoiceAnalysis} />;
     case "universal":
       return <UniversalResults data={data as UniversalAnalysis} />;
     default:
@@ -683,6 +691,332 @@ function LabResultsResults({ data }: { data: LabResultsAnalysis }) {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PersonalLetterResults({ data }: { data: PersonalLetterAnalysis }) {
+  const toneLabel: Record<NonNullable<PersonalLetterAnalysis["tone"]>, { label: string; color: "brand" | "warning" | "success" | "info" | "neutral" }> = {
+    formal: { label: "Formel", color: "brand" },
+    informal: { label: "Informel", color: "info" },
+    urgent: { label: "Urgent", color: "warning" },
+    friendly: { label: "Amical", color: "success" },
+    neutral: { label: "Neutre", color: "neutral" },
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3">
+        {data.sender && <ResultField label="Expéditeur" value={data.sender} />}
+        {data.date && <ResultField label="Date" value={new Date(data.date).toLocaleDateString("fr-FR")} />}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <Badge label={`Langue : ${data.language}`} color="neutral" />
+        {data.tone && <Badge label={`Ton : ${toneLabel[data.tone].label}`} color={toneLabel[data.tone].color} />}
+      </div>
+
+      {data.summary && (
+        <div className="card p-4 bg-brand-50">
+          <h4 className="font-semibold text-neutral-900 mb-2 text-sm">Résumé</h4>
+          <p className="text-sm text-neutral-700 leading-relaxed">{data.summary}</p>
+        </div>
+      )}
+
+      {data.suggestedReply && (
+        <details className="card p-4 border-l-4 border-l-brand-400 bg-brand-50/40" open>
+          <summary className="font-semibold text-neutral-900 text-sm cursor-pointer hover:text-brand-700">
+            Modèle de réponse {data.tone ? `(ton ${toneLabel[data.tone].label.toLowerCase()})` : ""}
+          </summary>
+          <pre className="mt-3 p-3 bg-white border border-neutral-200 rounded-lg text-xs text-neutral-800 whitespace-pre-wrap font-sans leading-relaxed">
+            {data.suggestedReply}
+          </pre>
+        </details>
+      )}
+
+      {data.fullTranslation && (
+        <details className="card p-4">
+          <summary className="font-semibold text-neutral-900 text-sm cursor-pointer hover:text-brand-700">
+            Traduction complète en français
+          </summary>
+          <p className="text-sm text-neutral-700 mt-3 whitespace-pre-wrap leading-relaxed">{data.fullTranslation}</p>
+        </details>
+      )}
+
+      {data.originalText && (
+        <details className="card p-4">
+          <summary className="font-semibold text-neutral-900 text-sm cursor-pointer hover:text-brand-700">
+            Texte original
+          </summary>
+          <p
+            className="text-sm text-neutral-700 mt-3 whitespace-pre-wrap leading-relaxed"
+            dir={data.language === "he" ? "rtl" : "ltr"}
+          >
+            {data.originalText}
+          </p>
+        </details>
+      )}
+    </div>
+  );
+}
+
+function SchoolLetterResults({ data }: { data: SchoolLetterAnalysis }) {
+  const subjectLabel: Record<NonNullable<SchoolLetterAnalysis["subject"]>, string> = {
+    meeting: "Réunion parents",
+    trip: "Sortie scolaire",
+    payment: "Paiement demandé",
+    behavior: "Comportement",
+    schedule: "Horaires / emploi du temps",
+    announcement: "Annonce",
+    other: "Autre",
+  };
+  const actionTypeLabel: Record<SchoolLetterAnalysis["actionsRequired"][number]["type"], { label: string; color: "brand" | "warning" | "info" | "neutral" }> = {
+    signature: { label: "Signature", color: "warning" },
+    payment: { label: "Paiement", color: "warning" },
+    authorization: { label: "Autorisation", color: "warning" },
+    response: { label: "Réponse", color: "brand" },
+    other: { label: "Autre", color: "neutral" },
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3">
+        {data.schoolName && <ResultField label="École" value={data.schoolName} />}
+        {data.className && <ResultField label="Classe" value={data.className} />}
+        {data.childName && <ResultField label="Enfant" value={data.childName} />}
+        {data.deadline && <ResultField label="Date limite" value={new Date(data.deadline).toLocaleDateString("fr-FR")} />}
+      </div>
+
+      {data.subject && (
+        <div className="card p-4 bg-neutral-50 flex items-center justify-between">
+          <span className="text-sm font-semibold text-neutral-700">Sujet</span>
+          <Badge label={subjectLabel[data.subject]} color="info" />
+        </div>
+      )}
+
+      {data.subjectDetail && (
+        <div className="card p-4 bg-brand-50">
+          <p className="text-sm text-neutral-700 leading-relaxed">{data.subjectDetail}</p>
+        </div>
+      )}
+
+      {data.amountDue != null && (
+        <div className="card p-4 bg-warning/5 border-l-4 border-l-warning">
+          <h4 className="font-semibold text-neutral-900 text-sm mb-1">Montant à payer</h4>
+          <p className="text-lg font-bold text-warning">
+            {data.amountDue.toLocaleString("fr-FR")} ₪
+          </p>
+        </div>
+      )}
+
+      {data.actionsRequired && data.actionsRequired.length > 0 && (
+        <div className="card p-4">
+          <h4 className="font-semibold text-neutral-900 text-sm mb-3">Actions requises</h4>
+          <ul className="space-y-2">
+            {data.actionsRequired.map((act, i) => (
+              <li key={i} className="flex items-start justify-between gap-3 text-sm">
+                <span className="text-neutral-700 flex-1">{act.action}</span>
+                <Badge label={actionTypeLabel[act.type].label} color={actionTypeLabel[act.type].color} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {data.suggestedReply && (
+        <details className="card p-4 border-l-4 border-l-brand-400 bg-brand-50/40" open>
+          <summary className="font-semibold text-neutral-900 text-sm cursor-pointer hover:text-brand-700">
+            Modèle de réponse
+          </summary>
+          <pre className="mt-3 p-3 bg-white border border-neutral-200 rounded-lg text-xs text-neutral-800 whitespace-pre-wrap font-sans leading-relaxed">
+            {data.suggestedReply}
+          </pre>
+        </details>
+      )}
+
+      {data.fullTranslation && (
+        <details className="card p-4">
+          <summary className="font-semibold text-neutral-900 text-sm cursor-pointer hover:text-brand-700">
+            Traduction HE→FR
+          </summary>
+          <p className="text-sm text-neutral-700 mt-3 whitespace-pre-wrap leading-relaxed">{data.fullTranslation}</p>
+        </details>
+      )}
+    </div>
+  );
+}
+
+function PrivateLetterResults({ data }: { data: PrivateLetterAnalysis }) {
+  const senderTypeLabel: Record<NonNullable<PrivateLetterAnalysis["senderType"]>, string> = {
+    bank: "Banque",
+    insurance: "Assurance",
+    telecom: "Télécom",
+    utility: "Fournisseur",
+    private_other: "Autre institution privée",
+  };
+  const subjectTypeLabel: Record<NonNullable<PrivateLetterAnalysis["subjectType"]>, string> = {
+    contract_update: "Mise à jour contrat",
+    payment_reminder: "Relance paiement",
+    commercial_offer: "Offre commerciale",
+    document_request: "Demande de documents",
+    notification: "Notification",
+    other: "Autre",
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3">
+        {data.sender && <ResultField label="Émetteur" value={data.sender} />}
+        {data.senderType && <ResultField label="Type" value={senderTypeLabel[data.senderType]} />}
+        {data.date && <ResultField label="Date" value={new Date(data.date).toLocaleDateString("fr-FR")} />}
+        {data.subject && <ResultField label="Sujet" value={data.subject} />}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {data.subjectType && <Badge label={subjectTypeLabel[data.subjectType]} color="info" />}
+        {data.urgency === "urgent" && <Badge label="Urgent" color="danger" />}
+        {data.urgency === "not_urgent" && <Badge label="Non urgent" color="neutral" />}
+      </div>
+
+      {data.actionsRequired && data.actionsRequired.length > 0 && (
+        <div className="card p-4">
+          <h4 className="font-semibold text-neutral-900 text-sm mb-3">Actions requises</h4>
+          <ul className="space-y-2 text-sm">
+            {data.actionsRequired.map((act, i) => (
+              <li key={i} className="flex items-start justify-between gap-3">
+                <span className="text-neutral-700 flex-1">{act.action}</span>
+                {act.deadline && (
+                  <span className="text-xs font-semibold text-warning whitespace-nowrap">
+                    {new Date(act.deadline).toLocaleDateString("fr-FR")}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {data.suggestedResponse && (
+        <details className="card p-4 border-l-4 border-l-brand-400 bg-brand-50/40" open>
+          <summary className="font-semibold text-neutral-900 text-sm cursor-pointer hover:text-brand-700">
+            Modèle de réponse / contestation
+          </summary>
+          <pre className="mt-3 p-3 bg-white border border-neutral-200 rounded-lg text-xs text-neutral-800 whitespace-pre-wrap font-sans leading-relaxed">
+            {data.suggestedResponse}
+          </pre>
+        </details>
+      )}
+
+      {data.fullTranslation && (
+        <details className="card p-4">
+          <summary className="font-semibold text-neutral-900 text-sm cursor-pointer hover:text-brand-700">
+            Traduction HE→FR
+          </summary>
+          <p className="text-sm text-neutral-700 mt-3 whitespace-pre-wrap leading-relaxed">{data.fullTranslation}</p>
+        </details>
+      )}
+    </div>
+  );
+}
+
+function UtilityInvoiceResults({ data }: { data: UtilityInvoiceAnalysis }) {
+  const fmt = (n: number | null | undefined) =>
+    n == null ? "—" : `${n.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} ₪`;
+  const utilityLabel: Record<NonNullable<UtilityInvoiceAnalysis["utilityType"]>, { label: string; icon: string }> = {
+    arnona: { label: "Arnona (taxe municipale)", icon: "🏛️" },
+    electricity: { label: "Électricité", icon: "⚡" },
+    water: { label: "Eau", icon: "💧" },
+    gas: { label: "Gaz", icon: "🔥" },
+    internet: { label: "Internet", icon: "🌐" },
+    phone: { label: "Téléphone", icon: "📞" },
+    other: { label: "Autre", icon: "💡" },
+  };
+
+  return (
+    <div className="space-y-4">
+      {data.utilityType && (
+        <div className="card p-4 bg-neutral-50 flex items-center gap-3">
+          <span className="text-2xl">{utilityLabel[data.utilityType].icon}</span>
+          <div className="flex-1">
+            <p className="text-xs text-neutral-500 uppercase font-semibold tracking-wide">Type</p>
+            <p className="text-sm font-semibold text-neutral-900">{utilityLabel[data.utilityType].label}</p>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-3">
+        {data.provider && <ResultField label="Fournisseur" value={data.provider} />}
+        {data.period && <ResultField label="Période" value={data.period} />}
+      </div>
+
+      <div className="card p-4 bg-brand-50">
+        <h4 className="font-semibold text-neutral-900 mb-3 text-sm">Paiement</h4>
+        <div className="space-y-1.5 text-sm">
+          {data.totalAmount != null && (
+            <div className="flex justify-between">
+              <span className="font-semibold text-neutral-900">Total à payer</span>
+              <span className="text-lg font-bold text-brand-700">{fmt(data.totalAmount)}</span>
+            </div>
+          )}
+          {data.dueDate && (
+            <div className="flex justify-between text-xs text-neutral-600 mt-1">
+              <span>Date limite</span>
+              <span className="font-medium">{new Date(data.dueDate).toLocaleDateString("fr-FR")}</span>
+            </div>
+          )}
+          {data.suggestedReminderDate && (
+            <div className="flex justify-between text-xs text-neutral-600">
+              <span className="flex items-center gap-1">
+                <Bell size={12} /> Rappel suggéré
+              </span>
+              <span className="font-medium text-brand-700">
+                {new Date(data.suggestedReminderDate).toLocaleDateString("fr-FR")} (J-3)
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {data.abnormalIncrease && data.increasePercent != null && (
+        <div className="card p-4 bg-warning/5 border-l-4 border-l-warning">
+          <div className="flex items-start gap-3">
+            <TrendingUp size={20} className="text-warning shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-semibold text-neutral-900 text-sm mb-1">
+                Augmentation anormale : +{data.increasePercent.toFixed(0)}%
+              </p>
+              {data.previousPeriodAmount != null && (
+                <p className="text-xs text-neutral-700">
+                  Période précédente : {fmt(data.previousPeriodAmount)} → actuelle : {fmt(data.totalAmount)}
+                </p>
+              )}
+              <p className="text-xs text-neutral-600 mt-1">
+                Vérifiez le relevé ou contactez le fournisseur si l'augmentation semble injustifiée.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(data.customerCode || data.paymentReference) && (
+        <div className="card p-4">
+          <h4 className="font-semibold text-neutral-900 text-sm mb-2">Références</h4>
+          <div className="space-y-1 text-sm">
+            {data.customerCode && (
+              <div className="flex justify-between">
+                <span className="text-neutral-600">Code client</span>
+                <span className="font-mono font-medium text-neutral-900">{data.customerCode}</span>
+              </div>
+            )}
+            {data.paymentReference && (
+              <div className="flex justify-between">
+                <span className="text-neutral-600">Référence paiement</span>
+                <span className="font-mono font-medium text-neutral-900">{data.paymentReference}</span>
+              </div>
+            )}
           </div>
         </div>
       )}

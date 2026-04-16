@@ -14,6 +14,10 @@ export type DocumentType =
   | "kupatHolimLetter"  // Courrier caisse de santé (Clalit/Maccabi/Meuhedet/Leumit)
   | "prescription"      // Ordonnance (mirsham)
   | "labResults"        // Résultats d'analyses de laboratoire
+  | "personalLetter"    // Courrier personnel / email / SMS
+  | "schoolLetter"      // Courrier de l'école
+  | "privateLetter"     // Courrier banque / assurance / institution privée
+  | "utilityInvoice"    // Facture arnona / électricité / eau / gaz
   | "universal";        // Fallback : analyse générique pour tout autre document
 
 // Types spécialisés (= tous sauf "universal")
@@ -316,6 +320,123 @@ export interface LabResultsAnalysis {
   }>;
 }
 
+// ------ Personal Letter (Courrier personnel / email / SMS) ------
+// Lettre manuscrite scannée, email imprimé, capture d'écran de SMS, etc.
+export interface PersonalLetterAnalysis {
+  sender: string | null;              // Expéditeur si identifiable
+  date: string | null;                // ISO date (quand datée)
+  language: "he" | "fr" | "en" | "mixed" | "other";
+  originalText: string | null;        // Texte original si lisible (HE notamment)
+  fullTranslation: string | null;     // Traduction FR si document non-FR
+  summary: string;                    // 3 phrases max
+  tone:
+    | "formal"
+    | "informal"
+    | "urgent"
+    | "friendly"
+    | "neutral"
+    | null;
+  suggestedReply: string | null;      // Template adapté au ton détecté
+  alerts: Array<{
+    severity: "low" | "medium" | "high";
+    message: string;
+  }>;
+}
+
+// ------ School Letter (Courrier école) ------
+export interface SchoolLetterAnalysis {
+  schoolName: string | null;
+  className: string | null;           // Classe concernée (ex: "ג'2", "כיתה ד")
+  childName: string | null;
+  subject:
+    | "meeting"                       // Réunion parents
+    | "trip"                          // Sortie scolaire
+    | "payment"                       // Paiement demandé
+    | "behavior"                      // Comportement enfant
+    | "schedule"                      // Horaires / emploi du temps
+    | "announcement"                  // Annonce générale
+    | "other"
+    | null;
+  subjectDetail: string | null;       // Description FR (ex: "Sortie musée d'Israël 15/05")
+  deadline: string | null;            // ISO date limite
+  amountDue: number | null;           // NIS (si paiement demandé)
+  actionsRequired: Array<{
+    action: string;                   // Description action en FR
+    type: "signature" | "payment" | "authorization" | "response" | "other";
+  }>;
+  suggestedReply: string | null;      // Template de réponse si requis
+  fullTranslation: string;            // Traduction HE→FR
+  alerts: Array<{
+    severity: "low" | "medium" | "high";
+    message: string;
+    recommendation: string;
+  }>;
+}
+
+// ------ Private Letter (Banque / assurance / institution privée) ------
+export interface PrivateLetterAnalysis {
+  sender: string | null;              // Nom complet de l'émetteur
+  senderType:
+    | "bank"
+    | "insurance"
+    | "telecom"
+    | "utility"
+    | "private_other"
+    | null;
+  date: string | null;                // ISO
+  subject: string | null;             // Sujet résumé en FR
+  subjectType:
+    | "contract_update"               // Mise à jour contrat
+    | "payment_reminder"              // Relance paiement
+    | "commercial_offer"              // Offre commerciale
+    | "document_request"              // Demande de documents
+    | "notification"                  // Notification / info
+    | "other"
+    | null;
+  urgency: "urgent" | "not_urgent" | null;
+  actionsRequired: Array<{
+    action: string;                   // Description FR
+    deadline: string | null;          // ISO ou null
+  }>;
+  suggestedResponse: string | null;   // Template (réponse ou contestation)
+  fullTranslation: string;            // Traduction HE→FR
+  alerts: Array<{
+    severity: "low" | "medium" | "high";
+    message: string;
+    recommendation: string;
+  }>;
+}
+
+// ------ Utility Invoice (Arnona / électricité / eau / gaz) ------
+export interface UtilityInvoiceAnalysis {
+  provider: string | null;            // Nom du fournisseur
+  utilityType:
+    | "arnona"
+    | "electricity"
+    | "water"
+    | "gas"
+    | "internet"
+    | "phone"
+    | "other"
+    | null;
+  period: string | null;              // Ex: "Mars-Avril 2026"
+  periodStart: string | null;         // ISO
+  periodEnd: string | null;           // ISO
+  totalAmount: number | null;         // NIS
+  dueDate: string | null;             // ISO
+  customerCode: string | null;        // Code client / numéro de compte
+  paymentReference: string | null;    // Référence pour virement / paiement
+  previousPeriodAmount: number | null; // NIS (si affiché sur la facture)
+  increasePercent: number | null;     // % d'augmentation vs période précédente (si calculable)
+  abnormalIncrease: boolean;          // true si > 20% vs période précédente
+  suggestedReminderDate: string | null; // ISO = dueDate - 3 jours
+  alerts: Array<{
+    severity: "low" | "medium" | "high";
+    message: string;
+    recommendation: string;
+  }>;
+}
+
 // ------ Universal (fallback) ------
 // Produit par le mode "universal" quand le document ne correspond à aucun
 // type spécialisé. Toujours renvoie :
@@ -373,6 +494,10 @@ export type DocumentAnalysis =
   | KupatHolimLetterAnalysis
   | PrescriptionAnalysis
   | LabResultsAnalysis
+  | PersonalLetterAnalysis
+  | SchoolLetterAnalysis
+  | PrivateLetterAnalysis
+  | UtilityInvoiceAnalysis
   | UniversalAnalysis;
 
 // ------ Detection result (first pass) ------
@@ -471,6 +596,34 @@ export const DOCUMENT_TYPES: DocumentTypeCard[] = [
     label: "Résultats d'analyses",
     description: "Bilan sanguin, urines, autres examens",
     color: "info",
+  },
+  {
+    id: "personalLetter",
+    icon: "✉️",
+    label: "Courrier personnel",
+    description: "Lettre manuscrite, email, SMS",
+    color: "info",
+  },
+  {
+    id: "schoolLetter",
+    icon: "🎒",
+    label: "Courrier école",
+    description: "Réunion, sortie, paiement, autorisation",
+    color: "info",
+  },
+  {
+    id: "privateLetter",
+    icon: "🏢",
+    label: "Banque / Assurance",
+    description: "Banque, assurance, télécom, institution privée",
+    color: "info",
+  },
+  {
+    id: "utilityInvoice",
+    icon: "💡",
+    label: "Facture arnona / énergie",
+    description: "Arnona, électricité, eau, gaz",
+    color: "warning",
   },
   {
     id: "universal",

@@ -24,6 +24,10 @@ const VALID_DOCUMENT_TYPES: DocumentType[] = [
   "kupatHolimLetter",
   "prescription",
   "labResults",
+  "personalLetter",
+  "schoolLetter",
+  "privateLetter",
+  "utilityInvoice",
   "universal",
 ];
 
