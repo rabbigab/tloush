@@ -128,3 +128,173 @@
 ## Prochaines phases (non démarrées)
 - **Lot 2 / Phase Q1 (légal/sécurité)** dépend des infos légales (#6 / #7). À démarrer dès confirmation utilisateur.
 - **Lot 3+ / Phases Q2-Q3** : UX, SEO, conversion, contenu produit. À démarrer après Lot 2.
+
+---
+
+## Lot 2 — Phase Q1 (légal / sécurité)
+
+**Contenu prévu** : 6 items de la Phase Q1 du mapping.
+1. #6 Mentions légales → **BLOQUÉ** (dépendance externe : infos légales entité)
+2. #7 CGV identité légale + TVA → **BLOQUÉ** (même dépendance)
+3. #9 Privacy RGPD gaps (DPO, conservation, SCC, cookies)
+4. #10 Cadre juridique unifié via `src/lib/legalEntity.ts`
+5. #25 reset-password guard + consentement register + liens forgot
+6. #16 /annuaire/inscription consentement RGPD + migration `consent_given_at`
+
+**Branche** : `claude/lot2-q1-fixes` (basée sur `claude/lot1-q0-fixes` pour linéarité, rebase auto après merge Lot 1).
+
+**Décision d'ordre** : #10 (`legalEntity.ts`) a été réalisé AVANT #9 (Privacy) car Privacy importe depuis ce module.
+
+---
+
+## Fix #25 — /auth/* (reset-password guard + register CGV checkbox + forgot link)
+
+- **Problème** :
+  1. `/auth/reset-password` rendait le formulaire sans vérifier qu'un token de recovery valide était présent. L'utilisateur remplissait le form, l'erreur arrivait **après** submission.
+  2. `/auth/register` avait un paragraphe texte "En créant un compte, vous acceptez..." mais **aucune checkbox** obligatoire → pas de consentement explicite au sens RGPD art. 7.
+  3. `/auth/forgot-password` : liens retour vers login déjà présents (audit erroné sur ce point), mais manquait "Pas de compte ? Créer un compte".
+- **Fichiers modifiés** :
+  - `src/app/auth/reset-password/page.tsx` (+69/-4)
+  - `src/app/auth/register/page.tsx` (+31/-3)
+  - `src/app/auth/forgot-password/page.tsx` (+7/-1)
+- **Correction appliquée** :
+  - **reset-password** : ajout d'un `useEffect` qui appelle `supabase.auth.getSession()` au mount. État `sessionStatus: 'checking' | 'valid' | 'invalid'`. Rendu conditionnel : `checking` → loader, `invalid` → carte "Lien invalide ou expiré" avec CTA "Demander un nouveau lien" → `/auth/forgot-password` + lien retour login, `valid` → form habituel. Note : un user déjà connecté aura aussi `valid` (permet de changer son mdp depuis session active — comportement voulu).
+  - **register** : ajout `const [acceptedTerms, setAcceptedTerms] = useState(false)`. Checkbox `required` dans le form avec liens `/cgv` et `/privacy` en `target="_blank"`. Validation dans `handleRegister` : `if (!acceptedTerms) { setError(...); return }`. Bouton submit `disabled={loading || !acceptedTerms}`. Paragraphe légal en bas conservé comme rappel redondant.
+  - **forgot-password** : ajout d'un bloc `Pas encore de compte ? Créer un compte` → `/auth/register` sous le bouton submit.
+- **Risque** : moyen.
+  - **reset-password guard** : le `getSession()` au mount peut marquer `invalid` à tort si Supabase met >500ms à poser la session après le magic link (race condition). En pratique le `click from email → redirect → mount` donne assez de temps. À confirmer par test manuel.
+  - **register checkbox** : pattern standard, faible risque.
+  - **forgot link** : purement ajout, zéro risque.
+- **Test exécuté** : `npx tsc --noEmit` → 0 erreur.
+- **Résultat** : ✅ fix appliqué, commit `0626a9f`.
+- **Point restant à vérifier** :
+  - Test manuel : cliquer sur un vrai lien reset-password reçu par email → vérifier que `sessionStatus` passe à `valid` avant l'affichage du form (pas de flash "invalide").
+  - Test manuel : soumettre register sans cocher → message d'erreur visible + bouton disabled.
+  - Test manuel : vérifier que les liens `/cgv` et `/privacy` s'ouvrent bien en nouvel onglet.
+
+---
+
+## Fix #16 — /annuaire/inscription consentement RGPD obligatoire
+
+- **Problème** : Formulaire 4 étapes sans aucun consentement RGPD visible. L'inscription publie nom, téléphone, description, photo sur une fiche indexée → base légale RGPD art. 6.1.a (consentement) requise mais absente.
+- **Fichiers modifiés** :
+  - `supabase/migrations/20260420_provider_applications_consent.sql` (nouveau, +40)
+  - `src/app/api/annuaire/inscription/route.ts` (+23/-2)
+  - `src/app/annuaire/inscription/page.tsx` (+68/-3)
+- **Correction appliquée** :
+  - **Migration SQL** : `ALTER TABLE provider_applications ADD COLUMN consent_public BOOLEAN NOT NULL DEFAULT FALSE`, `consent_cgv BOOLEAN NOT NULL DEFAULT FALSE`, `consent_given_at TIMESTAMPTZ`. Index partiel sur `consent_given_at` pour purge RGPD. CHECK constraint `provider_applications_consent_coherent` : `consent_given_at IS NULL OR (consent_public AND consent_cgv)` — garde-fou défensif.
+  - **API** : valide `consent_public === true && consent_cgv === true` en entrée, rejette 400 sinon avec message explicite. Stocke `consent_given_at = new Date().toISOString()` côté serveur (horloge de confiance).
+  - **Client** : `form.consent_public` et `form.consent_cgv` ajoutés au state. `getStepErrors()` étendu : step 2 retourne erreurs si consents absents. `handleSubmit()` re-valide via `getStepErrors()`. Nouvelle section "Consentement" en amber dans le step 2 (Vérification) avec 2 checkboxes `required` + liens `/cgv` et `/privacy`. Bouton submit `disabled={!consent_public || !consent_cgv}`.
+- **Risque** : moyen.
+  - **Migration** : `DEFAULT FALSE` sur les 2 colonnes → les enregistrements existants passent à `consent_public=false, consent_cgv=false`. Leur `consent_given_at` reste `NULL`. La contrainte CHECK est respectée. Pas de rétro-cassage.
+  - **API** : le rejet 400 sur consents manquants casse tout ancien client qui n'enverrait pas les champs. Mais l'API est uniquement appelée depuis `/annuaire/inscription` (interne) → maîtrisé.
+- **Test exécuté** : `npx tsc --noEmit` → 0 erreur.
+- **Résultat** : ✅ fix appliqué, commit `35ee096`.
+- **Point restant à vérifier** :
+  - ⚠️ **IMPORTANT** : la migration `20260420_provider_applications_consent.sql` doit être appliquée sur la prod Supabase via `supabase db push` ou le dashboard. Sinon l'API retournera `column consent_public does not exist` au premier submit réel.
+  - Test manuel : soumettre le form sans cocher les cases → message d'erreur + bouton disabled.
+  - Test manuel : vérifier que les liens CGV / Privacy s'ouvrent en nouvel onglet.
+
+---
+
+## Fix #10 — src/lib/legalEntity.ts (source de vérité unique)
+
+- **Problème** : Les 3 pages légales (CGV, Privacy, Mentions légales) divergeaient sur le cadre juridique, l'hébergement, les processors, les durées. Pas de source de vérité unique → risque d'incohérence à chaque mise à jour.
+- **Fichiers modifiés** : `src/lib/legalEntity.ts` (nouveau, +209).
+- **Correction appliquée** : Création du module centralisant :
+  - `LEGAL_ENTITY: LegalEntityInfo` : interface typée avec `legalName`, `legalForm`, `registrationNumber`, `address`, `representative`, `contactEmail`, `privacyContactEmail`, `vatRegistered`, `vatRate`. Les 5 premiers champs contiennent des placeholders `__TODO_*__` en attendant les infos réelles.
+  - `isLegalEntityConfigured()` : helper renvoyant `true` si les placeholders ont été remplacés. Utilisable dans les pages pour afficher un badge "en cours de mise à jour".
+  - `APPLICABLE_LAWS` : `{ primary: 'israelien', gdprApplies: true, israeliPrivacyLaw: true, dpfFramework: true }`.
+  - `DATA_PROCESSORS: DataProcessor[]` : array typé des 7 sous-traitants (Supabase, Vercel, Anthropic, Resend, Stripe, PostHog, Sentry) avec `country`, `purpose`, `dpaUrl`, `covered_by_scc`, `dpf_certified`.
+  - `DATA_RETENTION: Record<string, RetentionPolicy>` : 4 politiques (`account_active`, `account_deleted` = 90j, `security_logs` = 12 mois, `invoices` = 10 ans) avec `label`, `days`, `legalBasis`.
+- **Risque** : faible. Module isolé, pas de consommateur hors Privacy (Q1.3). Les valeurs par défaut des processors/retention sont des valeurs raisonnables mais à valider juridiquement.
+- **Test exécuté** : `npx tsc --noEmit` → 0 erreur.
+- **Résultat** : ✅ fix appliqué, commit `55e6d42`.
+- **Point restant à vérifier** :
+  - Les `LEGAL_ENTITY.*` restent en `__TODO_*__` jusqu'à fourniture des infos.
+  - Les certifications DPF d'Anthropic et Stripe sont à confirmer sur https://www.dataprivacyframework.gov/list.
+  - L'email `privacy@tloush.com` doit être créé comme alias/mailbox en prod (sinon les demandes DPO vont dans le vide).
+
+---
+
+## Fix #6 + #7 — Mentions légales placeholder + CGV identité légale → TOUJOURS BLOQUÉ
+
+- **Problème** : cf. Lot 1 log. Placeholder `(Raison sociale... à compléter)` dans `/mentions-legales` et absence d'identité de l'entité + TVA Ma'am dans `/cgv` article 1 & 4.
+- **Fichiers modifiés** : aucun (bloqué).
+- **Correction appliquée** : **aucune** sur les pages `/cgv` et `/mentions-legales`. En revanche, `src/lib/legalEntity.ts` créé en Q1.4 pour préparer le déblocage :
+  - Dès que l'utilisateur fournit les infos, il suffit de remplacer les `__TODO_*__` par les valeurs réelles — aucune modification supplémentaire des pages n'est nécessaire si elles importent `LEGAL_ENTITY` (migration à faire quand débloqué).
+- **Risque** : élevé (idem Lot 1).
+- **Test exécuté** : n/a.
+- **Résultat** : ⛔ **TOUJOURS BLOQUÉ**.
+- **Action requise utilisateur** :
+  1. Fournir les infos légales suivantes :
+     - `legalName` (raison sociale officielle)
+     - `legalForm` (forme juridique : Ltd, Be'Eravon Mugbal, etc.)
+     - `registrationNumber` (ח״פ pour société, ע״מ pour osek murshe)
+     - `address` (adresse postale du siège)
+     - `representative` (directeur de publication / représentant légal)
+     - Confirmer `vatRegistered` (assujetti TVA Ma'am) et `vatRate` (17 % en 2026 si oui)
+  2. **Créer la boîte email** `privacy@tloush.com` (alias ou mailbox) pour que les demandes DPO soient reçues.
+  3. Dès ces infos reçues, appliquer 1 commit ciblé sur `src/lib/legalEntity.ts` (remplacement des placeholders) + 1 commit sur `/cgv/page.tsx` (insertion identité dans article 1 + mention TVA dans article 4) + 1 commit sur `/mentions-legales/page.tsx` (remplacement du placeholder par un bloc structuré).
+
+---
+
+# Résumé Lot 2
+
+## Fixes faits (4/6 items Q1)
+
+| # | Fix | Commit | Fichiers |
+|---|---|---|---|
+| #25 | auth (reset guard + register checkbox + forgot link) | `0626a9f` | `reset-password/page.tsx`, `register/page.tsx`, `forgot-password/page.tsx` |
+| #16 | /annuaire/inscription consent RGPD | `35ee096` | migration SQL + API + UI (3 fichiers) |
+| #10 | `src/lib/legalEntity.ts` source de vérité | `55e6d42` | `lib/legalEntity.ts` (nouveau) |
+| #9 | Privacy RGPD gaps (DPO, SCC, conservation, cookies) | `54a3b88` | `privacy/page.tsx` |
+
+**4 commits sur branche `claude/lot2-q1-fixes` (basée sur `claude/lot1-q0-fixes`).**
+
+## Tests passés
+- `npx tsc --noEmit` : **0 erreur** sur chaque commit (4 passes).
+- Audit statique : aucun nouvel import circulaire, aucune dépendance cassée.
+
+## Blocages restants
+- ⛔ **#6 Mentions légales** : bloqué (infos légales externes).
+- ⛔ **#7 CGV identité légale + TVA** : bloqué (même dépendance).
+- ⚠️ **Prérequis opérationnel** : la migration `20260420_provider_applications_consent.sql` doit être appliquée sur la prod Supabase avant que la page `/annuaire/inscription` ne soit testable en prod. Sinon l'API répondra `column consent_public does not exist`.
+- ⚠️ **Prérequis opérationnel** : la boîte email `privacy@tloush.com` doit être créée (alias contact@ ou mailbox dédiée) — sinon les demandes DPO vont dans le vide (et la page Privacy ment à l'utilisateur).
+
+## À valider manuellement
+1. **Test /auth/reset-password** avec un vrai lien de reset reçu par email. Vérifier qu'il n'y a **pas** de flash "Lien invalide" juste avant l'affichage du form (race condition possible si Supabase met >500ms à poser la session).
+2. **Test /auth/register** : soumission bloquée si la checkbox CGV n'est pas cochée. Vérifier le message d'erreur + bouton disabled.
+3. **Test /auth/register** : les liens CGV/Privacy s'ouvrent bien en nouvel onglet (target="_blank").
+4. **Test /auth/forgot-password** : le lien "Créer un compte" s'affiche bien sous le bouton submit.
+5. **Test /annuaire/inscription step 2** : les 2 checkboxes de consentement sont obligatoires, le bouton submit est disabled, les erreurs s'affichent dans `stepErrors` si on tente sans cocher.
+6. **Test `/privacy`** : les 11 sections sont rendues, aucune ne contient de `undefined` ou de placeholder Liquid. Vérifier en particulier la section 4 (sous-traitants) générée dynamiquement.
+7. **Review juridique** des nouvelles formulations Privacy (SCC, DPF, "règle la plus protectrice") par un avocat RGPD.
+8. **Audit RGPD cron** : vérifier qu'un job de purge `account_deleted` existe. Si non, la section 7 de Privacy promet une purge automatique qui n'a pas lieu → à créer en Lot 3 ou à ajuster le texte.
+
+## Prochaines phases (en attente)
+
+### Lot 2 à compléter dès déblocage
+- **#6 Mentions légales** : remplir le bloc Éditeur avec les infos légales réelles. **Estimation : 1 commit de ~20 lignes une fois les infos fournies.**
+- **#7 CGV identité légale + TVA** : insérer le bloc identité au début de l'article 1 ; ajouter la mention TVA Ma'am dans l'article 4. **Estimation : 1 commit de ~15 lignes.**
+- **Migration vers `LEGAL_ENTITY`** : refactoriser `/cgv` et `/mentions-legales` pour importer depuis `src/lib/legalEntity.ts` au lieu de hardcoder (après remplissage des placeholders). **Estimation : 1 commit de ~40 lignes.**
+
+### Lot 3 / Phase Q2 (à démarrer après Lot 2)
+- #11 /immobilier masquage ou fix rendu
+- #12 /annuaire catégories vides → noindex dynamique
+- #14 Fiches prestataires typos + script normalization
+- #15 Fiches prestataires disclaimer hors contexte
+- #17 /calculator → redirect /calculateurs/brut-net + nav publique
+- #26 /scanner payslip + pré-warning auth + skeleton UI
+- #27 robots.txt → `src/app/robots.ts` dynamique
+- #28 sitemap.ts pages manquantes
+
+### Lot 4 / Phase Q3 (contenu produit)
+- #21 /modeles étoffement (5 → 12+)
+- #22 /droits rédaction 3 guides + routing catégories
+- #23 /droits-olim sources + disclaimer
+- #24 /experts séparation waitlist/directory
+- #19 /calculateurs/maternite seuils BL
+- #20 /calculateurs/indemnites article 14 + démission équiv.
+- #18 /calculateurs sources barème + date vérification
+

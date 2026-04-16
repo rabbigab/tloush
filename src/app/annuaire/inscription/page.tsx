@@ -27,9 +27,10 @@ export default function InscriptionPrestatairePage() {
     category: '', specialties: [] as string[], service_areas: [] as string[],
     description: '', years_experience: '',
     osek_number: '', reference_name: '', reference_phone: '',
+    consent_public: false, consent_cgv: false,
   })
 
-  function update(field: string, value: string | string[]) {
+  function update(field: string, value: string | string[] | boolean) {
     setForm(f => ({ ...f, [field]: value }))
     setTouched(t => ({ ...t, [field]: true }))
   }
@@ -56,6 +57,10 @@ export default function InscriptionPrestatairePage() {
     if (step === 1) {
       if (!form.category) errors.push('Catégorie requise')
       if (form.service_areas.length === 0) errors.push('Sélectionnez au moins une ville')
+    }
+    if (step === 2) {
+      if (!form.consent_public) errors.push('Vous devez accepter la publication publique de votre fiche')
+      if (!form.consent_cgv) errors.push('Vous devez accepter les CGV et la politique de confidentialité')
     }
     return errors
   }
@@ -86,6 +91,9 @@ export default function InscriptionPrestatairePage() {
   }
 
   async function handleSubmit() {
+    setTriedNext(true)
+    const errors = getStepErrors()
+    if (errors.length > 0) return
     setLoading(true)
     setError('')
     try {
@@ -273,6 +281,53 @@ export default function InscriptionPrestatairePage() {
               <input placeholder="Téléphone du client" value={form.reference_phone} onChange={e => update('reference_phone', e.target.value)} className="px-4 py-3 rounded-xl border border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none" />
             </div>
           </div>
+
+          {/* Consentements RGPD obligatoires */}
+          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 space-y-3">
+            <p className="text-sm font-semibold text-amber-900 dark:text-amber-200 flex items-center gap-2">
+              <ShieldCheck size={16} />
+              Consentement
+            </p>
+            <p className="text-xs text-amber-800 dark:text-amber-300">
+              Votre fiche sera examinée sous 48h. Vous disposez d&apos;un délai de rétractation de 14 jours pour demander la suppression de votre profil.
+            </p>
+
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <input
+                id="consent-public"
+                type="checkbox"
+                checked={form.consent_public}
+                onChange={e => update('consent_public', e.target.checked)}
+                required
+                className="mt-0.5 h-4 w-4 rounded border-amber-300 dark:border-amber-700 text-brand-600 focus:ring-2 focus:ring-brand-400 cursor-pointer"
+              />
+              <span className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+                J&apos;accepte que ma fiche (nom, prénom + initiale, catégorie, zones de service, description, photo éventuelle) soit publiée publiquement sur tloush.com et indexée par les moteurs de recherche.
+              </span>
+            </label>
+
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <input
+                id="consent-cgv"
+                type="checkbox"
+                checked={form.consent_cgv}
+                onChange={e => update('consent_cgv', e.target.checked)}
+                required
+                className="mt-0.5 h-4 w-4 rounded border-amber-300 dark:border-amber-700 text-brand-600 focus:ring-2 focus:ring-brand-400 cursor-pointer"
+              />
+              <span className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+                J&apos;ai lu et j&apos;accepte les{' '}
+                <Link href="/cgv" target="_blank" className="underline font-medium">
+                  conditions générales
+                </Link>
+                {' '}et la{' '}
+                <Link href="/privacy" target="_blank" className="underline font-medium">
+                  politique de confidentialité
+                </Link>
+                .
+              </span>
+            </label>
+          </div>
         </div>
       )}
 
@@ -306,7 +361,7 @@ export default function InscriptionPrestatairePage() {
             Continuer <ArrowRight size={16} />
           </button>
         ) : (
-          <button onClick={handleSubmit} disabled={loading} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-green-600 text-white font-medium text-sm hover:bg-green-700 disabled:opacity-50 transition-colors">
+          <button onClick={handleSubmit} disabled={loading || !form.consent_public || !form.consent_cgv} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-green-600 text-white font-medium text-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
             {loading ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
             {loading ? 'Envoi en cours...' : 'Envoyer ma demande'}
           </button>
