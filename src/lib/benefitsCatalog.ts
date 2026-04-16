@@ -4959,6 +4959,195 @@ const SENIORS_EXTRAS_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION C10 — HaRvaha / HaBriut / Divers BTL (S6 + S7 + S1 divers)
+// =====================================================
+// Sources :
+// - https://www.gov.il/he/departments/ministry_of_welfare_and_social_services
+// - https://www.gov.il/he/departments/ministry_of_health
+// - https://www.kolzchut.org.il/he/אלימות_במשפחה
+//
+// Ce dernier lot couvre : aide sociale bien-etre (HaRvaha), soins
+// specifiques (HaBriut), et 3 aides rares BTL (martyrs, conventions
+// internationales, grant equite).
+
+const WELFARE_HEALTH_EXTRAS_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'siyua_khomri_ezrakhim_vatikim',
+    category: 'welfare',
+    authority: 'other',  // Misrad HaRvaha
+    title_fr: 'Aide materielle seniors (Siyua Khomri Ezrakhim Vatikim)',
+    title_he: 'סיוע חומרי לאזרחים ותיקים',
+    description_fr:
+      'Aide materielle mensuelle versee par Misrad HaRvaha aux seniors 67+ a revenus faibles, pour couvrir les depenses de base (alimentation, vetements, frais medicaux non rembourses).',
+    full_description_fr:
+      'Dispositif complementaire a Hashlamat Hachnasa, gere par Misrad HaRvaha (plutot que BTL). ' +
+      'Cible les seniors en grande difficulte economique : ' +
+      '- Montant : jusqu\'a 1 210 NIS/mois (montant 2026) ' +
+      '- Verse mensuellement sur compte bancaire ' +
+      '- Cumulable avec Kitzbat Zikna + Hashlamat Hachnasa + arnona_retiree ' +
+      '- Bons d\'achat alimentaires (Teudat Mazon) parfois proposes en alternative ou complement ' +
+      'Conditions : ' +
+      '- Age ≥ 67 ans ' +
+      '- Revenus du menage < seuil local (varie par mairie) ' +
+      '- Evaluation sociale par le travailleur social de la mairie (Oved Sotsyali) ' +
+      '- Pas de patrimoine (plafond epargne 41 528 NIS individu / 62 292 NIS couple, meme seuil ' +
+      '  que Hashlamat Hachnasa) ' +
+      'Procedure : contacter l\'Oved Sotsyali de la mairie, qui visite a domicile et monte le dossier. ' +
+      'Acces par plusieurs canaux : mairie, centre communautaire, rabbanut, ONGs (Leket, Yad Sarah).',
+    conditions: {
+      min_age: 67,
+      max_monthly_income: 4375,
+      requires_resident: true,
+    },
+    estimated_annual_value: 1210 * 12,
+    typical_monthly_amount: 1210,
+    value_unit: 'NIS/mois (jusqu\'a 1 210)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_welfare_and_social_services',
+    action_label: 'Contacter oved sotsyali',
+    info_url: 'https://www.kolzchut.org.il/he/סיוע_לאזרחים_ותיקים',
+    disclaimer:
+      'Depend fortement de la mairie — les grandes villes (Tel Aviv, Jerusalem, Haifa) ont des ' +
+      'budgets plus consequents que les petites. Cumulable avec toutes les autres aides seniors. ' +
+      'Accompagnement par Yad Sarah ou Leket Israel peut accelerer l\'acces. Reconfiguration ' +
+      'periodique : revenus recontroles chaque annee.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Montant maximum 1 210 NIS/mois confirme via glossaire. Les montants reels varient : moyenne 500-900 NIS/mois selon mairie.',
+  },
+  {
+    slug: 'maanak_histaglut_nashim_alimut',
+    category: 'welfare',
+    authority: 'other',  // Misrad HaRvaha
+    title_fr: 'Grant reinstallation violences conjugales (Maanak Histaglut)',
+    title_he: 'מענק הסתגלות לנשים נפגעות אלימות',
+    description_fr:
+      'Grant one-shot (~11 000 NIS) verse aux femmes victimes de violences conjugales qui quittent le foyer pour se reinstaller seules ou en foyer protege.',
+    full_description_fr:
+      'Dispositif Misrad HaRvaha finance par l\'Etat + fonds prives (Wizo, Naamat) pour aider les ' +
+      'femmes victimes de violences a quitter le domicile conjugal et se reinstaller : ' +
+      '- Grant one-shot : ~11 000 NIS (montant 2026) verse immediatement ' +
+      '- Utilisable pour : caution nouvelle location, mobilier essentiel, frais juridiques, demenagement ' +
+      '- Cumulable avec entree en Maon HaGana (foyer protege, gratuit 3-6 mois) ' +
+      '- Suivi social et juridique gratuit ensuite (Oved Sotsyali dedie + avocat pro bono) ' +
+      'Conditions : ' +
+      '- Femme (ou homme, rare) victime de violences conjugales / familiales documentees ' +
+      '- Plainte deposee ou temoignage Oved Sotsyali OU centre d\'aide aux victimes ' +
+      '- Quitter effectivement le foyer conjugal dans un delai de 30 jours ' +
+      'Aucune condition de revenu — c\'est un grant d\'urgence. ' +
+      'Procedure d\'urgence : contacter le 118 (Hotline nationale violence) ou 1-800-220-000 (Naamat).',
+    conditions: {
+      required_gender: 'female',
+      requires_resident: true,
+    },
+    estimated_annual_value: 11000,
+    value_unit: 'NIS (versement unique d\'urgence)',
+    application_url: 'https://www.gov.il/he/service/escape_grant_for_domestic_violence_victims',
+    action_label: 'Demande grant d\'urgence',
+    info_url: 'https://www.kolzchut.org.il/he/אלימות_במשפחה',
+    disclaimer:
+      'APPEL D\'URGENCE : 118 (24/7, gratuit). Ligne d\'ecoute dediee Naamat : 1-800-220-000. ' +
+      'Cumulable avec la prise en charge en Maon HaGana (foyer protege). Aucune condition de revenu. ' +
+      'Modelisation imparfaite : le catalogue declenche pour toutes les femmes, sans verifier le ' +
+      'statut de victime. A raffiner avec un champ profile is_domestic_violence_victim.',
+    confidence: 'high',
+    status: 'needs_verification',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Status needs_verification car le matching declencherait pour toutes les femmes — eviter le faux positif massif. A activer manuellement apres ajout du champ is_domestic_violence_victim au profil.',
+  },
+  {
+    slug: 'tmikha_sotsyalit_vatikim',
+    category: 'welfare',
+    authority: 'other',  // Misrad HaRvaha
+    title_fr: 'Soutien travailleur social senior (Tmikha Sotsyalit)',
+    title_he: 'תמיכה סוציאלית לאזרחים ותיקים',
+    description_fr:
+      'Accompagnement gratuit par un travailleur social (Oved Sotsyali) dedie pour les seniors isoles : visites a domicile, aide administrative, coordination des aides, orientation vers services.',
+    full_description_fr:
+      'Service gratuit propose par Misrad HaRvaha via les mairies : un travailleur social dedie ' +
+      'est attribue aux seniors isoles ou a mobilite reduite pour : ' +
+      '- Visites regulieres a domicile (1-2 fois/mois) pour briser l\'isolement ' +
+      '- Aide a remplir les formulaires BTL, kupat holim, mairie ' +
+      '- Coordination des aides existantes (eviter que des droits restent non reclames) ' +
+      '- Orientation vers services medicaux, centres de jour, activites communautaires ' +
+      '- Mediation avec la famille (enfants, petits-enfants) en cas de conflit sur la prise en charge ' +
+      '- Accompagnement en cas de deuil, de maladie grave, de perte d\'autonomie ' +
+      'Conditions : ' +
+      '- Age ≥ 67 ans ' +
+      '- Isolement (seul, sans famille proche, ou famille eloignee) ' +
+      'OU ' +
+      '- Besoin specifique (recent veuvage, diagnostic maladie grave, perte autonomie) ' +
+      'Procedure : contact direct avec le service "Ezrakhim Vatikim" de sa mairie. Gratuit et ' +
+      'confidentiel. Cumulable avec Gimlat Sicud (aide BTL a domicile).',
+    conditions: {
+      min_age: 67,
+      requires_resident: true,
+    },
+    estimated_annual_value: 5000,  // valeur service en nature
+    value_unit: 'service gratuit (valeur ~5k NIS/an)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_welfare_and_social_services',
+    action_label: 'Demande oved sotsyali',
+    info_url: 'https://www.kolzchut.org.il/he/עבודה_סוציאלית_לאזרחים_ותיקים',
+    disclaimer:
+      'Service en nature (pas monetaire) — non visible sur le compte bancaire mais tres valorise par ' +
+      'les seniors qui le recoivent. Particulierement important pour les olim francophones isoles ' +
+      'qui ont perdu leur cercle social. Demande via la mairie (service rivkha ezrakhim vatikim) ou ' +
+      'via les ONGs (Ezrat Nashim, Eshel).',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Valeur 5k NIS/an est indicative pour representer la valeur equivalente des services rendus (pas une somme monetaire). A afficher differemment dans l\'UI.',
+  },
+  {
+    slug: 'siyua_nifgeot_alimut_mishpakha',
+    category: 'health',
+    authority: 'other',  // Misrad HaRvaha
+    title_fr: 'Soutien psychologique violences domestiques (Siyua Nifgeot Alimut)',
+    title_he: 'סיוע נפשי לנפגעות אלימות במשפחה',
+    description_fr:
+      'Psychotherapie gratuite et soutien psychologique pour les victimes (femmes, enfants, parfois hommes) de violences domestiques : seances illimitees, therapies de groupe, suivi a long terme.',
+    full_description_fr:
+      'Dispositif Misrad HaRvaha + Misrad HaBriut + ONGs (Wizo, Naamat, Hosen, Lev Shomea) : ' +
+      'psychotherapie entierement gratuite pour les victimes de violences familiales, sans limite ' +
+      'de seances. ' +
+      'Prestations : ' +
+      '- Therapie individuelle : 1-2 seances/semaine selon besoin, sans duree max ' +
+      '- Therapie de groupe (groupes de parole entre victimes) : gratuit ' +
+      '- Therapie pour enfants temoins de violence (art-therapie, psychomotricite) ' +
+      '- Therapie familiale post-separation (mediation) ' +
+      '- Ligne d\'ecoute 118 (24/7, gratuite) ' +
+      '- Hotline Naamat 1-800-220-000 ' +
+      '- Groupes Hosen pour reservistes et civils traumatises ' +
+      'Conditions : ' +
+      '- Etre victime (ou temoin proche) de violences domestiques ' +
+      '- Plainte NON obligatoire (anonymat garanti) ' +
+      '- Tous ages, tous genres, toutes situations familiales ' +
+      'Procedure : contacter le 118 ou se rendre a un centre Hosen / centre d\'aide aux victimes. ' +
+      'Acces prioritaire et immediat, meme sans documents d\'identite pour les cas d\'urgence.',
+    conditions: {
+      requires_resident: true,
+    },
+    estimated_annual_value: 15000,  // valeur seances
+    value_unit: 'service gratuit (~15k NIS/an equivalent seances prives)',
+    application_url: 'https://www.gov.il/he/service/mental_health_services_domestic_violence',
+    action_label: 'Contacter centre d\'aide',
+    info_url: 'https://www.kolzchut.org.il/he/סיוע_נפשי_לנפגעי_אלימות_במשפחה',
+    disclaimer:
+      'URGENCES : 118 (24/7, gratuit, anonyme). Service ouvert a TOUS les ages et genres (pas seulement ' +
+      'les femmes). Les olim francophones peuvent demander un therapeute francophone (disponibles a ' +
+      'Tel Aviv, Jerusalem, Netanya, Raanana). Aucune condition de revenu.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Entree generique (pas de discriminant profile) car le catalogue ne peut pas savoir si l\'utilisateur est victime de violences. Affichee a tous — le disclaimer clarifie.',
+  },
+]
+
+// =====================================================
 // SECTION 21 — Helper functions
 // =====================================================
 
@@ -5103,6 +5292,7 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...TAX_EXTRAS_BENEFITS,
   ...HOUSING_EXTRAS_BENEFITS,
   ...SENIORS_EXTRAS_BENEFITS,
+  ...WELFARE_HEALTH_EXTRAS_BENEFITS,
 ]
 
 // Calcul dynamique des stats au chargement
