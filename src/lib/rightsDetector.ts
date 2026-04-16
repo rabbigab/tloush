@@ -407,7 +407,7 @@ function isAlreadyReceiving(profile: UserProfile, slug: string): boolean {
     kitsbat_yeladim: 'receives_kitsbat_yeladim',
     old_age_pension: 'receives_old_age_pension',
     disability_pension_general: 'receives_disability_pension',
-    hashlamat_hachnasa: 'receives_income_support',
+    havtachat_hakhnasa: 'receives_income_support',
     rental_assistance_olim: 'receives_rental_assistance',
     ulpan_free: 'receives_ulpan',
     holocaust_monthly_stipend: 'receives_shoah_benefits',
