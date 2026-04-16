@@ -36,7 +36,8 @@ const DISALLOW_ROUTES = [
   '/rights-check',
   '/rights-detector',
   '/referral',
-  '/help',
+  // '/help' retire : page supprimee, /aide (public) est desormais la
+  // source unique (Chantier 1 P0) et doit etre indexable.
   '/letters',
   '/bituach-leumi',
   '/freelance',

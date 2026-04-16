@@ -48,7 +48,7 @@ const TOOLS_SECTIONS = [
     title: 'Autres',
     items: [
       { label: 'Parrainage', href: '/referral', icon: Gift },
-      { label: 'Aide', href: '/help', icon: HelpCircle },
+      { label: 'Aide', href: '/aide', icon: HelpCircle },
     ],
   },
 ]
@@ -119,7 +119,7 @@ const MOBILE_SECTIONS = [
       { label: 'Recherche', href: '/search', icon: Search },
       { label: 'Experts', href: '/experts', icon: Users },
       { label: 'Parrainage', href: '/referral', icon: Gift },
-      { label: 'Aide', href: '/help', icon: HelpCircle },
+      { label: 'Aide', href: '/aide', icon: HelpCircle },
     ],
   },
 ]

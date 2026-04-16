@@ -8,6 +8,8 @@ const PROTECTED_ROUTES = [
   '/profile',
   '/dashboard',
   '/compare',
+  // '/documents' couvre /documents/[id] (detail prive). La page index
+  // /documents/ a ete supprimee (Chantier 1 P0), seule la sous-route [id] reste.
   '/documents',
   '/folders',
   '/expenses',
@@ -17,7 +19,8 @@ const PROTECTED_ROUTES = [
   // /calculateurs/brut-net (public) cf. audit technical-mapping #17.
   '/rights-check',
   '/referral',
-  '/help',
+  // '/help' retire : la page a ete supprimee, /aide (public) est desormais
+  // la source unique du centre d'aide (Chantier 1 P0).
   '/letters',
   '/bituach-leumi',
   '/freelance',
