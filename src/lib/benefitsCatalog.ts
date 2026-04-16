@@ -2544,6 +2544,87 @@ const BTL_FAMILY_EXTRAS_BENEFITS: BenefitDefinition[] = [
     tax_year: 2026,
     notes: 'Ajout catalogue 16/04/2026 (etape C1). La plupart des olim l\'ignorent et pensent que l\'hopital est grace a kupat holim. C\'est en fait cette prime BTL specifique qui couvre les frais.',
   },
+  {
+    slug: 'kitzva_yeled_pag',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Allocation enfant premature (Kitzva Yeled Pag)',
+    title_he: 'קצבה לילד פג',
+    description_fr:
+      'Supplement BTL mensuel verse aux parents d\'un enfant ne prematurement (< 34 semaines d\'amenorrhee ou poids < 1 750 g), pendant les 6 premiers mois de vie.',
+    full_description_fr:
+      'Allocation specifique BTL en complement de Kitsbat Yeladim pour les parents d\'un enfant ne prematurement. ' +
+      'Conditions medicales : ' +
+      '- Naissance avant 34 semaines d\'amenorrhee (equivalent 32 semaines de grossesse) ' +
+      'OU ' +
+      '- Poids de naissance inferieur a 1 750 g ' +
+      '- Attestation neonatologique du service pediatrique ' +
+      'Montants 2026 (indexes CPI) : ~2 400 NIS/mois pendant 6 mois, puis allocation de base. ' +
+      'Cumulable avec Kitsbat Yeladim standard, Sherutim Meyukhadim si le bebe garde des sequelles, ' +
+      'et Nakhut Klalit a partir de 8 ans si handicap persistant.',
+    conditions: {
+      min_children: 1,
+      requires_resident: true,
+      requires_recent_birth_months: 6,  // allocation sur les 6 premiers mois
+    },
+    estimated_annual_value: 2400 * 6,
+    typical_monthly_amount: 2400,
+    value_unit: 'NIS/mois (6 mois post-naissance)',
+    application_url: 'https://www.btl.gov.il/benefits/Maternity/Pages/default.aspx',
+    action_label: 'Demande allocation prematurite',
+    info_url: 'https://www.kolzchut.org.il/he/קצבה_לילד_פג',
+    disclaimer:
+      'Demande a initier directement aupres du service social de la maternite ou du service neonatologie. ' +
+      'L\'attestation medicale est jointe au dossier. Modelisation imparfaite : le catalogue declenche la ' +
+      'condition pour tout enfant < 6 mois, meme non premature. A affiner avec un champ profile ' +
+      'is_premature_birth si besoin.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C1). Status needs_verification pour eviter d\'afficher le droit a tous les parents d\'un bebe de moins de 6 mois (faux positif). Il faut un champ profile is_premature_birth pour promouvoir en verified.',
+  },
+  {
+    slug: 'mezonot',
+    category: 'welfare',
+    authority: 'bituach_leumi',
+    title_fr: 'Avance sur pension alimentaire (Mezonot)',
+    title_he: 'דמי מזונות',
+    description_fr:
+      'Bituach Leumi avance la pension alimentaire fixee par jugement au parent creancier (typiquement la mere) lorsque le debiteur ne paie pas, puis recupere la somme aupres du debiteur.',
+    full_description_fr:
+      'Dispositif BTL pour eviter la precarite des familles monoparentales : lorsqu\'un jugement civil ' +
+      'fixe une pension alimentaire mais que le debiteur (typiquement le pere apres divorce) ne la paie ' +
+      'pas, BL avance la somme au parent creancier (avec plafonnement legal). ' +
+      'Plafonds 2026 (indexes CPI) : ' +
+      '- Pere absent ou decede : jusqu\'a ~2 350 NIS/mois pour 1 enfant, ~3 500 NIS pour 2, ~4 700 pour 3+ ' +
+      '- Pere present mais refus de payer : avance egale au montant du jugement, dans la limite des plafonds ' +
+      'Conditions : ' +
+      '- Jugement de pension alimentaire a la cour des affaires familiales ' +
+      '- Non-paiement reel (attestation de Hotzaa lePoal ou huissier) ' +
+      '- Parent creancier resident en Israel, revenus sous un seuil ' +
+      'BTL se retourne contre le debiteur (saisie salaire, biens) pour recuperer les sommes avancees.',
+    conditions: {
+      required_marital_status: ['divorced', 'separated', 'single'],
+      min_children: 1,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2350 * 12,
+    typical_monthly_amount: 2350,
+    value_unit: 'NIS/mois (plafonds selon nb enfants)',
+    application_url: 'https://www.btl.gov.il/benefits/Alimony/Pages/default.aspx',
+    action_label: 'Demande avance mezonot',
+    info_url: 'https://www.kolzchut.org.il/he/דמי_מזונות',
+    disclaimer:
+      'Necessite un jugement civil pour la pension alimentaire. L\'avance BTL est plafonnee et ne remplace ' +
+      'pas l\'execution contre le debiteur. Cumulable avec Havtachat Hakhnasa si revenus tres faibles. ' +
+      'Parent creancier non marie au debiteur : verifier les conditions specifiques (parent isole).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C1). Aide majeure meconnue des olim divorcees francophones — souvent elles pensent devoir aller seules contre l\'ex-mari via Hotzaa lePoal, alors que BTL avance la pension et recupere elle-meme.',
+  },
 ]
 
 // =====================================================
