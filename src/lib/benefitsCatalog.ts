@@ -5145,6 +5145,140 @@ const WELFARE_HEALTH_EXTRAS_BENEFITS: BenefitDefinition[] = [
     tax_year: 2026,
     notes: 'Ajout catalogue 16/04/2026 (etape C10). Entree generique (pas de discriminant profile) car le catalogue ne peut pas savoir si l\'utilisateur est victime de violences. Affichee a tous — le disclaimer clarifie.',
   },
+  {
+    slug: 'maanak_maavar_nashim',
+    category: 'welfare',
+    authority: 'bituach_leumi',
+    title_fr: 'Aide transition femmes (Maanak Maavar Nashim)',
+    title_he: 'מענק מעבר לנשים בנות 62',
+    description_fr:
+      'Aide mensuelle pour les femmes de 62 ans en periode de transition entre la fin d\'emploi et le debut de la Kitzbat Zikna (64-65 ans selon annee de naissance).',
+    full_description_fr:
+      'Ecart structurel : les femmes nees entre 1955 et 1961 peuvent commencer a percevoir Kitzbat Zikna ' +
+      'a 62 ans (regle transitoire), mais les nees apres 1962 doivent attendre 64-65 ans selon l\'echelle ' +
+      'progressive jusqu\'a 65 ans en 2032. ' +
+      'Pendant cette periode de transition (62-65 ans), celles qui ont perdu leur emploi sans ' +
+      'allocation chomage peuvent beneficier de : ' +
+      '- Maanak Maavar : allocation mensuelle 1 500-2 500 NIS/mois, versee entre 62 et 64-65 ans ' +
+      '- Recyclage professionnel finance (Lishkat Ta\'asuka) ' +
+      '- Bons d\'achat (Teudat Mazon) en complement ' +
+      'Conditions : ' +
+      '- Femme nee avant 1962 (future Kitzbat Zikna > 62 ans) ' +
+      '- Revenus du menage sous un seuil (~7 000 NIS/mois) ' +
+      '- Sans emploi salarie depuis minimum 6 mois ' +
+      '- Residence israelienne ' +
+      'Mesure transitoire — amenee a disparaitre progressivement quand l\'age Kitzbat Zikna femmes ' +
+      'sera uniformise a 65 ans.',
+    conditions: {
+      required_gender: 'female',
+      min_age: 62,
+      max_age: 65,
+      max_monthly_income: 7000,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2000 * 12,
+    typical_monthly_amount: 2000,
+    value_unit: 'NIS/mois (1 500-2 500 selon situation)',
+    application_url: 'https://www.btl.gov.il/benefits/Old_age/Pages/default.aspx',
+    action_label: 'Demande maanak maavar',
+    info_url: 'https://www.kolzchut.org.il/he/מענק_מעבר_לנשים',
+    disclaimer:
+      'Mesure transitoire : disparaitra progressivement avec l\'alignement de l\'age femme a 65 ans ' +
+      '(horizon 2032). Verifier eligibilite annee par annee. Cumulable avec dmei_avtala si encore ' +
+      'des droits restants, puis avec Hashlamat Hachnasa si necessaire.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Mesure transitoire — a surveiller annuellement. Montants approximatifs.',
+  },
+  {
+    slug: 'yetom_alimut_mishpakha',
+    category: 'special',
+    authority: 'other',  // Misrad HaRvaha
+    title_fr: 'Droits orphelins violences domestiques (Yetom Alimut Mishpakha)',
+    title_he: 'יתום אלימות במשפחה',
+    description_fr:
+      'Pension mensuelle + prise en charge complete (scolarite, sante, therapie, vacances) pour les enfants mineurs d\'une victime de feminicide ou de violences domestiques graves.',
+    full_description_fr:
+      'Dispositif Misrad HaRvaha + BTL pour les enfants mineurs dont la mere (ou parent) a ete tue(e) ' +
+      'ou gravement blesse(e) par son conjoint : ' +
+      '- Pension mensuelle a vie (jusqu\'a 18 ans, 21 si etudes superieures) : 3 500-5 000 NIS/mois ' +
+      '- Bourses scolaires, frais extrascolaires, activites de loisirs couverts ' +
+      '- Therapie individuelle illimitee ' +
+      '- Frais de justice + suivi juridique gratuit (tutelle, successions) ' +
+      '- Aide au logement (si logement parental perdu) ' +
+      '- Vacances organisees chaque annee par Wizo, Hosen ' +
+      'Conditions : ' +
+      '- Enfant mineur (< 18 ans) ou etudiant < 21 ans ' +
+      '- Parent tue ou gravement blesse (≥ 40 % invalidite) par l\'autre parent / conjoint ' +
+      '- Reconnaissance par jugement OU rapport police + Oved Sotsyali ' +
+      'Cumulable avec Kitsbat Yeladim standard + survivor_pension_orphan si le parent etait assure BTL.',
+    conditions: {
+      requires_bereaved: true,  // proxy, un enfant orphelin via violence est "bereaved"
+      requires_resident: true,
+    },
+    estimated_annual_value: 4000 * 12,
+    typical_monthly_amount: 4000,
+    value_unit: 'NIS/mois (3 500-5 000 + services gratuits)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_welfare_and_social_services',
+    action_label: 'Infos droits orphelins violence',
+    info_url: 'https://www.kolzchut.org.il/he/יתומים_מאלימות_במשפחה',
+    disclaimer:
+      'Dispositif declenche automatiquement par le Oved Sotsyali ou la police apres incident grave. ' +
+      'Les tuteurs / familles d\'accueil de l\'enfant peuvent ensuite solliciter les aides cumulables. ' +
+      'Modelisation imparfaite : le catalogue declenche pour tout "bereaved" (IDF ou civil) — a ' +
+      'raffiner avec un champ is_orphan_of_domestic_violence.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Niche mais critique pour les rares cas concernes. Status needs_verification — pas de champ profile dedie, risque faux positif avec bereaved IDF.',
+  },
+  {
+    slug: 'tipulei_shinayim_vatikim',
+    category: 'health',
+    authority: 'other',  // Misrad HaBriut + Kupot Holim
+    title_fr: 'Soins dentaires seniors 72+ (Tipulei Shinayim Vatikim)',
+    title_he: 'טיפולי שיניים חינם לאזרחים ותיקים',
+    description_fr:
+      'Couverture gratuite ou tres subventionnee des soins dentaires (extractions, couronnes, protheses) pour les seniors a partir de 72 ans, via le sal briut (prestations sante de base).',
+    full_description_fr:
+      'Reforme 2022-2024 : l\'age d\'eligibilite au programme Tipulei Shinayim Hinam a ete abaisse ' +
+      'progressivement de 75 a 72 ans, puis 70 ans en 2027. ' +
+      'Prestations 2026 (72+ ans) : ' +
+      '- Soins de base (detartrage, caries, extractions) : 100 % pris en charge ' +
+      '- Couronnes et bridges : pris en charge partiellement (70-80 %) ' +
+      '- Protheses amovibles completes : 100 % pris en charge (une par arcade tous les 5 ans) ' +
+      '- Implants : NON couverts (sauf exceptions medicales) ' +
+      'Conditions : ' +
+      '- Age ≥ 72 ans (2026) ' +
+      '- Assure a une kupat holim ' +
+      '- Beneficiaire identifie dans le sistem Sal HaBriut ' +
+      'Procedure : rendez-vous chez un dentiste conventionne kupat holim (la plupart des clinic). ' +
+      'Presenter la carte kupat holim + piece d\'identite. Aucun paiement d\'avance — la facture est ' +
+      'directement reglee par la kupat holim. Les depassements (non-couverts) restent a la charge du ' +
+      'patient. ' +
+      'Economie typique : 5 000-20 000 NIS/an pour les seniors ayant besoin de prosthetic majeur.',
+    conditions: {
+      min_age: 72,
+      requires_resident: true,
+    },
+    estimated_annual_value: 5000,
+    value_unit: 'NIS/an (valeur des soins couverts)',
+    application_url: 'https://www.gov.il/he/service/dental_care_for_seniors',
+    action_label: 'Infos soins dentaires seniors',
+    info_url: 'https://www.kolzchut.org.il/he/טיפולי_שיניים_לקשישים',
+    disclaimer:
+      'Seuil 72 ans en 2026 — sera 70 ans en 2027 selon la reforme. Implants dentaires NON couverts ' +
+      '(hors cas medicaux tres specifiques). Bien verifier que le dentiste est conventionne (clinic ' +
+      'kupat holim ou dentiste prive conventionne).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Reforme progressive — surveiller les seuils d\'age annuels (72 en 2026, 70 en 2027).',
+  },
 ]
 
 // =====================================================
