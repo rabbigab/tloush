@@ -33,8 +33,10 @@ const DISALLOW_ROUTES = [
   '/expenses',
   '/search',
   '/admin',
-  '/rights-check',
-  '/rights-detector',
+  // Ancienne route /rights-check et /rights-detector fusionnees dans /aides
+  // (Chantier 1 P1). Les deux anciens chemins sont rediriges 308 permanent
+  // via next.config.js -- pas indexables de toute facon.
+  '/aides',
   '/referral',
   // '/help' retire : page supprimee, /aide (public) est desormais la
   // source unique (Chantier 1 P0) et doit etre indexable.
