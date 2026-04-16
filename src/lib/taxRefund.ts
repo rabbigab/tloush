@@ -28,7 +28,7 @@ const TAX_BRACKETS = [
 ]
 const SURTAX_THRESHOLD = 721_560
 const SURTAX_RATE = 0.03
-const CREDIT_POINT_VALUE_ANNUAL = 242 * 12  // 2 904 ₪/an par point — gelé 2026
+const CREDIT_POINT_VALUE_ANNUAL = 242 * 12  // 2 904 ₪/an par point — valeur 2025, non confirmée 2026 — à revérifier quand taxes.gov.il publiera la brochure officielle 2026
 
 export interface CreditPointsCalculation {
   residentBase: number       // 2.25 pour tout resident israelien

@@ -83,9 +83,8 @@ const KEREN_HISHTALMUT_DEFAULTS = {
 }
 
 // ─── Tax Credit Points (Nekudot Zikui) 2026 ───
-// Valeur officielle 2026 : 242 ₪/mois = 2 904 ₪/an par point.
-// GELÉ par la réforme budgétaire 2026 (pas d'indexation CPI) —
-// valeur identique à 2024/2025.
+// 242 ₪/mois = 2 904 ₪/an par point — valeur 2025, non confirmée 2026 —
+// à revérifier quand taxes.gov.il publiera la brochure officielle 2026.
 // Réf : https://www.cwsisrael.com/israeli-tax-changes-2026-complete-guide/
 const CREDIT_POINT_VALUE_MONTHLY = 242 // = 2 904 ₪/an / 12
 

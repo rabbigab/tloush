@@ -60,7 +60,7 @@ export const TAX_YEAR = 2026
 
 const OSEK_PATUR_THRESHOLD_2026 = 120_000 // plafond annuel — inchangé 2026
 const VAT_RATE_2026 = 0.17                // TVA 17% inchangée
-const CREDIT_POINT_VALUE_2026 = 242 * 12  // 2 904 ₪/an/point — gelé 2026
+const CREDIT_POINT_VALUE_2026 = 242 * 12  // 2 904 ₪/an/point — valeur 2025, non confirmée 2026 — à revérifier quand taxes.gov.il publiera la brochure officielle 2026
 
 // BL rates for self-employed (atzmai) — 2026
 // Seuils indexés sur salaire moyen 2026 : 7 703 ₪/mois (60% schar memutza)
