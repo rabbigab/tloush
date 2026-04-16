@@ -56,9 +56,10 @@ const SECTIONS: Section[] = [
     title: "Aides olim",
     description:
       "Questionnaire dédié aux nouveaux immigrants : sal klita, ulpan, assurance santé, logement, emploi et toutes les aides Misrad HaKlita.",
-    href: "/droits/olim",
+    href: "/aides/olim",
     icon: Plane,
     cta: "Explorer mes aides olim",
+    authRequired: true,
     accent: "warning",
   },
 ];

@@ -32,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/calculateurs/indemnites',
     '/droits',
     '/droits/guides',
-    '/droits/olim',
+    // /droits/olim deplace dans /(app)/aides/olim (zone auth) — retire du sitemap public.
     '/modeles',
     '/scanner',
     '/annuaire/professionnels',

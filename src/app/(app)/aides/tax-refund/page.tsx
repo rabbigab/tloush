@@ -12,7 +12,7 @@ export const metadata = {
 export default async function TaxRefundPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login?redirect=/tax-refund')
+  if (!user) redirect('/auth/login?redirect=/aides/tax-refund')
 
   const { data: profile } = await supabase
     .from('user_profiles')
