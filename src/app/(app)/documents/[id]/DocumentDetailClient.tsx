@@ -644,7 +644,7 @@ export default function DocumentDetailClient({ document: doc, originalUrl }: { d
               <p className="text-sm text-purple-700 dark:text-purple-300">{consultPro.reason}</p>
             )}
             <Link
-              href="/experts"
+              href="/annuaire/professionnels"
               className="inline-flex items-center gap-1.5 text-xs font-medium text-purple-600 dark:text-purple-400 mt-2 hover:underline"
             >
               Voir les experts francophones

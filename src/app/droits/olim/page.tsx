@@ -714,7 +714,7 @@ export default function OlimRightsPage() {
                   Un expert peut vous aider à maximiser vos droits et simplifier les démarches.
                 </p>
               </div>
-              <Link href="/experts" className="btn-primary text-sm py-2.5 px-6 shrink-0">
+              <Link href="/annuaire/professionnels" className="btn-primary text-sm py-2.5 px-6 shrink-0">
                 Consulter un expert
               </Link>
             </div>

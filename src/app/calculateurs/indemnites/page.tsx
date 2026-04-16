@@ -372,7 +372,7 @@ export default function PitzuimCalculatorPage() {
                 vous est due.
               </p>
               <Link
-                href="/experts"
+                href="/annuaire/professionnels"
                 className="inline-block bg-white text-orange-600 font-semibold px-6 py-2 rounded-lg hover:bg-orange-50 transition-colors"
               >
                 Consulter un expert →

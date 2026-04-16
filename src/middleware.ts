@@ -36,7 +36,10 @@ const PROTECTED_ROUTES = [
 // Note: '/droits' couvre aussi /droits/guides, /droits/olim, /droits/[slug]
 // via le matching startsWith(). Ancienne route '/droits-olim' redirigee
 // 308 vers /droits/olim par next.config.js (Chantier 1 P1 PR #2B).
-const PUBLIC_ROUTES = ['/', '/auth', '/pricing', '/droits', '/privacy', '/calculateurs', '/modeles', '/scanner', '/experts', '/annuaire', '/contact', '/a-propos', '/faq', '/aide', '/api/stripe/webhook', '/api/annuaire/prestataires', '/api/annuaire/search', '/api/annuaire/inscription', '/api/annuaire/avis', '/api/track', '/api/experts/waitlist']
+// Note: '/annuaire' couvre aussi /annuaire/artisans, /annuaire/professionnels
+// via startsWith(). Ancienne route '/experts' redirigee 308 vers
+// /annuaire/professionnels par next.config.js (Chantier 1 P1 PR #2C).
+const PUBLIC_ROUTES = ['/', '/auth', '/pricing', '/droits', '/privacy', '/calculateurs', '/modeles', '/scanner', '/annuaire', '/contact', '/a-propos', '/faq', '/aide', '/api/stripe/webhook', '/api/annuaire/prestataires', '/api/annuaire/search', '/api/annuaire/inscription', '/api/annuaire/avis', '/api/track', '/api/experts/waitlist']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl

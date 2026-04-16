@@ -98,7 +98,7 @@ export default function AProposPage() {
             consultez un professionnel qualifié — nous pouvons vous orienter via
             notre {' '}
             <Link
-              href="/experts"
+              href="/annuaire/professionnels"
               className="underline font-semibold hover:text-brand-700"
             >
               annuaire d&apos;experts francophones

@@ -35,12 +35,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/droits/olim',
     '/modeles',
     '/scanner',
-    '/experts',
+    '/annuaire/professionnels',
     '/privacy',
     '/cgv',
     '/mentions-legales',
     '/annuaire',
-    '/annuaire/inscription',
+    '/annuaire/artisans',
+    '/annuaire/artisans/inscription',
     '/contact',
     '/a-propos',
     '/faq',
@@ -83,7 +84,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
               return d > max ? d : max
             }, new Date(0))
           entries.push({
-            url: `${baseUrl}/annuaire/${slug}`,
+            url: `${baseUrl}/annuaire/artisans/${slug}`,
             lastModified: catLastMod > new Date(0) ? catLastMod : new Date(),
             changeFrequency: 'weekly',
             priority: 0.8,
@@ -94,7 +95,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       // Provider pages
       for (const p of providers) {
         entries.push({
-          url: `${baseUrl}/annuaire/${p.category}/${p.slug}`,
+          url: `${baseUrl}/annuaire/artisans/${p.category}/${p.slug}`,
           lastModified: new Date(p.updated_at),
           changeFrequency: 'monthly',
           priority: 0.6,

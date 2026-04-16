@@ -120,7 +120,7 @@ function ScannerContent() {
   const handleConsultExpert = () => {
     // Store scan result in sessionStorage or route to experts
     sessionStorage.setItem("lastScanResult", JSON.stringify(analysisResult));
-    router.push("/experts");
+    router.push("/annuaire/professionnels");
   };
 
   return (

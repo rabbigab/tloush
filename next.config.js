@@ -30,6 +30,41 @@ const nextConfig = {
         destination: '/droits/olim',
         permanent: true,
       },
+      // Chantier 1 P1 (PR #2C) : harmonisation des annuaires.
+      // /annuaire/<categorie-artisan> -> /annuaire/artisans/<categorie>
+      // La liste est reduite aux slugs existants pour eviter de rediriger
+      // /annuaire/professionnels ou /annuaire/inscription.
+      {
+        source: '/annuaire/:category(plombier|electricien|peintre|serrurier|climatisation|bricoleur)',
+        destination: '/annuaire/artisans/:category',
+        permanent: true,
+      },
+      {
+        source: '/annuaire/:category(plombier|electricien|peintre|serrurier|climatisation|bricoleur)/:slug',
+        destination: '/annuaire/artisans/:category/:slug',
+        permanent: true,
+      },
+      {
+        source: '/annuaire/inscription',
+        destination: '/annuaire/artisans/inscription',
+        permanent: true,
+      },
+      {
+        source: '/annuaire/avis/:path*',
+        destination: '/annuaire/artisans/avis/:path*',
+        permanent: true,
+      },
+      // /experts -> /annuaire/professionnels (public landing + waitlist)
+      {
+        source: '/experts',
+        destination: '/annuaire/professionnels',
+        permanent: true,
+      },
+      {
+        source: '/experts/rejoindre',
+        destination: '/annuaire/professionnels/rejoindre',
+        permanent: true,
+      },
     ];
   },
   async headers() {

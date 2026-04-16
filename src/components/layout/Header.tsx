@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { LayoutDashboard, Moon, Sun, CreditCard, Scale, Menu, X, Star, Calculator } from "lucide-react";
+import { LayoutDashboard, Moon, Sun, CreditCard, Scale, Menu, X, Star, Calculator, ScanLine } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -46,6 +46,13 @@ export default function Header() {
           >
             <Scale size={14} />
             <span className="hidden lg:inline">Droits</span>
+          </Link>
+          <Link
+            href="/scanner"
+            className="flex items-center gap-1.5 text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 transition-colors px-2 py-1.5 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-950/30"
+          >
+            <ScanLine size={14} />
+            <span className="hidden lg:inline">Scanner</span>
           </Link>
           <Link
             href="/calculateurs"
@@ -115,6 +122,10 @@ export default function Header() {
           <Link href="/droits" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 rounded-lg">
             <Scale size={16} />
             Droits
+          </Link>
+          <Link href="/scanner" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 rounded-lg">
+            <ScanLine size={16} />
+            Scanner
           </Link>
           <Link href="/calculateurs" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 rounded-lg">
             <Calculator size={16} />

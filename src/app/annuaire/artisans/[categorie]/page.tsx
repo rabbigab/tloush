@@ -71,7 +71,7 @@ export default async function CategoryPage({
       />
       {/* Breadcrumb */}
       <Link
-        href="/annuaire"
+        href="/annuaire/artisans"
         className="inline-flex items-center gap-1.5 text-sm text-neutral-500 dark:text-slate-400 hover:text-brand-600 mb-6"
       >
         <ArrowLeft size={14} />
@@ -117,7 +117,7 @@ export default async function CategoryPage({
             Revenez bientot ou inscrivez-vous en tant que prestataire.
           </p>
           <Link
-            href="/annuaire/inscription"
+            href="/annuaire/artisans/inscription"
             className="inline-flex items-center gap-2 mt-6 px-5 py-2.5 rounded-xl bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 transition-colors"
           >
             Devenir prestataire
