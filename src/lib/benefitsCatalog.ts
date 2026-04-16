@@ -265,7 +265,7 @@ const KITSBAT_YELADIM_BENEFITS: BenefitDefinition[] = [
       'Eligibilite (conditions cumulatives) : ' +
       '- Percevoir Kitsbat Yeladim pour l\'enfant concerne (actif) ' +
       '- OU etre famille monoparentale (Im Chad Horit) ' +
-      '- OU recevoir Hashlamat Hachnasa ou pension invalidite/survivant BL ' +
+      '- OU recevoir Havtachat Hakhnasa ou pension invalidite/survivant BL ' +
       '- OU famille nombreuse 4+ enfants ' +
       '- OU nouveau oleh dans les 5 ans ' +
       'Versement automatique : si vous etes eligible, BL vous verse sans demande. Verifiez votre compte bancaire fin aout.',
@@ -873,7 +873,7 @@ const UNEMPLOYMENT_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
-// SECTION 8 — Income Support (Hashlamat Hachnasa) 2026
+// SECTION 8 — Income Support (Havtachat Hakhnasa) 2026
 // =====================================================
 // Source : https://www.btl.gov.il/benefits/Income_support/Pages/default.aspx
 // https://www.kolzchut.org.il/he/הבטחת_הכנסה
@@ -898,10 +898,10 @@ const UNEMPLOYMENT_BENEFITS: BenefitDefinition[] = [
 
 const INCOME_SUPPORT_BENEFITS: BenefitDefinition[] = [
   {
-    slug: 'hashlamat_hachnasa',
+    slug: 'havtachat_hakhnasa',
     category: 'welfare',
     authority: 'bituach_leumi',
-    title_fr: 'Complement de revenu (Hashlamat Hachnasa / Havtahat Hachnasa)',
+    title_fr: 'Revenu minimum garanti (Havtachat Hakhnasa)',
     title_he: 'הבטחת הכנסה',
     description_fr:
       'Allocation de dernier recours versee aux personnes dont les revenus totaux sont en dessous du minimum vital, apres avoir epuise les autres droits.',

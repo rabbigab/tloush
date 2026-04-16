@@ -447,7 +447,7 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
             className={INPUT_CLS}
           />
           <p className="text-xs text-slate-400 mt-1">
-            Utilise pour detecter : remboursement impot, exemption BL freelance, hashlamat hachnasa.
+            Utilise pour detecter : remboursement impot, exemption BL freelance, havtachat hakhnasa.
           </p>
         </Field>
 
@@ -461,7 +461,7 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
             className={INPUT_CLS}
           />
           <p className="text-xs text-slate-400 mt-1">
-            Permet de detecter les aides conditionnees au revenu (hashlamat hachnasa, arnona, etc.).
+            Permet de detecter les aides conditionnees au revenu (havtachat hakhnasa, arnona, etc.).
           </p>
         </Field>
       </Section>
@@ -664,7 +664,7 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
             { key: 'receives_kitsbat_yeladim', label: 'Allocation enfants (kitsbat yeladim)' },
             { key: 'receives_old_age_pension', label: 'Pension vieillesse (zikna)' },
             { key: 'receives_disability_pension', label: 'Allocation invalidite (nekhout)' },
-            { key: 'receives_income_support', label: 'Complement de revenu (hashlamat hachnasa)' },
+            { key: 'receives_income_support', label: 'Revenu minimum garanti (havtachat hakhnasa)' },
             { key: 'receives_rental_assistance', label: 'Aide au loyer (siuah sechar dira)' },
             { key: 'receives_ulpan', label: 'Ulpan en cours' },
             { key: 'receives_shoah_benefits', label: 'Aide aux survivants de la Shoah' },
