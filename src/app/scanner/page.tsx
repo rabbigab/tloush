@@ -7,10 +7,10 @@ import Footer from "@/components/layout/Footer";
 import ProgressStepper from "@/components/shared/ProgressStepper";
 import UploadZone from "@/components/upload/UploadZone";
 import DisclaimerBlock from "@/components/shared/DisclaimerBlock";
-import { Loader2, AlertCircle, CheckCircle, Eye, Bell, Reply } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle, Eye, Bell, Reply, Stethoscope } from "lucide-react";
 import clsx from "clsx";
-import type { DocumentAnalysis, ScanApiResponse, PayslipAnalysis, ContractAnalysis, OfficialLetterAnalysis, TaxNoticeAnalysis, LeaseAnalysis, TerminationAnalysis, UniversalAnalysis } from "@/types/scanner";
-import { DOCUMENT_TYPES } from "@/types/scanner";
+import type { DocumentAnalysis, ScanApiResponse, PayslipAnalysis, ContractAnalysis, OfficialLetterAnalysis, TaxNoticeAnalysis, LeaseAnalysis, TerminationAnalysis, UniversalAnalysis, MedicalBillAnalysis, KupatHolimLetterAnalysis, PrescriptionAnalysis, LabResultsAnalysis, DocumentType } from "@/types/scanner";
+import { DOCUMENT_TYPES, isHealthDocument } from "@/types/scanner";
 
 const SCANNER_STEPS: import("@/components/shared/ProgressStepper").Step[] = [
   { id: 1, label: "Téléversement", shortLabel: "Upload" },
@@ -255,6 +255,9 @@ function ScannerContent() {
               </div>
             </div>
 
+            {/* Medical disclaimer (affiché uniquement pour les 4 types santé) */}
+            <MedicalDisclaimer documentType={analysisResult.documentType} />
+
             {/* Results by document type */}
             <ScanResultsDisplay result={analysisResult} />
 
@@ -364,11 +367,327 @@ function ScanResultsDisplay({ result }: ScanResultsDisplayProps) {
       return <LeaseResults data={data as LeaseAnalysis} />;
     case "termination":
       return <TerminationResults data={data as TerminationAnalysis} />;
+    case "medicalBill":
+      return <MedicalBillResults data={data as MedicalBillAnalysis} />;
+    case "kupatHolimLetter":
+      return <KupatHolimLetterResults data={data as KupatHolimLetterAnalysis} />;
+    case "prescription":
+      return <PrescriptionResults data={data as PrescriptionAnalysis} />;
+    case "labResults":
+      return <LabResultsResults data={data as LabResultsAnalysis} />;
     case "universal":
       return <UniversalResults data={data as UniversalAnalysis} />;
     default:
       return null;
   }
+}
+
+// Disclaimer médical affiché pour tous les documents santé (medicalBill,
+// kupatHolimLetter, prescription, labResults). Ne remplace PAS un avis médical.
+function MedicalDisclaimer({ documentType }: { documentType: DocumentType }) {
+  if (!isHealthDocument(documentType)) return null;
+  return (
+    <div className="rounded-xl border-2 border-warning/40 bg-warning/5 px-4 py-3 flex items-start gap-3">
+      <Stethoscope size={20} className="text-warning shrink-0 mt-0.5" />
+      <div className="flex-1">
+        <p className="text-sm font-semibold text-neutral-900 mb-0.5">
+          Analyse à titre informatif
+        </p>
+        <p className="text-xs text-neutral-700 leading-relaxed">
+          Ce résumé ne remplace pas un avis médical professionnel. Consultez votre médecin ou pharmacien pour toute décision médicale, interprétation de résultats ou ajustement de traitement.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function MedicalBillResults({ data }: { data: MedicalBillAnalysis }) {
+  const fmt = (n: number | null | undefined) =>
+    n == null ? "—" : `${n.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} ₪`;
+  const fmtDate = (iso: string | null) => {
+    if (!iso) return null;
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? iso : d.toLocaleDateString("fr-FR");
+  };
+  const providerTypeLabel: Record<NonNullable<MedicalBillAnalysis["providerType"]>, string> = {
+    hospital: "Hôpital",
+    clinic: "Clinique",
+    laboratory: "Laboratoire",
+    doctor: "Cabinet médical",
+    dentist: "Cabinet dentaire",
+    pharmacy: "Pharmacie",
+    other: "Autre",
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3">
+        {data.provider && <ResultField label="Établissement" value={data.provider} />}
+        {data.providerType && <ResultField label="Type" value={providerTypeLabel[data.providerType]} />}
+        {data.patientName && <ResultField label="Patient" value={data.patientName} />}
+        {data.serviceDate && <ResultField label="Date du soin" value={fmtDate(data.serviceDate) ?? data.serviceDate} />}
+      </div>
+
+      <div className="card p-4 bg-brand-50">
+        <h4 className="font-semibold text-neutral-900 mb-3 text-sm">Montants</h4>
+        <div className="space-y-1.5 text-sm">
+          {data.totalAmount != null && (
+            <div className="flex justify-between">
+              <span className="text-neutral-600">Total facturé</span>
+              <span className="font-semibold text-neutral-900">{fmt(data.totalAmount)}</span>
+            </div>
+          )}
+          {data.amountReimbursable != null && (
+            <div className="flex justify-between">
+              <span className="text-neutral-600">
+                Part remboursable{data.reimburserName ? ` (${data.reimburserName})` : ""}
+              </span>
+              <span className="font-medium text-success">-{fmt(data.amountReimbursable)}</span>
+            </div>
+          )}
+          {data.amountDue != null && (
+            <div className="flex justify-between border-t border-neutral-200 pt-1.5 mt-1">
+              <span className="font-semibold text-neutral-900">Reste à votre charge</span>
+              <span className="font-bold text-brand-700">{fmt(data.amountDue)}</span>
+            </div>
+          )}
+          {data.dueDate && (
+            <div className="flex justify-between text-xs text-neutral-500 mt-2">
+              <span>Date limite de paiement</span>
+              <span className="font-medium">{fmtDate(data.dueDate)}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {data.items && data.items.length > 0 && (
+        <div className="card p-4">
+          <h4 className="font-semibold text-neutral-900 mb-3 text-sm">Détail des postes</h4>
+          <div className="space-y-1 text-sm">
+            {data.items.map((it, i) => (
+              <div key={i} className="flex justify-between gap-3">
+                <span className="text-neutral-600">{it.description}</span>
+                <span className="font-medium text-neutral-900 whitespace-nowrap">{fmt(it.amount)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {data.serviceType && (
+        <div className="card p-3 bg-neutral-50">
+          <p className="text-xs text-neutral-500 uppercase font-semibold tracking-wide mb-1">Type de soin</p>
+          <p className="text-sm text-neutral-900">{data.serviceType}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function KupatHolimLetterResults({ data }: { data: KupatHolimLetterAnalysis }) {
+  const kupatLabel: Record<NonNullable<KupatHolimLetterAnalysis["kupatHolim"]>, string> = {
+    clalit: "Clalit",
+    maccabi: "Maccabi",
+    meuhedet: "Meuhedet",
+    leumit: "Leumit",
+    other: "Autre",
+  };
+  const letterTypeLabel: Record<NonNullable<KupatHolimLetterAnalysis["letterType"]>, { label: string; color: "success" | "danger" | "warning" | "info" | "neutral" }> = {
+    authorization: { label: "Autorisation", color: "success" },
+    refusal: { label: "Refus", color: "danger" },
+    summons: { label: "Convocation", color: "warning" },
+    payment_reminder: { label: "Rappel de paiement", color: "warning" },
+    information: { label: "Information", color: "info" },
+    other: { label: "Autre", color: "neutral" },
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3">
+        {data.kupatHolim && <ResultField label="Caisse" value={kupatLabel[data.kupatHolim]} />}
+        {data.subject && <ResultField label="Sujet" value={data.subject} />}
+        {data.treatmentConcerned && <ResultField label="Traitement" value={data.treatmentConcerned} />}
+        {data.deadline && <ResultField label="Délai" value={new Date(data.deadline).toLocaleDateString("fr-FR")} />}
+      </div>
+
+      {data.letterType && (
+        <div className="card p-4 bg-neutral-50">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-neutral-700">Type de courrier</span>
+            <Badge label={letterTypeLabel[data.letterType].label} color={letterTypeLabel[data.letterType].color} />
+          </div>
+        </div>
+      )}
+
+      {data.summary && (
+        <div className="card p-4 bg-brand-50">
+          <h4 className="font-semibold text-neutral-900 mb-2 text-sm">Résumé</h4>
+          <p className="text-sm text-neutral-700 leading-relaxed">{data.summary}</p>
+        </div>
+      )}
+
+      {data.appealProcess && (
+        <div className="card p-4 bg-warning/5 border-l-4 border-l-warning">
+          <h4 className="font-semibold text-neutral-900 text-sm mb-2">Procédure d'appel</h4>
+          <p className="text-sm text-neutral-700 whitespace-pre-wrap leading-relaxed">{data.appealProcess}</p>
+        </div>
+      )}
+
+      {data.suggestedResponse && (
+        <details className="card p-4 border-l-4 border-l-brand-400 bg-brand-50/40">
+          <summary className="font-semibold text-neutral-900 text-sm cursor-pointer hover:text-brand-700">
+            Modèle de réponse à envoyer
+          </summary>
+          <pre className="mt-3 p-3 bg-white border border-neutral-200 rounded-lg text-xs text-neutral-800 whitespace-pre-wrap font-sans leading-relaxed">
+            {data.suggestedResponse}
+          </pre>
+        </details>
+      )}
+
+      {data.fullTranslation && (
+        <details className="card p-4">
+          <summary className="font-semibold text-neutral-900 text-sm cursor-pointer hover:text-brand-700">
+            Traduction HE→FR
+          </summary>
+          <p className="text-sm text-neutral-700 mt-3 whitespace-pre-wrap leading-relaxed">{data.fullTranslation}</p>
+        </details>
+      )}
+    </div>
+  );
+}
+
+function PrescriptionResults({ data }: { data: PrescriptionAnalysis }) {
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3">
+        {data.prescriber && <ResultField label="Médecin" value={data.prescriber} />}
+        {data.prescriberSpecialty && <ResultField label="Spécialité" value={data.prescriberSpecialty} />}
+        {data.issueDate && <ResultField label="Date" value={new Date(data.issueDate).toLocaleDateString("fr-FR")} />}
+        {data.patientName && <ResultField label="Patient" value={data.patientName} />}
+      </div>
+
+      {data.medications && data.medications.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="font-semibold text-neutral-900 text-sm">Médicaments prescrits</h4>
+          {data.medications.map((med, i) => (
+            <div key={i} className="card p-3">
+              <div className="flex items-baseline justify-between gap-2 mb-1">
+                <div className="min-w-0 flex-1">
+                  {med.nameFr && (
+                    <p className="font-semibold text-neutral-900 text-sm">{med.nameFr}</p>
+                  )}
+                  {med.nameHe && (
+                    <p className="text-xs text-neutral-500" dir="rtl">{med.nameHe}</p>
+                  )}
+                </div>
+                {med.renewable != null && (
+                  <Badge label={med.renewable ? "Renouvelable" : "Non renouvelable"} color={med.renewable ? "success" : "neutral"} />
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-1 text-xs text-neutral-600 mt-1.5">
+                {med.dosage && <p><span className="font-semibold">Dosage :</span> {med.dosage}</p>}
+                {med.frequency && <p><span className="font-semibold">Posologie :</span> {med.frequency}</p>}
+                {med.duration && <p><span className="font-semibold">Durée :</span> {med.duration}</p>}
+                {med.quantity && <p><span className="font-semibold">Quantité :</span> {med.quantity}</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {data.interactionWarnings && data.interactionWarnings.length > 0 && (
+        <div className="card p-4 bg-warning/5 border-l-4 border-l-warning">
+          <h4 className="font-semibold text-neutral-900 text-sm mb-2">Interactions à vérifier</h4>
+          <ul className="space-y-1 text-sm text-neutral-700 list-disc list-inside">
+            {data.interactionWarnings.map((w, i) => <li key={i}>{w}</li>)}
+          </ul>
+          <p className="text-xs text-neutral-500 mt-2 italic">
+            À valider systématiquement avec votre pharmacien ou médecin.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LabResultsResults({ data }: { data: LabResultsAnalysis }) {
+  const interpretationLabel = (interp: LabResultsAnalysis["results"][number]["interpretation"]) => {
+    if (interp === "low") return "Bas";
+    if (interp === "high") return "Élevé";
+    if (interp === "normal") return "Normal";
+    return null;
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3">
+        {data.labName && <ResultField label="Laboratoire" value={data.labName} />}
+        {data.testDate && <ResultField label="Date du prélèvement" value={new Date(data.testDate).toLocaleDateString("fr-FR")} />}
+        {data.prescribingDoctor && <ResultField label="Médecin prescripteur" value={data.prescribingDoctor} />}
+        {data.patientName && <ResultField label="Patient" value={data.patientName} />}
+      </div>
+
+      {data.summary && (
+        <div className={clsx(
+          "card p-4 border-l-4",
+          data.hasAbnormalValues ? "bg-warning/5 border-l-warning" : "bg-success/5 border-l-success"
+        )}>
+          <div className="flex items-start gap-2">
+            {data.hasAbnormalValues ? (
+              <AlertCircle size={18} className="text-warning shrink-0 mt-0.5" />
+            ) : (
+              <CheckCircle size={18} className="text-success shrink-0 mt-0.5" />
+            )}
+            <p className="text-sm text-neutral-800 leading-relaxed flex-1">{data.summary}</p>
+          </div>
+        </div>
+      )}
+
+      {data.results && data.results.length > 0 && (
+        <div className="card p-4">
+          <h4 className="font-semibold text-neutral-900 text-sm mb-3">Valeurs mesurées</h4>
+          <div className="space-y-2">
+            {data.results.map((r, i) => (
+              <div
+                key={i}
+                className={clsx(
+                  "p-3 rounded-lg border",
+                  r.horsNorme ? "bg-warning/5 border-warning/40" : "bg-neutral-50 border-neutral-200"
+                )}
+              >
+                <div className="flex items-baseline justify-between gap-2 mb-1">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-sm text-neutral-900">{r.nameFr}</p>
+                    {r.nameHe && <p className="text-xs text-neutral-500" dir="rtl">{r.nameHe}</p>}
+                  </div>
+                  {r.horsNorme && (
+                    <Badge
+                      label={interpretationLabel(r.interpretation) ? `Hors normes — ${interpretationLabel(r.interpretation)}` : "Hors normes"}
+                      color="warning"
+                    />
+                  )}
+                </div>
+                <div className="flex items-baseline justify-between gap-2 mt-2">
+                  <span className={clsx(
+                    "text-base font-bold",
+                    r.horsNorme ? "text-warning" : "text-neutral-900"
+                  )}>
+                    {r.value ?? "—"}
+                    {r.unit && <span className="text-sm font-normal text-neutral-600 ml-1">{r.unit}</span>}
+                  </span>
+                  {r.referenceRange && (
+                    <span className="text-xs text-neutral-500">
+                      Réf : <span className="font-medium">{r.referenceRange}</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function UniversalResults({ data }: { data: UniversalAnalysis }) {

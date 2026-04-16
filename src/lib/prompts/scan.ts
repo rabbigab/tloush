@@ -3,7 +3,7 @@
 import type { DocumentType } from '@/types/scanner'
 
 // ─── Detection prompt (first pass) ───
-// Claude Vision classifie le document dans un des 6 types spécialisés ou
+// Claude Vision classifie le document dans un des 10 types spécialisés ou
 // retombe sur "universal". Très court pour minimiser la latence.
 export const SCAN_DETECTION_SYSTEM = `Tu es un classificateur de documents israéliens. Tu reçois un document (PDF ou image), souvent en hébreu, parfois en français ou anglais. Ton unique rôle : identifier le type de document et la langue principale.
 
@@ -14,7 +14,11 @@ Types possibles :
 - "taxNotice" : avis d'imposition / shuma mas hakhnasa (tranches fiscales, refund)
 - "lease" : contrat de location / heskem shkirut (loyer, dépôt, adresse)
 - "termination" : lettre de licenciement / mikhtav piturim (fin de contrat, pitzuim)
-- "universal" : tout autre document (facture, courrier bancaire, attestation, RDV médical, ordonnance, relevé, amende, etc.)
+- "medicalBill" : facture médicale (hôpital, clinique, laboratoire, dentiste) — ne PAS confondre avec un courrier de caisse de santé
+- "kupatHolimLetter" : courrier d'une caisse de santé (Clalit / Maccabi / Meuhedet / Leumit) — autorisation, refus, convocation, rappel de paiement
+- "prescription" : ordonnance médicale / mirsham (liste de médicaments avec dosage, posologie)
+- "labResults" : résultats d'analyses de laboratoire (bilan sanguin, urines, examens) avec valeurs et intervalles de référence
+- "universal" : tout autre document (facture générique, courrier bancaire, attestation, amende, etc.)
 
 Retourne UNIQUEMENT un JSON strict, sans markdown, sans explication :
 {"type": "<type>", "language": "he" | "fr" | "en" | "mixed" | "other", "confidence": <0-100>}`;
@@ -59,6 +63,46 @@ Retourne UNIQUEMENT un JSON structuré, sans texte avant ou après.`,
 Identifie : employeur, employé, date de licenciement, dernier jour de travail, raison, indemnité mentionnée.
 Vérifie le respect du préavis et du calcul du "pitzuim" (indemnité de fin de contrat).
 Détecte les violations de la loi du travail israélienne.
+Retourne UNIQUEMENT un JSON structuré, sans texte avant ou après.`,
+
+  medicalBill: `Tu es un assistant spécialisé dans la lecture de factures médicales israéliennes (hôpital, clinique privée, laboratoire, dentiste).
+Identifie : établissement, patient, date du soin, date limite de paiement, montant total, montant dû par le patient, part remboursable par la kupat holim / assurance, type de soin.
+Détail des postes de facturation (traduits FR).
+Alerte si : dépassement d'honoraires manifeste, délai de paiement très court, part remboursable à réclamer, facture non conforme.
+IMPORTANT : ne fais AUCUNE interprétation médicale du soin. Ton rôle est uniquement financier/administratif.
+Retourne UNIQUEMENT un JSON structuré, sans texte avant ou après.`,
+
+  kupatHolimLetter: `Tu es un assistant spécialisé dans les courriers de caisses de santé israéliennes (Clalit / Maccabi / Meuhedet / Leumit). Tu aides les francophones à comprendre ces lettres en hébreu.
+Identifie : kupat holim émettrice, sujet, type de courrier (autorisation / refus / convocation / rappel de paiement / info), traitement concerné, délai de réponse.
+Traduis fidèlement les sections importantes en français.
+Si refus : décris la procédure d'appel (contestation auprès de la kupat holim, puis ombudsman puis tribunal des soins si nécessaire).
+Propose un template de réponse en français si une action écrite est attendue.
+Ne fais AUCUNE interprétation médicale du traitement lui-même.
+Retourne UNIQUEMENT un JSON structuré, sans texte avant ou après.`,
+
+  prescription: `Tu es un assistant qui aide à comprendre des ordonnances (mirsham) israéliennes en hébreu.
+Identifie : médecin prescripteur, spécialité, date, liste des médicaments (nom hébreu tel qu'écrit + nom français / DCI équivalente), dosage, posologie, durée, quantité, renouvelable ou non.
+Si tu détectes des interactions médicamenteuses majeures connues (ex: anticoagulant + AINS, sérotoninergiques multiples), signale-les dans interactionWarnings.
+IMPORTANT : tu ne fournis PAS de conseil médical. Tes warnings sont informatifs et demandent TOUJOURS la validation d'un pharmacien ou médecin.
+Retourne UNIQUEMENT un JSON structuré, sans texte avant ou après.`,
+
+  labResults: `Tu es un assistant qui aide à lire des résultats d'analyses de laboratoire israéliennes (bilan sanguin, urines, autres examens) rédigés en hébreu.
+Pour chaque paramètre :
+- nameHe : nom hébreu tel qu'écrit
+- nameFr : traduction française standard (hémoglobine, glucose, cholestérol LDL, créatinine, TSH, etc.)
+- value : valeur numérique ou texte ("positif", "négatif")
+- unit : unité (g/dL, mg/dL, %, mmol/L, UI/L, etc.)
+- referenceRange : intervalle de référence tel qu'il apparaît sur le document (ex: "12-15", "< 100")
+- horsNorme : true si la valeur est HORS de l'intervalle de référence, false sinon
+- interpretation : "low" si < borne basse, "high" si > borne haute, "normal" sinon, "unclear" si indéterminé
+
+Résumé :
+- si TOUT est normal : "Tout est normal" (phrase exacte)
+- sinon : liste courte des valeurs anormales à discuter avec un médecin
+
+hasAbnormalValues = true si au moins un résultat a horsNorme = true.
+
+IMPORTANT : tu ne fournis AUCUN diagnostic ni interprétation clinique. Les valeurs hors normes doivent TOUJOURS être discutées avec un médecin. Indique-le clairement dans alerts.
 Retourne UNIQUEMENT un JSON structuré, sans texte avant ou après.`,
 
   universal: `Tu es un assistant expert pour aider les francophones en Israël à comprendre n'importe quel document administratif (hébreu, français, anglais). Le document peut être : facture, relevé bancaire, attestation, RDV médical, ordonnance, courrier d'assurance, amende, convocation, etc.
@@ -267,6 +311,96 @@ export const SCAN_USER_PROMPTS: Record<DocumentType, string> = {
     }
   ],
   "urgentActions": ["liste des actions urgentes"]
+}`,
+
+  medicalBill: `Analyse cette facture médicale israélienne et retourne ce JSON strict (sans markdown, sans commentaire) :
+
+{
+  "provider": "nom établissement ou null",
+  "providerType": "hospital" | "clinic" | "laboratory" | "doctor" | "dentist" | "pharmacy" | "other" | null,
+  "patientName": "nom du patient ou null",
+  "serviceDate": "AAAA-MM-JJ ou null",
+  "invoiceDate": "AAAA-MM-JJ ou null",
+  "dueDate": "AAAA-MM-JJ ou null",
+  "totalAmount": nombre (NIS) ou null,
+  "amountDue": nombre (NIS reste à payer) ou null,
+  "amountReimbursable": nombre (NIS part kupat holim/assurance) ou null,
+  "reimburserName": "nom kupat holim ou assurance ou null",
+  "serviceType": "description courte du soin en français ou null",
+  "items": [
+    { "description": "poste traduit FR", "amount": nombre }
+  ],
+  "alerts": [
+    { "severity": "low" | "medium" | "high", "message": "message court", "recommendation": "action" }
+  ]
+}`,
+
+  kupatHolimLetter: `Analyse ce courrier de caisse de santé israélienne et retourne ce JSON strict (sans markdown, sans commentaire) :
+
+{
+  "sender": "nom complet expéditeur ou null",
+  "kupatHolim": "clalit" | "maccabi" | "meuhedet" | "leumit" | "other" | null,
+  "subject": "sujet ou null",
+  "letterType": "authorization" | "refusal" | "summons" | "payment_reminder" | "information" | "other" | null,
+  "treatmentConcerned": "traitement concerné traduit FR ou null",
+  "deadline": "AAAA-MM-JJ ou null",
+  "summary": "résumé 2-3 phrases en français",
+  "fullTranslation": "traduction fidèle des sections importantes",
+  "appealProcess": "procédure d'appel si refus, ou null",
+  "suggestedResponse": "template de réponse en français ou null",
+  "alerts": [
+    { "severity": "low" | "medium" | "high", "message": "message court", "recommendation": "action" }
+  ]
+}`,
+
+  prescription: `Analyse cette ordonnance médicale (mirsham) israélienne et retourne ce JSON strict (sans markdown, sans commentaire) :
+
+{
+  "prescriber": "nom du médecin ou null",
+  "prescriberSpecialty": "spécialité en français ou null",
+  "issueDate": "AAAA-MM-JJ ou null",
+  "patientName": "nom patient ou null",
+  "medications": [
+    {
+      "nameHe": "nom hébreu tel qu'écrit ou null",
+      "nameFr": "nom FR / DCI équivalente ou null",
+      "dosage": "ex: 500 mg ou null",
+      "frequency": "ex: 3 fois par jour ou null",
+      "duration": "ex: 7 jours ou null",
+      "quantity": "ex: 30 comprimés ou null",
+      "renewable": true/false/null
+    }
+  ],
+  "interactionWarnings": ["alertes d'interaction majeures détectées (à valider par un pharmacien)"],
+  "alerts": [
+    { "severity": "low" | "medium" | "high", "message": "message court", "recommendation": "action" }
+  ]
+}`,
+
+  labResults: `Analyse ce compte-rendu de laboratoire israélien et retourne ce JSON strict (sans markdown, sans commentaire) :
+
+{
+  "labName": "nom du laboratoire ou null",
+  "testDate": "AAAA-MM-JJ ou null",
+  "reportDate": "AAAA-MM-JJ ou null",
+  "patientName": "nom patient ou null",
+  "prescribingDoctor": "médecin prescripteur ou null",
+  "results": [
+    {
+      "nameHe": "nom hébreu ou null",
+      "nameFr": "nom français standard (obligatoire — ex: hémoglobine, glucose, cholestérol LDL)",
+      "value": nombre ou "texte",
+      "unit": "unité ou null",
+      "referenceRange": "intervalle de référence tel qu'écrit ou null",
+      "horsNorme": true/false,
+      "interpretation": "low" | "high" | "normal" | "unclear" | null
+    }
+  ],
+  "hasAbnormalValues": true/false,
+  "summary": "\"Tout est normal\" si rien d'anormal, sinon liste courte des valeurs anormales à discuter avec un médecin",
+  "alerts": [
+    { "severity": "low" | "medium" | "high", "message": "message (inclure systématiquement : consulter un médecin pour interpréter)", "recommendation": "action" }
+  ]
 }`,
 
   universal: `Analyse ce document et retourne ce JSON strict (sans markdown, sans commentaire) :
