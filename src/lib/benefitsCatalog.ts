@@ -2710,6 +2710,142 @@ const BTL_FAMILY_EXTRAS_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION C2 — BTL Accidents / Victimes (aides auto-declaratives)
+// =====================================================
+// Sources :
+// - https://www.btl.gov.il/benefits/Work_Injuries/Pages/default.aspx
+// - https://www.btl.gov.il/benefits/Hostile_action/Pages/default.aspx
+// - https://www.kolzchut.org.il/he/נפגעי_עבודה
+// - https://www.kolzchut.org.il/he/תאונות_אישיות
+// - https://www.kolzchut.org.il/he/נפגעי_פעולות_איבה
+//
+// Ces aides ne s'appuient pas sur des champs profil existants — elles sont
+// toutes auto-declaratives (l'utilisateur sait s'il a eu un accident reconnu
+// ou non). Le matching catalogue reste "best effort" : on renvoie l'entree
+// des que les conditions generales (resident, emploi le cas echeant) sont
+// remplies, en s'appuyant sur le disclaimer pour preciser qu\'il faut une
+// reconnaissance formelle.
+
+const BTL_ACCIDENT_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'nifgaei_avoda',
+    category: 'health',
+    authority: 'bituach_leumi',
+    title_fr: 'Accidents du travail (Nifgaei Avoda)',
+    title_he: 'נפגעי עבודה',
+    description_fr:
+      'Branche BTL qui couvre les accidents et maladies professionnels : indemnites journalieres (dmei pegia), rente d\'invalidite professionnelle (kitzvat nekhe avoda) et rente de survivants.',
+    full_description_fr:
+      'Regime specifique BTL pour accidents survenant sur le lieu de travail, sur le trajet domicile-travail, ' +
+      'ou pathologies reconnues comme maladies professionnelles. ' +
+      'Prestations gradees : ' +
+      '- Dmei Pegia (indemnite journaliere) : 75 % du salaire journalier, plafonne au salaire moyen ' +
+      '  economie, verse pendant maximum 91 jours (3 mois) ' +
+      '- Kitzvat Nekhe Avoda (rente invalidite professionnelle) : versee si incapacite reconnue > 9 %, ' +
+      '  montant proportionnel au salaire et au taux d\'invalidite (~1 400 a 14 000 NIS/mois) ' +
+      '- Rente survivants : pour les ayants-droit en cas de deces accidentel au travail ' +
+      '- Remboursement frais medicaux lies a l\'accident (Sal Shikum Miktzoi) ' +
+      'La reconnaissance passe par la commission medicale BTL (Vaadat Refuit) apres declaration ' +
+      'employeur (formulaire BL 250) dans les 12 mois.',
+    conditions: {
+      required_disability_source: 'work',
+      requires_resident: true,
+    },
+    estimated_annual_value: 1400 * 12,
+    typical_monthly_amount: 1400,
+    value_unit: 'NIS/mois (base pour invalidite 20%, cumulable avec dmei pegia)',
+    application_url: 'https://www.btl.gov.il/benefits/Work_Injuries/Pages/default.aspx',
+    action_label: 'Declaration accident du travail',
+    info_url: 'https://www.kolzchut.org.il/he/נפגעי_עבודה',
+    disclaimer:
+      'La reconnaissance d\'un accident du travail necessite une declaration employeur (BL 250) ' +
+      'dans les 12 mois et un passage en commission medicale BTL. Sans reconnaissance formelle, ' +
+      'aucune prestation n\'est versee. Un avocat specialise en droit BTL est souvent utile pour ' +
+      'les dossiers contestes.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C2). Utilise le champ disability_source=work ajoute en etape B.',
+  },
+  {
+    slug: 'nifgaei_teunot',
+    category: 'health',
+    authority: 'bituach_leumi',
+    title_fr: 'Accidents personnels (Nifgaei Teunot)',
+    title_he: 'תאונות אישיות',
+    description_fr:
+      'Indemnite BTL pour les accidents corporels non couverts par un autre regime (ni travail, ni route, ni hostile) entrainant un arret superieur a 7 jours.',
+    full_description_fr:
+      'Regime BTL residuel pour les accidents qui ne relevent pas d\'une autre branche (Nifgaei Avoda, ' +
+      'PLT route via Karnit, Nifgaei Peulot Eyva, Nakhei Tsahal). ' +
+      'Conditions : ' +
+      '- Accident corporel survenu en Israel ' +
+      '- Arret de travail ou d\'activite habituelle superieur a 7 jours ' +
+      '- Declaration BTL dans les 90 jours apres l\'accident (delai strict) ' +
+      'Montants 2026 : indemnite journaliere 75 % du salaire moyen des 3 derniers mois, ' +
+      'plafonnee au salaire moyen economie, versee pendant maximum 90 jours. ' +
+      'Ne donne pas de rente d\'invalidite permanente (pour cela, passer en Nakhut Klalit).',
+    conditions: {
+      requires_resident: true,
+    },
+    estimated_annual_value: 12550,
+    value_unit: 'NIS (indemnite journaliere sur duree d\'arret, max 90j)',
+    application_url: 'https://www.btl.gov.il/benefits/Personal_injury/Pages/default.aspx',
+    action_label: 'Declaration accident personnel',
+    info_url: 'https://www.kolzchut.org.il/he/תאונות_אישיות',
+    disclaimer:
+      'Delai strict de 90 jours pour declarer. Ne couvre pas les accidents deja couverts par un autre ' +
+      'regime (travail, route, hostile, IDF). Arret minimum 7 jours obligatoire. Declaration via ' +
+      'formulaire BL 2101 avec certificat medical.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C2). Aide peu connue des olim — souvent ils laissent passer le delai 90 jours.',
+  },
+  {
+    slug: 'nifgaei_peulot_eyva',
+    category: 'special',
+    authority: 'bituach_leumi',
+    title_fr: 'Victimes d\'actes hostiles (Nifgaei Peulot Eyva)',
+    title_he: 'נפגעי פעולות איבה',
+    description_fr:
+      'Regime BTL special pour les victimes (et familles de victimes) d\'attentats, actes de guerre ou actions hostiles reconnues par le Ministere de la Defense.',
+    full_description_fr:
+      'Regime aligne sur celui des Nakhei Tsahal (invalides IDF) mais pour les victimes civiles ' +
+      'd\'actes hostiles (attentats, tirs de roquettes, intrusions terroristes, etc.). ' +
+      'Concerne aussi les evenements du 7 octobre 2023 et la guerre Kharvot Barzel (cf. slug ' +
+      'maanak_sal_shikum_nifgaei_7_octobre pour les droits specifiques post-2023). ' +
+      'Prestations : ' +
+      '- Tagmul basis : rente mensuelle selon taux d\'invalidite reconnu (echelle Nakhei Tsahal) ' +
+      '- Sal Shikum (panier rehabilitation) : physiotherapie, psychotherapie, aides techniques ' +
+      '- Pension de survivants pour familles endeuillees (cf. kitzvat_mishpakha_nifgaei_peulot_eyva) ' +
+      '- Couverture medicale complete au-dela de kupat holim ' +
+      'Reconnaissance : dossier a deposer aupres du Misrad HaBitachon (Agaf HaShikum), avec ' +
+      'documentation de l\'evenement (PV police, certificats medicaux, temoignages).',
+    conditions: {
+      requires_resident: true,
+    },
+    estimated_annual_value: 3000 * 12,
+    typical_monthly_amount: 3000,
+    value_unit: 'NIS/mois (rente selon taux invalidite)',
+    application_url: 'https://www.btl.gov.il/benefits/Hostile_action/Pages/default.aspx',
+    action_label: 'Demande reconnaissance victime',
+    info_url: 'https://www.kolzchut.org.il/he/נפגעי_פעולות_איבה',
+    disclaimer:
+      'Reconnaissance formelle par Misrad HaBitachon requise. Dossier complexe : le Service Social ' +
+      'BTL et les ONGs (OneFamily, Natal) accompagnent gratuitement les dossiers. Cumulable avec ' +
+      'Kitsbat Yeladim, Havtachat Hakhnasa si les revenus du foyer sont bas.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C2). Complementaire au slug kitzvat_mishpakha_nifgaei_peulot_eyva (familles endeuillees civiles) qui sera ajoute en C4.',
+  },
+]
+
+// =====================================================
 // SECTION 21 — Helper functions
 // =====================================================
 
@@ -2846,6 +2982,7 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...CHILDCARE_BENEFITS,
   ...UTILITY_BENEFITS,
   ...BTL_FAMILY_EXTRAS_BENEFITS,
+  ...BTL_ACCIDENT_BENEFITS,
 ]
 
 // Calcul dynamique des stats au chargement
