@@ -2843,6 +2843,178 @@ const BTL_ACCIDENT_BENEFITS: BenefitDefinition[] = [
     tax_year: 2026,
     notes: 'Ajout catalogue 16/04/2026 (etape C2). Complementaire au slug kitzvat_mishpakha_nifgaei_peulot_eyva (familles endeuillees civiles) qui sera ajoute en C4.',
   },
+  {
+    slug: 'nifgaei_polio',
+    category: 'special',
+    authority: 'bituach_leumi',
+    title_fr: 'Victimes de poliomyelite (Nifgaei Polio)',
+    title_he: 'נפגעי פוליו',
+    description_fr:
+      'Loi speciale 5767-2007 : allocation BTL mensuelle + grant unique pour les personnes ayant contracte la poliomyelite en Israel avant l\'eradication de la maladie (annees 1950-1960).',
+    full_description_fr:
+      'Loi des Victimes de la Polio (Chok Pitsoyei Nifgaei Shituk-Yeladim, 5767-2007) : ' +
+      'allocation destinee aux personnes ayant contracte la polio et en gardant des sequelles ' +
+      '(post-polio syndrome, paralysies residuelles, douleurs chroniques). ' +
+      'Prestations : ' +
+      '- Grant unique a la reconnaissance : ~120 000 NIS (montant 2026 indexe) ' +
+      '- Rente mensuelle selon taux d\'invalidite reconnu par Vaadat Refuit : 1 200 a 5 400 NIS/mois ' +
+      '- Couverture medicale specifique post-polio (physio, aides techniques, orthopedie) ' +
+      'Conditions : ' +
+      '- Polio contractee en Israel avant 2001 (eradication officielle en Israel) ' +
+      '- Sequelles reconnues par commission medicale BTL ' +
+      '- Residence israelienne au moment du depot ' +
+      'Beneficiaires : principalement nes avant 1970, souvent olim d\'Afrique du Nord / pays arabes ' +
+      'ou UE de l\'Est. La reconnaissance est permanente.',
+    conditions: {
+      requires_resident: true,
+      min_age: 30,  // les personnes nees apres 1995 n\'ont pas eu de polio en Israel
+    },
+    estimated_annual_value: 3000 * 12,
+    typical_monthly_amount: 3000,
+    value_unit: 'NIS/mois + grant unique ~120 000 NIS',
+    application_url: 'https://www.btl.gov.il/benefits/Polio_victims/Pages/default.aspx',
+    action_label: 'Demande reconnaissance polio',
+    info_url: 'https://www.kolzchut.org.il/he/חוק_פיצוי_לנפגעי_שיתוק_ילדים',
+    disclaimer:
+      'Droit niche reserve aux personnes ayant eu la polio en Israel (pas contractee a l\'etranger). ' +
+      'Si vous avez contracte la polio dans un autre pays, vous n\'etes pas eligible a cette aide ' +
+      'mais potentiellement a Nakhut Klalit. La reconnaissance se fait via BTL + commission medicale.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C2). Confidence medium car montants exacts non publics — fourchette estimee. Droit niche mais critique pour les olim ages concernes.',
+  },
+  {
+    slug: 'nifgaei_eyrui_dam',
+    category: 'special',
+    authority: 'bituach_leumi',
+    title_fr: 'Victimes de transfusions contaminees (Nifgaei Eyrui Dam)',
+    title_he: 'נפגעי עירוי דם',
+    description_fr:
+      'Loi 5752-1992 : indemnisation BTL des personnes ayant contracte le VIH, l\'hepatite C ou une autre maladie transmise par transfusion sanguine dans un etablissement israelien.',
+    full_description_fr:
+      'Chok Pitsoyei Nifgaei Eyrui Dam (5752-1992). Concerne les personnes ayant recu une transfusion ' +
+      'sanguine dans un hopital ou centre de don israelien, avant la mise en place du depistage ' +
+      'systematique (VIH depuis 1986, hepatite C depuis 1992), et ayant contracte : ' +
+      '- VIH / SIDA ' +
+      '- Hepatite C chronique ' +
+      '- Hepatite B chronique ' +
+      '- Autre pathologie infectieuse transmissible par le sang ' +
+      'Prestations : ' +
+      '- Grant unique : ~250 000 NIS pour VIH, ~120 000 NIS pour hepatite C ' +
+      '- Rente mensuelle si incapacite de travail reconnue : 1 500 a 6 000 NIS/mois ' +
+      '- Prise en charge complete des traitements (anti-retroviraux, interferon, etc.) au-dela de ' +
+      '  kupat holim ' +
+      '- Rente survivants pour les ayants-droit en cas de deces ' +
+      'Procedure : dossier BTL avec attestation hospitaliere de la transfusion + diagnostic medical ' +
+      'de la pathologie contractee.',
+    conditions: {
+      requires_resident: true,
+    },
+    estimated_annual_value: 3000 * 12,
+    typical_monthly_amount: 3000,
+    value_unit: 'NIS/mois + grant unique 120-250 000 NIS',
+    application_url: 'https://www.btl.gov.il/benefits/Blood_transfusion/Pages/default.aspx',
+    action_label: 'Demande indemnisation transfusion',
+    info_url: 'https://www.kolzchut.org.il/he/חוק_פיצויים_לנפגעי_עירוי_דם',
+    disclaimer:
+      'Droit niche. Necessite une preuve du lien entre la transfusion recue en Israel et la pathologie ' +
+      'diagnostiquee (expertise medicale, attestation hopital). Les dossiers avant 1992 (date de la loi) ' +
+      'peuvent etre deposes retroactivement. Association d\'aide : AIDS Task Force Israel.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C2). Droit rare mais critique pour les rares cas concernes. Montants estimes (la loi indexe sur le salaire moyen economie).',
+  },
+  {
+    slug: 'nifgaei_gazezet',
+    category: 'special',
+    authority: 'bituach_leumi',
+    title_fr: 'Victimes du traitement de la teigne (Nifgaei Gazezet)',
+    title_he: 'נפגעי גזזת',
+    description_fr:
+      'Loi 5754-1994 : indemnisation BTL des personnes irradiees dans les annees 1948-1960 pour traitement de la teigne (gazezet), ayant developpe cancers / pathologies neurologiques par effet secondaire.',
+    full_description_fr:
+      'Chok Pitsoyei Nifgaei HaGazezet (5754-1994). Entre 1948 et 1960, ~100 000 enfants olim ' +
+      '(principalement d\'Afrique du Nord et Yemen) ont ete traites pour la teigne (gazezet) par ' +
+      'irradiation X du cuir chevelu a fortes doses. Cette pratique a ete reconnue apres coup comme ' +
+      'ayant cause des pathologies graves a long terme : ' +
+      '- Cancers de la thyroide, des glandes salivaires, du cerveau ' +
+      '- Tumeurs meningiomes, gliomes ' +
+      '- Troubles neurologiques (cephalees chroniques, deficits cognitifs) ' +
+      '- Problemes ophtalmologiques, ORL ' +
+      'Prestations : ' +
+      '- Grant unique a la reconnaissance : ~180 000 NIS (montant 2026 indexe) ' +
+      '- Rente mensuelle selon taux d\'invalidite reconnu ' +
+      '- Couverture medicale complete post-radiation ' +
+      '- Pension survivants pour les ayants-droit en cas de deces lie a la pathologie ' +
+      'Procedure : dossier via BTL + Vaadat HaGazezet (commission specifique) avec preuve de ' +
+      'traitement (archives hospitalieres, temoignages familiaux, Yad Ha-8 registre national).',
+    conditions: {
+      requires_resident: true,
+      min_age: 65,  // les personnes traitees (1948-1960) ont au moins 65 ans en 2026
+    },
+    estimated_annual_value: 3000 * 12,
+    typical_monthly_amount: 3000,
+    value_unit: 'NIS/mois + grant unique ~180 000 NIS',
+    application_url: 'https://www.btl.gov.il/benefits/Ringworm_victims/Pages/default.aspx',
+    action_label: 'Demande reconnaissance gazezet',
+    info_url: 'https://www.kolzchut.org.il/he/חוק_פיצוי_לנפגעי_גזזת',
+    disclaimer:
+      'Droit reserve aux olim traites en Israel entre 1948 et 1960. Les archives hospitalieres ' +
+      'sont souvent perdues — les temoignages familiaux et la date d\'alyah (olim marocains/yemenites ' +
+      'des annees 50) sont alors utilises. Association d\'aide : Association des Victimes de la Gazezet.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C2). Droit niche mais tres important pour les olim sepharades ages nes dans les annees 50-60. Beaucoup l\'ignorent — leur generation est souvent mal au courant des lois israeliennes.',
+  },
+  {
+    slug: 'pgia_bizman_hitnadvut',
+    category: 'special',
+    authority: 'bituach_leumi',
+    title_fr: 'Blessures en mission volontaire (Pgia Bizman Hitnadvut)',
+    title_he: 'פגיעה בזמן התנדבות',
+    description_fr:
+      'Regime BTL pour les volontaires agrees (Maguen David Adom, Zaka, Sherut Leumi, ONGs conventionnees) blesses durant une mission volontaire reconnue.',
+    full_description_fr:
+      'Chok HaBituach HaLeumi, chapitre special "Hitnadvut" : BTL couvre les accidents et blessures ' +
+      'survenus au cours d\'une mission volontaire reconnue par l\'Etat. ' +
+      'Volontariats eligibles : ' +
+      '- Sherut Leumi (service civique national, filles et exemptes) ' +
+      '- Maguen David Adom (secouristes benevoles) ' +
+      '- Zaka (identification des victimes) ' +
+      '- Volontaires ONGs conventionnees avec Misrad HaRevacha ' +
+      '- Volontaires Pitsui Eytan (secours en cas de catastrophe) ' +
+      'Prestations : ' +
+      '- Indemnites journalieres durant l\'arret (similaires Nifgaei Avoda) ' +
+      '- Rente mensuelle si invalidite permanente reconnue ' +
+      '- Grant unique en cas de deces au profit des ayants-droit ' +
+      '- Couverture medicale liee a l\'accident ' +
+      'Conditions : la mission doit etre formellement enregistree (presence atteste par le responsable) ' +
+      'et l\'accident doit etre declare a BTL dans les 12 mois.',
+    conditions: {
+      requires_resident: true,
+    },
+    estimated_annual_value: 2500 * 12,
+    typical_monthly_amount: 2500,
+    value_unit: 'NIS/mois (rente) + indemnites journalieres',
+    application_url: 'https://www.btl.gov.il/benefits/Volunteering/Pages/default.aspx',
+    action_label: 'Declaration accident volontariat',
+    info_url: 'https://www.kolzchut.org.il/he/פגיעה_בזמן_התנדבות',
+    disclaimer:
+      'Droit meconnu mais important pour les olim engages dans le benevolat. L\'organisation doit ' +
+      'avoir conventionne avec BTL et la mission doit etre enregistree. Pour les volontaires informels ' +
+      '(aide spontanee sans structure), le regime applicable est plutot Nifgaei Teunot.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C2). Important notamment pour les volontaires Zaka / MDA qui interviennent sur des scenes traumatiques. Cumulable avec la couverture kupat holim.',
+  },
 ]
 
 // =====================================================
