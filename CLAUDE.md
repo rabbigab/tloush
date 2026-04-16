@@ -127,6 +127,89 @@ Lors de l'ajout d'un nouveau fix, **référencer le finding** dans le message de
 
 ---
 
+## État actuel du projet (16/04/2026)
+
+### Branches en cascade en attente de merge
+
+Quatre branches de fixes issues de l'audit sont chaînées linéairement (chacune rebasée sur la précédente) et en attente de merge sur `main` :
+
+1. `claude/lot1-q0-fixes` — Lot 1 (P0) : fixes de blocage critiques.
+2. `claude/lot2-q1-fixes` — Lot 2 (Q1) : auth (reset-password guard, RGPD checkbox register, consentements annuaire), `lib/legalEntity.ts`, refonte `/privacy`.
+3. `claude/lot3-q2-fixes` — Lot 3 (Q2) : redirection `/calculator` → `/calculateurs/brut-net`, `lib/providerDisplay.ts` (normalisation noms annuaire), `app/robots.ts` dynamique, suppression `public/robots.txt`, scanner PayslipAnalysis, `/immobilier` masqué (noindex + landing "en construction").
+4. `claude/lot4-q3-fixes` — Lot 4 (Q3) : `LAST_VERIFIED_DATE` + `OFFICIAL_SOURCES` sur les calculateurs, seuils Bituah Leumi maternité, explications Article 14, `/experts` étendu, guides + templates enrichis, nouvelles pages `/contact`, `/a-propos`, `/faq`.
+
+Merge dans l'ordre de 1 à 4 (chaque branche dépend de la précédente). Après merge, relancer `npx tsc --noEmit` sur main et supprimer les branches.
+
+### Items de l'audit restants
+
+**28/30** items du `technical-mapping.md` sont adressés. Les 2 items bloqués attendent des infos utilisateur :
+- **#6** `/mentions-legales` — identité de l'entité juridique à remplir dans `LEGAL_ENTITY`.
+- **#7** `/cgv` — refonte en consommant `legalEntity.ts` (bloqué par #6).
+
+---
+
+## Problèmes connus — Rights detector
+
+Le moteur `src/lib/rightsDetector.ts:matchProfile()` a **plusieurs faux positifs et faux négatifs** confirmés par audit le 16/04/2026. À corriger dans un prochain lot (pas encore planifié).
+
+### Faux positifs — droits matchés à tort
+
+Deux bénéfices du catalogue n'ont que `requires_resident: true` comme condition et sont donc **proposés à tout utilisateur résident israélien**, alors qu'ils ne concernent qu'une minorité très spécifique :
+
+| slug | titre | vrai critère d'éligibilité |
+|---|---|---|
+| `asirei_tzion` | Prisonniers de Sion | avoir été emprisonné pour sionisme dans un pays hostile |
+| `khasidei_umot_olam` | Justes parmi les Nations | titre Yad Vashem pour sauvetage de juifs pendant la Shoah |
+
+**Cause racine** : `user_profiles` n'a aucun champ `is_asir_tzion` / `is_khasid_umot_olam`, et `benefitsCatalog.ts` ne peut donc pas encoder ces conditions. Deux options possibles :
+1. Retirer ces deux entrées du catalogue (elles sont trop rares et faux-positives pour tous).
+2. Ajouter deux colonnes booléennes à `user_profiles` + inputs dans le profil enrichi + conditions dans le catalogue.
+
+### Faux négatifs — checks silencieusement ratés
+
+Dans `matchProfile()`, plusieurs checks incrémentent `totalChecks` sans incrémenter `passedChecks` quand le champ profil est `null`/`undefined`, alors que le commentaire indique "on accepte". Résultat : un profil incomplet voit son `confidence_score` injustement baissé.
+
+- `src/lib/rightsDetector.ts:133-153` — `min_age` / `max_age` : si `birth_date` absent, le check compte comme un échec.
+- `src/lib/rightsDetector.ts:270-278` — `max_monthly_income` : si `monthly_income_nis` absent, idem.
+
+**Fix type** : dans ces branches, ajouter `passedChecks++` (avec commentaire `// champ manquant, on donne le bénéfice du doute`) ou retirer l'incrémentation de `totalChecks`.
+
+### Fallback sur conditions vides
+
+`src/lib/rightsDetector.ts:393-399` : si un bénéfice n'a aucune condition évaluable, le fallback force `confidence = 0.5`. C'est ce qui laisse passer `asirei_tzion` + `khasidei_umot_olam`. Un fix plus défensif serait de retourner `null` (pas de match) plutôt qu'un match à demi-confiance.
+
+---
+
+## Prérequis d'environnement
+
+### Migrations Supabase à appliquer
+
+Avant le merge des branches `lot2` et `lot3`, appliquer dans le SQL Editor Supabase (prod + staging) :
+- `supabase/migrations/20260417_rights_detector.sql` — table `detected_rights` (requise pour `/api/rights-detector`).
+- `supabase/migrations/20260418_profile_enrichment_v2.sql` — enrichissement `user_profiles`.
+- `supabase/migrations/20260419_experts_waitlist.sql` — table `experts_waitlist` (requise pour `/experts`).
+- `supabase/migrations/20260420_provider_applications_consent.sql` — colonnes `consent_public` + `consent_cgv` sur `provider_applications`.
+
+Vérifier avec `psql \d detected_rights` / `\d provider_applications` après application.
+
+### Boîte mail à créer
+
+- **`privacy@tloush.com`** — adresse DPO citée dans `/privacy` (section 9 "Vos droits RGPD"). Tant que la mailbox n'existe pas, les demandes d'accès / effacement ne peuvent pas être reçues. À créer côté hébergeur du domaine `tloush.com` et forwarder vers l'email du responsable.
+
+### Infos légales à fournir
+
+Pour débloquer les items d'audit #6 et #7, renseigner dans `src/lib/legalEntity.ts` :
+- Forme juridique (auto-entrepreneur / SAS / EI / autre)
+- Dénomination sociale exacte
+- N° SIREN / SIRET (ou équivalent)
+- Adresse du siège
+- Nom + email du responsable de publication
+- Hébergeur (nom + adresse + téléphone)
+
+Une fois renseignées, `isLegalEntityConfigured()` retournera `true` et les pages `/cgv` + `/mentions-legales` pourront être refactorisées pour consommer ces constantes dynamiquement.
+
+---
+
 ## Workflow de déploiement
 
 **Déploiement automatique sans demander confirmation** :
