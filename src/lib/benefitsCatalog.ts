@@ -3675,6 +3675,195 @@ const KHARVOT_BARZEL_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION C5 — Nakhei Tsahal / IDF invalides (S11 du glossaire)
+// =====================================================
+// Sources :
+// - https://www.gov.il/he/departments/ministry_of_defense/agaf_hashikum
+// - https://www.kolzchut.org.il/he/נכי_צהל
+// - https://www.mod.gov.il/
+//
+// Ces 4 aides sont administrees par Misrad HaBitachon - Agaf HaShikum
+// (Reinsertion des Invalides), pas par BTL. Elles utilisent les champs
+// disability_source=idf et disability_level ajoutes en etape B.
+
+const NAKHEI_TSAHAL_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'tagmul_basissi_nakhei_tsahal',
+    category: 'military',
+    authority: 'misrad_habitahon',
+    title_fr: 'Compensation mensuelle invalides IDF (Tagmul Basissi)',
+    title_he: 'תגמול בסיסי לנכי צהל',
+    description_fr:
+      'Rente mensuelle versee par Agaf HaShikum aux anciens soldats reconnus invalides avec taux ≥ 20%, selon grille graduee (1 161-8 130 NIS/mois).',
+    full_description_fr:
+      'Tagmul Basissi (compensation de base) : rente mensuelle a vie versee par Misrad HaBitachon ' +
+      '(pas BTL) aux invalides IDF reconnus avec un taux ≥ 20%. ' +
+      'Montants officiels 2026 (en vigueur 01/02/2026, indexes CPI) : ' +
+      '- Taux 20 %          : ~1 161 NIS/mois ' +
+      '- Taux 30-40 %       : ~1 800-2 500 NIS/mois ' +
+      '- Taux 50 %          : ~3 400 NIS/mois ' +
+      '- Taux 70-89 %       : ~4 800-6 500 NIS/mois ' +
+      '- Taux 100 %         : 8 130 NIS/mois ' +
+      '- Taux 100 % + special needs (paralysie, cecite, etc.) : majoration jusqu\'a 2-3x la base ' +
+      'Cumulable avec : ' +
+      '- Tagmul Ovedan Kosher Avoda (TOKA, cf. slug suivant) si perte de capacite de travail ' +
+      '- Maanak Hashtatafut Mas Tsahal (participation impots) ' +
+      '- Petur Mas Nakhut a partir de 90 % d\'invalidite ' +
+      '- Arnona Disability (deja au catalogue) ' +
+      'Reconnaissance via la commission medicale de Misrad HaBitachon (Vaadat Refuit Agaf HaShikum).',
+    conditions: {
+      requires_idf_service: true,
+      required_disability_source: 'idf',
+      min_disability: 20,
+      requires_resident: true,
+    },
+    estimated_annual_value: 1161 * 12,  // base taux 20%
+    typical_monthly_amount: 1161,
+    value_unit: 'NIS/mois (1 161 a 8 130+ selon taux invalidite)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_defense/agaf_hashikum',
+    action_label: 'Demande tagmul invalide IDF',
+    info_url: 'https://www.kolzchut.org.il/he/תגמול_בסיסי_לנכי_צהל',
+    disclaimer:
+      'Reconnaissance par Agaf HaShikum obligatoire — la commission medicale peut prendre 6-18 mois. ' +
+      'Un avocat specialise (Arik Dagan, Shani Gilad, etc.) est souvent utile pour les dossiers ' +
+      'contestes. Cumulable avec la plupart des autres aides invalides IDF mais pas avec Nakhut Klalit BTL ' +
+      '(il faut choisir le regime le plus avantageux).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C5). Utilise disability_source=idf (etape B). Montants 2026 confirmes via glossaire. Ne pas confondre avec Nakhut Klalit BTL qui est le regime civil.',
+  },
+  {
+    slug: 'maanak_had_paami_nakhei_tsahal',
+    category: 'military',
+    authority: 'misrad_habitahon',
+    title_fr: 'Indemnite unique invalides IDF 10-19% (Maanak Had Paami)',
+    title_he: 'מענק חד-פעמי לנכי צהל 10-19%',
+    description_fr:
+      'Paiement forfaitaire unique verse aux invalides IDF avec taux 10-19% (en-dessous du seuil de la rente mensuelle), 62 719-134 961 NIS selon le taux.',
+    full_description_fr:
+      'Pour les invalides IDF avec un taux reconnu inferieur a 20% (seuil de la rente mensuelle ' +
+      'Tagmul Basissi), Agaf HaShikum verse un paiement forfaitaire UNIQUE qui cloture le dossier : ' +
+      'Montants officiels 2026 : ' +
+      '- Taux 10 % : 62 719 NIS ' +
+      '- Taux 15 % : ~94 000 NIS ' +
+      '- Taux 19 % : 134 961 NIS ' +
+      'Apres paiement, le dossier est cloture sauf aggravation medicale reconnue (nouvelle expertise). ' +
+      'Si aggravation ulterieure portant le taux a ≥ 20%, possibilite de demander Tagmul Basissi ' +
+      '(avec deduction prorata du maanak deja verse). ' +
+      'Conditions : reconnaissance par commission medicale Agaf HaShikum avec taux 10-19%, blessure ' +
+      'survenue pendant le service militaire ou lien de causalite reconnu.',
+    conditions: {
+      requires_idf_service: true,
+      required_disability_source: 'idf',
+      min_disability: 10,
+      requires_resident: true,
+    },
+    estimated_annual_value: 62719,  // versement unique au minimum
+    value_unit: 'NIS (versement unique, 62 719-134 961 selon taux)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_defense/agaf_hashikum',
+    action_label: 'Demande maanak invalide 10-19%',
+    info_url: 'https://www.kolzchut.org.il/he/מענק_חד-פעמי_לנכי_צהל',
+    disclaimer:
+      'IMPORTANT : accepter le maanak ferme le dossier. Si vous pensez que votre invalidite est plus ' +
+      'grave que 19 % ou risque de s\'aggraver, il peut etre prudent de contester la decision plutot ' +
+      'que d\'accepter le paiement forfaitaire. Un avocat specialise peut negocier pour remonter le taux.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C5). Condition min_disability: 10 (pas 20) car cette entree cible specifiquement la tranche 10-19%. Le matching inclura aussi les invalides ≥ 20% — on s\'appuie sur le disclaimer pour clarifier.',
+  },
+  {
+    slug: 'tagmul_ovedan_kosher_avoda',
+    category: 'military',
+    authority: 'misrad_habitahon',
+    title_fr: 'Compensation perte capacite travail IDF (TOKA / Tagmul Ovedan)',
+    title_he: 'תגמול אבדן כושר עבודה לנכי צהל',
+    description_fr:
+      'Rente mensuelle additionnelle (8 275-12 435 NIS/mois) versee aux invalides IDF avec taux ≥ 20% dont la capacite de travail est fortement reduite.',
+    full_description_fr:
+      'TOKA = Tagmul Ovedan Kosher Avoda (compensation de perte de capacite de travail). ' +
+      'Rente mensuelle complementaire au Tagmul Basissi, versee lorsque l\'invalidite ≥ 20% entraine ' +
+      'une incapacite professionnelle reconnue par la commission sociale Agaf HaShikum. ' +
+      'Montants officiels 2026 (en vigueur 01/02/2026) : ' +
+      '- Perte 50 % capacite                : 8 275 NIS/mois ' +
+      '- Perte 75 % capacite                : 10 400 NIS/mois ' +
+      '- Perte 100 % (incapacite totale)    : 12 435 NIS/mois ' +
+      'Evaluation : commission SOCIALE (pas medicale) d\'Agaf HaShikum, qui examine la situation ' +
+      'professionnelle reelle (metier prealable, possibilite de reconversion, age, etc.). ' +
+      'Cumulable avec Tagmul Basissi (rente invalidite pure). L\'invalide recoit donc souvent les ' +
+      'deux rentes en parallele, pour un total pouvant atteindre 20 000 NIS/mois.',
+    conditions: {
+      requires_idf_service: true,
+      required_disability_source: 'idf',
+      min_disability: 20,
+      required_employment: ['unemployed', 'reservist'],  // proxy : perte de capacite
+      requires_resident: true,
+    },
+    estimated_annual_value: 8275 * 12,
+    typical_monthly_amount: 8275,
+    value_unit: 'NIS/mois (8 275-12 435 selon perte capacite)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_defense/agaf_hashikum',
+    action_label: 'Demande TOKA',
+    info_url: 'https://www.kolzchut.org.il/he/תגמול_אבדן_כושר_עבודה',
+    disclaimer:
+      'Distinct du Tagmul Basissi : TOKA evalue la perte economique (perte de salaire/revenus) tandis ' +
+      'que Tagmul Basissi evalue l\'atteinte physique. Un invalide a 50 % peut avoir une perte de ' +
+      'capacite de 100 % (si son metier est impossible a exercer), ou vice versa. Le cumul est la ' +
+      'regle pour les invalides durablement au chomage.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C5). Condition required_employment est un proxy imparfait — un reserviste/chomeur est plus probablement en situation de perte de capacite. A raffiner avec un champ work_capacity_loss_pct.',
+  },
+  {
+    slug: 'maanak_hashtatafut_mas_tsahal',
+    category: 'fiscal',
+    authority: 'misrad_habitahon',
+    title_fr: 'Participation annuelle impots invalides IDF (Maanak Hashtatafut Mas)',
+    title_he: 'מענק השתתפות מס לנכי צהל',
+    description_fr:
+      'Participation annuelle aux impots (Mas Hakhnasa) versee par Misrad HaBitachon aux invalides IDF avec taux 19-89%, en compensation de l\'effort fiscal sur leur rente et leurs revenus.',
+    full_description_fr:
+      'Grant annuel forfaitaire verse a la fin de chaque annee fiscale (janvier-avril) aux invalides ' +
+      'IDF dont l\'invalidite reconnue est entre 19% et 89% (ceux a 90%+ beneficient de l\'exemption ' +
+      'totale d\'impot via Petur Mas Nakhut, cf. slug petur_mas_nakhut en C7). ' +
+      'Montants 2026 (approximatifs, indexes CPI) : ' +
+      '- Taux 19-39 %      : ~3 500-5 000 NIS/an ' +
+      '- Taux 40-59 %      : ~6 000-9 000 NIS/an ' +
+      '- Taux 60-89 %      : ~10 000-14 000 NIS/an ' +
+      'Logique : l\'Etat compense partiellement l\'impot sur le revenu paye par l\'invalide sur sa ' +
+      'rente Tagmul Basissi (qui est imposable si taux < 90%) et ses autres revenus. ' +
+      'Versement automatique pour les invalides avec dossier Agaf HaShikum actif — aucune demande ' +
+      'a faire si vous etes deja dans les listes. Verser sur le compte bancaire declare.',
+    conditions: {
+      requires_idf_service: true,
+      required_disability_source: 'idf',
+      min_disability: 19,
+      requires_resident: true,
+    },
+    estimated_annual_value: 6000,  // mediane
+    value_unit: 'NIS/an (versement unique fin d\'annee fiscale)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_defense/agaf_hashikum',
+    action_label: 'Verifier maanak impots',
+    info_url: 'https://www.kolzchut.org.il/he/מענק_השתתפות_מס_לנכי_צהל',
+    disclaimer:
+      'Verse automatiquement pour les dossiers actifs. Les invalides a 90%+ beneficient deja de ' +
+      'l\'exemption totale d\'impot (petur_mas_nakhut) — ils ne percoivent donc pas ce grant (qui ' +
+      'serait redondant). Si votre taux est entre 19 et 89% et que vous n\'avez rien recu, contacter ' +
+      'Agaf HaShikum pour audit.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C5). Montants 2026 approximatifs — Misrad HaBitachon ne publie pas de grille detaillee publique. A confirmer aupres d\'Agaf HaShikum pour les cas specifiques.',
+  },
+]
+
+// =====================================================
 // SECTION 21 — Helper functions
 // =====================================================
 
@@ -3814,6 +4003,7 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...BTL_ACCIDENT_BENEFITS,
   ...HOLOCAUST_EXTRAS_BENEFITS,
   ...KHARVOT_BARZEL_BENEFITS,
+  ...NAKHEI_TSAHAL_BENEFITS,
 ]
 
 // Calcul dynamique des stats au chargement
