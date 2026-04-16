@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Star, MapPin, CheckCircle2 } from 'lucide-react'
-import { getCategoryBySlug, getProviderDisplayName, formatRating } from '@/types/directory'
+import { getCategoryBySlug, formatRating } from '@/types/directory'
 import type { Provider } from '@/types/directory'
+import { getProviderDisplayName, getProviderInitial } from '@/lib/providerDisplay'
 
 interface ProviderCardProps {
   provider: Provider
@@ -34,7 +35,7 @@ export default function ProviderCard({ provider, topReview, topReviewAuthor }: P
         ) : (
           <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-lg font-bold shrink-0 ${category?.color || 'bg-neutral-100'}`}>
             <span className={category?.iconColor || 'text-neutral-600'}>
-              {provider.first_name.charAt(0)}
+              {getProviderInitial(provider.first_name)}
             </span>
           </div>
         )}

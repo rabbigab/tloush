@@ -26,7 +26,61 @@ export interface OlimRight {
   howTo: string;
   conditions: string[];
   eligibleAfterDays?: number;
+  /** URL de la source officielle (ministere, BL, etc.) */
+  sourceUrl?: string;
+  /** Label court de la source affichable en UI */
+  sourceLabel?: string;
+  /** Date de la derniere verification du montant / des conditions */
+  verifiedAt?: string;
 }
+
+/**
+ * Date globale de derniere verification des baremes olim-rights.
+ * Affichee sur /droits-olim pour transparence (audit #23).
+ */
+export const OLIM_RIGHTS_VERIFIED_AT = '2026-04-01';
+
+/**
+ * Ressources officielles pour les olim. Rendues en bas de
+ * /droits-olim pour que l'utilisateur puisse verifier les montants
+ * et completer sa demarche (audit #23).
+ */
+export const OFFICIAL_OLIM_RESOURCES: Array<{
+  label: string;
+  url: string;
+  description: string;
+}> = [
+  {
+    label: 'Misrad HaKlita (Ministère de l\'Intégration des Olim)',
+    url: 'https://www.gov.il/he/departments/ministry_of_aliyah_and_integration',
+    description: 'Panier d\'absorption, aide au logement, cours d\'hébreu.',
+  },
+  {
+    label: 'Bituah Leumi (Sécurité sociale)',
+    url: 'https://www.btl.gov.il',
+    description: 'Allocations famille, sante, maternite, chomage.',
+  },
+  {
+    label: 'Misrad HaShikun (Ministère du Logement)',
+    url: 'https://www.gov.il/he/departments/ministry_of_housing',
+    description: 'Mashkanta assistee, subventions au logement.',
+  },
+  {
+    label: 'Rashut HaMisim (Rashut HaMisim)',
+    url: 'https://www.taxes.gov.il',
+    description: 'Exonerations fiscales olim (10 ans), points de credit bonus.',
+  },
+  {
+    label: 'Nefesh B\'Nefesh',
+    url: 'https://www.nbn.org.il',
+    description: 'Aide olim d\'Amérique du Nord (jusqu\'à 3 000 USD + accompagnement).',
+  },
+  {
+    label: 'Agence Juive (Jewish Agency)',
+    url: 'https://www.jewishagency.org/fr/',
+    description: 'Aide alya depuis la France et la diaspora francophone.',
+  },
+];
 
 export const CATEGORY_LABELS: Record<RightCategory, string> = {
   financial: "Aides financières",

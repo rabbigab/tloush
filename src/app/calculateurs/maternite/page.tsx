@@ -38,11 +38,36 @@ const itemVariants = {
   },
 };
 
+// Seuils d'eligibilite Bituah Leumi pour les indemnites maternite.
+// Sources : Loi sur l'Assurance Nationale 1995 (חוק הביטוח הלאומי)
+// article 50 + Loi sur le travail des femmes 1954 (חוק עבודת נשים).
+// https://www.btl.gov.il/benefits/Maternity/Pages/default.aspx
+const BL_MATERNITY_THRESHOLDS = {
+  full: {
+    // Allocation pleine 15 semaines : 10 mois consecutifs sur 14
+    // chez le meme employeur, OU 15 mois cumules sur 22 mois.
+    minConsecutiveMonths: 10,
+    lookbackWindow: 14,
+    minCumulativeMonths: 15,
+    weeksEligible: 15,
+  },
+  partial: {
+    // Allocation partielle 7 semaines : 6 mois sur 14.
+    minConsecutiveMonths: 6,
+    lookbackWindow: 14,
+    weeksEligible: 7,
+  },
+}
+
+type BlEligibility = 'full' | 'partial' | 'none'
+
 export default function MaterniteLeaveCalculator() {
   const [parentType, setParentType] = useState<Parent>("mère");
   const [dueDate, setDueDate] = useState("");
   const [employmentStartDate, setEmploymentStartDate] = useState("");
   const [monthlySalary, setMonthlySalary] = useState("");
+  // Mois cotises BL. Si vide, on estime depuis employmentStartDate (max 14).
+  const [contributedMonths, setContributedMonths] = useState("");
   const [isMultipleBirth, setIsMultipleBirth] = useState(false);
   const [numberOfBabies, setNumberOfBabies] = useState(2);
 
@@ -55,13 +80,27 @@ export default function MaterniteLeaveCalculator() {
     const empStart = new Date(employmentStartDate);
     const salary = parseFloat(monthlySalary);
 
-    // Calculate employment duration in months
+    // Duree d'emploi chez l'employeur actuel en mois.
     const monthsDiff =
       (due.getFullYear() - empStart.getFullYear()) * 12 +
       (due.getMonth() - empStart.getMonth());
 
-    // Check eligibility for Bituach Leumi (10+ months in last 14 months)
-    const isEligibleBituach = monthsDiff >= 10;
+    // Mois cotises Bituah Leumi. Si l'utilisateur a rempli le champ
+    // dedie, on l'utilise. Sinon on estime depuis la duree d'emploi
+    // (capee a 14 pour rester dans la fenetre legale).
+    const declaredContributed = contributedMonths ? parseInt(contributedMonths) : null;
+    const contributedInLast14 = declaredContributed !== null
+      ? Math.min(14, Math.max(0, declaredContributed))
+      : Math.min(14, Math.max(0, monthsDiff));
+
+    // Eligibilite BL selon les seuils legaux (cf. BL_MATERNITY_THRESHOLDS)
+    let blEligibility: BlEligibility = 'none';
+    if (contributedInLast14 >= BL_MATERNITY_THRESHOLDS.full.minConsecutiveMonths) {
+      blEligibility = 'full';
+    } else if (contributedInLast14 >= BL_MATERNITY_THRESHOLDS.partial.minConsecutiveMonths) {
+      blEligibility = 'partial';
+    }
+    const isEligibleBituach = blEligibility !== 'none';
 
     // Maternity leave calculation
     let maternityWeeks = 15;
@@ -92,16 +131,30 @@ export default function MaterniteLeaveCalculator() {
     const protectionEndDate = new Date(returnToWorkDate);
     protectionEndDate.setDate(protectionEndDate.getDate() + 60); // 60 days protection
 
-    // Bituach Leumi calculation
+    // Nombre de semaines reellement indemnisees par Bituah Leumi
+    // selon l'eligibilite. Le conge maternite legal (maternityWeeks)
+    // peut etre superieur aux semaines indemnisees : dans ce cas,
+    // la difference n'est pas couverte par l'allocation.
+    const blPaidWeeks = blEligibility === 'full'
+      ? maternityWeeks
+      : blEligibility === 'partial'
+        ? BL_MATERNITY_THRESHOLDS.partial.weeksEligible
+        : 0;
+
+    // Bituah Leumi — allocation journaliere (plafond 2026 : 1711.33 NIS/j).
+    // Source : btl.gov.il, a verifier chaque annee (finding #18 covers #19).
     const maxDailyAllowance = 1711.33;
     const dailyAllowance = Math.min(salary / 30, maxDailyAllowance);
-    const totalDaysLeave = maternityWeeks * 7;
-    const totalAllowance = dailyAllowance * totalDaysLeave;
+    const totalPaidDays = blPaidWeeks * 7;
+    const totalAllowance = dailyAllowance * totalPaidDays;
     const salaryLoss = salary * (maternityWeeks / 4.3) - totalAllowance;
 
     return {
       isEligibleBituach,
+      blEligibility,
+      contributedInLast14,
       maternityWeeks,
+      blPaidWeeks,
       paternityDays,
       leaveStartDate,
       mandatoryStartDate,
@@ -112,9 +165,9 @@ export default function MaterniteLeaveCalculator() {
       dailyAllowance: Math.round(dailyAllowance * 100) / 100,
       totalAllowance: Math.round(totalAllowance * 100) / 100,
       salaryLoss: Math.round(salaryLoss * 100) / 100,
-      totalDaysLeave,
+      totalDaysLeave: totalPaidDays,
     };
-  }, [dueDate, employmentStartDate, monthlySalary, isMultipleBirth, numberOfBabies]);
+  }, [dueDate, employmentStartDate, monthlySalary, contributedMonths, isMultipleBirth, numberOfBabies]);
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("fr-FR", {
@@ -237,6 +290,26 @@ export default function MaterniteLeaveCalculator() {
                 placeholder="15000"
                 className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               />
+            </motion.div>
+
+            {/* Contributed months Bituah Leumi (optional) */}
+            <motion.div variants={itemVariants}>
+              <label className="block text-sm font-semibold text-neutral-900 mb-3">
+                Mois cotisés Bituah Leumi (sur les 14 derniers)
+                <span className="font-normal text-neutral-500"> — optionnel</span>
+              </label>
+              <input
+                type="number"
+                min={0}
+                max={14}
+                value={contributedMonths}
+                onChange={(e) => setContributedMonths(e.target.value)}
+                placeholder="Ex : 12"
+                className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              />
+              <p className="text-xs text-neutral-500 mt-1">
+                Laissez vide pour estimer depuis la date de début d&apos;emploi. Les seuils d&apos;éligibilité BL sont détaillés dans le résultat.
+              </p>
             </motion.div>
 
             {/* Multiple Birth */}
@@ -374,23 +447,52 @@ export default function MaterniteLeaveCalculator() {
                   </h2>
                 </div>
 
-                {!calculations.isEligibleBituach ? (
+                {/* Tableau recapitulatif des 3 seuils legaux BL */}
+                <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-4 mb-4 text-xs text-neutral-700 space-y-1">
+                  <p className="font-semibold text-neutral-900">Seuils d&apos;éligibilité (Bituah Leumi)</p>
+                  <p>
+                    <strong>Allocation pleine (15 semaines)</strong> : 10 mois consécutifs de cotisation sur les 14 derniers, OU 15 mois cumulés sur 22.
+                  </p>
+                  <p>
+                    <strong>Allocation partielle (7 semaines)</strong> : 6 mois consécutifs de cotisation sur les 14 derniers.
+                  </p>
+                  <p>
+                    <strong>Aucune allocation</strong> : moins de 6 mois de cotisation.
+                  </p>
+                  <p className="pt-1 text-neutral-500">
+                    Votre situation estimée : <strong>{calculations.contributedInLast14}</strong> mois cotisés sur les 14 derniers.
+                  </p>
+                </div>
+
+                {calculations.blEligibility === 'none' ? (
                   <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                     <div className="flex gap-3">
                       <AlertCircle size={20} className="text-orange-600 flex-shrink-0" />
                       <div>
                         <p className="font-semibold text-neutral-900 mb-1">
-                          Vous ne remplissez pas les conditions
+                          Vous ne remplissez pas les conditions BL
                         </p>
                         <p className="text-sm text-neutral-700">
-                          Vous devez avoir travaillé au moins 10 mois pendant les 14 derniers mois
-                          auprès de l'employeur actuel.
+                          Avec {calculations.contributedInLast14} mois cotisés sur les 14 derniers (seuil minimum : 6 mois), vous n&apos;avez pas droit aux indemnités maternité de Bituah Leumi. Consultez votre centre BL local ou un expert pour confirmer votre situation exacte.
                         </p>
                       </div>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    {calculations.blEligibility === 'partial' && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-900">
+                        <strong>Allocation partielle :</strong> vous avez droit à 7 semaines d&apos;indemnisation au lieu de 15. Les semaines restantes du congé légal ne sont pas couvertes par BL.
+                      </div>
+                    )}
+
+                    <div className="flex justify-between items-center pb-3 border-b border-neutral-100">
+                      <span className="text-neutral-700">Semaines indemnisées BL</span>
+                      <span className="font-bold text-green-600">
+                        {calculations.blPaidWeeks} semaines
+                      </span>
+                    </div>
+
                     <div className="flex justify-between items-center pb-3 border-b border-neutral-100">
                       <span className="text-neutral-700">Montant estimé par jour</span>
                       <span className="font-bold text-green-600">
@@ -400,7 +502,7 @@ export default function MaterniteLeaveCalculator() {
 
                     <div className="flex justify-between items-center pb-3 border-b border-neutral-100">
                       <span className="text-neutral-700">
-                        Jours de congé ({calculations.totalDaysLeave} jours)
+                        Total alloué ({calculations.totalDaysLeave} jours)
                       </span>
                       <span className="font-bold text-green-600">
                         ₪{calculations.totalAllowance.toLocaleString("fr-FR")}

@@ -9,8 +9,10 @@ import {
   Baby,
   Briefcase,
   Landmark,
+  ExternalLink,
 } from "lucide-react";
 import type { Metadata } from "next";
+import { LAST_VERIFIED_DATE } from "@/lib/israeliPayroll";
 
 export const metadata: Metadata = {
   title: "Calculateurs salaire Israël",
@@ -96,6 +98,26 @@ export default function CalcuateursPage() {
           <p className="text-neutral-500 max-w-xl mx-auto text-sm">
             Des outils de calcul basés sur la législation israélienne en
             vigueur en 2026. Gratuits et sans inscription.
+          </p>
+          <p className="text-xs text-neutral-400 mt-3 max-w-xl mx-auto">
+            Barèmes vérifiés le {new Date(LAST_VERIFIED_DATE).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })} · Sources :{' '}
+            <a
+              href="https://www.taxes.gov.il"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-0.5 text-brand-600 hover:underline"
+            >
+              Rashut HaMisim <ExternalLink size={10} />
+            </a>
+            {', '}
+            <a
+              href="https://www.btl.gov.il"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-0.5 text-brand-600 hover:underline"
+            >
+              Bituah Leumi <ExternalLink size={10} />
+            </a>
           </p>
         </div>
 

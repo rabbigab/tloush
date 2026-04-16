@@ -9,6 +9,8 @@ import {
   CATEGORY_LABELS,
   URGENCY_LABELS,
   CATEGORY_COLORS,
+  OLIM_RIGHTS_VERIFIED_AT,
+  OFFICIAL_OLIM_RESOURCES,
   type OlimRight,
 } from "@/data/olim-rights";
 import {
@@ -362,8 +364,16 @@ export default function OlimRightsPage() {
           >
             <AlertCircle size={18} className="text-brand-600 mt-0.5 shrink-0" />
             <p className="text-xs text-brand-900">
-              <strong>Information:</strong> Les droits affichés sont basés sur votre profil. Pour une
-              liste complète et personnalisée, consultez un expert.
+              <strong>Information :</strong> les droits affichés sont indicatifs et basés sur
+              les barèmes Misrad HaKlita / Bituah Leumi vérifiés le{' '}
+              {new Date(OLIM_RIGHTS_VERIFIED_AT).toLocaleDateString("fr-FR", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+              . Pour une liste complète et personnalisée, consultez un expert. Les
+              montants exacts dépendent de votre situation exacte (composition
+              familiale, date d&apos;alya, statut professionnel).
             </p>
           </motion.div>
         </motion.div>
@@ -731,14 +741,49 @@ export default function OlimRightsPage() {
             </button>
           </motion.div>
 
+          {/* Ressources officielles */}
+          <div className="mt-10 bg-white border border-neutral-200 rounded-2xl p-5 sm:p-6">
+            <h3 className="font-semibold text-neutral-900 text-sm mb-3">
+              Ressources officielles
+            </h3>
+            <p className="text-xs text-neutral-500 mb-4">
+              Vérifiez les montants exacts et démarrez vos démarches directement sur les sites
+              officiels du gouvernement israélien.
+            </p>
+            <ul className="space-y-3">
+              {OFFICIAL_OLIM_RESOURCES.map((resource) => (
+                <li key={resource.url} className="flex items-start gap-3">
+                  <span className="mt-1 w-1.5 h-1.5 rounded-full bg-brand-600 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <a
+                      href={resource.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-brand-700 hover:underline"
+                    >
+                      {resource.label} →
+                    </a>
+                    <p className="text-xs text-neutral-500 mt-0.5">{resource.description}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           {/* Disclaimer */}
-          <div className="mt-10 bg-neutral-50 border border-neutral-200 rounded-xl p-4 flex items-start gap-3">
+          <div className="mt-6 bg-neutral-50 border border-neutral-200 rounded-xl p-4 flex items-start gap-3">
             <AlertCircle size={18} className="text-neutral-400 mt-0.5 shrink-0" />
             <p className="text-xs text-neutral-500 leading-relaxed">
               <strong className="text-neutral-600">Analyse indicative uniquement.</strong>{" "}
-              Cette liste est basée sur votre profil et ne remplace pas un conseil d'expert. Les
-              conditions d'accès aux droits peuvent varier selon votre situation exacte. Consultez
-              un professionnel pour une évaluation complète et à jour.
+              Cette liste est basée sur votre profil et ne remplace pas un conseil d&apos;expert. Les
+              conditions d&apos;accès aux droits peuvent varier selon votre situation exacte. Consultez
+              un professionnel pour une évaluation complète et à jour. Barèmes vérifiés le{' '}
+              {new Date(OLIM_RIGHTS_VERIFIED_AT).toLocaleDateString("fr-FR", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+              .
             </p>
           </div>
         </motion.div>

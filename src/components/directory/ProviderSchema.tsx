@@ -1,4 +1,5 @@
 import type { Provider } from '@/types/directory'
+import { getProviderDisplayName } from '@/lib/providerDisplay'
 
 interface ProviderSchemaProps {
   provider: Provider
@@ -10,7 +11,7 @@ export function ProviderJsonLd({ provider, categoryLabel, reviews }: ProviderSch
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
-    name: `${provider.first_name} ${provider.last_name.charAt(0)}. — ${categoryLabel}`,
+    name: `${getProviderDisplayName(provider)} — ${categoryLabel}`,
     description: provider.description || `${categoryLabel} francophone en Israel`,
     address: {
       '@type': 'PostalAddress',
@@ -67,7 +68,7 @@ export function CategoryListJsonLd({ categoryLabel, providers }: CategoryListSch
       '@type': 'ListItem',
       position: i + 1,
       url: `https://tloush.com/annuaire/${p.category}/${p.slug}`,
-      name: `${p.first_name} ${p.last_name.charAt(0)}.`,
+      name: getProviderDisplayName(p),
     })),
   }
 

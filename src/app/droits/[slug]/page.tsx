@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { guides, CATEGORY_LABELS } from "@/data/guides";
-import { Clock, ChevronLeft, Calendar, ChevronRight } from "lucide-react";
+import { Clock, ChevronLeft, Calendar, ChevronRight, ExternalLink, BookOpen } from "lucide-react";
 import type { Metadata } from "next";
 
 export async function generateStaticParams() {
@@ -137,6 +137,37 @@ export default function GuidePage({
             __html: renderMarkdown(guide.content),
           }}
         />
+
+        {/* Sources légales */}
+        {guide.legalSources && guide.legalSources.length > 0 && (
+          <div className="bg-white rounded-2xl border border-neutral-100 p-5 mb-6">
+            <h2 className="text-sm font-semibold text-neutral-700 flex items-center gap-2 mb-3">
+              <BookOpen size={14} className="text-neutral-400" />
+              Sources légales
+            </h2>
+            <ul className="space-y-2">
+              {guide.legalSources.map((source) => (
+                <li key={source.url} className="flex items-start gap-2">
+                  <span className="mt-1.5 w-1 h-1 rounded-full bg-neutral-300 shrink-0" />
+                  <a
+                    href={source.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-neutral-600 hover:text-brand-600 inline-flex items-center gap-1"
+                  >
+                    {source.label}
+                    <ExternalLink size={10} className="opacity-60" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <p className="text-[10px] text-neutral-400 mt-3">
+              Ce guide est fourni à titre informatif et ne remplace pas un
+              conseil juridique. Les lois peuvent évoluer — vérifiez toujours
+              la version en vigueur auprès des sources officielles.
+            </p>
+          </div>
+        )}
 
         {/* Guides liés */}
         {related.length > 0 && (

@@ -182,6 +182,12 @@ export function formatRating(rating: number): string {
   return rating.toFixed(1)
 }
 
-export function getProviderDisplayName(provider: Pick<Provider, 'first_name' | 'last_name'>): string {
-  return `${provider.first_name} ${provider.last_name.charAt(0)}.`
-}
+/**
+ * Renvoie le nom d'affichage public d'un prestataire : "Prenom L.".
+ * Applique la normalisation de casse (cf. src/lib/providerDisplay.ts).
+ *
+ * Re-export depuis providerDisplay pour preserver l'API publique de
+ * types/directory.ts. Les nouveaux consumers peuvent importer
+ * directement depuis @/lib/providerDisplay.
+ */
+export { getProviderDisplayName } from '@/lib/providerDisplay'

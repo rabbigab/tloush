@@ -1,11 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle, AlertTriangle, Loader2 } from 'lucide-react'
+
+type SessionStatus = 'checking' | 'valid' | 'invalid'
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('')
@@ -13,7 +15,20 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  // Guard : la page ne doit etre accessible que via un lien de
+  // reinitialisation valide (Supabase pose une session de type
+  // recovery apres le clic sur le magic link envoye par email).
+  // Si aucune session, on affiche une erreur explicite et on
+  // redirige vers /auth/forgot-password.
+  const [sessionStatus, setSessionStatus] = useState<SessionStatus>('checking')
   const router = useRouter()
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getSession().then(({ data }) => {
+      setSessionStatus(data.session ? 'valid' : 'invalid')
+    })
+  }, [])
 
   const passwordLength = password.length
   const passwordStrong = passwordLength >= 8
@@ -51,6 +66,56 @@ export default function ResetPasswordPage() {
     setTimeout(() => {
       router.push('/dashboard')
     }, 2000)
+  }
+
+  if (sessionStatus === 'checking') {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center px-4">
+        <div className="w-full max-w-md text-center">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
+            <Loader2 size={28} className="animate-spin text-brand-600 dark:text-brand-400 mx-auto mb-4" />
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Verification du lien de reinitialisation...
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (sessionStatus === 'invalid') {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <Link href="/" className="inline-flex flex-col items-center gap-3">
+              <Image src="/logo.png" alt="Tloush" width={1024} height={1024} className="h-20 sm:h-24 w-auto" unoptimized priority />
+            </Link>
+          </div>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 text-center">
+            <div className="w-16 h-16 bg-amber-50 dark:bg-amber-950/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle size={28} className="text-amber-600 dark:text-amber-400" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">Lien invalide ou expire</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+              Ce lien de reinitialisation n&apos;est plus valable. Les liens expirent au bout d&apos;une heure. Demandez un nouveau lien.
+            </p>
+            <Link
+              href="/auth/forgot-password"
+              className="inline-flex items-center justify-center w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-xl transition-colors"
+            >
+              Demander un nouveau lien
+            </Link>
+            <Link
+              href="/auth/login"
+              className="inline-block mt-3 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+            >
+              Retour a la connexion
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (success) {

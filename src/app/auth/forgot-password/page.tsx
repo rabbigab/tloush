@@ -109,6 +109,13 @@ export default function ForgotPasswordPage() {
                   {loading ? 'Envoi en cours...' : 'Envoyer le lien'}
                 </button>
               </form>
+
+              <div className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
+                Pas encore de compte ?{' '}
+                <Link href="/auth/register" className="text-brand-600 hover:underline font-medium">
+                  Créer un compte
+                </Link>
+              </div>
             </>
           )}
         </div>

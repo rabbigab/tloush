@@ -5,6 +5,7 @@ import type { Metadata } from 'next'
 import DirectoryProviderClient from './DirectoryProviderClient'
 import { ProviderJsonLd } from '@/components/directory/ProviderSchema'
 import { getAdminClient } from '@/lib/supabase/admin'
+import { normalizeFirstName, normalizeLastInitial } from '@/lib/providerDisplay'
 
 export const revalidate = 1800
 
@@ -25,11 +26,16 @@ export async function generateMetadata({
 
   if (!provider || !cat) return {}
 
-  const city = provider.service_areas?.[0] || 'Israel'
+  // Normalisation defensive : cf. src/lib/providerDisplay.ts pour
+  // justification (la DB contient parfois des noms mal capitalises).
+  const firstName = normalizeFirstName(provider.first_name)
+  const lastInitial = normalizeLastInitial(provider.last_name)
+  const city = provider.service_areas?.[0] || 'Israël'
+  const catLabel = cat.label
 
   return {
-    title: `${provider.first_name} ${provider.last_name.charAt(0)}. — ${cat.label} francophone a ${city}`,
-    description: `${provider.first_name}, ${cat.label.toLowerCase()} francophone a ${city}. ${provider.total_reviews > 0 ? `${provider.average_rating}/5 (${provider.total_reviews} avis).` : ''} Contactez gratuitement via Tloush Recommande.`,
+    title: `${firstName} ${lastInitial} — ${catLabel} francophone à ${city}`,
+    description: `${firstName}, ${catLabel.toLowerCase()} francophone à ${city}. ${provider.total_reviews > 0 ? `${provider.average_rating}/5 (${provider.total_reviews} avis).` : ''} Contactez gratuitement via Tloush Recommande.`,
   }
 }
 

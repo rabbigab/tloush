@@ -21,11 +21,25 @@ export async function generateMetadata({
   const cat = getCategoryBySlug(categorie)
   if (!cat) return {}
 
+  // Audit #12 : si la categorie ne contient aucun prestataire actif,
+  // on noindex la page pour ne pas polluer les resultats Google avec
+  // des landings vides. Le sitemap.ts applique la meme logique.
+  const { count } = await getAdminClient()
+    .from('providers')
+    .select('id', { count: 'exact', head: true })
+    .eq('category', categorie)
+    .eq('status', 'active')
+
+  const isEmpty = !count || count === 0
+
   return {
     title: {
       absolute: `${cat.label === 'Climatisation' ? 'Technicien climatisation' : cat.label} francophone en Israel — References | Tloush Recommande`,
     },
     description: `Trouvez un ${cat.label === 'Climatisation' ? 'technicien climatisation' : cat.label.toLowerCase()} francophone et reference en Israel. Avis clients, notes, contact direct. Gratuit.`,
+    robots: isEmpty
+      ? { index: false, follow: true }
+      : { index: true, follow: true },
   }
 }
 
