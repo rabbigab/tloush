@@ -3492,6 +3492,189 @@ const HOLOCAUST_EXTRAS_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION C4 — 7 octobre / Kharvot Barzel (S16 du glossaire)
+// =====================================================
+// Sources :
+// - https://www.btl.gov.il/benefits/Hostile_action/Pages/default.aspx
+// - https://www.gov.il/he/departments/ministry_of_defense
+// - https://www.kolzchut.org.il/he/מלחמת_חרבות_ברזל
+//
+// Ces 4 aides sont specifiquement destinees aux victimes des evenements
+// du 7 octobre 2023 et de la guerre Kharvot Barzel (reservistes actifs +
+// familles de civils tues). Elles utilisent les champs ajoutes en etape B :
+// is_7octobre_victim, is_active_reservist, is_bereaved_family.
+
+const KHARVOT_BARZEL_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'maanak_sal_shikum_nifgaei_7_octobre',
+    category: 'special',
+    authority: 'misrad_habitahon',
+    title_fr: 'Grant + panier rehab victimes 7 octobre (Maanak Sal Shikum)',
+    title_he: 'מענק וסל שיקום לנפגעי 7 באוקטובר',
+    description_fr:
+      'Grant unique (5 000-28 720 NIS) + panier rehabilitation (4 800-30 000 NIS) versees par Misrad HaBitachon aux victimes directes ou familles endeuillees des evenements du 7 octobre 2023.',
+    full_description_fr:
+      'Dispositif specifique cree apres le 7 octobre 2023 par Misrad HaBitachon (Agaf HaShikum) pour ' +
+      'les victimes physiques, psychologiques, ou endeuillees des massacres et de la guerre Kharvot Barzel. ' +
+      'Trois niveaux selon gravite des sequelles : ' +
+      '- Niveau 1 (trauma leger sans incapacite durable) : grant 5 000 NIS + panier rehab 4 800 NIS ' +
+      '- Niveau 2 (trauma modere avec suivi prolonge)  : grant 12 400 NIS + panier rehab 15 000 NIS ' +
+      '- Niveau 3 (invalidite reconnue, deuil immediat) : grant 28 720 NIS + panier rehab 30 000 NIS ' +
+      'Le panier rehab couvre : psychotherapie individuelle et familiale (sans limite seances), ' +
+      'aides techniques, frais medicaux non couverts kupat holim, adaptation logement, soutien social. ' +
+      'Cumulable avec : pension mensuelle Nifgaei Peulot Eyva (si invalidite reconnue), aides enfants, ' +
+      'exonerations fiscales specifiques post-7/10.',
+    conditions: {
+      requires_7octobre_victim: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 12400 + 15000,  // mediane niveau 2
+    value_unit: 'NIS (grant + panier, versement unique, 3 niveaux)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_defense',
+    action_label: 'Demande grant victimes 7 octobre',
+    info_url: 'https://www.kolzchut.org.il/he/מלחמת_חרבות_ברזל',
+    disclaimer:
+      'Reserve aux victimes directes ou familles de victimes du 7 octobre 2023 et evenements Kharvot ' +
+      'Barzel. Reconnaissance formelle par Misrad HaBitachon obligatoire. Un coordinateur dedie est ' +
+      'assigne a chaque dossier — l\'accompagnement est gratuit via OneFamily, Natal, Enosh.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C4). Utilise le champ is_7octobre_victim ajoute en etape B. Complementaire au slug nifgaei_peulot_eyva (C2) qui couvre le regime general des victimes d\'actes hostiles.',
+  },
+  {
+    slug: 'kitzvat_mishpakha_nifgaei_peulot_eyva',
+    category: 'special',
+    authority: 'misrad_habitahon',
+    title_fr: 'Pension familles victimes civiles (Kitzvat Mishpakha)',
+    title_he: 'קצבת משפחה לנפגעי פעולות איבה',
+    description_fr:
+      'Pension mensuelle a vie versee aux familles endeuillees d\'une victime civile d\'actes hostiles (7 octobre, attentats, tirs de roquettes), graduee selon nombre d\'enfants, alignee sur le regime IDF.',
+    full_description_fr:
+      'Le regime mensuel pour les familles de victimes civiles est aligne sur celui des familles ' +
+      'endeuillees IDF (bereaved_family_benefits, deja present au catalogue). ' +
+      'Montants officiels 2026 (en vigueur 01/02/2026) : ' +
+      '- Sans enfant     : 10 525 NIS/mois ' +
+      '- Avec 1 enfant   : 12 995 NIS/mois ' +
+      '- Avec 2 enfants  : 14 834 NIS/mois ' +
+      '- Avec 3 enfants  : 16 673 NIS/mois ' +
+      '- Avec 4 enfants  : 18 512 NIS/mois ' +
+      '- Avec 5+ enfants : 20 350-24 028 NIS/mois (majoration) ' +
+      'SUPPLEMENT 1ere annee (deces depuis 07/10/2023) : +13 566 NIS/mois pendant 12 mois. ' +
+      'Orphelins adultes : ' +
+      '- 21-30 ans : 3 652 NIS/mois ' +
+      '- 30-40 ans : 2 000 NIS/mois ' +
+      '- 40-60 ans : prime unique 25 000 NIS ' +
+      '- 60+ ans   : prime unique 50 000 NIS ' +
+      'Cumulable avec : maanak_sal_shikum (grant initial), exonerations fiscales Misrad HaBitachon, ' +
+      'aides au logement, suivi psychologique gratuit a vie.',
+    conditions: {
+      requires_7octobre_victim: true,  // champ actif si victime OU famille de victime
+      requires_bereaved: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 10525 * 12,
+    typical_monthly_amount: 10525,
+    value_unit: 'NIS/mois (10 525-24 028 + supplement 1re annee post-7/10)',
+    application_url: 'https://www.mod.gov.il/',
+    action_label: 'Pension famille victime civile',
+    info_url: 'https://www.kolzchut.org.il/he/משפחות_נפגעי_פעולות_איבה',
+    disclaimer:
+      'Regime aligne sur bereaved_family_benefits (cf. SECTION 18) mais pour les victimes civiles ' +
+      '(non-militaires). Un coordinateur dedie Misrad HaBitachon est assigne. Supplement 1ere annee ' +
+      'reserve aux deces entre le 07/10/2023 et le 07/10/2024.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C4). Montants officiels identiques a bereaved_family_benefits car l\'Etat a harmonise les 2 regimes post-7/10. Specificite : s\'applique aux CIVILS (pas militaires).',
+  },
+  {
+    slug: 'tagmulei_miluim_kharvot_barzel',
+    category: 'military',
+    authority: 'bituach_leumi',
+    title_fr: 'Indemnisation reservistes Kharvot Barzel (Tagmulei Miluim)',
+    title_he: 'תגמולי מילואים - חרבות ברזל',
+    description_fr:
+      'Indemnite journaliere BTL versee aux reservistes actifs mobilises durant la guerre Kharvot Barzel : 328-1 730 NIS/jour selon salaire, en remplacement du salaire suspendu.',
+    full_description_fr:
+      'Regime BTL specifique aux reservistes de tsav-8 (mobilisation d\'urgence post-7/10/2023) et ' +
+      'tsav-8 successifs de la guerre Kharvot Barzel. ' +
+      'Montants 2026 (en vigueur 01/02/2026, indexes CPI) : ' +
+      '- Plancher minimum       : 328,76 NIS/jour (reservistes sans revenus prealables) ' +
+      '- Mediane salariale      : 750-1 200 NIS/jour (salaires moyens) ' +
+      '- Plafond legal           : 1 730,33 NIS/jour (reservistes a hauts revenus) ' +
+      'Calcul : 100 % du salaire journalier moyen des 3 derniers mois avant la mobilisation. ' +
+      'Pour les independants : base sur le dernier avis BITUAH (revenu net moyen 12 derniers mois). ' +
+      'Verse directement au reserviste (pas a l\'employeur) — l\'employeur, lui, ne paie plus le salaire ' +
+      'pendant la mobilisation mais recoit un remboursement BTL separement. ' +
+      'Cumulable avec : combat_reservist_bonuses_2026 (grant + voucher + aide parentale), ' +
+      'miluim_tax_credit_combat, miluim_low_income_supplement.',
+    conditions: {
+      requires_active_reservist: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 1000 * 60,  // ~60 jours moyenne premiere annee
+    typical_monthly_amount: 30000,  // 1000 NIS/jour * 30 jours
+    value_unit: 'NIS/jour (328-1 730 selon salaire)',
+    application_url: 'https://www.btl.gov.il/benefits/Reservists/Pages/default.aspx',
+    action_label: 'Demande tagmulei miluim',
+    info_url: 'https://www.kolzchut.org.il/he/תגמולי_מילואים',
+    disclaimer:
+      'Automatique pour les reservistes avec employeur (declare via Tofes 81 mensuel). Les independants ' +
+      'doivent deposer un dossier BTL avec justificatifs de revenus. Le bulletin de paie "tagmulei ' +
+      'miluim" remplace le bulletin de salaire employeur pendant la mobilisation.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C4). Montants officiels en vigueur 01/02/2026. Complementaire aux miluim_* deja presents au catalogue (bonus, credits, supplement bas revenu).',
+  },
+  {
+    slug: 'siyua_tipulim_miluim',
+    category: 'health',
+    authority: 'misrad_habitahon',
+    title_fr: 'Soutien therapeutique reservistes + foyer (Siyua Tipulim)',
+    title_he: 'סיוע טיפולים למשרתי מילואים ובני משפחה',
+    description_fr:
+      'Financement de psychotherapie, couple-therapie et therapie familiale pour les reservistes actifs et leur foyer (conjoint, enfants) durant et apres la mobilisation Kharvot Barzel.',
+    full_description_fr:
+      'Dispositif Misrad HaBitachon + Natal + Enosh cree post-7/10/2023 pour reconnaitre l\'impact ' +
+      'psychologique de la mobilisation prolongee sur le reserviste et sa famille. ' +
+      'Prestations (valeurs 2026) : ' +
+      '- Psychotherapie reserviste : 26 seances/an prises en charge (~500 NIS/seance = 13 000 NIS/an) ' +
+      '- Couple-therapie : 15 seances/an (~600 NIS/seance = 9 000 NIS/an) ' +
+      '- Therapie familiale (enfants) : 20 seances/an (~500 NIS/seance = 10 000 NIS/an) ' +
+      '- Groupes de soutien Natal / Enosh : gratuits, illimites ' +
+      '- Ligne d\'ecoute 24/7 (*6363 Natal) : gratuite ' +
+      'Conditions : ' +
+      '- Reserviste actif ayant servi ≥ 20 jours dans la guerre Kharvot Barzel ' +
+      '- OU conjoint / enfant d\'un reserviste remplissant la condition ci-dessus ' +
+      '- Prise en charge via Natal, Enosh, Hosen ou psychologue liberal agree Misrad HaBitachon ' +
+      'Duree : ouvert jusqu\'a 3 ans apres la fin de la mobilisation.',
+    conditions: {
+      requires_active_reservist: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 13000,  // psychotherapie reserviste base
+    value_unit: 'NIS/an (valeur des seances remboursees)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_defense',
+    action_label: 'Activer soutien therapeutique',
+    info_url: 'https://www.kolzchut.org.il/he/סיוע_נפשי_למשרתי_מילואים',
+    disclaimer:
+      'Appeler Natal (*6363) pour une premiere orientation — ligne gratuite 24/7. Les seances peuvent ' +
+      'aussi etre prises en charge via kupat holim (Clalit / Maccabi remboursent aussi post-7/10), ' +
+      'mais le circuit Misrad HaBitachon offre plus de seances sans franchise.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C4). Droit sous-utilise — beaucoup de reservistes pensent que c\'est uniquement pour les blesses physiques, alors que le soutien psy est ouvert a tous ceux qui ont servi ≥ 20 jours. Famille (conjoint, enfants) souvent oubliee.',
+  },
+]
+
+// =====================================================
 // SECTION 21 — Helper functions
 // =====================================================
 
@@ -3630,6 +3813,7 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...BTL_FAMILY_EXTRAS_BENEFITS,
   ...BTL_ACCIDENT_BENEFITS,
   ...HOLOCAUST_EXTRAS_BENEFITS,
+  ...KHARVOT_BARZEL_BENEFITS,
 ]
 
 // Calcul dynamique des stats au chargement
