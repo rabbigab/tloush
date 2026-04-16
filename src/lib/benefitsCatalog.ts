@@ -3282,6 +3282,213 @@ const HOLOCAUST_EXTRAS_BENEFITS: BenefitDefinition[] = [
     tax_year: 2026,
     notes: 'Ajout catalogue 16/04/2026 (etape C3). La modelisation par marital_status=widowed est imparfaite car elle declenche pour toute veuve/veuf, meme sans conjoint Shoah. A raffiner avec un champ profile is_widow_of_shoah_survivor.',
   },
+  {
+    slug: 'hatavot_refuiot_niztolei_shoah',
+    category: 'health',
+    authority: 'other',  // Rashut leNiztolei HaShoah + Kupot Holim
+    title_fr: 'Avantages medicaux survivants Shoah (Hatavot Refuiot)',
+    title_he: 'הטבות רפואיות לניצולי שואה',
+    description_fr:
+      'Exonerations et priorites medicales pour les survivants de la Shoah reconnus : gratuite consultations specialistes, medicaments, aides techniques, soins dentaires, psychotherapie.',
+    full_description_fr:
+      'Paquet d\'avantages medicaux cumules, vers par Rashut leNiztolei HaShoah + les 4 Kupot Holim : ' +
+      '- Exoneration totale des franchises (hishtatfut atzmit) sur medicaments ' +
+      '- Exoneration consultations specialistes (y compris privees conventionnees) ' +
+      '- Psychotherapie gratuite (sans limite de seances) via Amkha, Natal, Kupat Holim ' +
+      '- Soins dentaires majoritairement pris en charge (implants, protheses) ' +
+      '- Prioritaire en kinesitherapie, ergotherapie ' +
+      '- Aides techniques gratuites : fauteuil, deambulateur, lit medicalise ' +
+      '- Adaptation logement prise en charge jusqu\'a ~30 000 NIS (barres, monte-escalier) ' +
+      'Valeur totale typique : 10 000 a 25 000 NIS/an selon niveau de dependance. ' +
+      'Procedure : inscription aupres de sa kupat holim avec attestation de reconnaissance ' +
+      'Shoah — active automatiquement le profil beneficiaire (le "ot" / marque dans le dossier medical).',
+    conditions: {
+      requires_holocaust_survivor: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 15000,
+    value_unit: 'NIS/an (valeur des services et exonerations)',
+    application_url: 'https://www.gov.il/he/departments/the_authority_for_the_rights_of_holocaust_survivors',
+    action_label: 'Activer hatavot refuiot',
+    info_url: 'https://www.kolzchut.org.il/he/הטבות_רפואיות_לניצולי_שואה',
+    disclaimer:
+      'Necessite l\'activation du statut aupres de votre kupat holim (pas automatique pour les olim ' +
+      'recents meme reconnus Shoah). Apporter l\'attestation Rashut leNiztolei HaShoah ou Claims ' +
+      'Conference. Les avantages peuvent varier legerement selon Clalit / Maccabi / Meuhedet / Leumit.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Valeur 15k NIS/an est une estimation moyenne. Beaucoup de survivants non encore actives dans kupat holim — gain immediat possible.',
+  },
+  {
+    slug: 'taavurot_hatavot_shoah',
+    category: 'welfare',
+    authority: 'other',  // IEC, Mei Avivim, mairies
+    title_fr: 'Tarifs reduits utilities survivants Shoah (electricite, eau, taavura)',
+    title_he: 'הטבות תעריפי חשמל, מים ותחבורה לניצולי שואה',
+    description_fr:
+      'Reductions automatiques sur les factures d\'electricite (50% sur 400 kWh), eau (jusqu\'a 50% des blocs de base) et transport public (Rav-Kav profil Shoah ou 67+) pour les survivants reconnus.',
+    full_description_fr:
+      'Paquet de tarifs reduits sur les services publics pour les survivants de la Shoah reconnus : ' +
+      'Electricite (IEC / Israel Electric Corporation) : ' +
+      '- 50 % de reduction sur les 400 premiers kWh/mois (similaire seniors/invalides) ' +
+      '- Plafond economies : ~100-150 NIS/mois soit 1 200-1 800 NIS/an ' +
+      'Eau (Mei Avivim / societes locales) : ' +
+      '- Tarif bloc 1 gratuit ou a 50% pour les beneficiaires de la gmala mensuelle Shoah ' +
+      '- Economies : 50-150 NIS/mois selon consommation ' +
+      'Transport public : ' +
+      '- Les 67+ ont deja la gratuite totale (reforme 2025 — cf. rav_kav_senior_free) ' +
+      '- Les moins de 67 ans survivants ont un profil Rav-Kav reduit (50%) ' +
+      'Procedure : les reductions sont automatiques pour les beneficiaires actifs de la gmala mensuelle, ' +
+      'sinon demande une fois aupres de l\'operateur avec attestation Rashut.',
+    conditions: {
+      requires_holocaust_survivor: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2000,
+    value_unit: 'NIS/an (cumul electricite + eau + transport)',
+    application_url: 'https://www.iec.co.il/content/discounts',
+    action_label: 'Activer tarifs reduits',
+    info_url: 'https://www.kolzchut.org.il/he/הטבות_לניצולי_שואה',
+    disclaimer:
+      'Reductions automatiques pour les beneficiaires actifs de la gmala mensuelle. Si vous ne recevez ' +
+      'pas la gmala mais etes reconnu survivant (cas des beneficiaires Keren Sif 2 uniquement), ' +
+      'demande manuelle a chaque operateur avec attestation Rashut ou Claims.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Regroupe electricite + eau + transport dans une seule entree pour simplifier. Valeur 2k NIS/an est conservatrice.',
+  },
+  {
+    slug: 'maanak_hardship_fund_claims',
+    category: 'special',
+    authority: 'claims_conference',
+    title_fr: 'Hardship Fund + Supplemental (Claims Conference)',
+    title_he: 'קרן הקושי - כספי גרמניה',
+    description_fr:
+      'Paiement unique (~10 500 NIS) + supplement annuel (~5 540 NIS/an) verses par la Claims Conference aux survivants de la Shoah n\'ayant jamais recu de BEG mensuel allemand.',
+    full_description_fr:
+      'Hardship Fund (fonds d\'aide d\'urgence) cree en 1980 par la Claims Conference pour les survivants ' +
+      'qui n\'avaient pas pu beneficier du BEG directement (olim arrives en Israel avant 1953, ou ' +
+      'vivants dans des pays communistes). ' +
+      'Prestations : ' +
+      '- Hardship Fund (one-shot) : ~2 500 EUR (~10 500 NIS au taux actuel) a la reconnaissance ' +
+      '- Hardship Supplemental : ~1 320 EUR/an (~5 540 NIS/an) verse chaque annee aux beneficiaires ' +
+      '  du Hardship Fund qui n\'ont pas d\'autre pension allemande mensuelle ' +
+      'Conditions : ' +
+      '- Avoir survecu a : camp / ghetto / cachette / exode force ' +
+      '- NE PAS avoir de pension BEG allemande mensuelle ' +
+      '- NE PAS avoir deja recu le Hardship Fund (une fois par personne) ' +
+      'Procedure : dossier Claims Conference gratuit (pas besoin d\'avocat), delai moyen 6-18 mois. ' +
+      'Cumulable avec la gmala israelienne Rashut leNiztolei HaShoah et Article 2 Fund (selon categorie).',
+    conditions: {
+      requires_holocaust_survivor: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 5540,  // supplement annuel recurrent
+    value_unit: 'NIS/an (supplement) + one-shot 10 500 NIS',
+    application_url: 'https://www.claimscon.org/applynow',
+    action_label: 'Demande Hardship Fund',
+    info_url: 'https://www.claimscon.org/survivor-services/compensation-and-restitution/',
+    disclaimer:
+      'Dossier a deposer directement aupres de la Claims Conference (pas via BTL ni Rashut). Examiner ' +
+      'avant depot si vous n\'avez pas deja une BEG mensuelle (les deux ne sont pas cumulables). ' +
+      'La majorite des olim d\'Afrique du Nord et d\'Europe de l\'Est n\'ont pas de BEG et sont donc ' +
+      'eligibles au Hardship.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Montants 2026 confirmes via claimscon.org / glossaire. Hardship est l\'aide la plus accessible — ne necessite pas de preuve de camp, juste presence en zone occupee.',
+  },
+  {
+    slug: 'keren_sif2_article2_fund',
+    category: 'special',
+    authority: 'claims_conference',
+    title_fr: 'Article 2 Fund / Keren Sif 2 (angle Claims Conference)',
+    title_he: 'קרן סעיף 2 - ארטיקל 2',
+    description_fr:
+      'Meme fonds que kitzva_keren_sif2_claims, mais accessible via la Claims Conference directement (utile pour les survivants ex-URSS residant hors Israel ou en diaspora).',
+    full_description_fr:
+      'Article 2 Fund : pension mensuelle de 667 EUR (~2 734 NIS) versee par la Claims Conference ' +
+      'aux survivants de la Shoah ayant survecu a un camp / ghetto / cachette en zone d\'occupation ' +
+      'nazie ou sovietique. Financement : gouvernement allemand. ' +
+      'Double entree dans le catalogue : ' +
+      '- kitzva_keren_sif2_claims : angle administratif israelien (BTL / Rashut), profile shoah_period=ex_urss ' +
+      '- keren_sif2_article2_fund : angle Claims Conference (international, pour les survivants residant ' +
+      '  hors Israel ou en diaspora sovietique recente) ' +
+      'Conditions communes : ' +
+      '- Passage en zone nazie ou sovietique occupee entre 1933 et 1945 (camp, ghetto, cachette ≥ 18 mois) ' +
+      '- Pas de pension BEG mensuelle ni de gmala israelienne Shoah ' +
+      'Procedure : dossier Claims Conference gratuit (pas via BTL ni Rashut). Residents hors Israel ' +
+      'a l\'etranger peuvent deposer via les bureaux Claims New York / Francfort / Tel Aviv.',
+    conditions: {
+      required_shoah_period: ['ex_urss', 'post_1953'],
+      requires_resident: true,
+    },
+    estimated_annual_value: 2734 * 12,
+    typical_monthly_amount: 2734,
+    value_unit: 'NIS/mois (~667 EUR convertis)',
+    application_url: 'https://www.claimscon.org/applynow',
+    action_label: 'Demande Article 2 Fund',
+    info_url: 'https://www.claimscon.org/our-work/compensation/background/article-2/',
+    disclaimer:
+      'ATTENTION : doublon intentionnel avec kitzva_keren_sif2_claims — meme fonds, 2 angles differents. ' +
+      'Pour eviter les doubles paiements, Claims Conference croise les listes avec Rashut. Ne pas deposer ' +
+      'les deux en parallele — choisir l\'angle selon residence (Israel = Rashut, diaspora = Claims).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Doublon volontaire avec kitzva_keren_sif2_claims pour couvrir les deux angles (BTL vs Claims). Inclut post_1953 en plus de ex_urss car le fonds accepte aussi les olim apres 1953 sous certaines conditions.',
+  },
+  {
+    slug: 'kitzva_beg_niztolei_shoah',
+    category: 'special',
+    authority: 'other',  // Bundesamt fur zentrale Dienste (Allemagne)
+    title_fr: 'Pension BEG (reparations allemandes directes)',
+    title_he: 'קצבת BEG - פיצויים מגרמניה',
+    description_fr:
+      'Pension mensuelle versee directement par le Tresor allemand (Bundesamt) aux survivants de la Shoah beneficiaires du BEG (Bundesentschadigungsgesetz, loi 1953-1965) ayant deja un dossier actif.',
+    full_description_fr:
+      'Le BEG (Bundesentschadigungsgesetz) est la loi allemande de reparation des victimes du nazisme ' +
+      'votee en 1953. Elle offrait une pension mensuelle a vie aux survivants qui pouvaient prouver : ' +
+      '- Residence en Allemagne avant 1945 ' +
+      '- Prejudice pour motif racial, religieux ou politique ' +
+      '- Depot de dossier dans les delais legaux (majoritairement clos en 1965) ' +
+      'Montants 2026 : tres variables selon le dossier initial (type de prejudice, duree de detention, ' +
+      'statut de refugie, etc.). Fourchette typique : 300-2 500 EUR/mois (1 200-10 000 NIS/mois). ' +
+      'IMPORTANT : les delais de depot sont EXPIRES depuis plus de 50 ans. Cette entree concerne ' +
+      'UNIQUEMENT les beneficiaires existants qui ont deja un dossier BEG actif, pour les aider a : ' +
+      '- Verifier que leur pension est indexee correctement (revalorisations automatiques allemandes) ' +
+      '- Transferer le dossier en cas de demenagement (France → Israel par exemple) ' +
+      '- Activer la pension survivant au conjoint apres deces ' +
+      'Les nouveaux dossiers doivent plutot etre deposes via Claims Conference (Article 2 Fund, ' +
+      'Hardship Fund) ou Rashut leNiztolei HaShoah.',
+    conditions: {
+      requires_holocaust_survivor: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 800 * 12,  // mediane fourchette 300-2500 EUR
+    typical_monthly_amount: 800,
+    value_unit: 'NIS/mois (~200 EUR mediane, tres variable)',
+    application_url: 'https://www.bva.bund.de/DE/Services/Buerger/Social/BEG/beg_node.html',
+    action_label: 'Infos BEG (Bundesamt allemand)',
+    info_url: 'https://www.kolzchut.org.il/he/תגמולים_מגרמניה_BEG',
+    disclaimer:
+      'IMPORTANT : les delais legaux pour ouvrir un NOUVEAU dossier BEG sont expires depuis 1965. ' +
+      'Cette entree ne concerne que les beneficiaires existants. Pour une premiere demande, utiliser ' +
+      'plutot maanak_hardship_fund_claims ou kitzva_keren_sif2_claims (Article 2 Fund). Si vous pensez ' +
+      'qu\'un membre de votre famille a ou aurait du avoir un BEG : contactez Claims Conference pour ' +
+      'audit de dossier.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Entree "historique" — la plupart des beneficiaires ont deja leur dossier. Utile pour les survivants transferant leur dossier vers Israel, ou les veufs/veuves souhaitant activer la pension de conjoint.',
+  },
 ]
 
 // =====================================================
