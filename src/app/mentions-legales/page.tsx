@@ -3,7 +3,7 @@ import Footer from "@/components/layout/Footer";
 import { Scale } from "lucide-react";
 
 export const metadata = {
-  title: "Mentions légales — Tloush",
+  title: "Mentions légales",
   description: "Mentions légales du service Tloush.",
 };
 

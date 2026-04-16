@@ -5,7 +5,7 @@ import AdminDashboard from './AdminDashboard'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Admin — Tloush',
+  title: 'Admin',
   robots: { index: false, follow: false },
 }
 

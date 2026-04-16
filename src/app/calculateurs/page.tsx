@@ -13,7 +13,7 @@ import {
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Calculateurs salaire Israël — Tloush",
+  title: "Calculateurs salaire Israël",
   description:
     "Calculez votre salaire net, vos indemniés de licenciement et vos congés payés en Israël. Outils gratuits pour salariés francophones.",
 };

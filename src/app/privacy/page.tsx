@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Politique de confidentialité — Tloush",
+  title: "Politique de confidentialité",
   description:
     "Comment Tloush protège vos données personnelles et vos documents. RGPD, chiffrement, conservation, droits des utilisateurs.",
 };

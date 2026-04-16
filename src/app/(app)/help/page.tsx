@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Aide — Tloush',
+  title: 'Aide',
   description: 'Guides pratiques pour comprendre vos documents administratifs israéliens.',
 }
 

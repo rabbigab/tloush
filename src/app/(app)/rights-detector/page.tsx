@@ -5,7 +5,7 @@ import RightsDetectorClient from './RightsDetectorClient'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Mes droits detectes — Tloush',
+  title: 'Mes droits detectes',
   description: 'Decouvrez les droits et aides auxquels vous avez potentiellement droit.',
 }
 

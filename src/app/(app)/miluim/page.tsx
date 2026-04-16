@@ -5,7 +5,7 @@ import MiluimClient from './MiluimClient'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Miluim — Tloush',
+  title: 'Miluim',
   description: 'Suivez vos periodes de miluim et estimez votre compensation Bituach Leumi.',
 }
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Calculateur congé maternité (chofesh leida) — Tloush",
+  title: "Calculateur congé maternité (chofesh leida)",
   description:
     "Calculez votre allocation maternité israélienne : durée du congé, montant des paiements Bituach Leumi, dates clés.",
 }

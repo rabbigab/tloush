@@ -5,7 +5,7 @@ import ReferralClient from './ReferralClient'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Parrainage — Tloush',
+  title: 'Parrainage',
   description: 'Parrainez vos amis et gagnez des analyses gratuites et des mois offerts.',
 }
 
