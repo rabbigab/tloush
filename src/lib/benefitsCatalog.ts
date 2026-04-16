@@ -4280,6 +4280,197 @@ const TAX_EXTRAS_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION C8 — Misrad HaShikun / Logement (S3 du glossaire)
+// =====================================================
+// Sources :
+// - https://www.gov.il/he/departments/ministry_of_construction_and_housing
+// - https://www.kolzchut.org.il/he/דיור_ציבורי
+// - https://www.kolzchut.org.il/he/מחיר_למשתכן
+// - https://www.kolzchut.org.il/he/סיוע_בשכר_דירה
+//
+// Ces 8 aides couvrent le logement social, l\'achat a prix reduit, l\'aide
+// au loyer et les adaptations pour publics specifiques. Elles completent
+// les entrees olim existantes (rental_assistance_olim, mashkanta_olim).
+
+const HOUSING_EXTRAS_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'dira_tziburit',
+    category: 'housing',
+    authority: 'misrad_hashikun',
+    title_fr: 'Logement social (Dira Tziburit)',
+    title_he: 'דיור ציבורי',
+    description_fr:
+      'Logement a loyer tres reduit (5-10% du prix du marche) attribue par Misrad HaShikun aux menages a revenus tres faibles remplissant les criteres sociaux.',
+    full_description_fr:
+      'Parc de logements publics gere par Amidar / Amigur / Prazot / Khalamish (operateurs agrees ' +
+      'Misrad HaShikun) : loyer massivement subventionne pour les menages eligibles. ' +
+      'Loyers typiques 2026 : 300-1 200 NIS/mois (selon ville et taille), vs marche a 3 000-8 000 NIS. ' +
+      'Economie mensuelle : 2 000-6 000 NIS. ' +
+      'Conditions cumulatives (strictes) : ' +
+      '- Revenus du menage < 60% du salaire moyen economie ' +
+      '- Pas de bien immobilier (ou vendu depuis > 10 ans) ' +
+      '- Priorite aux : familles 3+ enfants, monoparentaux, handicapes, survivants Shoah, Olim Hadashim ' +
+      '  dans leurs 5 premieres annees, veterans IDF, victimes violences conjugales ' +
+      '- Delai d\'attente : 3-10 ans selon ville et taille recherchee ' +
+      'Procedure : ' +
+      '- Dossier Misrad HaShikun (formulaire unique national) ' +
+      '- Examen par Vaadat Zakaut (commission d\'eligibilite) ' +
+      '- Inscription sur liste d\'attente par ville ' +
+      '- Attribution selon ordre + pointage social ' +
+      'Souvent cumule avec siyua_shkhar_dira en attendant l\'attribution.',
+    conditions: {
+      requires_resident: true,
+      max_monthly_income: 8000,
+    },
+    estimated_annual_value: 3000 * 12,  // economie sur loyer
+    typical_monthly_amount: 3000,
+    value_unit: 'NIS/mois (economie vs marche)',
+    application_url: 'https://www.gov.il/he/service/public_housing_application',
+    action_label: 'Demande dira tziburit',
+    info_url: 'https://www.kolzchut.org.il/he/דיור_ציבורי',
+    disclaimer:
+      'Delai d\'attente tres long (3-10 ans selon ville). Il vaut mieux cumuler avec siyua_shkhar_dira ' +
+      '(aide au loyer dans le prive) en parallele. Les Olim Hadashim ont priorite relative pendant ' +
+      '5 ans. Les revenus sont recontroles periodiquement : si ils depassent le seuil, le loyer ' +
+      'augmente progressivement ou le logement peut etre retire.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C8). Seuil revenus approximatif — a verifier annuellement. Complementaire a siyua_shkhar_dira (aide dans le prive).',
+  },
+  {
+    slug: 'dira_behanacha_mehir_lemishtaken',
+    category: 'housing',
+    authority: 'misrad_hashikun',
+    title_fr: 'Logement prix reduit Mehir LaMishtaken (loterie)',
+    title_he: 'דיור בהנחה - מחיר למשתכן',
+    description_fr:
+      'Programme de loteries publiques permettant aux primo-accedants eligibles d\'acheter un logement neuf a 20-40% sous le prix du marche (reduction typique 300 000-1 000 000 NIS).',
+    full_description_fr:
+      'Programme Mehir LaMishtaken lance en 2015 (actualise en Mehir Matara 2023+) : loteries de ' +
+      'lotissements construits sur terrains publics ILA, proposes aux primo-accedants eligibles a ' +
+      'un prix fixe par l\'Etat, inferieur au marche. ' +
+      'Economie typique 2026 : ' +
+      '- Peripherie (Arad, Karmiel, Afula) : -20 a -30 % vs marche = 250 000-500 000 NIS d\'economie ' +
+      '- Centre (Yavne, Rishon LeZion) : -15 a -25 % = 400 000-800 000 NIS ' +
+      '- Tel-Aviv / Jerusalem : rare, programmes limites, -10 a -15 % ' +
+      'Conditions (primo-accedants) : ' +
+      '- Pas de bien immobilier possede dans les 6 dernieres annees ' +
+      '- Couples / celibataires ≥ 21 ans ' +
+      '- Pas de plafond de revenus (sauf programmes speciaux low-income) ' +
+      '- Financement via mashkanta classique + apport personnel ≥ 20-25 % ' +
+      'Loterie gratuite sur gov.il par projet (certaines loteries ont 10 000+ candidats pour 100 ' +
+      'logements). La gagne est semi-aleatoire, ponderee par statut (famille, militaire, peripherie). ' +
+      'Delai construction : 2-5 ans apres loterie.',
+    conditions: {
+      min_age: 21,
+      requires_resident: true,
+    },
+    estimated_annual_value: 300000,  // economie capital (one-shot amorti)
+    value_unit: 'NIS (economie capital, versement unique)',
+    application_url: 'https://www.gov.il/he/service/mehirlamishtaken',
+    action_label: 'S\'inscrire a une loterie',
+    info_url: 'https://www.kolzchut.org.il/he/מחיר_למשתכן',
+    disclaimer:
+      'Loterie : les chances varient selon ville (peripherie = meilleure chance). Reservee aux primo-' +
+      'accedants. Necessite un apport personnel de 20-25 % + mashkanta approuvee (souvent olim utilisent ' +
+      'la mashkanta_olim en complement). Delai entre loterie et cle : 2-5 ans (projet en construction).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C8). Valeur 300k NIS est l\'economie capital typique. Pas un revenu annuel, a afficher differemment dans l\'UI.',
+  },
+  {
+    slug: 'siyua_shkhar_dira',
+    category: 'housing',
+    authority: 'misrad_hashikun',
+    title_fr: 'Aide au loyer panier logement (Siyua Shkhar Dira)',
+    title_he: 'סיוע בשכר דירה - סל דיור',
+    description_fr:
+      'Aide mensuelle au loyer pour les menages a revenus faibles n\'ayant pas acces au logement social (Dira Tziburit), versee directement au locataire ou a son compte.',
+    full_description_fr:
+      'Complement de Dira Tziburit (souvent mobilise en attendant l\'attribution d\'un logement public) : ' +
+      'Misrad HaShikun verse un subside mensuel au locataire pour l\'aider a payer son loyer dans le ' +
+      'marche prive. ' +
+      'Montants 2026 (selon situation familiale et ville) : ' +
+      '- Celibataire / couple sans enfants : 700-1 400 NIS/mois ' +
+      '- Famille avec 1-2 enfants          : 1 500-2 400 NIS/mois ' +
+      '- Famille 3+ enfants                 : 2 400-3 200 NIS/mois ' +
+      '- Parent isole avec enfants         : +500 NIS/mois bonus (voir slug suivant) ' +
+      'Conditions : ' +
+      '- Revenus du menage < 8 000-12 000 NIS/mois (selon taille famille) ' +
+      '- Pas de bien immobilier ' +
+      '- Bail locatif de minimum 12 mois avec un bailleur prive ' +
+      '- Residence israelienne ' +
+      'Versement : directement au compte bancaire du locataire (pas au bailleur), chaque mois, tant ' +
+      'que les conditions restent remplies. Recontrole annuel obligatoire.',
+    conditions: {
+      requires_resident: true,
+      max_monthly_income: 10000,
+    },
+    estimated_annual_value: 1500 * 12,
+    typical_monthly_amount: 1500,
+    value_unit: 'NIS/mois (700-3 200 selon situation familiale)',
+    application_url: 'https://www.gov.il/he/service/rental_assistance',
+    action_label: 'Demande sal dyur',
+    info_url: 'https://www.kolzchut.org.il/he/סיוע_בשכר_דירה',
+    disclaimer:
+      'Cumulable avec rental_assistance_olim (aide olim 1ere annee) pendant la 1ere annee. Recontrole ' +
+      'annuel : si revenus augmentent, l\'aide diminue ou s\'arrete. Pour les olim francophones, ' +
+      'Misrad HaShikun propose des formulaires en francais.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C8). Plafond revenus et montants approximatifs — gov.il publie une grille detaillee par ville et situation. A raffiner avec un tableau siyua_shkhar_dira.ts si besoin.',
+  },
+  {
+    slug: 'siyua_shkhar_dira_khad_horiot',
+    category: 'housing',
+    authority: 'misrad_hashikun',
+    title_fr: 'Aide loyer parent isole (Siyua Shkhar Dira Khad Horiot)',
+    title_he: 'סיוע בשכר דירה - הורה יחיד',
+    description_fr:
+      'Majoration de l\'aide au loyer pour les parents isoles (Im Khad Horit) avec enfants mineurs : +500 NIS/mois en moyenne par rapport au regime general.',
+    full_description_fr:
+      'Supplement Im Khad Horit : majoration de l\'aide au loyer standard (siyua_shkhar_dira) pour ' +
+      'reconnaitre la situation economique plus difficile des parents isoles. ' +
+      'Montants 2026 (supplement au regime general) : ' +
+      '- Parent isole avec 1 enfant  : +400-500 NIS/mois en plus de la base ' +
+      '- Parent isole avec 2 enfants : +500-700 NIS/mois ' +
+      '- Parent isole avec 3+ enfants: +700-1 000 NIS/mois ' +
+      'Plafonds revenus assouplis (par rapport a siyua_shkhar_dira standard) : ' +
+      '- Jusqu\'a ~9 000 NIS/mois pour 1 enfant ' +
+      '- Jusqu\'a ~13 000 NIS/mois pour 3+ enfants ' +
+      'Conditions Im Khad Horit : celibataire, divorce, separe ou veuf assumant seul les enfants ' +
+      '(meme reconnaissance que pour horim_yehidim en fiscal).',
+    conditions: {
+      required_marital_status: ['divorced', 'separated', 'widowed', 'single'],
+      min_children: 1,
+      requires_resident: true,
+      max_monthly_income: 12000,
+    },
+    estimated_annual_value: 500 * 12,  // supplement uniquement
+    typical_monthly_amount: 500,
+    value_unit: 'NIS/mois (supplement a cumuler avec siyua_shkhar_dira)',
+    application_url: 'https://www.gov.il/he/service/rental_assistance',
+    action_label: 'Demande aide parent isole',
+    info_url: 'https://www.kolzchut.org.il/he/סיוע_בשכר_דירה_להורה_יחיד',
+    disclaimer:
+      'Supplement cumulable avec siyua_shkhar_dira standard. Cocher "parent isole" dans le dossier + ' +
+      'joindre jugement de divorce / certificat de deces du conjoint. Les parents en garde alternee ' +
+      'doivent prouver la garde majoritaire (> 6 mois/an chez le parent demandeur).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C8). Valeur typique 500 NIS/mois est le supplement seul — la valeur totale percue inclut aussi la base siyua_shkhar_dira (~1 500 NIS/mois).',
+  },
+]
+
+// =====================================================
 // SECTION 21 — Helper functions
 // =====================================================
 
@@ -4422,6 +4613,7 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...NAKHEI_TSAHAL_BENEFITS,
   ...DISCHARGED_SOLDIERS_BENEFITS,
   ...TAX_EXTRAS_BENEFITS,
+  ...HOUSING_EXTRAS_BENEFITS,
 ]
 
 // Calcul dynamique des stats au chargement
