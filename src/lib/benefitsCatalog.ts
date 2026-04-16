@@ -3864,6 +3864,111 @@ const NAKHEI_TSAHAL_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION C6 — Khayalim Meshukrarim / Soldats liberes (S13 du glossaire)
+// =====================================================
+// Sources :
+// - https://www.hachvana.mod.gov.il/
+// - https://www.btl.gov.il/benefits/Discharged_soldiers/Pages/default.aspx
+// - https://www.kolzchut.org.il/he/חיילים_משוחררים
+//
+// Ces 2 aides ciblent les soldats recemment liberes (< 36 mois ou < 2 mois
+// selon l\'aide) via le champ discharge_date ajoute en etape B et la
+// nouvelle condition requires_recent_discharge_months.
+
+const DISCHARGED_SOLDIERS_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'nekudot_zikui_khayalim_meshukrarim',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Credits fiscaux post-liberation IDF (Nekudot Zikui Meshukrarim)',
+    title_he: 'נקודות זיכוי לחיילים משוחררים',
+    description_fr:
+      'Points de credit fiscaux additionnels (1 a 2 pts = 2 904-5 808 NIS/an) verses automatiquement aux salaries ayant termine leur service militaire, pendant 36 mois apres la demobilisation.',
+    full_description_fr:
+      'Rashut HaMisim accorde aux chayalim meshukrarim (soldats demobilises) des points de credit ' +
+      'fiscaux supplementaires pendant les 36 mois (3 ans) suivant la date de demobilisation : ' +
+      '- 1er et 2e tiers apres demobilisation (24 premiers mois) : 2 points de credit supplementaires ' +
+      '- 3e tiers (mois 25-36)                                     : 1 point de credit supplementaire ' +
+      '- Apres 36 mois : plus de credit specifique ' +
+      'Valeur 2026 d\'un point de credit : 2 904 NIS/an ' +
+      'Soit : ' +
+      '- Total maximum (24 premiers mois actifs)  : ~2 pts × 24/12 × 2 904 = ~11 616 NIS ' +
+      '- Derniere annee (mois 25-36)              : ~1 pt × 12/12 × 2 904 = ~2 904 NIS ' +
+      '- Sur l\'ensemble des 36 mois              : jusqu\'a ~14 520 NIS cumules ' +
+      'Conditions : ' +
+      '- Service militaire complet effectue (regulier : 2 ans femmes, 2 ans 4 mois hommes en 2025+) ' +
+      '  OU service reduit minimum 12 mois pour motif reconnu ' +
+      '- Salarie(e) apres demobilisation (les credits ne s\'appliquent qu\'au salaire) ' +
+      'Automatique via Tofes 101 rempli a la prise de poste — il suffit de cocher "Khayal meshukhrar" ' +
+      'et joindre le Teudat Shikhrur.',
+    conditions: {
+      requires_idf_service: true,
+      required_employment: ['employed', 'self_employed'],
+      requires_recent_discharge_months: 36,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2904 * 2,  // 2 points ~5 808 NIS/an
+    value_unit: 'NIS/an (2 pts x 2 904 pendant 24 mois, puis 1 pt x 12 mois)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Activer credits soldat libere',
+    info_url: 'https://www.kolzchut.org.il/he/נקודות_זיכוי_לחייל_משוחרר',
+    disclaimer:
+      'Automatique via le formulaire Tofes 101 a la prise de poste (cocher "Khayal meshukhrar" + ' +
+      'joindre Teudat Shikhrur). Si vous avez commence votre premier poste sans cocher la case, ' +
+      'vous pouvez reclamer retroactivement jusqu\'a 6 ans en arriere via Hachzar Mas Hakhnasa. ' +
+      'La condition requires_recent_discharge_months=36 exige discharge_date rempli au profil.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C6). Utilise requires_recent_discharge_months ajoute en etape C infra. Hard-fail si discharge_date absent du profil — incite l\'utilisateur a remplir ce champ.',
+  },
+  {
+    slug: 'ptor_bituakh_khayalim_meshukrarim',
+    category: 'welfare',
+    authority: 'bituach_leumi',
+    title_fr: 'Exemption cotisations BTL + sante 2 mois (Ptor Bituakh Meshukrarim)',
+    title_he: 'פטור מביטוח לחיילים משוחררים',
+    description_fr:
+      'Les soldats recemment liberes sont exemptes de cotisations Bituach Leumi + Bituach Briut pendant les 2 premiers mois post-demobilisation s\'ils sont sans emploi et en recherche active.',
+    full_description_fr:
+      'Dispositif BTL pour aider a la transition post-armee : ' +
+      '- Exoneration totale des cotisations mensuelles BTL (~200 NIS/mois) ' +
+      '- Exoneration totale des cotisations Bituach Briut (~180 NIS/mois) ' +
+      '- Duree : 2 mois calendaires a compter de la date de demobilisation ' +
+      'Conditions cumulatives : ' +
+      '- Demobilisation reguliere (Teudat Shikhrur) ' +
+      '- Sans emploi OU en formation pro reconnue pendant ces 2 mois ' +
+      '- Inscription a Lishkat HaTaasuka (ANPE israelienne) recommandee mais pas toujours obligatoire ' +
+      '- Avoir servi ≥ 12 mois (service regulier ou reduit reconnu) ' +
+      'Au-dela de 2 mois : passer en profil chomeur (havtachat hakhnasa) ou en salarie si prise de poste. ' +
+      'Cette exoneration s\'active automatiquement a la demobilisation — pas besoin de demander si BTL ' +
+      'est informe via le Teudat Shikhrur.',
+    conditions: {
+      requires_idf_service: true,
+      required_employment: ['unemployed'],
+      requires_recent_discharge_months: 2,
+      requires_resident: true,
+    },
+    estimated_annual_value: (200 + 180) * 2,  // 760 NIS total sur 2 mois
+    value_unit: 'NIS (~760 sur 2 mois, exoneration totale)',
+    application_url: 'https://www.btl.gov.il/benefits/Discharged_soldiers/Pages/default.aspx',
+    action_label: 'Infos exoneration meshukhrar',
+    info_url: 'https://www.kolzchut.org.il/he/פטור_מביטוח_לחיילים_משוחררים',
+    disclaimer:
+      'Exoneration automatique si BTL est informe de votre shikhrur. Si vous recevez une facture BTL ' +
+      'malgre tout pendant les 2 premiers mois post-service, contacter BTL avec votre Teudat Shikhrur. ' +
+      'Delai de contestation : 3 ans. Cumulable avec le pikadon (depot de demobilisation) et le ' +
+      'tahbura gratuite (rav_kav_discharged_soldier).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C6). Courte fenetre (2 mois) — utilise requires_recent_discharge_months=2 pour hard-fail si demobilisation trop ancienne. Valeur economique modeste (~760 NIS) mais importante pour les soldats solitaires sans soutien familial.',
+  },
+]
+
+// =====================================================
 // SECTION 21 — Helper functions
 // =====================================================
 
@@ -4004,6 +4109,7 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...HOLOCAUST_EXTRAS_BENEFITS,
   ...KHARVOT_BARZEL_BENEFITS,
   ...NAKHEI_TSAHAL_BENEFITS,
+  ...DISCHARGED_SOLDIERS_BENEFITS,
 ]
 
 // Calcul dynamique des stats au chargement
