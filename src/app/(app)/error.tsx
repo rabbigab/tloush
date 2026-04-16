@@ -39,7 +39,7 @@ export default function AppError({
             Réessayer
           </button>
           <Link
-            href="/inbox"
+            href="/dashboard"
             className="inline-flex items-center justify-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300 px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           >
             <Home size={16} />

@@ -25,7 +25,7 @@ export default async function AdminPage() {
       .select('is_admin')
       .eq('id', user.id)
       .single()
-    if (!profile?.is_admin) redirect('/inbox')
+    if (!profile?.is_admin) redirect('/dashboard')
   }
 
   return <AdminDashboard />

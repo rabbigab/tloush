@@ -21,13 +21,13 @@ export default function AppHeader({ userEmail }: { userEmail: string }) {
   return (
     <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 shadow-lg shadow-blue-500/10 dark:shadow-none">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <Link href="/inbox" className="flex items-center group">
+        <Link href="/dashboard" className="flex items-center group">
           <Image src="/logo.png" alt="Tloush" width={200} height={200} className="h-14 sm:h-16 w-auto brightness-0 invert group-hover:scale-105 transition-transform" priority unoptimized />
         </Link>
 
         <div className="flex items-center gap-1">
           <Link
-            href="/search"
+            href="/recherche"
             className="flex items-center justify-center min-h-[44px] min-w-[44px] text-blue-100 dark:text-slate-400 hover:text-white dark:hover:text-slate-200 hover:bg-white/10 dark:hover:bg-slate-800 rounded-xl transition-colors"
             aria-label="Recherche"
           >

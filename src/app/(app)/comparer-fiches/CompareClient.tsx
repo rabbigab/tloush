@@ -110,8 +110,8 @@ export default function CompareClient({ payslips }: { payslips: Payslip[] }) {
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 Uploadez au moins 2 fiches de paie dans votre inbox pour utiliser la comparaison.
               </p>
-              <Link href="/inbox" className="inline-flex items-center gap-1.5 mt-4 text-sm text-brand-600 font-medium hover:text-brand-700 min-h-[44px]">
-                Aller à l&apos;inbox
+              <Link href="/dashboard" className="inline-flex items-center gap-1.5 mt-4 text-sm text-brand-600 font-medium hover:text-brand-700 min-h-[44px]">
+                Aller au tableau de bord
                 <ArrowRight size={14} />
               </Link>
             </div>

@@ -346,7 +346,7 @@ export default function ExpensesClient({ expenses: initialExpenses, monthly = []
             Scannez vos factures (arnona, électricité, eau, internet, assurance...) pour suivre votre budget automatiquement.
           </p>
           <Link
-            href="/inbox"
+            href="/dashboard"
             className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
           >
             <FileText size={14} />

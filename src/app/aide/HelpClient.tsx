@@ -313,7 +313,7 @@ export default function HelpClient() {
         <p className="font-semibold text-slate-800 dark:text-slate-200 mb-1">Vous ne trouvez pas la réponse ?</p>
         <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Notre assistant IA peut répondre à toutes vos questions sur l&apos;administration israélienne.</p>
         <Link
-          href="/assistant"
+          href="/assistant-ia"
           className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors"
         >
           <MessageSquare size={14} />

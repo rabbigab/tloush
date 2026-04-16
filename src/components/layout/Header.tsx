@@ -79,7 +79,7 @@ export default function Header() {
           </button>
           {loggedIn ? (
             <Link
-              href="/inbox"
+              href="/dashboard"
               className="flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700 px-3 py-2 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-950/30 transition-colors"
             >
               <LayoutDashboard size={15} />
@@ -90,14 +90,14 @@ export default function Header() {
               Connexion
             </Link>
           )}
-          <Link href="/inbox" className="btn-primary text-sm py-2 px-4">
+          <Link href="/dashboard" className="btn-primary text-sm py-2 px-4">
             Analyser un document
           </Link>
         </nav>
 
         {/* Mobile: CTA + hamburger */}
         <div className="flex sm:hidden items-center gap-2">
-          <Link href="/inbox" className="btn-primary text-xs py-2 px-3">
+          <Link href="/dashboard" className="btn-primary text-xs py-2 px-3">
             Analyser
           </Link>
           <button
@@ -148,7 +148,7 @@ export default function Header() {
           </div>
           <div className="border-t border-neutral-100 dark:border-slate-700 pt-2 mt-2">
             {loggedIn ? (
-              <Link href="/inbox" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/30 rounded-lg">
+              <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/30 rounded-lg">
                 <LayoutDashboard size={16} />
                 Mon espace
               </Link>

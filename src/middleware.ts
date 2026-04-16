@@ -2,35 +2,28 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 // Routes protégées (nécessitent un compte)
+// Note : tous les slugs ont ete francises (P2). Les anciens chemins
+// /folders, /search, /referral, /assistant, /bank-import, /compare, /inbox
+// sont rediriges 308 par next.config.js — pas besoin d'entree middleware.
 const PROTECTED_ROUTES = [
-  '/inbox',
-  '/assistant',
+  '/assistant-ia',
   '/profile',
   '/dashboard',
-  '/compare',
+  '/comparer-fiches',
   // '/documents' couvre /documents/[id] (detail prive). La page index
   // /documents/ a ete supprimee (Chantier 1 P0), seule la sous-route [id] reste.
   '/documents',
-  '/folders',
+  '/mes-documents',
   '/expenses',
-  '/search',
+  '/recherche',
   '/admin',
-  // '/calculator' retire : la route redirige maintenant vers
-  // /calculateurs/brut-net (public) cf. audit technical-mapping #17.
-  // '/rights-check' et '/rights-detector' sont redirigees vers /aides
-  // par next.config.js (308 permanent, Chantier 1 P1). Pas besoin d'entree
-  // middleware dediee (la redirection est appliquee avant l'auth check).
   '/aides',
-  '/referral',
-  // '/help' retire : la page a ete supprimee, /aide (public) est desormais
-  // la source unique du centre d'aide (Chantier 1 P0).
+  '/parrainage',
   '/letters',
-  // '/bituach-leumi' retire : redirige 308 vers /aides (consolidation
-  // avec le catalogue 125 aides — cf. memory/audit_interface.md fusion).
   '/freelance',
   '/mashkanta',
   '/assurances',
-  '/bank-import',
+  '/import-bancaire',
 ]
 
 // Routes publiques qui n'ont pas besoin du middleware auth.
