@@ -5,8 +5,23 @@ import { createRateLimit } from "@/lib/rateLimit";
 import { requireAuth } from "@/lib/apiAuth";
 import { canUseFeature, incrementUsage } from "@/lib/subscription";
 import { extractTextFromImage, buildOcrContext } from "@/lib/ocrPreprocess";
-import type { DocumentType, DocumentAnalysis } from "@/types/scanner";
-import { SCAN_SYSTEM_PROMPTS, SCAN_USER_PROMPTS } from "@/lib/prompts";
+import type { DocumentType, DocumentAnalysis, DocumentDetection } from "@/types/scanner";
+import {
+  SCAN_SYSTEM_PROMPTS,
+  SCAN_USER_PROMPTS,
+  SCAN_DETECTION_SYSTEM,
+  SCAN_DETECTION_USER,
+} from "@/lib/prompts";
+
+const VALID_DOCUMENT_TYPES: DocumentType[] = [
+  "payslip",
+  "contract",
+  "officialLetter",
+  "taxNotice",
+  "lease",
+  "termination",
+  "universal",
+];
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -45,7 +60,11 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
-    const documentType = formData.get("documentType") as DocumentType | null;
+    const rawDocumentType = formData.get("documentType") as string | null;
+    const requestedType: DocumentType | null =
+      rawDocumentType && VALID_DOCUMENT_TYPES.includes(rawDocumentType as DocumentType)
+        ? (rawDocumentType as DocumentType)
+        : null;
 
     if (!file) {
       return NextResponse.json({ error: "Aucun fichier reçu" }, { status: 400 });
@@ -54,13 +73,6 @@ export async function POST(req: NextRequest) {
     // File validation
     const validationError = await validateFile(file);
     if (validationError) return validationError;
-
-    if (!documentType || !SYSTEM_PROMPTS[documentType]) {
-      return NextResponse.json(
-        { error: "Type de document invalide" },
-        { status: 400 }
-      );
-    }
 
     const arrayBuffer = await file.arrayBuffer();
     const fileBuffer = Buffer.from(arrayBuffer);
@@ -73,44 +85,19 @@ export async function POST(req: NextRequest) {
     const ocrContext = buildOcrContext(ocrResult);
     timing(`ocr_done (${ocrResult.text.length} chars)`);
 
-    // Build content based on file type
-    type ImageMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
-    type ContentBlock =
-      | { type: "text"; text: string }
-      | { type: "image"; source: { type: "base64"; media_type: ImageMediaType; data: string } }
-      | { type: "document"; source: { type: "base64"; media_type: "application/pdf"; data: string } };
-
-    let contentBlocks: ContentBlock[];
-
-    if (mimeType === "application/pdf") {
-      contentBlocks = [
-        { type: "text", text: USER_PROMPTS[documentType] },
-        {
-          type: "document",
-          source: {
-            type: "base64",
-            media_type: "application/pdf",
-            data: base64Data,
-          },
-        },
-      ];
+    // ─── Pass 1 : Détection automatique du type (si pas fourni) ───
+    let documentType: DocumentType;
+    let detection: DocumentDetection | null = null;
+    if (requestedType) {
+      documentType = requestedType;
     } else {
-      const imageMediaType = (
-        mimeType === "image/png" ? "image/png" : "image/jpeg"
-      ) as ImageMediaType;
-      contentBlocks = [
-        { type: "text", text: USER_PROMPTS[documentType] },
-        {
-          type: "image",
-          source: {
-            type: "base64",
-            media_type: imageMediaType,
-            data: base64Data,
-          },
-        },
-      ];
+      detection = await detectDocumentType(fileBuffer, base64Data, mimeType, ocrContext);
+      documentType = detection.type;
+      timing(`detection_done (${documentType}, confidence ${detection.confidence})`);
     }
 
+    // ─── Pass 2 : Analyse adaptée au type détecté/demandé ───
+    const contentBlocks = buildContentBlocks(SYSTEM_PROMPTS, USER_PROMPTS, documentType, base64Data, mimeType);
     const startTime = Date.now();
 
     // Build system prompt with cache_control pour prompt caching
@@ -194,11 +181,115 @@ export async function POST(req: NextRequest) {
       data,
       confidenceScore,
       processingTime,
+      detection, // peut être null si type imposé par l'appelant
     });
   } catch (err: unknown) {
     console.error("[/api/scan]", err);
     const message = err instanceof Error ? err.message : "Erreur inconnue";
     return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+// ─── Helpers ───
+
+type ImageMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+type ContentBlock =
+  | { type: "text"; text: string }
+  | { type: "image"; source: { type: "base64"; media_type: ImageMediaType; data: string } }
+  | { type: "document"; source: { type: "base64"; media_type: "application/pdf"; data: string } };
+
+function buildContentBlocks(
+  systemPrompts: Record<DocumentType, string>,
+  userPrompts: Record<DocumentType, string>,
+  documentType: DocumentType,
+  base64Data: string,
+  mimeType: string,
+): ContentBlock[] {
+  // systemPrompts argument kept for consistency but not used here
+  void systemPrompts;
+  if (mimeType === "application/pdf") {
+    return [
+      { type: "text", text: userPrompts[documentType] },
+      {
+        type: "document",
+        source: { type: "base64", media_type: "application/pdf", data: base64Data },
+      },
+    ];
+  }
+  const imageMediaType = (mimeType === "image/png" ? "image/png" : "image/jpeg") as ImageMediaType;
+  return [
+    { type: "text", text: userPrompts[documentType] },
+    {
+      type: "image",
+      source: { type: "base64", media_type: imageMediaType, data: base64Data },
+    },
+  ];
+}
+
+/**
+ * Premier appel Claude : classifie le document.
+ * Court (max 256 tokens), JSON strict. Fallback sur "universal" en cas d'échec.
+ */
+async function detectDocumentType(
+  _fileBuffer: Buffer,
+  base64Data: string,
+  mimeType: string,
+  ocrContext: string | null,
+): Promise<DocumentDetection> {
+  type DetectContentBlock = ContentBlock;
+  const content: DetectContentBlock[] =
+    mimeType === "application/pdf"
+      ? [
+          { type: "text", text: SCAN_DETECTION_USER },
+          {
+            type: "document",
+            source: { type: "base64", media_type: "application/pdf", data: base64Data },
+          },
+        ]
+      : [
+          { type: "text", text: SCAN_DETECTION_USER },
+          {
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: (mimeType === "image/png" ? "image/png" : "image/jpeg") as ImageMediaType,
+              data: base64Data,
+            },
+          },
+        ];
+
+  const systemBlocks: Array<{ type: "text"; text: string; cache_control?: { type: "ephemeral" } }> = [
+    { type: "text", text: SCAN_DETECTION_SYSTEM, cache_control: { type: "ephemeral" } },
+  ];
+  if (ocrContext) systemBlocks.push({ type: "text", text: ocrContext });
+
+  try {
+    const message = await (client.messages.create as Function)({
+      model: "claude-sonnet-4-5",
+      max_tokens: 256,
+      system: systemBlocks,
+      messages: [{ role: "user", content }],
+    }) as Anthropic.Message;
+
+    if (!message.content?.[0] || message.content[0].type !== "text") {
+      return { type: "universal", language: "other", confidence: 0 };
+    }
+    const cleaned = message.content[0].text
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
+    const parsed = JSON.parse(cleaned) as Partial<DocumentDetection>;
+    const type: DocumentType = VALID_DOCUMENT_TYPES.includes(parsed.type as DocumentType)
+      ? (parsed.type as DocumentType)
+      : "universal";
+    const language = (parsed.language as DocumentDetection["language"]) ?? "other";
+    const confidence = typeof parsed.confidence === "number"
+      ? Math.min(100, Math.max(0, parsed.confidence))
+      : 0;
+    return { type, language, confidence };
+  } catch (err) {
+    console.error("[/api/scan] detection failed, falling back to universal:", err);
+    return { type: "universal", language: "other", confidence: 0 };
   }
 }
 

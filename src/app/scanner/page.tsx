@@ -7,28 +7,26 @@ import Footer from "@/components/layout/Footer";
 import ProgressStepper from "@/components/shared/ProgressStepper";
 import UploadZone from "@/components/upload/UploadZone";
 import DisclaimerBlock from "@/components/shared/DisclaimerBlock";
-import { Loader2, ChevronRight, AlertCircle, CheckCircle, Eye } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle, Eye, Bell, Reply } from "lucide-react";
 import clsx from "clsx";
-import type { DocumentType, DocumentAnalysis, ScanApiResponse, DocumentTypeCard, PayslipAnalysis, ContractAnalysis, OfficialLetterAnalysis, TaxNoticeAnalysis, LeaseAnalysis, TerminationAnalysis } from "@/types/scanner";
+import type { DocumentAnalysis, ScanApiResponse, PayslipAnalysis, ContractAnalysis, OfficialLetterAnalysis, TaxNoticeAnalysis, LeaseAnalysis, TerminationAnalysis, UniversalAnalysis } from "@/types/scanner";
 import { DOCUMENT_TYPES } from "@/types/scanner";
 
 const SCANNER_STEPS: import("@/components/shared/ProgressStepper").Step[] = [
-  { id: 1, label: "Type de document", shortLabel: "Type" },
-  { id: 2, label: "Téléversement", shortLabel: "Upload" },
+  { id: 1, label: "Téléversement", shortLabel: "Upload" },
+  { id: 2, label: "Analyse", shortLabel: "Analyse" },
   { id: 3, label: "Résultats", shortLabel: "Résultats" },
 ];
 
-type LocalStep = "selectType" | "upload" | "analyzing" | "results";
+type LocalStep = "upload" | "analyzing" | "results";
 
 function ScannerContent() {
   const router = useRouter();
 
-  const [localStep, setLocalStep] = useState<LocalStep>("selectType");
-  const [selectedDocType, setSelectedDocType] = useState<DocumentType | null>(null);
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [localStep, setLocalStep] = useState<LocalStep>("upload");
   const [analysisResult, setAnalysisResult] = useState<ScanApiResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [, setIsAnalyzing] = useState(false);
 
   // Scroll to top on every step transition
   useEffect(() => {
@@ -37,48 +35,32 @@ function ScannerContent() {
 
   // Determine stepper step (1-based)
   const stepperStep =
-    localStep === "selectType" ? 1 :
-    localStep === "upload" ? 2 :
+    localStep === "upload" ? 1 :
     localStep === "analyzing" ? 2 :
     /* results */ 3;
 
-  // ---- Handle document type selection ----
-  const handleSelectDocType = (docType: DocumentType) => {
-    setSelectedDocType(docType);
+  // ---- Handle back from upload (reset) ----
+  const handleReset = () => {
     setLocalStep("upload");
-    setError(null);
-  };
-
-  // ---- Handle back from upload to type selection ----
-  const handleBackToTypes = () => {
-    setLocalStep("selectType");
-    setUploadedFile(null);
+    setAnalysisResult(null);
     setError(null);
   };
 
   // ---- Handle file upload ----
   const handleFileAccepted = async (file: File) => {
     setError(null);
-    setUploadedFile(file);
     setIsAnalyzing(true);
     setLocalStep("analyzing");
-
-    if (!selectedDocType) {
-      setError("Veuillez sélectionner un type de document.");
-      setLocalStep("selectType");
-      setIsAnalyzing(false);
-      return;
-    }
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 330_000);
 
     try {
+      // Mode auto : on n'envoie plus de documentType, l'API détecte.
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("documentType", selectedDocType);
 
-      console.log("[scanner] POST /api/scan", { docType: selectedDocType, fileName: file.name, size: file.size });
+      console.log("[scanner] POST /api/scan (auto-detect)", { fileName: file.name, size: file.size });
       const response = await fetch("/api/scan", {
         method: "POST",
         body: formData,
@@ -134,14 +116,6 @@ function ScannerContent() {
     }
   };
 
-  // ---- Handle back from results ----
-  const handleBackToUpload = () => {
-    setLocalStep("upload");
-    setAnalysisResult(null);
-    setUploadedFile(null);
-    setError(null);
-  };
-
   // ---- Handle consulting expert ----
   const handleConsultExpert = () => {
     // Store scan result in sessionStorage or route to experts
@@ -159,76 +133,21 @@ function ScannerContent() {
           <ProgressStepper steps={SCANNER_STEPS} currentStep={stepperStep} />
         </div>
 
-        {/* ===== STEP 1 — SELECT DOCUMENT TYPE ===== */}
-        {localStep === "selectType" && (
+        {/* ===== STEP 1 — UPLOAD (détection automatique) ===== */}
+        {localStep === "upload" && (
           <div className="space-y-6 animate-fade-in-up">
-            <div>
-              <h2 className="section-title">Quel type de document analysez-vous ?</h2>
-              <p className="section-subtitle">
-                Sélectionnez le type de document hébraïque que vous souhaitez analyser.
-              </p>
-            </div>
-
-            {/* Pre-warning auth (audit #26) : annonce la friction auth avant
-                que l'utilisateur ne depose son fichier, evite l'erreur 401
-                post-upload. */}
-            <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 rounded-xl px-4 py-3 flex items-start gap-3">
-              <AlertCircle size={16} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-              <p className="text-xs text-blue-900 dark:text-blue-200 leading-relaxed">
-                <strong>Compte gratuit requis.</strong> Apres le choix du type, vous serez invité a créer un compte (3 analyses offertes) avant l&apos;upload du document. Aucune carte bancaire demandée.
-              </p>
-            </div>
-
-            {/* Document type cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {DOCUMENT_TYPES.map((docType) => (
-                <button
-                  key={docType.id}
-                  onClick={() => handleSelectDocType(docType.id)}
-                  className={clsx(
-                    "card p-4 text-left transition-all duration-200",
-                    "border-2 hover:border-brand-400 hover:shadow-md",
-                    "active:scale-[0.98]",
-                    selectedDocType === docType.id
-                      ? "border-brand-500 bg-brand-50"
-                      : "border-neutral-200"
-                  )}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-2xl">{docType.icon}</span>
-                        <h3 className="font-semibold text-neutral-900">{docType.label}</h3>
-                      </div>
-                      <p className="text-sm text-neutral-600">{docType.description}</p>
-                    </div>
-                    <ChevronRight size={20} className="text-brand-400 shrink-0 ml-2" />
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <DisclaimerBlock compact />
-          </div>
-        )}
-
-        {/* ===== STEP 2 — UPLOAD ===== */}
-        {localStep === "upload" && selectedDocType && (
-          <div className="space-y-6 animate-fade-in-up">
-            <div className="flex items-center gap-3 mb-2">
-              <button
-                onClick={handleBackToTypes}
-                className="text-brand-600 hover:text-brand-700 text-sm font-semibold flex items-center gap-1"
-              >
-                ← Retour
-              </button>
-            </div>
-
             <div>
               <h2 className="section-title">Téléversez votre document</h2>
               <p className="section-subtitle">
-                Glissez-déposez votre fichier ou sélectionnez-le.
-                Formats acceptés : PDF, JPG, PNG.
+                Nous détectons automatiquement le type (fiche de paie, bail, courrier officiel, facture, etc.) et produisons l'analyse adaptée. Formats : PDF, JPG, PNG.
+              </p>
+            </div>
+
+            {/* Pre-warning auth (audit #26) */}
+            <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 rounded-xl px-4 py-3 flex items-start gap-3">
+              <AlertCircle size={16} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-blue-900 dark:text-blue-200 leading-relaxed">
+                <strong>Compte gratuit requis.</strong> Vous serez invité à créer un compte (3 analyses offertes) avant l&apos;upload. Aucune carte bancaire demandée.
               </p>
             </div>
 
@@ -245,7 +164,7 @@ function ScannerContent() {
           </div>
         )}
 
-        {/* ===== STEP 2b — ANALYZING ===== */}
+        {/* ===== STEP 2 — ANALYZING ===== */}
         {localStep === "analyzing" && (
           <div className="card flex flex-col items-center justify-center gap-6 py-16 animate-fade-in-up">
             <div className="relative">
@@ -258,8 +177,7 @@ function ScannerContent() {
                 Analyse en cours…
               </h3>
               <p className="text-sm text-neutral-500 max-w-sm">
-                Nous lisons et analysons votre document hébraïque.
-                Cela prend quelques secondes.
+                Identification du type puis extraction des données. Cela prend 15 à 30 secondes.
               </p>
             </div>
             <div className="flex flex-col gap-2 text-xs text-neutral-400 items-start">
@@ -269,11 +187,11 @@ function ScannerContent() {
               </span>
               <span className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 bg-brand-400 rounded-full animate-pulse animation-delay-100" />
-                Identification du contenu…
+                Détection automatique du type…
               </span>
               <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-neutral-300 rounded-full" />
-                Extraction des données…
+                <span className="w-1.5 h-1.5 bg-brand-400 rounded-full animate-pulse animation-delay-200" />
+                Extraction des données clés…
               </span>
             </div>
           </div>
@@ -284,10 +202,10 @@ function ScannerContent() {
           <div className="space-y-6 animate-fade-in-up">
             <div className="flex items-center gap-3 mb-2">
               <button
-                onClick={handleBackToUpload}
+                onClick={handleReset}
                 className="text-brand-600 hover:text-brand-700 text-sm font-semibold flex items-center gap-1"
               >
-                ← Modifier
+                ← Analyser un autre document
               </button>
             </div>
 
@@ -393,7 +311,7 @@ function ScannerContent() {
                 Consulter un expert
               </button>
               <button
-                onClick={handleBackToTypes}
+                onClick={handleReset}
                 className="btn btn-secondary w-full"
               >
                 Analyser un autre document
@@ -446,9 +364,160 @@ function ScanResultsDisplay({ result }: ScanResultsDisplayProps) {
       return <LeaseResults data={data as LeaseAnalysis} />;
     case "termination":
       return <TerminationResults data={data as TerminationAnalysis} />;
+    case "universal":
+      return <UniversalResults data={data as UniversalAnalysis} />;
     default:
       return null;
   }
+}
+
+function UniversalResults({ data }: { data: UniversalAnalysis }) {
+  const fmtAmount = (amt: number, currency: string) => {
+    const symbol = currency === "NIS" ? "₪" : currency === "EUR" ? "€" : currency === "USD" ? "$" : ` ${currency}`;
+    return `${amt.toLocaleString("fr-FR", { maximumFractionDigits: 2 })}${symbol === " " + currency ? symbol : ` ${symbol}`}`.trim();
+  };
+
+  const fmtDate = (iso: string | null, fallback: string) => {
+    if (!iso) return fallback;
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? fallback : d.toLocaleDateString("fr-FR");
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Catégorie détectée */}
+      {data.documentCategory && (
+        <div className="card p-4 bg-info/5 border-l-4 border-l-info">
+          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1">Catégorie détectée</p>
+          <p className="text-base font-semibold text-neutral-900">{data.documentCategory}</p>
+        </div>
+      )}
+
+      {/* Résumé */}
+      {data.summary && (
+        <div className="card p-4 bg-brand-50">
+          <h4 className="font-semibold text-neutral-900 mb-2 text-sm">Résumé</h4>
+          <p className="text-sm text-neutral-700 leading-relaxed">{data.summary}</p>
+        </div>
+      )}
+
+      {/* Éléments clés */}
+      {(data.keyElements.dates.length > 0 ||
+        data.keyElements.amounts.length > 0 ||
+        data.keyElements.names.length > 0 ||
+        data.keyElements.institutions.length > 0) && (
+        <div className="card p-4">
+          <h4 className="font-semibold text-neutral-900 mb-3 text-sm">Éléments clés</h4>
+          <div className="space-y-3 text-sm">
+            {data.keyElements.dates.length > 0 && (
+              <div>
+                <p className="text-xs uppercase text-neutral-500 font-semibold mb-1">Dates</p>
+                <ul className="space-y-1">
+                  {data.keyElements.dates.map((d, i) => (
+                    <li key={i} className="flex justify-between gap-3">
+                      <span className="text-neutral-600">{d.label}</span>
+                      <span className="font-medium text-neutral-900">{fmtDate(d.iso, d.value)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {data.keyElements.amounts.length > 0 && (
+              <div>
+                <p className="text-xs uppercase text-neutral-500 font-semibold mb-1">Montants</p>
+                <ul className="space-y-1">
+                  {data.keyElements.amounts.map((a, i) => (
+                    <li key={i} className="flex justify-between gap-3">
+                      <span className="text-neutral-600">{a.label}</span>
+                      <span className="font-medium text-neutral-900">{fmtAmount(a.amount, a.currency)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {data.keyElements.names.length > 0 && (
+              <div>
+                <p className="text-xs uppercase text-neutral-500 font-semibold mb-1">Personnes</p>
+                <ul className="space-y-1">
+                  {data.keyElements.names.map((n, i) => (
+                    <li key={i} className="flex justify-between gap-3">
+                      <span className="text-neutral-600">{n.label}</span>
+                      <span className="font-medium text-neutral-900">{n.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {data.keyElements.institutions.length > 0 && (
+              <div>
+                <p className="text-xs uppercase text-neutral-500 font-semibold mb-1">Organisations</p>
+                <ul className="space-y-1">
+                  {data.keyElements.institutions.map((inst, i) => (
+                    <li key={i} className="flex justify-between gap-3">
+                      <span className="text-neutral-600">{inst.label}</span>
+                      <span className="font-medium text-neutral-900">{inst.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Actions suggérées */}
+      {data.suggestedActions.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="font-semibold text-neutral-900 text-sm">Actions suggérées</h4>
+          {data.suggestedActions.map((action, idx) => (
+            <div
+              key={idx}
+              className="card p-4 border-l-4 border-l-brand-400 bg-brand-50/40"
+            >
+              <div className="flex items-start gap-3">
+                {action.type === "reminder" ? (
+                  <Bell size={18} className="text-brand-600 shrink-0 mt-0.5" />
+                ) : (
+                  <Reply size={18} className="text-brand-600 shrink-0 mt-0.5" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-neutral-900 text-sm mb-1">{action.title}</p>
+                  <p className="text-xs text-neutral-700 mb-2">{action.description}</p>
+                  {action.type === "reminder" && action.dueDate && (
+                    <p className="text-xs text-neutral-500">
+                      Échéance : <span className="font-semibold text-neutral-900">{fmtDate(action.dueDate, action.dueDate)}</span>
+                    </p>
+                  )}
+                  {action.type === "reply" && action.responseTemplate && (
+                    <details className="mt-2">
+                      <summary className="text-xs font-semibold text-brand-700 cursor-pointer hover:text-brand-800">
+                        Voir le modèle de réponse
+                      </summary>
+                      <pre className="mt-2 p-3 bg-white border border-neutral-200 rounded-lg text-xs text-neutral-800 whitespace-pre-wrap font-sans">
+                        {action.responseTemplate}
+                      </pre>
+                    </details>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Traduction */}
+      {data.translation && (
+        <details className="card p-4">
+          <summary className="font-semibold text-neutral-900 text-sm cursor-pointer hover:text-brand-700">
+            Traduction complète HE→FR
+          </summary>
+          <p className="text-sm text-neutral-700 mt-3 whitespace-pre-wrap leading-relaxed">
+            {data.translation}
+          </p>
+        </details>
+      )}
+    </div>
+  );
 }
 
 function PayslipResults({ data }: { data: PayslipAnalysis }) {
