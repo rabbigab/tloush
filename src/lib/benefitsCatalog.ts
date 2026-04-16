@@ -5279,6 +5279,180 @@ const WELFARE_HEALTH_EXTRAS_BENEFITS: BenefitDefinition[] = [
     tax_year: 2026,
     notes: 'Ajout catalogue 16/04/2026 (etape C10). Reforme progressive — surveiller les seuils d\'age annuels (72 en 2026, 70 en 2027).',
   },
+  {
+    slug: 'sal_shikum_mitmodedei_nefesh',
+    category: 'health',
+    authority: 'other',  // Misrad HaBriut
+    title_fr: 'Panier rehabilitation psychiatrique (Sal Shikum Mitmodedei Nefesh)',
+    title_he: 'סל שיקום למתמודדי נפש',
+    description_fr:
+      'Paquet de services de readaptation psychiatrique en nature (logement protege, atelier therapeutique, accompagnement social, emploi adapte) pour les personnes avec handicap psychiatrique reconnu ≥ 40%.',
+    full_description_fr:
+      'Chok Shikum Nikhim (loi de rehabilitation des malades mentaux, 2000) : Misrad HaBriut et les ' +
+      'ENOSH / Beit HaGilda / autres operateurs agrees offrent un "panier de rehabilitation" (Sal Shikum) ' +
+      'aux personnes reconnues avec handicap psychiatrique ≥ 40% : ' +
+      'Services disponibles (selon besoins evalues par Vaadat Shikum) : ' +
+      '- Hebergement : logement protege (Hostel, Diur Mugal), appart autonome supervise ' +
+      '- Emploi adapte : ateliers proteges, programmes d\'integration professionnelle (Shikum Taasuka) ' +
+      '- Accompagnement social : chargé d\'accompagnement (Melave Mashikum) qui visite regulierement ' +
+      '- Activites de jour : centres de jour (Makom Hevrati), ateliers creatifs ' +
+      '- Therapie : psychologue, psychiatre, art-therapie, ergotherapie ' +
+      '- Aide a l\'acquisition de competences autonomie (budget, cuisine, transport) ' +
+      'Valeur totale : 20 000-80 000 NIS/an selon niveau d\'accompagnement. ' +
+      'Conditions : ' +
+      '- Handicap psychiatrique reconnu ≥ 40% par Vaadat Refuit BTL ' +
+      '- Residence israelienne ' +
+      '- Evaluation par Vaadat Shikum (commission de rehabilitation Misrad HaBriut) ' +
+      'Procedure : adresser a Vaadat Shikum via son psychiatre traitant ou le Oved Sotsyali local.',
+    conditions: {
+      min_disability: 40,
+      // Idealement : required_disability_type: 'psychiatric' — mais le catalogue n\'a pas ce champ.
+      requires_resident: true,
+    },
+    estimated_annual_value: 30000,
+    value_unit: 'NIS/an (valeur des services en nature)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_health',
+    action_label: 'Demande sal shikum nefesh',
+    info_url: 'https://www.kolzchut.org.il/he/סל_שיקום_למתמודדי_נפש',
+    disclaimer:
+      'Demande via psychiatre traitant ou Oved Sotsyali. Vaadat Shikum evalue les besoins et attribue ' +
+      'le panier (modulable selon evolution). Pour les olim francophones : ENOSH, Beit HaGilda et ' +
+      'Hosen proposent des services en francais dans les grandes villes.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Modelisation imparfaite : la condition min_disability: 40 ne discrimine pas les handicaps psychiatriques specifiquement. A raffiner avec un champ disability_type.',
+  },
+  {
+    slug: 'harugui_malkhut',
+    category: 'special',
+    authority: 'bituach_leumi',
+    title_fr: 'Familles martyrs (Harugui Malkhut)',
+    title_he: 'הרוגי מלכות',
+    description_fr:
+      'Pension mensuelle versee aux familles (conjoint, enfants, parents) des personnes executees historiquement dans un pays etranger pour leur engagement sioniste ou leur appartenance au peuple juif.',
+    full_description_fr:
+      'Loi 5715-1955 (Chok Gimlaot le-Harugui Malkhut u-Vnei Mishpahoteihem). ' +
+      'Concerne les familles de martyrs : personnes executees (pendaison, fusillade) dans un pays ' +
+      'etranger, pour : ' +
+      '- Engagement sioniste (Haganah, Etzel, Lehi avant 1948) ' +
+      '- Activites en faveur d\'Israel dans des pays hostiles (URSS, pays arabes, Iran) ' +
+      '- Simple appartenance au peuple juif (executions antisemites reconnues) ' +
+      'Prestations : ' +
+      '- Pension mensuelle a vie : ~10 000-14 000 NIS/mois pour conjoint survivant ' +
+      '- Pension orphelin : jusqu\'a 21 ans (ou 27 en cas d\'etudes) ' +
+      '- Avantages medicaux complets ' +
+      '- Logement subventionne, reductions Arnona ' +
+      'Reconnaissance : commission speciale BL + Yad Vashem + archives historiques. Dossiers souvent ' +
+      'deposes plusieurs annees apres l\'execution, avec temoignages tardifs. ' +
+      'Beneficiaires typiques : descendants de juifs executes en URSS (proces antisemites), en ' +
+      'Syrie, Iran, Irak, Yemen durant les annees 40-70.',
+    conditions: {
+      requires_bereaved: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 11000 * 12,
+    typical_monthly_amount: 11000,
+    value_unit: 'NIS/mois (~10 000-14 000)',
+    application_url: 'https://www.btl.gov.il/benefits/Hostile_action/Pages/default.aspx',
+    action_label: 'Demande reconnaissance harugui malkhut',
+    info_url: 'https://www.kolzchut.org.il/he/חוק_הרוגי_מלכות',
+    disclaimer:
+      'Droit niche reserve aux familles de martyrs reconnus historiquement. La reconnaissance se fait ' +
+      'via une commission speciale BL + Yad Vashem. Dossiers typiques : descendants de juifs executes ' +
+      'en URSS / Syrie / Iran / pays arabes. Confidence medium car montants exacts non publics.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Droit tres niche mais critique pour les rares familles concernees. Le modele bereaved peut donner des faux positifs — le disclaimer est crucial.',
+  },
+  {
+    slug: 'amnat_beinleumiyot',
+    category: 'retirement',
+    authority: 'bituach_leumi',
+    title_fr: 'Conventions bi-nationales (Amnat Beinleumiyot)',
+    title_he: 'אמנות בינלאומיות לביטוח לאומי',
+    description_fr:
+      'Mecanisme de coordination entre Bituach Leumi israelien et les systemes de securite sociale etrangers (France, USA, Canada, UK, Allemagne, Suisse, Pays-Bas, etc.) pour les olim.',
+    full_description_fr:
+      'Israel a signe des conventions bi-nationales de securite sociale avec ~25 pays, permettant aux ' +
+      'olim de cumuler les periodes cotisees en Israel et dans leur pays d\'origine pour : ' +
+      '- Calculer la pension vieillesse (Kitzbat Zikna) meme si les annees de cotisation israeliennes ' +
+      '  sont insuffisantes ' +
+      '- Eviter la double cotisation (regle du pays d\'emploi) ' +
+      '- Beneficier des aides pour invalidite/accidents en cumulant les droits ' +
+      'Pays conventiones (liste partielle 2026) : France, Belgique, Suisse, Royaume-Uni, Allemagne, ' +
+      'Autriche, Pays-Bas, Danemark, Suede, Norvege, Finlande, Italie, Espagne, Canada, USA, ' +
+      'Uruguay, Argentine, Bulgarie, Roumanie, Slovaquie, Tchequie, Hongrie. ' +
+      'Procedure : ' +
+      '- Demande a BL Israel avec attestations de cotisation du pays d\'origine ' +
+      '- BL contacte son homologue etranger via les formulaires de coordination ' +
+      '- Delai de traitement : 6-18 mois ' +
+      'Cumulable avec : pension du pays d\'origine qui continue a etre versee en Israel (ex. pension ' +
+      'francaise CNAV versee sur compte israelien).',
+    conditions: {
+      requires_oleh: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 20000,  // gain median d\'une coordination
+    value_unit: 'NIS/an (gain variable selon carriere)',
+    application_url: 'https://www.btl.gov.il/benefits/International/Pages/default.aspx',
+    action_label: 'Demande coordination internationale',
+    info_url: 'https://www.kolzchut.org.il/he/אמנות_בטחון_סוציאלי_בינלאומיות',
+    disclaimer:
+      'Mecanisme technique — un yoetz mas ou la Sokhnut peut aider a monter le dossier. Tres utile ' +
+      'pour les olim francophones ayant cotise 20+ ans en France avant alyah : ils peuvent ainsi ' +
+      'continuer a percevoir leur pension CNAV en Israel tout en accumulant des droits BL. Delai ' +
+      'de traitement long (6-18 mois) — a initier bien avant l\'age de retraite.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Valeur 20k NIS/an est une mediane — depend fortement de la carriere pre-alyah. Critique pour les olim francais ayant cotise 20+ ans en France.',
+  },
+  {
+    slug: 'hanaka_mitaamei_tzedek',
+    category: 'welfare',
+    authority: 'bituach_leumi',
+    title_fr: 'Grant equite / justice (Hanaka Mitaamei Tzedek)',
+    title_he: 'הנקה מטעמי צדק',
+    description_fr:
+      'Prestation discretionnaire exceptionnelle versee par BL dans des cas specifiques ne rentrant dans aucun regime regulier mais justifies par l\'equite (cas humanitaires, erreurs administratives, situations atypiques).',
+    full_description_fr:
+      'Article 387 du Chok HaBituach HaLeumi : BL peut accorder une prestation exceptionnelle ' +
+      '(one-shot ou mensuelle) a titre gracieux, "mitaamei tzedek" (pour des raisons d\'equite ou ' +
+      'de justice), lorsqu\'un demandeur : ' +
+      '- Ne rentre dans aucun regime regulier (age, statut, situation atypique) ' +
+      '- MAIS se trouve dans une situation de grande difficulte reconnue humaine / equitable ' +
+      '- ET a une demande formelle soutenue par un rapport Oved Sotsyali ou un avocat ' +
+      'Exemples reels : ' +
+      '- Olim ages arrives en Israel sans papiers suffisants pour prouver leur droit a une pension ' +
+      '- Veuves de combattants non reconnus comme tels par defaut d\'archives ' +
+      '- Parents d\'enfants handicapes non reconnus parce que le diagnostic est recent ' +
+      '- Cas de feminicide / traite humaine necessitant une prise en charge immediate ' +
+      'Montants : variables selon dossier — de 5 000 NIS (one-shot) a 3 500 NIS/mois. ' +
+      'Decision : par le Directeur General BL ou une commission speciale, sur avis social et legal.',
+    conditions: {
+      requires_resident: true,
+    },
+    estimated_annual_value: 12000,  // estimation median
+    value_unit: 'NIS (variable, one-shot ou mensuel selon dossier)',
+    application_url: 'https://www.btl.gov.il/',
+    action_label: 'Demande hanaka mitaamei tzedek',
+    info_url: 'https://www.kolzchut.org.il/he/הנקה_מטעמי_צדק',
+    disclaimer:
+      'Procedure discretionnaire — resultats non garantis. Necessite un avocat specialise ou une ONG ' +
+      '(Amutat Lev Shomea, Bizkhut, Moked HaSiyua) pour construire un dossier convaincant. Delai : ' +
+      '6-24 mois. Entree meta pour rappeler aux olim qu\'il existe une voie de recours quand tous ' +
+      'les regimes reguliers sont refuses.',
+    confidence: 'low',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Confidence low car tres discretionnaire. Utile surtout comme mention (voie de recours) plutot que comme droit a reclamer — le disclaimer le clarifie.',
+  },
 ]
 
 // =====================================================
