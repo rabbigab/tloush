@@ -2625,6 +2625,88 @@ const BTL_FAMILY_EXTRAS_BENEFITS: BenefitDefinition[] = [
     tax_year: 2026,
     notes: 'Ajout catalogue 16/04/2026 (etape C1). Aide majeure meconnue des olim divorcees francophones — souvent elles pensent devoir aller seules contre l\'ex-mari via Hotzaa lePoal, alors que BTL avance la pension et recupere elle-meme.',
   },
+  {
+    slug: 'horim_meametzim',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Droits parents adoptifs (Horim Meametzim)',
+    title_he: 'הורים מאמצים',
+    description_fr:
+      'Paquet de droits equivalents a ceux des parents biologiques pour les parents adoptifs agrees : conge, prime de naissance, allocations enfants, etc.',
+    full_description_fr:
+      'Les parents qui adoptent un enfant (via Misrad HaRevacha agreee OU adoption reconnue a l\'etranger) ' +
+      'beneficient d\'un paquet de droits miroir a celui des parents biologiques : ' +
+      '- Dmei Imutz : conge parental paye equivalent a Dmei Leida (cf. slug dmei_imutz) ' +
+      '- Maanak Leida : prime de naissance appliquee a l\'arrivee au foyer ' +
+      '- Kitsbat Yeladim : allocations automatiques des l\'enregistrement ' +
+      '- Chisachon LeKol Yeled : compte d\'epargne ouvert des l\'adoption ' +
+      '- Maanak Limudim : prime scolarite des 6 ans (sous conditions) ' +
+      '- Protection contre licenciement : meme regime que grossesse/maternite (Chok Avodat Nashim) ' +
+      'Conditions : adoption officialisee par jugement israelien (Beit Mishpat le-Inyenei Mishpacha) ' +
+      'ou reconnaissance d\'une adoption etrangere par le Ministere de la Justice israelien. ' +
+      'L\'entree catalogue horim_meametzim centralise les droits non strictement monetaires ' +
+      'et pointe vers les slugs specifiques (dmei_imutz, maanak_leida, etc.) pour les indemnites.',
+    conditions: {
+      min_children: 1,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2103,  // valeur indicative : maanak leida 1er enfant
+    value_unit: 'variable (paquet de droits cumules)',
+    application_url: 'https://www.btl.gov.il/benefits/Maternity/Pages/default.aspx',
+    action_label: 'Infos droits parents adoptifs',
+    info_url: 'https://www.kolzchut.org.il/he/הורים_מאמצים',
+    disclaimer:
+      'Entree "meta" qui rappelle que les parents adoptifs ont les memes droits que les parents ' +
+      'biologiques. Pour les indemnites concretes : voir dmei_imutz (conge), maanak_leida ' +
+      '(prime naissance), kitsbat_yeladim (allocations). La modelisation min_children: 1 peut generer ' +
+      'des faux positifs pour les parents biologiques — a raffiner avec un champ is_adoptive_parent.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C1). Slug du glossaire. Complement a dmei_imutz deja present : ici on couvre l\'ensemble des droits (pas seulement le conge paye). Status needs_verification — il faut un champ profile is_adoptive_parent pour le promouvoir en verified.',
+  },
+  {
+    slug: 'dmei_omna',
+    category: 'welfare',
+    authority: 'bituach_leumi',
+    title_fr: 'Remuneration famille d\'accueil (Dmei Omna)',
+    title_he: 'דמי אומנה',
+    description_fr:
+      'Indemnite BTL versee aux familles d\'accueil (omna) qui prennent en charge un enfant de l\'Etat (retire aux parents par decision judiciaire ou placement volontaire).',
+    full_description_fr:
+      'Dispositif BTL pour compenser financierement les familles d\'accueil qui hebergent ' +
+      'un enfant retire a ses parents biologiques ou confie par Misrad HaRevacha. ' +
+      'Montants 2026 (indexes CPI, tarifs gradues selon age et besoins) : ' +
+      '- Enfant 0-6 ans     : ~4 300 NIS/mois ' +
+      '- Enfant 6-12 ans    : ~4 900 NIS/mois ' +
+      '- Enfant 12-18 ans   : ~5 600 NIS/mois ' +
+      '- Enfant handicape ou a besoins specifiques : majoration 30-80% selon gravite ' +
+      'Couvre aussi : frais medicaux non rembourses kupat holim, frais scolaires, vacances, ' +
+      'bourses ponctuelles (bar mitzva, equipement bebe, etc.). ' +
+      'Conditions : agrement famille d\'accueil delivre par Misrad HaRevacha apres enquete sociale, ' +
+      'formation obligatoire, suivi social regulier. L\'enfant reste juridiquement sous la ' +
+      'responsabilite de l\'Etat (contrairement a l\'adoption).',
+    conditions: {
+      requires_resident: true,
+      min_children: 1,  // au moins 1 enfant d\'accueil
+    },
+    estimated_annual_value: 4900 * 12,
+    typical_monthly_amount: 4900,
+    value_unit: 'NIS/mois (gradue selon age enfant)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_welfare_and_social_services',
+    action_label: 'Devenir famille d\'accueil',
+    info_url: 'https://www.kolzchut.org.il/he/דמי_אומנה',
+    disclaimer:
+      'Necessite l\'agrement prealable de Misrad HaRevacha (candidature, enquete, formation). ' +
+      'Modelisation imparfaite : min_children: 1 declenche pour toute famille avec enfant, generant ' +
+      'des faux positifs. A raffiner avec un champ is_foster_parent dans le profil.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C1). Niche mais importante pour les olim engages dans le social. Status needs_verification car le profil n\'a pas encore de champ is_foster_parent — a ajouter dans un lot ulterieur pour promouvoir.',
+  },
 ]
 
 // =====================================================
