@@ -2407,6 +2407,146 @@ const UTILITY_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION C1 — BTL Famille / Maternite (aides manquantes du glossaire)
+// =====================================================
+// Sources :
+// - https://www.btl.gov.il/benefits/Maternity/Pages/default.aspx
+// - https://www.kolzchut.org.il/he/שמירת_הריון
+// - https://www.kolzchut.org.il/he/קצבת_לידה_(תאומים)
+// - https://www.kolzchut.org.il/he/מענק_אשפוז
+// - https://www.kolzchut.org.il/he/קצבה_לילד_פג
+// - https://www.kolzchut.org.il/he/דמי_מזונות
+// - https://www.kolzchut.org.il/he/הורים_מאמצים
+// - https://www.kolzchut.org.il/he/דמי_אומנה
+//
+// Ces aides BTL completent le socle deja couvert dans SECTION 2 (Kitsbat
+// Yeladim), SECTION 3 (Maanak Leida) et SECTION 9 (Maternity). Elles sont
+// listees au glossaire (memory/glossary.md) mais manquaient au catalogue.
+
+const BTL_FAMILY_EXTRAS_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'shmirat_herayon',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Conge grossesse a risque (Shmirat Herayon)',
+    title_he: 'שמירת הריון',
+    description_fr:
+      'Indemnite BTL versee aux travailleuses forcees de cesser leur activite sur prescription medicale durant une grossesse a risque, pour au minimum 30 jours consecutifs.',
+    full_description_fr:
+      'Indemnite journaliere versee par Bituach Leumi aux femmes enceintes contraintes a l\'arret ' +
+      'de travail pour raisons medicales liees a la grossesse (prescription d\'un medecin specialiste). ' +
+      'Montant : 100 % du salaire journalier moyen des 3 derniers mois, plafonne au salaire moyen ' +
+      'de l\'economie (~1 660 NIS/jour en 2026, soit 49 000 NIS/mois). ' +
+      'Duree minimum : 30 jours consecutifs. Pas de duree maximum tant que la prescription est renouvelee. ' +
+      'Conditions : ' +
+      '- Etre salariee ou independante ayant cotise a BTL pendant au moins 6 mois sur les 14 derniers ' +
+      '- Arret medical atteste par medecin specialiste (formulaire BL 402) ' +
+      '- Arret non couvert par l\'employeur (pas de maintien de salaire) ' +
+      'La demande se fait en ligne dans l\'espace personnel BL ou via formulaire papier (BL 402).',
+    conditions: {
+      required_gender: 'female',
+      required_employment: ['employed', 'self_employed'],
+      requires_resident: true,
+      requires_recent_birth_months: 9,  // proxy : grossesse en cours ou accouchement recent (pas strictement exact)
+    },
+    estimated_annual_value: 12550 * 2,  // 2 mois de salaire moyen
+    typical_monthly_amount: 12550,
+    value_unit: 'NIS (100% salaire journalier sur duree d\'arret)',
+    application_url: 'https://www.btl.gov.il/benefits/Maternity/Pages/shmiratheraion.aspx',
+    action_label: 'Demande shmirat herayon',
+    info_url: 'https://www.kolzchut.org.il/he/שמירת_הריון',
+    disclaimer:
+      'Prescription medicale obligatoire (medecin specialiste), arret minimum 30 jours consecutifs. ' +
+      'Plafond indemnite = salaire moyen economie. Si l\'employeur maintient le salaire, pas de droit BTL. ' +
+      'La condition requires_recent_birth_months est un proxy : en realite elle doit etre evaluee ' +
+      'pendant la grossesse (pas post-naissance) — a affiner avec un champ profile dedie (ex. is_pregnant).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C1). Slug correspond au glossaire. Match imparfait — le profile n\'a pas de champ is_pregnant, on utilise requires_recent_birth_months comme proxy (fenetre large 9 mois).',
+  },
+  {
+    slug: 'kitzvat_leyda_rav_ubarit',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Allocation naissances multiples (Kitzvat Leyda Rav-Ubarit)',
+    title_he: 'קצבה לידה לתאומים ומעלה',
+    description_fr:
+      'Allocation mensuelle BTL versee aux meres de jumeaux (ou plus) pendant 20 mois apres la naissance, en complement des autres aides.',
+    full_description_fr:
+      'Complement a Maanak Leida (deja 10 514 NIS pour jumeaux, 15 771 NIS pour triples en prime unique) : ' +
+      'en cas de naissance multiple, BTL verse aussi une allocation mensuelle speciale pendant 20 mois. ' +
+      'Montants 2026 (estimations, indexes sur CPI) : ' +
+      '- Jumeaux : ~2 700 NIS/mois durant 20 mois (premier mois 100 %, decroissant) ' +
+      '- Triples : supplement majore, calcule selon echelle BL ' +
+      '- Quadruples et + : echelle speciale (rare, a solliciter directement) ' +
+      'Versement automatique si la grossesse multiple est declaree au moment de l\'enregistrement ' +
+      'de naissance. Cumulable avec Kitsbat Yeladim, Chisachon LeKol Yeled et Maanak Leida.',
+    conditions: {
+      required_gender: 'female',
+      min_children: 2,  // au moins 2 enfants resultant de la meme grossesse
+      requires_resident: true,
+      requires_recent_birth_months: 20,  // versement sur 20 mois post-naissance
+    },
+    estimated_annual_value: 2700 * 12,
+    typical_monthly_amount: 2700,
+    value_unit: 'NIS/mois (decroissant sur 20 mois)',
+    application_url: 'https://www.btl.gov.il/benefits/Maternity/Pages/default.aspx',
+    action_label: 'Verifier allocation naissance multiple',
+    info_url: 'https://www.kolzchut.org.il/he/קצבה_לידה_לתאומים_ומעלה',
+    disclaimer:
+      'Le catalogue modelise imparfaitement le cas "jumeaux" : min_children: 2 est active des que la ' +
+      'famille a 2 enfants, ce qui peut generer des faux positifs. A raffiner avec un champ profile ' +
+      'is_multiple_birth ou une date de naissance identique dans children_birth_dates.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C1). Montants 2026 a confirmer aupres de BL — les chiffres officiels ne sont pas toujours affiches publiquement. Status needs_verification pour eviter faux positifs en prod.',
+  },
+  {
+    slug: 'maanak_ishpuz',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Prime d\'hospitalisation accouchee (Maanak Ishpuz)',
+    title_he: 'מענק אשפוז',
+    description_fr:
+      'Prime BTL versee a l\'hopital pour couvrir les frais d\'hospitalisation de l\'accouchee et du nouveau-ne (hospitalisation ≥ 3 jours).',
+    full_description_fr:
+      'Maanak Ishpuz est une prime forfaitaire versee directement a l\'hopital par Bituach Leumi ' +
+      'pour couvrir les frais d\'hospitalisation liee a l\'accouchement (mere et bebe). ' +
+      'L\'accouchee n\'a donc rien a avancer ni a reclamer elle-meme — la prime finance ' +
+      'directement les frais hospitaliers. ' +
+      'Montant 2026 : ~13 500 NIS (variable selon hopital et duree). ' +
+      'Eligibilite automatique : la mere ou son conjoint doit etre assure(e) a BTL et l\'accouchement ' +
+      'doit avoir lieu dans un hopital israelien reconnu (ou transfert 24 h en cas d\'urgence). ' +
+      'Couvre aussi l\'hospitalisation du nouveau-ne si duree ≥ 3 jours (ex. prematurite legere).',
+    conditions: {
+      required_gender: 'female',
+      min_children: 1,
+      requires_resident: true,
+      requires_recent_birth_months: 3,  // paye pendant le sejour hospitalier
+    },
+    estimated_annual_value: 13500,
+    value_unit: 'NIS (prime hospitaliere versee a l\'hopital)',
+    application_url: 'https://www.btl.gov.il/benefits/Maternity/Pages/default.aspx',
+    action_label: 'Infos Maanak Ishpuz',
+    info_url: 'https://www.kolzchut.org.il/he/מענק_אשפוז',
+    disclaimer:
+      'Prime versee automatiquement par BTL a l\'hopital, pas a la mere directement. La patiente ne voit ' +
+      'generalement rien transiter sur son compte — elle ne paie simplement pas la facture hospitaliere. ' +
+      'Si vous avez paye de votre poche une facture hospitaliere liee a l\'accouchement, contactez BTL : ' +
+      'un remboursement peut etre possible si vous n\'etiez pas correctement enregistre(e).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C1). La plupart des olim l\'ignorent et pensent que l\'hopital est grace a kupat holim. C\'est en fait cette prime BTL specifique qui couvre les frais.',
+  },
+]
+
+// =====================================================
 // SECTION 21 — Helper functions
 // =====================================================
 
@@ -2542,6 +2682,7 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...COMBAT_RESERVIST_BENEFITS,
   ...CHILDCARE_BENEFITS,
   ...UTILITY_BENEFITS,
+  ...BTL_FAMILY_EXTRAS_BENEFITS,
 ]
 
 // Calcul dynamique des stats au chargement
