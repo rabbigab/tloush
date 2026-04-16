@@ -48,6 +48,9 @@ export type BenefitAuthority =
 export type ConfidenceLevel = 'high' | 'medium' | 'low'
 export type SourceStatus = 'verified' | 'needs_verification' | 'estimated'
 
+export type RequiredShoahPeriod = 'pre_1953' | 'post_1953' | 'ex_urss'
+export type RequiredCityPriorityZone = 'a' | 'b' | 'c'
+
 export interface EligibilityConditions {
   /** Minimum age (en annees) */
   min_age?: number
@@ -92,6 +95,29 @@ export interface EligibilityConditions {
   requires_bereaved?: boolean
   /** Victime (ou famille de) du 7 octobre / Kharvot Barzel */
   requires_7octobre_victim?: boolean
+  /**
+   * Periode(s) Shoah requise(s) (cf. profile.shoah_period).
+   * - 'pre_1953'  : immigre(e) en Israel avant 1953 (categorie vatik)
+   * - 'post_1953' : immigre(e) apres 1953
+   * - 'ex_urss'   : survivant(e) ex-URSS / Roumanie (Keren Sif 2 / Article 2 Fund)
+   * Implique implicitement `is_holocaust_survivor === true`.
+   */
+  required_shoah_period?: RequiredShoahPeriod | RequiredShoahPeriod[]
+  /**
+   * Zone de priorite nationale requise (cf. profile.city_priority_zone).
+   * Utilise pour zikuy_mas_priferia, mashkanta_olim etc.
+   */
+  required_city_priority_zone?: RequiredCityPriorityZone | RequiredCityPriorityZone[]
+  /**
+   * Exige que le beneficiaire soit bailleur residentiel (profile.is_landlord === true).
+   * Utilise pour petur_mas_shkhirat_dira, yivua_meshek_bayit.
+   */
+  requires_landlord?: boolean
+  /**
+   * Exige que la demobilisation IDF (profile.discharge_date) ait eu lieu dans les N
+   * derniers mois. Utilise pour les aides aux soldats recemment liberes.
+   */
+  requires_recent_discharge_months?: number
   /** Enfant handicape */
   requires_disabled_child?: boolean
   /** Doit etre aidant familial */
@@ -2381,6 +2407,3055 @@ const UTILITY_BENEFITS: BenefitDefinition[] = [
 ]
 
 // =====================================================
+// SECTION C1 — BTL Famille / Maternite (aides manquantes du glossaire)
+// =====================================================
+// Sources :
+// - https://www.btl.gov.il/benefits/Maternity/Pages/default.aspx
+// - https://www.kolzchut.org.il/he/שמירת_הריון
+// - https://www.kolzchut.org.il/he/קצבת_לידה_(תאומים)
+// - https://www.kolzchut.org.il/he/מענק_אשפוז
+// - https://www.kolzchut.org.il/he/קצבה_לילד_פג
+// - https://www.kolzchut.org.il/he/דמי_מזונות
+// - https://www.kolzchut.org.il/he/הורים_מאמצים
+// - https://www.kolzchut.org.il/he/דמי_אומנה
+//
+// Ces aides BTL completent le socle deja couvert dans SECTION 2 (Kitsbat
+// Yeladim), SECTION 3 (Maanak Leida) et SECTION 9 (Maternity). Elles sont
+// listees au glossaire (memory/glossary.md) mais manquaient au catalogue.
+
+const BTL_FAMILY_EXTRAS_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'shmirat_herayon',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Conge grossesse a risque (Shmirat Herayon)',
+    title_he: 'שמירת הריון',
+    description_fr:
+      'Indemnite BTL versee aux travailleuses forcees de cesser leur activite sur prescription medicale durant une grossesse a risque, pour au minimum 30 jours consecutifs.',
+    full_description_fr:
+      'Indemnite journaliere versee par Bituach Leumi aux femmes enceintes contraintes a l\'arret ' +
+      'de travail pour raisons medicales liees a la grossesse (prescription d\'un medecin specialiste). ' +
+      'Montant : 100 % du salaire journalier moyen des 3 derniers mois, plafonne au salaire moyen ' +
+      'de l\'economie (~1 660 NIS/jour en 2026, soit 49 000 NIS/mois). ' +
+      'Duree minimum : 30 jours consecutifs. Pas de duree maximum tant que la prescription est renouvelee. ' +
+      'Conditions : ' +
+      '- Etre salariee ou independante ayant cotise a BTL pendant au moins 6 mois sur les 14 derniers ' +
+      '- Arret medical atteste par medecin specialiste (formulaire BL 402) ' +
+      '- Arret non couvert par l\'employeur (pas de maintien de salaire) ' +
+      'La demande se fait en ligne dans l\'espace personnel BL ou via formulaire papier (BL 402).',
+    conditions: {
+      required_gender: 'female',
+      required_employment: ['employed', 'self_employed'],
+      requires_resident: true,
+      requires_recent_birth_months: 9,  // proxy : grossesse en cours ou accouchement recent (pas strictement exact)
+    },
+    estimated_annual_value: 12550 * 2,  // 2 mois de salaire moyen
+    typical_monthly_amount: 12550,
+    value_unit: 'NIS (100% salaire journalier sur duree d\'arret)',
+    application_url: 'https://www.btl.gov.il/benefits/Maternity/Pages/shmiratheraion.aspx',
+    action_label: 'Demande shmirat herayon',
+    info_url: 'https://www.kolzchut.org.il/he/שמירת_הריון',
+    disclaimer:
+      'Prescription medicale obligatoire (medecin specialiste), arret minimum 30 jours consecutifs. ' +
+      'Plafond indemnite = salaire moyen economie. Si l\'employeur maintient le salaire, pas de droit BTL. ' +
+      'La condition requires_recent_birth_months est un proxy : en realite elle doit etre evaluee ' +
+      'pendant la grossesse (pas post-naissance) — a affiner avec un champ profile dedie (ex. is_pregnant).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C1). Slug correspond au glossaire. Match imparfait — le profile n\'a pas de champ is_pregnant, on utilise requires_recent_birth_months comme proxy (fenetre large 9 mois).',
+  },
+  {
+    slug: 'kitzvat_leyda_rav_ubarit',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Allocation naissances multiples (Kitzvat Leyda Rav-Ubarit)',
+    title_he: 'קצבה לידה לתאומים ומעלה',
+    description_fr:
+      'Allocation mensuelle BTL versee aux meres de jumeaux (ou plus) pendant 20 mois apres la naissance, en complement des autres aides.',
+    full_description_fr:
+      'Complement a Maanak Leida (deja 10 514 NIS pour jumeaux, 15 771 NIS pour triples en prime unique) : ' +
+      'en cas de naissance multiple, BTL verse aussi une allocation mensuelle speciale pendant 20 mois. ' +
+      'Montants 2026 (estimations, indexes sur CPI) : ' +
+      '- Jumeaux : ~2 700 NIS/mois durant 20 mois (premier mois 100 %, decroissant) ' +
+      '- Triples : supplement majore, calcule selon echelle BL ' +
+      '- Quadruples et + : echelle speciale (rare, a solliciter directement) ' +
+      'Versement automatique si la grossesse multiple est declaree au moment de l\'enregistrement ' +
+      'de naissance. Cumulable avec Kitsbat Yeladim, Chisachon LeKol Yeled et Maanak Leida.',
+    conditions: {
+      required_gender: 'female',
+      min_children: 2,  // au moins 2 enfants resultant de la meme grossesse
+      requires_resident: true,
+      requires_recent_birth_months: 20,  // versement sur 20 mois post-naissance
+    },
+    estimated_annual_value: 2700 * 12,
+    typical_monthly_amount: 2700,
+    value_unit: 'NIS/mois (decroissant sur 20 mois)',
+    application_url: 'https://www.btl.gov.il/benefits/Maternity/Pages/default.aspx',
+    action_label: 'Verifier allocation naissance multiple',
+    info_url: 'https://www.kolzchut.org.il/he/קצבה_לידה_לתאומים_ומעלה',
+    disclaimer:
+      'Le catalogue modelise imparfaitement le cas "jumeaux" : min_children: 2 est active des que la ' +
+      'famille a 2 enfants, ce qui peut generer des faux positifs. A raffiner avec un champ profile ' +
+      'is_multiple_birth ou une date de naissance identique dans children_birth_dates.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C1). Montants 2026 a confirmer aupres de BL — les chiffres officiels ne sont pas toujours affiches publiquement. Status needs_verification pour eviter faux positifs en prod.',
+  },
+  {
+    slug: 'maanak_ishpuz',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Prime d\'hospitalisation accouchee (Maanak Ishpuz)',
+    title_he: 'מענק אשפוז',
+    description_fr:
+      'Prime BTL versee a l\'hopital pour couvrir les frais d\'hospitalisation de l\'accouchee et du nouveau-ne (hospitalisation ≥ 3 jours).',
+    full_description_fr:
+      'Maanak Ishpuz est une prime forfaitaire versee directement a l\'hopital par Bituach Leumi ' +
+      'pour couvrir les frais d\'hospitalisation liee a l\'accouchement (mere et bebe). ' +
+      'L\'accouchee n\'a donc rien a avancer ni a reclamer elle-meme — la prime finance ' +
+      'directement les frais hospitaliers. ' +
+      'Montant 2026 : ~13 500 NIS (variable selon hopital et duree). ' +
+      'Eligibilite automatique : la mere ou son conjoint doit etre assure(e) a BTL et l\'accouchement ' +
+      'doit avoir lieu dans un hopital israelien reconnu (ou transfert 24 h en cas d\'urgence). ' +
+      'Couvre aussi l\'hospitalisation du nouveau-ne si duree ≥ 3 jours (ex. prematurite legere).',
+    conditions: {
+      required_gender: 'female',
+      min_children: 1,
+      requires_resident: true,
+      requires_recent_birth_months: 3,  // paye pendant le sejour hospitalier
+    },
+    estimated_annual_value: 13500,
+    value_unit: 'NIS (prime hospitaliere versee a l\'hopital)',
+    application_url: 'https://www.btl.gov.il/benefits/Maternity/Pages/default.aspx',
+    action_label: 'Infos Maanak Ishpuz',
+    info_url: 'https://www.kolzchut.org.il/he/מענק_אשפוז',
+    disclaimer:
+      'Prime versee automatiquement par BTL a l\'hopital, pas a la mere directement. La patiente ne voit ' +
+      'generalement rien transiter sur son compte — elle ne paie simplement pas la facture hospitaliere. ' +
+      'Si vous avez paye de votre poche une facture hospitaliere liee a l\'accouchement, contactez BTL : ' +
+      'un remboursement peut etre possible si vous n\'etiez pas correctement enregistre(e).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C1). La plupart des olim l\'ignorent et pensent que l\'hopital est grace a kupat holim. C\'est en fait cette prime BTL specifique qui couvre les frais.',
+  },
+  {
+    slug: 'kitzva_yeled_pag',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Allocation enfant premature (Kitzva Yeled Pag)',
+    title_he: 'קצבה לילד פג',
+    description_fr:
+      'Supplement BTL mensuel verse aux parents d\'un enfant ne prematurement (< 34 semaines d\'amenorrhee ou poids < 1 750 g), pendant les 6 premiers mois de vie.',
+    full_description_fr:
+      'Allocation specifique BTL en complement de Kitsbat Yeladim pour les parents d\'un enfant ne prematurement. ' +
+      'Conditions medicales : ' +
+      '- Naissance avant 34 semaines d\'amenorrhee (equivalent 32 semaines de grossesse) ' +
+      'OU ' +
+      '- Poids de naissance inferieur a 1 750 g ' +
+      '- Attestation neonatologique du service pediatrique ' +
+      'Montants 2026 (indexes CPI) : ~2 400 NIS/mois pendant 6 mois, puis allocation de base. ' +
+      'Cumulable avec Kitsbat Yeladim standard, Sherutim Meyukhadim si le bebe garde des sequelles, ' +
+      'et Nakhut Klalit a partir de 8 ans si handicap persistant.',
+    conditions: {
+      min_children: 1,
+      requires_resident: true,
+      requires_recent_birth_months: 6,  // allocation sur les 6 premiers mois
+    },
+    estimated_annual_value: 2400 * 6,
+    typical_monthly_amount: 2400,
+    value_unit: 'NIS/mois (6 mois post-naissance)',
+    application_url: 'https://www.btl.gov.il/benefits/Maternity/Pages/default.aspx',
+    action_label: 'Demande allocation prematurite',
+    info_url: 'https://www.kolzchut.org.il/he/קצבה_לילד_פג',
+    disclaimer:
+      'Demande a initier directement aupres du service social de la maternite ou du service neonatologie. ' +
+      'L\'attestation medicale est jointe au dossier. Modelisation imparfaite : le catalogue declenche la ' +
+      'condition pour tout enfant < 6 mois, meme non premature. A affiner avec un champ profile ' +
+      'is_premature_birth si besoin.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C1). Status needs_verification pour eviter d\'afficher le droit a tous les parents d\'un bebe de moins de 6 mois (faux positif). Il faut un champ profile is_premature_birth pour promouvoir en verified.',
+  },
+  {
+    slug: 'mezonot',
+    category: 'welfare',
+    authority: 'bituach_leumi',
+    title_fr: 'Avance sur pension alimentaire (Mezonot)',
+    title_he: 'דמי מזונות',
+    description_fr:
+      'Bituach Leumi avance la pension alimentaire fixee par jugement au parent creancier (typiquement la mere) lorsque le debiteur ne paie pas, puis recupere la somme aupres du debiteur.',
+    full_description_fr:
+      'Dispositif BTL pour eviter la precarite des familles monoparentales : lorsqu\'un jugement civil ' +
+      'fixe une pension alimentaire mais que le debiteur (typiquement le pere apres divorce) ne la paie ' +
+      'pas, BL avance la somme au parent creancier (avec plafonnement legal). ' +
+      'Plafonds 2026 (indexes CPI) : ' +
+      '- Pere absent ou decede : jusqu\'a ~2 350 NIS/mois pour 1 enfant, ~3 500 NIS pour 2, ~4 700 pour 3+ ' +
+      '- Pere present mais refus de payer : avance egale au montant du jugement, dans la limite des plafonds ' +
+      'Conditions : ' +
+      '- Jugement de pension alimentaire a la cour des affaires familiales ' +
+      '- Non-paiement reel (attestation de Hotzaa lePoal ou huissier) ' +
+      '- Parent creancier resident en Israel, revenus sous un seuil ' +
+      'BTL se retourne contre le debiteur (saisie salaire, biens) pour recuperer les sommes avancees.',
+    conditions: {
+      required_marital_status: ['divorced', 'separated', 'single'],
+      min_children: 1,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2350 * 12,
+    typical_monthly_amount: 2350,
+    value_unit: 'NIS/mois (plafonds selon nb enfants)',
+    application_url: 'https://www.btl.gov.il/benefits/Alimony/Pages/default.aspx',
+    action_label: 'Demande avance mezonot',
+    info_url: 'https://www.kolzchut.org.il/he/דמי_מזונות',
+    disclaimer:
+      'Necessite un jugement civil pour la pension alimentaire. L\'avance BTL est plafonnee et ne remplace ' +
+      'pas l\'execution contre le debiteur. Cumulable avec Havtachat Hakhnasa si revenus tres faibles. ' +
+      'Parent creancier non marie au debiteur : verifier les conditions specifiques (parent isole).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C1). Aide majeure meconnue des olim divorcees francophones — souvent elles pensent devoir aller seules contre l\'ex-mari via Hotzaa lePoal, alors que BTL avance la pension et recupere elle-meme.',
+  },
+  {
+    slug: 'horim_meametzim',
+    category: 'family',
+    authority: 'bituach_leumi',
+    title_fr: 'Droits parents adoptifs (Horim Meametzim)',
+    title_he: 'הורים מאמצים',
+    description_fr:
+      'Paquet de droits equivalents a ceux des parents biologiques pour les parents adoptifs agrees : conge, prime de naissance, allocations enfants, etc.',
+    full_description_fr:
+      'Les parents qui adoptent un enfant (via Misrad HaRevacha agreee OU adoption reconnue a l\'etranger) ' +
+      'beneficient d\'un paquet de droits miroir a celui des parents biologiques : ' +
+      '- Dmei Imutz : conge parental paye equivalent a Dmei Leida (cf. slug dmei_imutz) ' +
+      '- Maanak Leida : prime de naissance appliquee a l\'arrivee au foyer ' +
+      '- Kitsbat Yeladim : allocations automatiques des l\'enregistrement ' +
+      '- Chisachon LeKol Yeled : compte d\'epargne ouvert des l\'adoption ' +
+      '- Maanak Limudim : prime scolarite des 6 ans (sous conditions) ' +
+      '- Protection contre licenciement : meme regime que grossesse/maternite (Chok Avodat Nashim) ' +
+      'Conditions : adoption officialisee par jugement israelien (Beit Mishpat le-Inyenei Mishpacha) ' +
+      'ou reconnaissance d\'une adoption etrangere par le Ministere de la Justice israelien. ' +
+      'L\'entree catalogue horim_meametzim centralise les droits non strictement monetaires ' +
+      'et pointe vers les slugs specifiques (dmei_imutz, maanak_leida, etc.) pour les indemnites.',
+    conditions: {
+      min_children: 1,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2103,  // valeur indicative : maanak leida 1er enfant
+    value_unit: 'variable (paquet de droits cumules)',
+    application_url: 'https://www.btl.gov.il/benefits/Maternity/Pages/default.aspx',
+    action_label: 'Infos droits parents adoptifs',
+    info_url: 'https://www.kolzchut.org.il/he/הורים_מאמצים',
+    disclaimer:
+      'Entree "meta" qui rappelle que les parents adoptifs ont les memes droits que les parents ' +
+      'biologiques. Pour les indemnites concretes : voir dmei_imutz (conge), maanak_leida ' +
+      '(prime naissance), kitsbat_yeladim (allocations). La modelisation min_children: 1 peut generer ' +
+      'des faux positifs pour les parents biologiques — a raffiner avec un champ is_adoptive_parent.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C1). Slug du glossaire. Complement a dmei_imutz deja present : ici on couvre l\'ensemble des droits (pas seulement le conge paye). Status needs_verification — il faut un champ profile is_adoptive_parent pour le promouvoir en verified.',
+  },
+  {
+    slug: 'dmei_omna',
+    category: 'welfare',
+    authority: 'bituach_leumi',
+    title_fr: 'Remuneration famille d\'accueil (Dmei Omna)',
+    title_he: 'דמי אומנה',
+    description_fr:
+      'Indemnite BTL versee aux familles d\'accueil (omna) qui prennent en charge un enfant de l\'Etat (retire aux parents par decision judiciaire ou placement volontaire).',
+    full_description_fr:
+      'Dispositif BTL pour compenser financierement les familles d\'accueil qui hebergent ' +
+      'un enfant retire a ses parents biologiques ou confie par Misrad HaRevacha. ' +
+      'Montants 2026 (indexes CPI, tarifs gradues selon age et besoins) : ' +
+      '- Enfant 0-6 ans     : ~4 300 NIS/mois ' +
+      '- Enfant 6-12 ans    : ~4 900 NIS/mois ' +
+      '- Enfant 12-18 ans   : ~5 600 NIS/mois ' +
+      '- Enfant handicape ou a besoins specifiques : majoration 30-80% selon gravite ' +
+      'Couvre aussi : frais medicaux non rembourses kupat holim, frais scolaires, vacances, ' +
+      'bourses ponctuelles (bar mitzva, equipement bebe, etc.). ' +
+      'Conditions : agrement famille d\'accueil delivre par Misrad HaRevacha apres enquete sociale, ' +
+      'formation obligatoire, suivi social regulier. L\'enfant reste juridiquement sous la ' +
+      'responsabilite de l\'Etat (contrairement a l\'adoption).',
+    conditions: {
+      requires_resident: true,
+      min_children: 1,  // au moins 1 enfant d\'accueil
+    },
+    estimated_annual_value: 4900 * 12,
+    typical_monthly_amount: 4900,
+    value_unit: 'NIS/mois (gradue selon age enfant)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_welfare_and_social_services',
+    action_label: 'Devenir famille d\'accueil',
+    info_url: 'https://www.kolzchut.org.il/he/דמי_אומנה',
+    disclaimer:
+      'Necessite l\'agrement prealable de Misrad HaRevacha (candidature, enquete, formation). ' +
+      'Modelisation imparfaite : min_children: 1 declenche pour toute famille avec enfant, generant ' +
+      'des faux positifs. A raffiner avec un champ is_foster_parent dans le profil.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C1). Niche mais importante pour les olim engages dans le social. Status needs_verification car le profil n\'a pas encore de champ is_foster_parent — a ajouter dans un lot ulterieur pour promouvoir.',
+  },
+]
+
+// =====================================================
+// SECTION C2 — BTL Accidents / Victimes (aides auto-declaratives)
+// =====================================================
+// Sources :
+// - https://www.btl.gov.il/benefits/Work_Injuries/Pages/default.aspx
+// - https://www.btl.gov.il/benefits/Hostile_action/Pages/default.aspx
+// - https://www.kolzchut.org.il/he/נפגעי_עבודה
+// - https://www.kolzchut.org.il/he/תאונות_אישיות
+// - https://www.kolzchut.org.il/he/נפגעי_פעולות_איבה
+//
+// Ces aides ne s'appuient pas sur des champs profil existants — elles sont
+// toutes auto-declaratives (l'utilisateur sait s'il a eu un accident reconnu
+// ou non). Le matching catalogue reste "best effort" : on renvoie l'entree
+// des que les conditions generales (resident, emploi le cas echeant) sont
+// remplies, en s'appuyant sur le disclaimer pour preciser qu\'il faut une
+// reconnaissance formelle.
+
+const BTL_ACCIDENT_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'nifgaei_avoda',
+    category: 'health',
+    authority: 'bituach_leumi',
+    title_fr: 'Accidents du travail (Nifgaei Avoda)',
+    title_he: 'נפגעי עבודה',
+    description_fr:
+      'Branche BTL qui couvre les accidents et maladies professionnels : indemnites journalieres (dmei pegia), rente d\'invalidite professionnelle (kitzvat nekhe avoda) et rente de survivants.',
+    full_description_fr:
+      'Regime specifique BTL pour accidents survenant sur le lieu de travail, sur le trajet domicile-travail, ' +
+      'ou pathologies reconnues comme maladies professionnelles. ' +
+      'Prestations gradees : ' +
+      '- Dmei Pegia (indemnite journaliere) : 75 % du salaire journalier, plafonne au salaire moyen ' +
+      '  economie, verse pendant maximum 91 jours (3 mois) ' +
+      '- Kitzvat Nekhe Avoda (rente invalidite professionnelle) : versee si incapacite reconnue > 9 %, ' +
+      '  montant proportionnel au salaire et au taux d\'invalidite (~1 400 a 14 000 NIS/mois) ' +
+      '- Rente survivants : pour les ayants-droit en cas de deces accidentel au travail ' +
+      '- Remboursement frais medicaux lies a l\'accident (Sal Shikum Miktzoi) ' +
+      'La reconnaissance passe par la commission medicale BTL (Vaadat Refuit) apres declaration ' +
+      'employeur (formulaire BL 250) dans les 12 mois.',
+    conditions: {
+      required_disability_source: 'work',
+      requires_resident: true,
+    },
+    estimated_annual_value: 1400 * 12,
+    typical_monthly_amount: 1400,
+    value_unit: 'NIS/mois (base pour invalidite 20%, cumulable avec dmei pegia)',
+    application_url: 'https://www.btl.gov.il/benefits/Work_Injuries/Pages/default.aspx',
+    action_label: 'Declaration accident du travail',
+    info_url: 'https://www.kolzchut.org.il/he/נפגעי_עבודה',
+    disclaimer:
+      'La reconnaissance d\'un accident du travail necessite une declaration employeur (BL 250) ' +
+      'dans les 12 mois et un passage en commission medicale BTL. Sans reconnaissance formelle, ' +
+      'aucune prestation n\'est versee. Un avocat specialise en droit BTL est souvent utile pour ' +
+      'les dossiers contestes.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C2). Utilise le champ disability_source=work ajoute en etape B.',
+  },
+  {
+    slug: 'nifgaei_teunot',
+    category: 'health',
+    authority: 'bituach_leumi',
+    title_fr: 'Accidents personnels (Nifgaei Teunot)',
+    title_he: 'תאונות אישיות',
+    description_fr:
+      'Indemnite BTL pour les accidents corporels non couverts par un autre regime (ni travail, ni route, ni hostile) entrainant un arret superieur a 7 jours.',
+    full_description_fr:
+      'Regime BTL residuel pour les accidents qui ne relevent pas d\'une autre branche (Nifgaei Avoda, ' +
+      'PLT route via Karnit, Nifgaei Peulot Eyva, Nakhei Tsahal). ' +
+      'Conditions : ' +
+      '- Accident corporel survenu en Israel ' +
+      '- Arret de travail ou d\'activite habituelle superieur a 7 jours ' +
+      '- Declaration BTL dans les 90 jours apres l\'accident (delai strict) ' +
+      'Montants 2026 : indemnite journaliere 75 % du salaire moyen des 3 derniers mois, ' +
+      'plafonnee au salaire moyen economie, versee pendant maximum 90 jours. ' +
+      'Ne donne pas de rente d\'invalidite permanente (pour cela, passer en Nakhut Klalit).',
+    conditions: {
+      requires_resident: true,
+    },
+    estimated_annual_value: 12550,
+    value_unit: 'NIS (indemnite journaliere sur duree d\'arret, max 90j)',
+    application_url: 'https://www.btl.gov.il/benefits/Personal_injury/Pages/default.aspx',
+    action_label: 'Declaration accident personnel',
+    info_url: 'https://www.kolzchut.org.il/he/תאונות_אישיות',
+    disclaimer:
+      'Delai strict de 90 jours pour declarer. Ne couvre pas les accidents deja couverts par un autre ' +
+      'regime (travail, route, hostile, IDF). Arret minimum 7 jours obligatoire. Declaration via ' +
+      'formulaire BL 2101 avec certificat medical.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C2). Aide peu connue des olim — souvent ils laissent passer le delai 90 jours.',
+  },
+  {
+    slug: 'nifgaei_peulot_eyva',
+    category: 'special',
+    authority: 'bituach_leumi',
+    title_fr: 'Victimes d\'actes hostiles (Nifgaei Peulot Eyva)',
+    title_he: 'נפגעי פעולות איבה',
+    description_fr:
+      'Regime BTL special pour les victimes (et familles de victimes) d\'attentats, actes de guerre ou actions hostiles reconnues par le Ministere de la Defense.',
+    full_description_fr:
+      'Regime aligne sur celui des Nakhei Tsahal (invalides IDF) mais pour les victimes civiles ' +
+      'd\'actes hostiles (attentats, tirs de roquettes, intrusions terroristes, etc.). ' +
+      'Concerne aussi les evenements du 7 octobre 2023 et la guerre Kharvot Barzel (cf. slug ' +
+      'maanak_sal_shikum_nifgaei_7_octobre pour les droits specifiques post-2023). ' +
+      'Prestations : ' +
+      '- Tagmul basis : rente mensuelle selon taux d\'invalidite reconnu (echelle Nakhei Tsahal) ' +
+      '- Sal Shikum (panier rehabilitation) : physiotherapie, psychotherapie, aides techniques ' +
+      '- Pension de survivants pour familles endeuillees (cf. kitzvat_mishpakha_nifgaei_peulot_eyva) ' +
+      '- Couverture medicale complete au-dela de kupat holim ' +
+      'Reconnaissance : dossier a deposer aupres du Misrad HaBitachon (Agaf HaShikum), avec ' +
+      'documentation de l\'evenement (PV police, certificats medicaux, temoignages).',
+    conditions: {
+      requires_resident: true,
+    },
+    estimated_annual_value: 3000 * 12,
+    typical_monthly_amount: 3000,
+    value_unit: 'NIS/mois (rente selon taux invalidite)',
+    application_url: 'https://www.btl.gov.il/benefits/Hostile_action/Pages/default.aspx',
+    action_label: 'Demande reconnaissance victime',
+    info_url: 'https://www.kolzchut.org.il/he/נפגעי_פעולות_איבה',
+    disclaimer:
+      'Reconnaissance formelle par Misrad HaBitachon requise. Dossier complexe : le Service Social ' +
+      'BTL et les ONGs (OneFamily, Natal) accompagnent gratuitement les dossiers. Cumulable avec ' +
+      'Kitsbat Yeladim, Havtachat Hakhnasa si les revenus du foyer sont bas.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C2). Complementaire au slug kitzvat_mishpakha_nifgaei_peulot_eyva (familles endeuillees civiles) qui sera ajoute en C4.',
+  },
+  {
+    slug: 'nifgaei_polio',
+    category: 'special',
+    authority: 'bituach_leumi',
+    title_fr: 'Victimes de poliomyelite (Nifgaei Polio)',
+    title_he: 'נפגעי פוליו',
+    description_fr:
+      'Loi speciale 5767-2007 : allocation BTL mensuelle + grant unique pour les personnes ayant contracte la poliomyelite en Israel avant l\'eradication de la maladie (annees 1950-1960).',
+    full_description_fr:
+      'Loi des Victimes de la Polio (Chok Pitsoyei Nifgaei Shituk-Yeladim, 5767-2007) : ' +
+      'allocation destinee aux personnes ayant contracte la polio et en gardant des sequelles ' +
+      '(post-polio syndrome, paralysies residuelles, douleurs chroniques). ' +
+      'Prestations : ' +
+      '- Grant unique a la reconnaissance : ~120 000 NIS (montant 2026 indexe) ' +
+      '- Rente mensuelle selon taux d\'invalidite reconnu par Vaadat Refuit : 1 200 a 5 400 NIS/mois ' +
+      '- Couverture medicale specifique post-polio (physio, aides techniques, orthopedie) ' +
+      'Conditions : ' +
+      '- Polio contractee en Israel avant 2001 (eradication officielle en Israel) ' +
+      '- Sequelles reconnues par commission medicale BTL ' +
+      '- Residence israelienne au moment du depot ' +
+      'Beneficiaires : principalement nes avant 1970, souvent olim d\'Afrique du Nord / pays arabes ' +
+      'ou UE de l\'Est. La reconnaissance est permanente.',
+    conditions: {
+      requires_resident: true,
+      min_age: 30,  // les personnes nees apres 1995 n\'ont pas eu de polio en Israel
+    },
+    estimated_annual_value: 3000 * 12,
+    typical_monthly_amount: 3000,
+    value_unit: 'NIS/mois + grant unique ~120 000 NIS',
+    application_url: 'https://www.btl.gov.il/benefits/Polio_victims/Pages/default.aspx',
+    action_label: 'Demande reconnaissance polio',
+    info_url: 'https://www.kolzchut.org.il/he/חוק_פיצוי_לנפגעי_שיתוק_ילדים',
+    disclaimer:
+      'Droit niche reserve aux personnes ayant eu la polio en Israel (pas contractee a l\'etranger). ' +
+      'Si vous avez contracte la polio dans un autre pays, vous n\'etes pas eligible a cette aide ' +
+      'mais potentiellement a Nakhut Klalit. La reconnaissance se fait via BTL + commission medicale.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C2). Confidence medium car montants exacts non publics — fourchette estimee. Droit niche mais critique pour les olim ages concernes.',
+  },
+  {
+    slug: 'nifgaei_eyrui_dam',
+    category: 'special',
+    authority: 'bituach_leumi',
+    title_fr: 'Victimes de transfusions contaminees (Nifgaei Eyrui Dam)',
+    title_he: 'נפגעי עירוי דם',
+    description_fr:
+      'Loi 5752-1992 : indemnisation BTL des personnes ayant contracte le VIH, l\'hepatite C ou une autre maladie transmise par transfusion sanguine dans un etablissement israelien.',
+    full_description_fr:
+      'Chok Pitsoyei Nifgaei Eyrui Dam (5752-1992). Concerne les personnes ayant recu une transfusion ' +
+      'sanguine dans un hopital ou centre de don israelien, avant la mise en place du depistage ' +
+      'systematique (VIH depuis 1986, hepatite C depuis 1992), et ayant contracte : ' +
+      '- VIH / SIDA ' +
+      '- Hepatite C chronique ' +
+      '- Hepatite B chronique ' +
+      '- Autre pathologie infectieuse transmissible par le sang ' +
+      'Prestations : ' +
+      '- Grant unique : ~250 000 NIS pour VIH, ~120 000 NIS pour hepatite C ' +
+      '- Rente mensuelle si incapacite de travail reconnue : 1 500 a 6 000 NIS/mois ' +
+      '- Prise en charge complete des traitements (anti-retroviraux, interferon, etc.) au-dela de ' +
+      '  kupat holim ' +
+      '- Rente survivants pour les ayants-droit en cas de deces ' +
+      'Procedure : dossier BTL avec attestation hospitaliere de la transfusion + diagnostic medical ' +
+      'de la pathologie contractee.',
+    conditions: {
+      requires_resident: true,
+    },
+    estimated_annual_value: 3000 * 12,
+    typical_monthly_amount: 3000,
+    value_unit: 'NIS/mois + grant unique 120-250 000 NIS',
+    application_url: 'https://www.btl.gov.il/benefits/Blood_transfusion/Pages/default.aspx',
+    action_label: 'Demande indemnisation transfusion',
+    info_url: 'https://www.kolzchut.org.il/he/חוק_פיצויים_לנפגעי_עירוי_דם',
+    disclaimer:
+      'Droit niche. Necessite une preuve du lien entre la transfusion recue en Israel et la pathologie ' +
+      'diagnostiquee (expertise medicale, attestation hopital). Les dossiers avant 1992 (date de la loi) ' +
+      'peuvent etre deposes retroactivement. Association d\'aide : AIDS Task Force Israel.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C2). Droit rare mais critique pour les rares cas concernes. Montants estimes (la loi indexe sur le salaire moyen economie).',
+  },
+  {
+    slug: 'nifgaei_gazezet',
+    category: 'special',
+    authority: 'bituach_leumi',
+    title_fr: 'Victimes du traitement de la teigne (Nifgaei Gazezet)',
+    title_he: 'נפגעי גזזת',
+    description_fr:
+      'Loi 5754-1994 : indemnisation BTL des personnes irradiees dans les annees 1948-1960 pour traitement de la teigne (gazezet), ayant developpe cancers / pathologies neurologiques par effet secondaire.',
+    full_description_fr:
+      'Chok Pitsoyei Nifgaei HaGazezet (5754-1994). Entre 1948 et 1960, ~100 000 enfants olim ' +
+      '(principalement d\'Afrique du Nord et Yemen) ont ete traites pour la teigne (gazezet) par ' +
+      'irradiation X du cuir chevelu a fortes doses. Cette pratique a ete reconnue apres coup comme ' +
+      'ayant cause des pathologies graves a long terme : ' +
+      '- Cancers de la thyroide, des glandes salivaires, du cerveau ' +
+      '- Tumeurs meningiomes, gliomes ' +
+      '- Troubles neurologiques (cephalees chroniques, deficits cognitifs) ' +
+      '- Problemes ophtalmologiques, ORL ' +
+      'Prestations : ' +
+      '- Grant unique a la reconnaissance : ~180 000 NIS (montant 2026 indexe) ' +
+      '- Rente mensuelle selon taux d\'invalidite reconnu ' +
+      '- Couverture medicale complete post-radiation ' +
+      '- Pension survivants pour les ayants-droit en cas de deces lie a la pathologie ' +
+      'Procedure : dossier via BTL + Vaadat HaGazezet (commission specifique) avec preuve de ' +
+      'traitement (archives hospitalieres, temoignages familiaux, Yad Ha-8 registre national).',
+    conditions: {
+      requires_resident: true,
+      min_age: 65,  // les personnes traitees (1948-1960) ont au moins 65 ans en 2026
+    },
+    estimated_annual_value: 3000 * 12,
+    typical_monthly_amount: 3000,
+    value_unit: 'NIS/mois + grant unique ~180 000 NIS',
+    application_url: 'https://www.btl.gov.il/benefits/Ringworm_victims/Pages/default.aspx',
+    action_label: 'Demande reconnaissance gazezet',
+    info_url: 'https://www.kolzchut.org.il/he/חוק_פיצוי_לנפגעי_גזזת',
+    disclaimer:
+      'Droit reserve aux olim traites en Israel entre 1948 et 1960. Les archives hospitalieres ' +
+      'sont souvent perdues — les temoignages familiaux et la date d\'alyah (olim marocains/yemenites ' +
+      'des annees 50) sont alors utilises. Association d\'aide : Association des Victimes de la Gazezet.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C2). Droit niche mais tres important pour les olim sepharades ages nes dans les annees 50-60. Beaucoup l\'ignorent — leur generation est souvent mal au courant des lois israeliennes.',
+  },
+  {
+    slug: 'pgia_bizman_hitnadvut',
+    category: 'special',
+    authority: 'bituach_leumi',
+    title_fr: 'Blessures en mission volontaire (Pgia Bizman Hitnadvut)',
+    title_he: 'פגיעה בזמן התנדבות',
+    description_fr:
+      'Regime BTL pour les volontaires agrees (Maguen David Adom, Zaka, Sherut Leumi, ONGs conventionnees) blesses durant une mission volontaire reconnue.',
+    full_description_fr:
+      'Chok HaBituach HaLeumi, chapitre special "Hitnadvut" : BTL couvre les accidents et blessures ' +
+      'survenus au cours d\'une mission volontaire reconnue par l\'Etat. ' +
+      'Volontariats eligibles : ' +
+      '- Sherut Leumi (service civique national, filles et exemptes) ' +
+      '- Maguen David Adom (secouristes benevoles) ' +
+      '- Zaka (identification des victimes) ' +
+      '- Volontaires ONGs conventionnees avec Misrad HaRevacha ' +
+      '- Volontaires Pitsui Eytan (secours en cas de catastrophe) ' +
+      'Prestations : ' +
+      '- Indemnites journalieres durant l\'arret (similaires Nifgaei Avoda) ' +
+      '- Rente mensuelle si invalidite permanente reconnue ' +
+      '- Grant unique en cas de deces au profit des ayants-droit ' +
+      '- Couverture medicale liee a l\'accident ' +
+      'Conditions : la mission doit etre formellement enregistree (presence atteste par le responsable) ' +
+      'et l\'accident doit etre declare a BTL dans les 12 mois.',
+    conditions: {
+      requires_resident: true,
+    },
+    estimated_annual_value: 2500 * 12,
+    typical_monthly_amount: 2500,
+    value_unit: 'NIS/mois (rente) + indemnites journalieres',
+    application_url: 'https://www.btl.gov.il/benefits/Volunteering/Pages/default.aspx',
+    action_label: 'Declaration accident volontariat',
+    info_url: 'https://www.kolzchut.org.il/he/פגיעה_בזמן_התנדבות',
+    disclaimer:
+      'Droit meconnu mais important pour les olim engages dans le benevolat. L\'organisation doit ' +
+      'avoir conventionne avec BTL et la mission doit etre enregistree. Pour les volontaires informels ' +
+      '(aide spontanee sans structure), le regime applicable est plutot Nifgaei Teunot.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C2). Important notamment pour les volontaires Zaka / MDA qui interviennent sur des scenes traumatiques. Cumulable avec la couverture kupat holim.',
+  },
+]
+
+// =====================================================
+// SECTION C3 — Shoah complet (S5 + S14 + S15 du glossaire)
+// =====================================================
+// Sources :
+// - https://www.rashut-shoa.gov.il/ (Rashut leNiztolei HaShoah)
+// - https://www.claimscon.org/
+// - https://www.k-shoa.org/ (Foundation for the Benefit of Holocaust Victims)
+// - https://www.gov.il/he/departments/the_authority_for_the_rights_of_holocaust_survivors
+//
+// Ces 11 aides discriminent les 3 categories de survivants (pre_1953,
+// post_1953, ex_urss) via le champ profile.shoah_period ajoute en etape B.
+// Complementaires aux 3 entrees Shoah deja presentes :
+// - holocaust_monthly_stipend    (pension generique, SECTION 16)
+// - holocaust_in_home_services   (services a domicile, SECTION 16)
+// - holocaust_arnona_full_exemption (arnona, SECTION 16)
+
+const HOLOCAUST_EXTRAS_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'tagmul_niztolei_shoah_vatik',
+    category: 'special',
+    authority: 'other',  // Rashut leNiztolei HaShoah (Misrad HaOtzer)
+    title_fr: 'Pension Shoah pre-1953 (Tagmul Niztolei Shoah Vatik)',
+    title_he: 'תגמול ניצולי שואה ותיקים',
+    description_fr:
+      'Pension mensuelle majoree versee par Rashut leNiztolei HaShoah aux survivants immigres en Israel avant le 01/10/1953 (olim "vatikim") n\'ayant pas recu de BEG allemand.',
+    full_description_fr:
+      'Loi sur les Benefices aux Survivants de la Shoah (Chok Nitzolei HaShoah). ' +
+      'Categorie "vatikim" (anciens) : olim arrives en Israel avant le 01/10/1953 qui n\'ont pas ' +
+      'pu deposer de dossier de reparation allemande (BEG) parce qu\'ils n\'etaient pas encore en ' +
+      'Allemagne de l\'Ouest a ce moment-la. ' +
+      'Montants officiels 2026 (verifies gov.il / rashut-shoa.gov.il) : ' +
+      '- Base individu                          : 2 861 NIS/mois ' +
+      '- Handicap reconnu 25-50%                : 3 500-5 000 NIS/mois ' +
+      '- Handicap reconnu ≥ 50%                 : 5 000-7 184 NIS/mois ' +
+      '- Avec conjoint survivant a charge       : +620 NIS/mois ' +
+      'Cumulable avec : Maanak Shnati (grant annuel), Kitzbat Zikna (retraite BTL), Arnona Shoah, ' +
+      'Tarifs reduits utilities, Hatavot Refuiot. ' +
+      'Procedure : dossier a deposer a Rashut leNiztolei HaShoah avec preuve d\'alyah avant 1953 ' +
+      '(Teudat Oleh, archives Sokhnut, recensement 1951-1954).',
+    conditions: {
+      required_shoah_period: 'pre_1953',
+      requires_resident: true,
+    },
+    estimated_annual_value: 2861 * 12,
+    typical_monthly_amount: 2861,
+    value_unit: 'NIS/mois (2 861-7 184 selon taux invalidite)',
+    application_url: 'https://www.gov.il/he/departments/the_authority_for_the_rights_of_holocaust_survivors',
+    action_label: 'Demande pension Shoah vatik',
+    info_url: 'https://www.kolzchut.org.il/he/ניצולי_שואה_ותיקים',
+    disclaimer:
+      'Reserve aux olim arrives AVANT le 01/10/1953. Si vous etes arrive apres, voir plutot ' +
+      'tagmul_niztolei_shoah_vatik (ou le regime Article 2 Fund / Keren Sif 2). Le champ profile ' +
+      'shoah_period=pre_1953 discrimine automatiquement.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Utilise le champ shoah_period ajoute en etape B pour discriminer les 3 categories (pre/post 1953 / ex-URSS).',
+  },
+  {
+    slug: 'kitzva_keren_sif2_claims',
+    category: 'special',
+    authority: 'claims_conference',
+    title_fr: 'Keren Sif 2 / Article 2 Fund (Claims Conference)',
+    title_he: 'קרן סעיף 2 - כספי גרמניה',
+    description_fr:
+      'Pension mensuelle versee par la Claims Conference aux survivants de la Shoah originaires d\'ex-URSS, Roumanie ou pays de l\'Est, n\'ayant pas recu de BEG direct allemand.',
+    full_description_fr:
+      'Article 2 Fund (aussi appele "Keren Sif 2" en hebreu administratif) : pension financee par ' +
+      'l\'Allemagne a travers la Claims Conference, destinee aux survivants qui ne pouvaient pas ' +
+      'beneficier du BEG classique (ex-URSS, Roumanie, pays du bloc sovietique, Europe de l\'Est). ' +
+      'Montant 2026 : 667 EUR/mois (~2 670 NIS au taux actuel). ' +
+      'Conditions d\'eligibilite : ' +
+      '- Avoir survecu a : camp de concentration / ghetto (≥ 6 mois) / cachette (≥ 18 mois) ' +
+      '- NE PAS recevoir deja une pension BEG allemande mensuelle ' +
+      '- NE PAS recevoir deja la gmala mensuelle Rashut leNiztolei HaShoah israelienne ' +
+      '- Residence actuelle : Israel, USA, Europe, autre pays reconnu ' +
+      'Financement : gouvernement allemand, verse directement aux beneficiaires par Claims Conference ' +
+      '(pas par BTL ni Rashut leNiztolei HaShoah). Exempte d\'impot en Israel et en Allemagne.',
+    conditions: {
+      required_shoah_period: 'ex_urss',
+      requires_resident: true,
+    },
+    estimated_annual_value: 2670 * 12,
+    typical_monthly_amount: 2670,
+    value_unit: 'NIS/mois (~667 EUR converti)',
+    application_url: 'https://www.claimscon.org/applynow',
+    action_label: 'Demande Claims Conference',
+    info_url: 'https://www.kolzchut.org.il/he/קרן_סעיף_2',
+    disclaimer:
+      'NE PAS confondre avec la gmala israelienne Rashut leNiztolei HaShoah (les deux ne sont pas ' +
+      'cumulables). Si vous avez deja une BEG allemande mensuelle, ce fonds ne vous est pas ouvert. ' +
+      'Procedure gratuite via Claims Conference (pas besoin d\'avocat). Delai moyen de reponse : 6-12 mois.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Cible les survivants d\'ex-URSS / Roumanie via shoah_period=ex_urss. Deux slugs dans le glossaire (kitzva_keren_sif2_claims + keren_sif2_article2_fund) pour le meme fonds, vu sous 2 angles (BL vs Claims) — on garde le nom administratif israelien ici, l\'autre slug sera une entree complementaire.',
+  },
+  {
+    slug: 'gmala_hashlama_sif2',
+    category: 'special',
+    authority: 'other',  // Rashut leNiztolei HaShoah
+    title_fr: 'Supplement israelien Keren Sif 2 (Gmala Hashlama)',
+    title_he: 'גמלת השלמה לקרן סעיף 2',
+    description_fr:
+      'Supplement mensuel verse par l\'Etat israelien (Rashut leNiztolei HaShoah) aux beneficiaires Keren Sif 2 / Article 2 Fund a revenus tres faibles, pour atteindre un plancher de revenu.',
+    full_description_fr:
+      'Beneficiant deja de la pension Keren Sif 2 / Article 2 Fund (~667 EUR/mois) les survivants ' +
+      'ex-URSS / Roumanie qui vivent en Israel peuvent demander un supplement israelien pour atteindre ' +
+      'un plancher de revenu comparable aux vatikim. ' +
+      'Montant 2026 : variable selon revenus du foyer (et Kitzbat Zikna BTL) — typiquement 500 a 2 500 ' +
+      'NIS/mois en complement des 2 670 NIS Keren Sif 2. Plancher cible : ~4 500 NIS/mois total (2026). ' +
+      'Conditions : ' +
+      '- Beneficier deja de Keren Sif 2 (dossier Claims Conference valide) ' +
+      '- Residence en Israel ' +
+      '- Revenus du foyer sous un plafond (~6 000 NIS/mois pour individu, ~8 500 pour couple) ' +
+      'Procedure : dossier Rashut leNiztolei HaShoah avec justificatifs de la pension Claims Conference ' +
+      'et releves bancaires 3 derniers mois.',
+    conditions: {
+      required_shoah_period: 'ex_urss',
+      requires_resident: true,
+      max_monthly_income: 6000,
+    },
+    estimated_annual_value: 1500 * 12,
+    typical_monthly_amount: 1500,
+    value_unit: 'NIS/mois (variable selon ecart au plancher)',
+    application_url: 'https://www.gov.il/he/departments/the_authority_for_the_rights_of_holocaust_survivors',
+    action_label: 'Demande supplement Keren Sif 2',
+    info_url: 'https://www.kolzchut.org.il/he/קרן_סעיף_2',
+    disclaimer:
+      'Supplement conditionne a des revenus faibles. Les beneficiaires Keren Sif 2 qui ont aussi une ' +
+      'pension BTL / retraite confortable n\'y ont pas droit. A examiner individuellement avec ' +
+      'Rashut leNiztolei HaShoah. Cumulable avec Kitzbat Zikna et Havtachat Hakhnasa.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Plafond revenus approximatif — a confirmer avec Rashut officielle. Niche mais critique pour les olim sovietiques ages a revenus tres faibles.',
+  },
+  {
+    slug: 'maanak_matzeva_shoah',
+    category: 'special',
+    authority: 'other',  // Rashut leNiztolei HaShoah
+    title_fr: 'Grant pierre tombale survivant Shoah (Maanak Matzeva)',
+    title_he: 'מענק מצבה לניצולי שואה',
+    description_fr:
+      'Grant unique verse a la famille d\'un survivant de la Shoah decede pour couvrir les frais d\'une pierre tombale (matzeva) dans un cimetiere israelien.',
+    full_description_fr:
+      'Aide symbolique mais importante versee par Rashut leNiztolei HaShoah aux ayants-droit d\'un ' +
+      'survivant decede pour contribuer aux frais de pose d\'une pierre tombale (matzeva) dans un ' +
+      'cimetiere israelien. ' +
+      'Montant 2026 : 2 022 NIS (verse une fois). ' +
+      'Cumulable avec : ' +
+      '- Dmei Kvura BTL (~9 000 NIS, allocation funeraire generale) ' +
+      '- Grants Claims Conference pour funerailles si dossier ouvert ' +
+      '- Participation mairie dans certains cas ' +
+      'Conditions : ' +
+      '- Le defunt doit avoir ete reconnu survivant de la Shoah (attestation Rashut ou Claims) ' +
+      '- Sepulture dans un cimetiere israelien reconnu ' +
+      '- Demande par ayants-droit (conjoint, enfant, petit-enfant) dans les 12 mois apres le deces ' +
+      'Procedure : formulaire Rashut avec copie du Teudat Ptira, attestation de reconnaissance ' +
+      'survivant, facture ou devis pose de la matzeva.',
+    conditions: {
+      requires_holocaust_survivor: true,  // indirectement via le defunt, mais proxy
+      requires_resident: true,
+    },
+    estimated_annual_value: 2022,
+    value_unit: 'NIS (versement unique aux ayants-droit)',
+    application_url: 'https://www.gov.il/he/departments/the_authority_for_the_rights_of_holocaust_survivors',
+    action_label: 'Demande grant matzeva',
+    info_url: 'https://www.kolzchut.org.il/he/מענק_מצבה_לניצולי_שואה',
+    disclaimer:
+      'Verse aux ayants-droit du defunt (pas au survivant lui-meme). Modelisation imparfaite : le ' +
+      'catalogue declenche la condition pour tout survivant reconnu, alors que le beneficiaire reel ' +
+      'est sa famille apres deces. A raffiner avec un champ is_bereaved_of_shoah_survivor.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Montant 2 022 NIS confirme via glossaire. Aide modeste mais automatique si demande faite dans les 12 mois.',
+  },
+  {
+    slug: 'maanak_shnati_shoah',
+    category: 'special',
+    authority: 'other',  // Rashut leNiztolei HaShoah
+    title_fr: 'Grant annuel survivants Shoah (Maanak Shnati)',
+    title_he: 'מענק שנתי לניצולי שואה',
+    description_fr:
+      'Grant annuel verse en une fois par Rashut leNiztolei HaShoah a tous les survivants de la Shoah reconnus, independamment de leur categorie pre/post 1953 ou ex-URSS.',
+    full_description_fr:
+      'Depuis 2014, l\'Etat d\'Israel verse un grant annuel unique a tous les survivants de la Shoah ' +
+      'reconnus pour compenser les cout de vie eleves et les besoins specifiques (medicaments, ' +
+      'aides techniques, chauffage). ' +
+      'Montant 2026 : 7 688 NIS/an (indexe sur CPI). ' +
+      'Verse automatiquement en debut d\'annee fiscale (avril) sur le compte bancaire enregistre ' +
+      'aupres de Rashut leNiztolei HaShoah. Pas de demande a faire si deja reconnu. ' +
+      'Eligibilite : ' +
+      '- Toute personne reconnue survivante de la Shoah (pre_1953, post_1953, ex_urss) ' +
+      '- Conjoint survivant a vie si deja reconnu ' +
+      '- Non soumis a condition de revenus ' +
+      'Cumulable avec toutes les autres aides Shoah (gmala mensuelle, Maanak Matzeva, Hatavot Refuiot, ' +
+      'Arnona Shoah, Keren Sif 2).',
+    conditions: {
+      requires_holocaust_survivor: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 7688,
+    value_unit: 'NIS/an (versement unique avril)',
+    application_url: 'https://www.gov.il/he/departments/the_authority_for_the_rights_of_holocaust_survivors',
+    action_label: 'Verifier grant annuel',
+    info_url: 'https://www.kolzchut.org.il/he/מענק_שנתי_לניצולי_שואה',
+    disclaimer:
+      'Verse automatiquement a tous les survivants reconnus, sans demande. Si vous pensez etre ' +
+      'eligible mais ne recevez rien : contacter Rashut leNiztolei HaShoah (03-504-8700) — il manque ' +
+      'probablement une reconnaissance formelle ou un coordonnees bancaires obsoletes.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Montant 7 688 NIS/an confirme via glossaire. Automatique — beaucoup de survivants ignorent qu\'ils l\'ont deja, ou l\'encaissent sans le savoir.',
+  },
+  {
+    slug: 'tagmul_shaarim_niztolei_shoah',
+    category: 'special',
+    authority: 'other',  // Rashut leNiztolei HaShoah
+    title_fr: 'Pension conjoint survivant Shoah (Tagmul Sheirim)',
+    title_he: 'תגמול שאירים לניצולי שואה',
+    description_fr:
+      'Pension mensuelle versee au conjoint survivant d\'un beneficiaire Rashut leNiztolei HaShoah decede, pour maintenir un revenu minimum.',
+    full_description_fr:
+      'Lorsqu\'un survivant de la Shoah beneficiaire de la gmala mensuelle decede, son conjoint a vie ' +
+      '(meme s\'il n\'etait pas lui-meme survivant) peut continuer a percevoir une pension reduite ' +
+      'pour eviter la chute brutale des revenus. ' +
+      'Montants 2026 : ' +
+      '- Conjoint survivant seul                : ~2 000 NIS/mois (60% de la gmala de base) ' +
+      '- Avec handicap reconnu                  : jusqu\'a 3 500 NIS/mois ' +
+      '- Conjoint lui-meme survivant reconnu    : cumulable avec sa propre gmala ' +
+      'Conditions : ' +
+      '- Le defunt etait beneficiaire actif de la gmala Shoah au moment du deces ' +
+      '- Conjoint marie legalement ou en union civile au moment du deces ' +
+      '- Residence israelienne maintenue ' +
+      'Procedure : dossier a deposer a Rashut dans les 12 mois apres le deces avec Teudat Ptira, ' +
+      'attestation de reconnaissance du defunt et preuve de mariage/union.',
+    conditions: {
+      required_marital_status: ['widowed'],
+      requires_resident: true,
+    },
+    estimated_annual_value: 2000 * 12,
+    typical_monthly_amount: 2000,
+    value_unit: 'NIS/mois (pension conjoint survivant)',
+    application_url: 'https://www.gov.il/he/departments/the_authority_for_the_rights_of_holocaust_survivors',
+    action_label: 'Demande pension conjoint survivant',
+    info_url: 'https://www.kolzchut.org.il/he/תגמול_שאירים_לניצולי_שואה',
+    disclaimer:
+      'Reserve aux conjoints d\'un survivant decede qui etait lui-meme beneficiaire actif de la gmala ' +
+      'Shoah. Si le defunt n\'avait pas ouvert de dossier Shoah de son vivant, pas de droit. A noter : ' +
+      'si le conjoint est lui-meme survivant reconnu (cas frequent), sa propre gmala reste versee en ' +
+      'plus de la pension Sheirim.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). La modelisation par marital_status=widowed est imparfaite car elle declenche pour toute veuve/veuf, meme sans conjoint Shoah. A raffiner avec un champ profile is_widow_of_shoah_survivor.',
+  },
+  {
+    slug: 'hatavot_refuiot_niztolei_shoah',
+    category: 'health',
+    authority: 'other',  // Rashut leNiztolei HaShoah + Kupot Holim
+    title_fr: 'Avantages medicaux survivants Shoah (Hatavot Refuiot)',
+    title_he: 'הטבות רפואיות לניצולי שואה',
+    description_fr:
+      'Exonerations et priorites medicales pour les survivants de la Shoah reconnus : gratuite consultations specialistes, medicaments, aides techniques, soins dentaires, psychotherapie.',
+    full_description_fr:
+      'Paquet d\'avantages medicaux cumules, vers par Rashut leNiztolei HaShoah + les 4 Kupot Holim : ' +
+      '- Exoneration totale des franchises (hishtatfut atzmit) sur medicaments ' +
+      '- Exoneration consultations specialistes (y compris privees conventionnees) ' +
+      '- Psychotherapie gratuite (sans limite de seances) via Amkha, Natal, Kupat Holim ' +
+      '- Soins dentaires majoritairement pris en charge (implants, protheses) ' +
+      '- Prioritaire en kinesitherapie, ergotherapie ' +
+      '- Aides techniques gratuites : fauteuil, deambulateur, lit medicalise ' +
+      '- Adaptation logement prise en charge jusqu\'a ~30 000 NIS (barres, monte-escalier) ' +
+      'Valeur totale typique : 10 000 a 25 000 NIS/an selon niveau de dependance. ' +
+      'Procedure : inscription aupres de sa kupat holim avec attestation de reconnaissance ' +
+      'Shoah — active automatiquement le profil beneficiaire (le "ot" / marque dans le dossier medical).',
+    conditions: {
+      requires_holocaust_survivor: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 15000,
+    value_unit: 'NIS/an (valeur des services et exonerations)',
+    application_url: 'https://www.gov.il/he/departments/the_authority_for_the_rights_of_holocaust_survivors',
+    action_label: 'Activer hatavot refuiot',
+    info_url: 'https://www.kolzchut.org.il/he/הטבות_רפואיות_לניצולי_שואה',
+    disclaimer:
+      'Necessite l\'activation du statut aupres de votre kupat holim (pas automatique pour les olim ' +
+      'recents meme reconnus Shoah). Apporter l\'attestation Rashut leNiztolei HaShoah ou Claims ' +
+      'Conference. Les avantages peuvent varier legerement selon Clalit / Maccabi / Meuhedet / Leumit.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Valeur 15k NIS/an est une estimation moyenne. Beaucoup de survivants non encore actives dans kupat holim — gain immediat possible.',
+  },
+  {
+    slug: 'taavurot_hatavot_shoah',
+    category: 'welfare',
+    authority: 'other',  // IEC, Mei Avivim, mairies
+    title_fr: 'Tarifs reduits utilities survivants Shoah (electricite, eau, taavura)',
+    title_he: 'הטבות תעריפי חשמל, מים ותחבורה לניצולי שואה',
+    description_fr:
+      'Reductions automatiques sur les factures d\'electricite (50% sur 400 kWh), eau (jusqu\'a 50% des blocs de base) et transport public (Rav-Kav profil Shoah ou 67+) pour les survivants reconnus.',
+    full_description_fr:
+      'Paquet de tarifs reduits sur les services publics pour les survivants de la Shoah reconnus : ' +
+      'Electricite (IEC / Israel Electric Corporation) : ' +
+      '- 50 % de reduction sur les 400 premiers kWh/mois (similaire seniors/invalides) ' +
+      '- Plafond economies : ~100-150 NIS/mois soit 1 200-1 800 NIS/an ' +
+      'Eau (Mei Avivim / societes locales) : ' +
+      '- Tarif bloc 1 gratuit ou a 50% pour les beneficiaires de la gmala mensuelle Shoah ' +
+      '- Economies : 50-150 NIS/mois selon consommation ' +
+      'Transport public : ' +
+      '- Les 67+ ont deja la gratuite totale (reforme 2025 — cf. rav_kav_senior_free) ' +
+      '- Les moins de 67 ans survivants ont un profil Rav-Kav reduit (50%) ' +
+      'Procedure : les reductions sont automatiques pour les beneficiaires actifs de la gmala mensuelle, ' +
+      'sinon demande une fois aupres de l\'operateur avec attestation Rashut.',
+    conditions: {
+      requires_holocaust_survivor: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2000,
+    value_unit: 'NIS/an (cumul electricite + eau + transport)',
+    application_url: 'https://www.iec.co.il/content/discounts',
+    action_label: 'Activer tarifs reduits',
+    info_url: 'https://www.kolzchut.org.il/he/הטבות_לניצולי_שואה',
+    disclaimer:
+      'Reductions automatiques pour les beneficiaires actifs de la gmala mensuelle. Si vous ne recevez ' +
+      'pas la gmala mais etes reconnu survivant (cas des beneficiaires Keren Sif 2 uniquement), ' +
+      'demande manuelle a chaque operateur avec attestation Rashut ou Claims.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Regroupe electricite + eau + transport dans une seule entree pour simplifier. Valeur 2k NIS/an est conservatrice.',
+  },
+  {
+    slug: 'maanak_hardship_fund_claims',
+    category: 'special',
+    authority: 'claims_conference',
+    title_fr: 'Hardship Fund + Supplemental (Claims Conference)',
+    title_he: 'קרן הקושי - כספי גרמניה',
+    description_fr:
+      'Paiement unique (~10 500 NIS) + supplement annuel (~5 540 NIS/an) verses par la Claims Conference aux survivants de la Shoah n\'ayant jamais recu de BEG mensuel allemand.',
+    full_description_fr:
+      'Hardship Fund (fonds d\'aide d\'urgence) cree en 1980 par la Claims Conference pour les survivants ' +
+      'qui n\'avaient pas pu beneficier du BEG directement (olim arrives en Israel avant 1953, ou ' +
+      'vivants dans des pays communistes). ' +
+      'Prestations : ' +
+      '- Hardship Fund (one-shot) : ~2 500 EUR (~10 500 NIS au taux actuel) a la reconnaissance ' +
+      '- Hardship Supplemental : ~1 320 EUR/an (~5 540 NIS/an) verse chaque annee aux beneficiaires ' +
+      '  du Hardship Fund qui n\'ont pas d\'autre pension allemande mensuelle ' +
+      'Conditions : ' +
+      '- Avoir survecu a : camp / ghetto / cachette / exode force ' +
+      '- NE PAS avoir de pension BEG allemande mensuelle ' +
+      '- NE PAS avoir deja recu le Hardship Fund (une fois par personne) ' +
+      'Procedure : dossier Claims Conference gratuit (pas besoin d\'avocat), delai moyen 6-18 mois. ' +
+      'Cumulable avec la gmala israelienne Rashut leNiztolei HaShoah et Article 2 Fund (selon categorie).',
+    conditions: {
+      requires_holocaust_survivor: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 5540,  // supplement annuel recurrent
+    value_unit: 'NIS/an (supplement) + one-shot 10 500 NIS',
+    application_url: 'https://www.claimscon.org/applynow',
+    action_label: 'Demande Hardship Fund',
+    info_url: 'https://www.claimscon.org/survivor-services/compensation-and-restitution/',
+    disclaimer:
+      'Dossier a deposer directement aupres de la Claims Conference (pas via BTL ni Rashut). Examiner ' +
+      'avant depot si vous n\'avez pas deja une BEG mensuelle (les deux ne sont pas cumulables). ' +
+      'La majorite des olim d\'Afrique du Nord et d\'Europe de l\'Est n\'ont pas de BEG et sont donc ' +
+      'eligibles au Hardship.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Montants 2026 confirmes via claimscon.org / glossaire. Hardship est l\'aide la plus accessible — ne necessite pas de preuve de camp, juste presence en zone occupee.',
+  },
+  {
+    slug: 'keren_sif2_article2_fund',
+    category: 'special',
+    authority: 'claims_conference',
+    title_fr: 'Article 2 Fund / Keren Sif 2 (angle Claims Conference)',
+    title_he: 'קרן סעיף 2 - ארטיקל 2',
+    description_fr:
+      'Meme fonds que kitzva_keren_sif2_claims, mais accessible via la Claims Conference directement (utile pour les survivants ex-URSS residant hors Israel ou en diaspora).',
+    full_description_fr:
+      'Article 2 Fund : pension mensuelle de 667 EUR (~2 734 NIS) versee par la Claims Conference ' +
+      'aux survivants de la Shoah ayant survecu a un camp / ghetto / cachette en zone d\'occupation ' +
+      'nazie ou sovietique. Financement : gouvernement allemand. ' +
+      'Double entree dans le catalogue : ' +
+      '- kitzva_keren_sif2_claims : angle administratif israelien (BTL / Rashut), profile shoah_period=ex_urss ' +
+      '- keren_sif2_article2_fund : angle Claims Conference (international, pour les survivants residant ' +
+      '  hors Israel ou en diaspora sovietique recente) ' +
+      'Conditions communes : ' +
+      '- Passage en zone nazie ou sovietique occupee entre 1933 et 1945 (camp, ghetto, cachette ≥ 18 mois) ' +
+      '- Pas de pension BEG mensuelle ni de gmala israelienne Shoah ' +
+      'Procedure : dossier Claims Conference gratuit (pas via BTL ni Rashut). Residents hors Israel ' +
+      'a l\'etranger peuvent deposer via les bureaux Claims New York / Francfort / Tel Aviv.',
+    conditions: {
+      required_shoah_period: ['ex_urss', 'post_1953'],
+      requires_resident: true,
+    },
+    estimated_annual_value: 2734 * 12,
+    typical_monthly_amount: 2734,
+    value_unit: 'NIS/mois (~667 EUR convertis)',
+    application_url: 'https://www.claimscon.org/applynow',
+    action_label: 'Demande Article 2 Fund',
+    info_url: 'https://www.claimscon.org/our-work/compensation/background/article-2/',
+    disclaimer:
+      'ATTENTION : doublon intentionnel avec kitzva_keren_sif2_claims — meme fonds, 2 angles differents. ' +
+      'Pour eviter les doubles paiements, Claims Conference croise les listes avec Rashut. Ne pas deposer ' +
+      'les deux en parallele — choisir l\'angle selon residence (Israel = Rashut, diaspora = Claims).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Doublon volontaire avec kitzva_keren_sif2_claims pour couvrir les deux angles (BTL vs Claims). Inclut post_1953 en plus de ex_urss car le fonds accepte aussi les olim apres 1953 sous certaines conditions.',
+  },
+  {
+    slug: 'kitzva_beg_niztolei_shoah',
+    category: 'special',
+    authority: 'other',  // Bundesamt fur zentrale Dienste (Allemagne)
+    title_fr: 'Pension BEG (reparations allemandes directes)',
+    title_he: 'קצבת BEG - פיצויים מגרמניה',
+    description_fr:
+      'Pension mensuelle versee directement par le Tresor allemand (Bundesamt) aux survivants de la Shoah beneficiaires du BEG (Bundesentschadigungsgesetz, loi 1953-1965) ayant deja un dossier actif.',
+    full_description_fr:
+      'Le BEG (Bundesentschadigungsgesetz) est la loi allemande de reparation des victimes du nazisme ' +
+      'votee en 1953. Elle offrait une pension mensuelle a vie aux survivants qui pouvaient prouver : ' +
+      '- Residence en Allemagne avant 1945 ' +
+      '- Prejudice pour motif racial, religieux ou politique ' +
+      '- Depot de dossier dans les delais legaux (majoritairement clos en 1965) ' +
+      'Montants 2026 : tres variables selon le dossier initial (type de prejudice, duree de detention, ' +
+      'statut de refugie, etc.). Fourchette typique : 300-2 500 EUR/mois (1 200-10 000 NIS/mois). ' +
+      'IMPORTANT : les delais de depot sont EXPIRES depuis plus de 50 ans. Cette entree concerne ' +
+      'UNIQUEMENT les beneficiaires existants qui ont deja un dossier BEG actif, pour les aider a : ' +
+      '- Verifier que leur pension est indexee correctement (revalorisations automatiques allemandes) ' +
+      '- Transferer le dossier en cas de demenagement (France → Israel par exemple) ' +
+      '- Activer la pension survivant au conjoint apres deces ' +
+      'Les nouveaux dossiers doivent plutot etre deposes via Claims Conference (Article 2 Fund, ' +
+      'Hardship Fund) ou Rashut leNiztolei HaShoah.',
+    conditions: {
+      requires_holocaust_survivor: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 800 * 12,  // mediane fourchette 300-2500 EUR
+    typical_monthly_amount: 800,
+    value_unit: 'NIS/mois (~200 EUR mediane, tres variable)',
+    application_url: 'https://www.bva.bund.de/DE/Services/Buerger/Social/BEG/beg_node.html',
+    action_label: 'Infos BEG (Bundesamt allemand)',
+    info_url: 'https://www.kolzchut.org.il/he/תגמולים_מגרמניה_BEG',
+    disclaimer:
+      'IMPORTANT : les delais legaux pour ouvrir un NOUVEAU dossier BEG sont expires depuis 1965. ' +
+      'Cette entree ne concerne que les beneficiaires existants. Pour une premiere demande, utiliser ' +
+      'plutot maanak_hardship_fund_claims ou kitzva_keren_sif2_claims (Article 2 Fund). Si vous pensez ' +
+      'qu\'un membre de votre famille a ou aurait du avoir un BEG : contactez Claims Conference pour ' +
+      'audit de dossier.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C3). Entree "historique" — la plupart des beneficiaires ont deja leur dossier. Utile pour les survivants transferant leur dossier vers Israel, ou les veufs/veuves souhaitant activer la pension de conjoint.',
+  },
+]
+
+// =====================================================
+// SECTION C4 — 7 octobre / Kharvot Barzel (S16 du glossaire)
+// =====================================================
+// Sources :
+// - https://www.btl.gov.il/benefits/Hostile_action/Pages/default.aspx
+// - https://www.gov.il/he/departments/ministry_of_defense
+// - https://www.kolzchut.org.il/he/מלחמת_חרבות_ברזל
+//
+// Ces 4 aides sont specifiquement destinees aux victimes des evenements
+// du 7 octobre 2023 et de la guerre Kharvot Barzel (reservistes actifs +
+// familles de civils tues). Elles utilisent les champs ajoutes en etape B :
+// is_7octobre_victim, is_active_reservist, is_bereaved_family.
+
+const KHARVOT_BARZEL_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'maanak_sal_shikum_nifgaei_7_octobre',
+    category: 'special',
+    authority: 'misrad_habitahon',
+    title_fr: 'Grant + panier rehab victimes 7 octobre (Maanak Sal Shikum)',
+    title_he: 'מענק וסל שיקום לנפגעי 7 באוקטובר',
+    description_fr:
+      'Grant unique (5 000-28 720 NIS) + panier rehabilitation (4 800-30 000 NIS) versees par Misrad HaBitachon aux victimes directes ou familles endeuillees des evenements du 7 octobre 2023.',
+    full_description_fr:
+      'Dispositif specifique cree apres le 7 octobre 2023 par Misrad HaBitachon (Agaf HaShikum) pour ' +
+      'les victimes physiques, psychologiques, ou endeuillees des massacres et de la guerre Kharvot Barzel. ' +
+      'Trois niveaux selon gravite des sequelles : ' +
+      '- Niveau 1 (trauma leger sans incapacite durable) : grant 5 000 NIS + panier rehab 4 800 NIS ' +
+      '- Niveau 2 (trauma modere avec suivi prolonge)  : grant 12 400 NIS + panier rehab 15 000 NIS ' +
+      '- Niveau 3 (invalidite reconnue, deuil immediat) : grant 28 720 NIS + panier rehab 30 000 NIS ' +
+      'Le panier rehab couvre : psychotherapie individuelle et familiale (sans limite seances), ' +
+      'aides techniques, frais medicaux non couverts kupat holim, adaptation logement, soutien social. ' +
+      'Cumulable avec : pension mensuelle Nifgaei Peulot Eyva (si invalidite reconnue), aides enfants, ' +
+      'exonerations fiscales specifiques post-7/10.',
+    conditions: {
+      requires_7octobre_victim: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 12400 + 15000,  // mediane niveau 2
+    value_unit: 'NIS (grant + panier, versement unique, 3 niveaux)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_defense',
+    action_label: 'Demande grant victimes 7 octobre',
+    info_url: 'https://www.kolzchut.org.il/he/מלחמת_חרבות_ברזל',
+    disclaimer:
+      'Reserve aux victimes directes ou familles de victimes du 7 octobre 2023 et evenements Kharvot ' +
+      'Barzel. Reconnaissance formelle par Misrad HaBitachon obligatoire. Un coordinateur dedie est ' +
+      'assigne a chaque dossier — l\'accompagnement est gratuit via OneFamily, Natal, Enosh.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C4). Utilise le champ is_7octobre_victim ajoute en etape B. Complementaire au slug nifgaei_peulot_eyva (C2) qui couvre le regime general des victimes d\'actes hostiles.',
+  },
+  {
+    slug: 'kitzvat_mishpakha_nifgaei_peulot_eyva',
+    category: 'special',
+    authority: 'misrad_habitahon',
+    title_fr: 'Pension familles victimes civiles (Kitzvat Mishpakha)',
+    title_he: 'קצבת משפחה לנפגעי פעולות איבה',
+    description_fr:
+      'Pension mensuelle a vie versee aux familles endeuillees d\'une victime civile d\'actes hostiles (7 octobre, attentats, tirs de roquettes), graduee selon nombre d\'enfants, alignee sur le regime IDF.',
+    full_description_fr:
+      'Le regime mensuel pour les familles de victimes civiles est aligne sur celui des familles ' +
+      'endeuillees IDF (bereaved_family_benefits, deja present au catalogue). ' +
+      'Montants officiels 2026 (en vigueur 01/02/2026) : ' +
+      '- Sans enfant     : 10 525 NIS/mois ' +
+      '- Avec 1 enfant   : 12 995 NIS/mois ' +
+      '- Avec 2 enfants  : 14 834 NIS/mois ' +
+      '- Avec 3 enfants  : 16 673 NIS/mois ' +
+      '- Avec 4 enfants  : 18 512 NIS/mois ' +
+      '- Avec 5+ enfants : 20 350-24 028 NIS/mois (majoration) ' +
+      'SUPPLEMENT 1ere annee (deces depuis 07/10/2023) : +13 566 NIS/mois pendant 12 mois. ' +
+      'Orphelins adultes : ' +
+      '- 21-30 ans : 3 652 NIS/mois ' +
+      '- 30-40 ans : 2 000 NIS/mois ' +
+      '- 40-60 ans : prime unique 25 000 NIS ' +
+      '- 60+ ans   : prime unique 50 000 NIS ' +
+      'Cumulable avec : maanak_sal_shikum (grant initial), exonerations fiscales Misrad HaBitachon, ' +
+      'aides au logement, suivi psychologique gratuit a vie.',
+    conditions: {
+      requires_7octobre_victim: true,  // champ actif si victime OU famille de victime
+      requires_bereaved: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 10525 * 12,
+    typical_monthly_amount: 10525,
+    value_unit: 'NIS/mois (10 525-24 028 + supplement 1re annee post-7/10)',
+    application_url: 'https://www.mod.gov.il/',
+    action_label: 'Pension famille victime civile',
+    info_url: 'https://www.kolzchut.org.il/he/משפחות_נפגעי_פעולות_איבה',
+    disclaimer:
+      'Regime aligne sur bereaved_family_benefits (cf. SECTION 18) mais pour les victimes civiles ' +
+      '(non-militaires). Un coordinateur dedie Misrad HaBitachon est assigne. Supplement 1ere annee ' +
+      'reserve aux deces entre le 07/10/2023 et le 07/10/2024.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C4). Montants officiels identiques a bereaved_family_benefits car l\'Etat a harmonise les 2 regimes post-7/10. Specificite : s\'applique aux CIVILS (pas militaires).',
+  },
+  {
+    slug: 'tagmulei_miluim_kharvot_barzel',
+    category: 'military',
+    authority: 'bituach_leumi',
+    title_fr: 'Indemnisation reservistes Kharvot Barzel (Tagmulei Miluim)',
+    title_he: 'תגמולי מילואים - חרבות ברזל',
+    description_fr:
+      'Indemnite journaliere BTL versee aux reservistes actifs mobilises durant la guerre Kharvot Barzel : 328-1 730 NIS/jour selon salaire, en remplacement du salaire suspendu.',
+    full_description_fr:
+      'Regime BTL specifique aux reservistes de tsav-8 (mobilisation d\'urgence post-7/10/2023) et ' +
+      'tsav-8 successifs de la guerre Kharvot Barzel. ' +
+      'Montants 2026 (en vigueur 01/02/2026, indexes CPI) : ' +
+      '- Plancher minimum       : 328,76 NIS/jour (reservistes sans revenus prealables) ' +
+      '- Mediane salariale      : 750-1 200 NIS/jour (salaires moyens) ' +
+      '- Plafond legal           : 1 730,33 NIS/jour (reservistes a hauts revenus) ' +
+      'Calcul : 100 % du salaire journalier moyen des 3 derniers mois avant la mobilisation. ' +
+      'Pour les independants : base sur le dernier avis BITUAH (revenu net moyen 12 derniers mois). ' +
+      'Verse directement au reserviste (pas a l\'employeur) — l\'employeur, lui, ne paie plus le salaire ' +
+      'pendant la mobilisation mais recoit un remboursement BTL separement. ' +
+      'Cumulable avec : combat_reservist_bonuses_2026 (grant + voucher + aide parentale), ' +
+      'miluim_tax_credit_combat, miluim_low_income_supplement.',
+    conditions: {
+      requires_active_reservist: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 1000 * 60,  // ~60 jours moyenne premiere annee
+    typical_monthly_amount: 30000,  // 1000 NIS/jour * 30 jours
+    value_unit: 'NIS/jour (328-1 730 selon salaire)',
+    application_url: 'https://www.btl.gov.il/benefits/Reservists/Pages/default.aspx',
+    action_label: 'Demande tagmulei miluim',
+    info_url: 'https://www.kolzchut.org.il/he/תגמולי_מילואים',
+    disclaimer:
+      'Automatique pour les reservistes avec employeur (declare via Tofes 81 mensuel). Les independants ' +
+      'doivent deposer un dossier BTL avec justificatifs de revenus. Le bulletin de paie "tagmulei ' +
+      'miluim" remplace le bulletin de salaire employeur pendant la mobilisation.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C4). Montants officiels en vigueur 01/02/2026. Complementaire aux miluim_* deja presents au catalogue (bonus, credits, supplement bas revenu).',
+  },
+  {
+    slug: 'siyua_tipulim_miluim',
+    category: 'health',
+    authority: 'misrad_habitahon',
+    title_fr: 'Soutien therapeutique reservistes + foyer (Siyua Tipulim)',
+    title_he: 'סיוע טיפולים למשרתי מילואים ובני משפחה',
+    description_fr:
+      'Financement de psychotherapie, couple-therapie et therapie familiale pour les reservistes actifs et leur foyer (conjoint, enfants) durant et apres la mobilisation Kharvot Barzel.',
+    full_description_fr:
+      'Dispositif Misrad HaBitachon + Natal + Enosh cree post-7/10/2023 pour reconnaitre l\'impact ' +
+      'psychologique de la mobilisation prolongee sur le reserviste et sa famille. ' +
+      'Prestations (valeurs 2026) : ' +
+      '- Psychotherapie reserviste : 26 seances/an prises en charge (~500 NIS/seance = 13 000 NIS/an) ' +
+      '- Couple-therapie : 15 seances/an (~600 NIS/seance = 9 000 NIS/an) ' +
+      '- Therapie familiale (enfants) : 20 seances/an (~500 NIS/seance = 10 000 NIS/an) ' +
+      '- Groupes de soutien Natal / Enosh : gratuits, illimites ' +
+      '- Ligne d\'ecoute 24/7 (*6363 Natal) : gratuite ' +
+      'Conditions : ' +
+      '- Reserviste actif ayant servi ≥ 20 jours dans la guerre Kharvot Barzel ' +
+      '- OU conjoint / enfant d\'un reserviste remplissant la condition ci-dessus ' +
+      '- Prise en charge via Natal, Enosh, Hosen ou psychologue liberal agree Misrad HaBitachon ' +
+      'Duree : ouvert jusqu\'a 3 ans apres la fin de la mobilisation.',
+    conditions: {
+      requires_active_reservist: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 13000,  // psychotherapie reserviste base
+    value_unit: 'NIS/an (valeur des seances remboursees)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_defense',
+    action_label: 'Activer soutien therapeutique',
+    info_url: 'https://www.kolzchut.org.il/he/סיוע_נפשי_למשרתי_מילואים',
+    disclaimer:
+      'Appeler Natal (*6363) pour une premiere orientation — ligne gratuite 24/7. Les seances peuvent ' +
+      'aussi etre prises en charge via kupat holim (Clalit / Maccabi remboursent aussi post-7/10), ' +
+      'mais le circuit Misrad HaBitachon offre plus de seances sans franchise.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C4). Droit sous-utilise — beaucoup de reservistes pensent que c\'est uniquement pour les blesses physiques, alors que le soutien psy est ouvert a tous ceux qui ont servi ≥ 20 jours. Famille (conjoint, enfants) souvent oubliee.',
+  },
+]
+
+// =====================================================
+// SECTION C5 — Nakhei Tsahal / IDF invalides (S11 du glossaire)
+// =====================================================
+// Sources :
+// - https://www.gov.il/he/departments/ministry_of_defense/agaf_hashikum
+// - https://www.kolzchut.org.il/he/נכי_צהל
+// - https://www.mod.gov.il/
+//
+// Ces 4 aides sont administrees par Misrad HaBitachon - Agaf HaShikum
+// (Reinsertion des Invalides), pas par BTL. Elles utilisent les champs
+// disability_source=idf et disability_level ajoutes en etape B.
+
+const NAKHEI_TSAHAL_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'tagmul_basissi_nakhei_tsahal',
+    category: 'military',
+    authority: 'misrad_habitahon',
+    title_fr: 'Compensation mensuelle invalides IDF (Tagmul Basissi)',
+    title_he: 'תגמול בסיסי לנכי צהל',
+    description_fr:
+      'Rente mensuelle versee par Agaf HaShikum aux anciens soldats reconnus invalides avec taux ≥ 20%, selon grille graduee (1 161-8 130 NIS/mois).',
+    full_description_fr:
+      'Tagmul Basissi (compensation de base) : rente mensuelle a vie versee par Misrad HaBitachon ' +
+      '(pas BTL) aux invalides IDF reconnus avec un taux ≥ 20%. ' +
+      'Montants officiels 2026 (en vigueur 01/02/2026, indexes CPI) : ' +
+      '- Taux 20 %          : ~1 161 NIS/mois ' +
+      '- Taux 30-40 %       : ~1 800-2 500 NIS/mois ' +
+      '- Taux 50 %          : ~3 400 NIS/mois ' +
+      '- Taux 70-89 %       : ~4 800-6 500 NIS/mois ' +
+      '- Taux 100 %         : 8 130 NIS/mois ' +
+      '- Taux 100 % + special needs (paralysie, cecite, etc.) : majoration jusqu\'a 2-3x la base ' +
+      'Cumulable avec : ' +
+      '- Tagmul Ovedan Kosher Avoda (TOKA, cf. slug suivant) si perte de capacite de travail ' +
+      '- Maanak Hashtatafut Mas Tsahal (participation impots) ' +
+      '- Petur Mas Nakhut a partir de 90 % d\'invalidite ' +
+      '- Arnona Disability (deja au catalogue) ' +
+      'Reconnaissance via la commission medicale de Misrad HaBitachon (Vaadat Refuit Agaf HaShikum).',
+    conditions: {
+      requires_idf_service: true,
+      required_disability_source: 'idf',
+      min_disability: 20,
+      requires_resident: true,
+    },
+    estimated_annual_value: 1161 * 12,  // base taux 20%
+    typical_monthly_amount: 1161,
+    value_unit: 'NIS/mois (1 161 a 8 130+ selon taux invalidite)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_defense/agaf_hashikum',
+    action_label: 'Demande tagmul invalide IDF',
+    info_url: 'https://www.kolzchut.org.il/he/תגמול_בסיסי_לנכי_צהל',
+    disclaimer:
+      'Reconnaissance par Agaf HaShikum obligatoire — la commission medicale peut prendre 6-18 mois. ' +
+      'Un avocat specialise (Arik Dagan, Shani Gilad, etc.) est souvent utile pour les dossiers ' +
+      'contestes. Cumulable avec la plupart des autres aides invalides IDF mais pas avec Nakhut Klalit BTL ' +
+      '(il faut choisir le regime le plus avantageux).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C5). Utilise disability_source=idf (etape B). Montants 2026 confirmes via glossaire. Ne pas confondre avec Nakhut Klalit BTL qui est le regime civil.',
+  },
+  {
+    slug: 'maanak_had_paami_nakhei_tsahal',
+    category: 'military',
+    authority: 'misrad_habitahon',
+    title_fr: 'Indemnite unique invalides IDF 10-19% (Maanak Had Paami)',
+    title_he: 'מענק חד-פעמי לנכי צהל 10-19%',
+    description_fr:
+      'Paiement forfaitaire unique verse aux invalides IDF avec taux 10-19% (en-dessous du seuil de la rente mensuelle), 62 719-134 961 NIS selon le taux.',
+    full_description_fr:
+      'Pour les invalides IDF avec un taux reconnu inferieur a 20% (seuil de la rente mensuelle ' +
+      'Tagmul Basissi), Agaf HaShikum verse un paiement forfaitaire UNIQUE qui cloture le dossier : ' +
+      'Montants officiels 2026 : ' +
+      '- Taux 10 % : 62 719 NIS ' +
+      '- Taux 15 % : ~94 000 NIS ' +
+      '- Taux 19 % : 134 961 NIS ' +
+      'Apres paiement, le dossier est cloture sauf aggravation medicale reconnue (nouvelle expertise). ' +
+      'Si aggravation ulterieure portant le taux a ≥ 20%, possibilite de demander Tagmul Basissi ' +
+      '(avec deduction prorata du maanak deja verse). ' +
+      'Conditions : reconnaissance par commission medicale Agaf HaShikum avec taux 10-19%, blessure ' +
+      'survenue pendant le service militaire ou lien de causalite reconnu.',
+    conditions: {
+      requires_idf_service: true,
+      required_disability_source: 'idf',
+      min_disability: 10,
+      requires_resident: true,
+    },
+    estimated_annual_value: 62719,  // versement unique au minimum
+    value_unit: 'NIS (versement unique, 62 719-134 961 selon taux)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_defense/agaf_hashikum',
+    action_label: 'Demande maanak invalide 10-19%',
+    info_url: 'https://www.kolzchut.org.il/he/מענק_חד-פעמי_לנכי_צהל',
+    disclaimer:
+      'IMPORTANT : accepter le maanak ferme le dossier. Si vous pensez que votre invalidite est plus ' +
+      'grave que 19 % ou risque de s\'aggraver, il peut etre prudent de contester la decision plutot ' +
+      'que d\'accepter le paiement forfaitaire. Un avocat specialise peut negocier pour remonter le taux.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C5). Condition min_disability: 10 (pas 20) car cette entree cible specifiquement la tranche 10-19%. Le matching inclura aussi les invalides ≥ 20% — on s\'appuie sur le disclaimer pour clarifier.',
+  },
+  {
+    slug: 'tagmul_ovedan_kosher_avoda',
+    category: 'military',
+    authority: 'misrad_habitahon',
+    title_fr: 'Compensation perte capacite travail IDF (TOKA / Tagmul Ovedan)',
+    title_he: 'תגמול אבדן כושר עבודה לנכי צהל',
+    description_fr:
+      'Rente mensuelle additionnelle (8 275-12 435 NIS/mois) versee aux invalides IDF avec taux ≥ 20% dont la capacite de travail est fortement reduite.',
+    full_description_fr:
+      'TOKA = Tagmul Ovedan Kosher Avoda (compensation de perte de capacite de travail). ' +
+      'Rente mensuelle complementaire au Tagmul Basissi, versee lorsque l\'invalidite ≥ 20% entraine ' +
+      'une incapacite professionnelle reconnue par la commission sociale Agaf HaShikum. ' +
+      'Montants officiels 2026 (en vigueur 01/02/2026) : ' +
+      '- Perte 50 % capacite                : 8 275 NIS/mois ' +
+      '- Perte 75 % capacite                : 10 400 NIS/mois ' +
+      '- Perte 100 % (incapacite totale)    : 12 435 NIS/mois ' +
+      'Evaluation : commission SOCIALE (pas medicale) d\'Agaf HaShikum, qui examine la situation ' +
+      'professionnelle reelle (metier prealable, possibilite de reconversion, age, etc.). ' +
+      'Cumulable avec Tagmul Basissi (rente invalidite pure). L\'invalide recoit donc souvent les ' +
+      'deux rentes en parallele, pour un total pouvant atteindre 20 000 NIS/mois.',
+    conditions: {
+      requires_idf_service: true,
+      required_disability_source: 'idf',
+      min_disability: 20,
+      required_employment: ['unemployed', 'reservist'],  // proxy : perte de capacite
+      requires_resident: true,
+    },
+    estimated_annual_value: 8275 * 12,
+    typical_monthly_amount: 8275,
+    value_unit: 'NIS/mois (8 275-12 435 selon perte capacite)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_defense/agaf_hashikum',
+    action_label: 'Demande TOKA',
+    info_url: 'https://www.kolzchut.org.il/he/תגמול_אבדן_כושר_עבודה',
+    disclaimer:
+      'Distinct du Tagmul Basissi : TOKA evalue la perte economique (perte de salaire/revenus) tandis ' +
+      'que Tagmul Basissi evalue l\'atteinte physique. Un invalide a 50 % peut avoir une perte de ' +
+      'capacite de 100 % (si son metier est impossible a exercer), ou vice versa. Le cumul est la ' +
+      'regle pour les invalides durablement au chomage.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C5). Condition required_employment est un proxy imparfait — un reserviste/chomeur est plus probablement en situation de perte de capacite. A raffiner avec un champ work_capacity_loss_pct.',
+  },
+  {
+    slug: 'maanak_hashtatafut_mas_tsahal',
+    category: 'fiscal',
+    authority: 'misrad_habitahon',
+    title_fr: 'Participation annuelle impots invalides IDF (Maanak Hashtatafut Mas)',
+    title_he: 'מענק השתתפות מס לנכי צהל',
+    description_fr:
+      'Participation annuelle aux impots (Mas Hakhnasa) versee par Misrad HaBitachon aux invalides IDF avec taux 19-89%, en compensation de l\'effort fiscal sur leur rente et leurs revenus.',
+    full_description_fr:
+      'Grant annuel forfaitaire verse a la fin de chaque annee fiscale (janvier-avril) aux invalides ' +
+      'IDF dont l\'invalidite reconnue est entre 19% et 89% (ceux a 90%+ beneficient de l\'exemption ' +
+      'totale d\'impot via Petur Mas Nakhut, cf. slug petur_mas_nakhut en C7). ' +
+      'Montants 2026 (approximatifs, indexes CPI) : ' +
+      '- Taux 19-39 %      : ~3 500-5 000 NIS/an ' +
+      '- Taux 40-59 %      : ~6 000-9 000 NIS/an ' +
+      '- Taux 60-89 %      : ~10 000-14 000 NIS/an ' +
+      'Logique : l\'Etat compense partiellement l\'impot sur le revenu paye par l\'invalide sur sa ' +
+      'rente Tagmul Basissi (qui est imposable si taux < 90%) et ses autres revenus. ' +
+      'Versement automatique pour les invalides avec dossier Agaf HaShikum actif — aucune demande ' +
+      'a faire si vous etes deja dans les listes. Verser sur le compte bancaire declare.',
+    conditions: {
+      requires_idf_service: true,
+      required_disability_source: 'idf',
+      min_disability: 19,
+      requires_resident: true,
+    },
+    estimated_annual_value: 6000,  // mediane
+    value_unit: 'NIS/an (versement unique fin d\'annee fiscale)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_defense/agaf_hashikum',
+    action_label: 'Verifier maanak impots',
+    info_url: 'https://www.kolzchut.org.il/he/מענק_השתתפות_מס_לנכי_צהל',
+    disclaimer:
+      'Verse automatiquement pour les dossiers actifs. Les invalides a 90%+ beneficient deja de ' +
+      'l\'exemption totale d\'impot (petur_mas_nakhut) — ils ne percoivent donc pas ce grant (qui ' +
+      'serait redondant). Si votre taux est entre 19 et 89% et que vous n\'avez rien recu, contacter ' +
+      'Agaf HaShikum pour audit.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C5). Montants 2026 approximatifs — Misrad HaBitachon ne publie pas de grille detaillee publique. A confirmer aupres d\'Agaf HaShikum pour les cas specifiques.',
+  },
+]
+
+// =====================================================
+// SECTION C6 — Khayalim Meshukrarim / Soldats liberes (S13 du glossaire)
+// =====================================================
+// Sources :
+// - https://www.hachvana.mod.gov.il/
+// - https://www.btl.gov.il/benefits/Discharged_soldiers/Pages/default.aspx
+// - https://www.kolzchut.org.il/he/חיילים_משוחררים
+//
+// Ces 2 aides ciblent les soldats recemment liberes (< 36 mois ou < 2 mois
+// selon l\'aide) via le champ discharge_date ajoute en etape B et la
+// nouvelle condition requires_recent_discharge_months.
+
+const DISCHARGED_SOLDIERS_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'nekudot_zikui_khayalim_meshukrarim',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Credits fiscaux post-liberation IDF (Nekudot Zikui Meshukrarim)',
+    title_he: 'נקודות זיכוי לחיילים משוחררים',
+    description_fr:
+      'Points de credit fiscaux additionnels (1 a 2 pts = 2 904-5 808 NIS/an) verses automatiquement aux salaries ayant termine leur service militaire, pendant 36 mois apres la demobilisation.',
+    full_description_fr:
+      'Rashut HaMisim accorde aux chayalim meshukrarim (soldats demobilises) des points de credit ' +
+      'fiscaux supplementaires pendant les 36 mois (3 ans) suivant la date de demobilisation : ' +
+      '- 1er et 2e tiers apres demobilisation (24 premiers mois) : 2 points de credit supplementaires ' +
+      '- 3e tiers (mois 25-36)                                     : 1 point de credit supplementaire ' +
+      '- Apres 36 mois : plus de credit specifique ' +
+      'Valeur 2026 d\'un point de credit : 2 904 NIS/an ' +
+      'Soit : ' +
+      '- Total maximum (24 premiers mois actifs)  : ~2 pts × 24/12 × 2 904 = ~11 616 NIS ' +
+      '- Derniere annee (mois 25-36)              : ~1 pt × 12/12 × 2 904 = ~2 904 NIS ' +
+      '- Sur l\'ensemble des 36 mois              : jusqu\'a ~14 520 NIS cumules ' +
+      'Conditions : ' +
+      '- Service militaire complet effectue (regulier : 2 ans femmes, 2 ans 4 mois hommes en 2025+) ' +
+      '  OU service reduit minimum 12 mois pour motif reconnu ' +
+      '- Salarie(e) apres demobilisation (les credits ne s\'appliquent qu\'au salaire) ' +
+      'Automatique via Tofes 101 rempli a la prise de poste — il suffit de cocher "Khayal meshukhrar" ' +
+      'et joindre le Teudat Shikhrur.',
+    conditions: {
+      requires_idf_service: true,
+      required_employment: ['employed', 'self_employed'],
+      requires_recent_discharge_months: 36,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2904 * 2,  // 2 points ~5 808 NIS/an
+    value_unit: 'NIS/an (2 pts x 2 904 pendant 24 mois, puis 1 pt x 12 mois)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Activer credits soldat libere',
+    info_url: 'https://www.kolzchut.org.il/he/נקודות_זיכוי_לחייל_משוחרר',
+    disclaimer:
+      'Automatique via le formulaire Tofes 101 a la prise de poste (cocher "Khayal meshukhrar" + ' +
+      'joindre Teudat Shikhrur). Si vous avez commence votre premier poste sans cocher la case, ' +
+      'vous pouvez reclamer retroactivement jusqu\'a 6 ans en arriere via Hachzar Mas Hakhnasa. ' +
+      'La condition requires_recent_discharge_months=36 exige discharge_date rempli au profil.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C6). Utilise requires_recent_discharge_months ajoute en etape C infra. Hard-fail si discharge_date absent du profil — incite l\'utilisateur a remplir ce champ.',
+  },
+  {
+    slug: 'ptor_bituakh_khayalim_meshukrarim',
+    category: 'welfare',
+    authority: 'bituach_leumi',
+    title_fr: 'Exemption cotisations BTL + sante 2 mois (Ptor Bituakh Meshukrarim)',
+    title_he: 'פטור מביטוח לחיילים משוחררים',
+    description_fr:
+      'Les soldats recemment liberes sont exemptes de cotisations Bituach Leumi + Bituach Briut pendant les 2 premiers mois post-demobilisation s\'ils sont sans emploi et en recherche active.',
+    full_description_fr:
+      'Dispositif BTL pour aider a la transition post-armee : ' +
+      '- Exoneration totale des cotisations mensuelles BTL (~200 NIS/mois) ' +
+      '- Exoneration totale des cotisations Bituach Briut (~180 NIS/mois) ' +
+      '- Duree : 2 mois calendaires a compter de la date de demobilisation ' +
+      'Conditions cumulatives : ' +
+      '- Demobilisation reguliere (Teudat Shikhrur) ' +
+      '- Sans emploi OU en formation pro reconnue pendant ces 2 mois ' +
+      '- Inscription a Lishkat HaTaasuka (ANPE israelienne) recommandee mais pas toujours obligatoire ' +
+      '- Avoir servi ≥ 12 mois (service regulier ou reduit reconnu) ' +
+      'Au-dela de 2 mois : passer en profil chomeur (havtachat hakhnasa) ou en salarie si prise de poste. ' +
+      'Cette exoneration s\'active automatiquement a la demobilisation — pas besoin de demander si BTL ' +
+      'est informe via le Teudat Shikhrur.',
+    conditions: {
+      requires_idf_service: true,
+      required_employment: ['unemployed'],
+      requires_recent_discharge_months: 2,
+      requires_resident: true,
+    },
+    estimated_annual_value: (200 + 180) * 2,  // 760 NIS total sur 2 mois
+    value_unit: 'NIS (~760 sur 2 mois, exoneration totale)',
+    application_url: 'https://www.btl.gov.il/benefits/Discharged_soldiers/Pages/default.aspx',
+    action_label: 'Infos exoneration meshukhrar',
+    info_url: 'https://www.kolzchut.org.il/he/פטור_מביטוח_לחיילים_משוחררים',
+    disclaimer:
+      'Exoneration automatique si BTL est informe de votre shikhrur. Si vous recevez une facture BTL ' +
+      'malgre tout pendant les 2 premiers mois post-service, contacter BTL avec votre Teudat Shikhrur. ' +
+      'Delai de contestation : 3 ans. Cumulable avec le pikadon (depot de demobilisation) et le ' +
+      'tahbura gratuite (rav_kav_discharged_soldier).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C6). Courte fenetre (2 mois) — utilise requires_recent_discharge_months=2 pour hard-fail si demobilisation trop ancienne. Valeur economique modeste (~760 NIS) mais importante pour les soldats solitaires sans soutien familial.',
+  },
+]
+
+// =====================================================
+// SECTION C7 — Rashut HaMisim / Fiscalite (S4 du glossaire)
+// =====================================================
+// Sources :
+// - https://www.gov.il/he/departments/israel_tax_authority
+// - https://www.kolzchut.org.il/he/נקודות_זיכוי_ממס_הכנסה
+// - https://www.kolzchut.org.il/he/פטור_ממס_הכנסה_לנכים
+//
+// Ces 8 aides couvrent les credits fiscaux generaux + discriminations par
+// city_priority_zone (zone periphere) et is_landlord (bailleur) ajoutes en
+// etape B. Elles completent les credits fiscaux deja presents dans
+// SECTION 10 (credit_woman, credit_academic_degree, credit_young_child,
+// credit_disabled_child, hachzar_mas).
+
+const TAX_EXTRAS_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'nekudot_zikui_toshav',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Credits fiscaux resident (Nekudot Zikui Toshav)',
+    title_he: 'נקודות זיכוי תושב',
+    description_fr:
+      'Credits fiscaux de base accordes a tout resident israelien : 2,25 pts (hommes) ou 2,75 pts (femmes) = 6 534-7 986 NIS/an deduits directement de l\'impot sur le revenu.',
+    full_description_fr:
+      'Credits fiscaux de base attribues a tout resident israelien (toshav), declinant le principe ' +
+      'que les 6 534 premiers NIS/an de revenu ne sont pas imposes. ' +
+      'Valeurs 2026 (1 pt = 2 904 NIS/an) : ' +
+      '- Homme resident      : 2,25 points = 6 534 NIS/an ' +
+      '- Femme residente     : 2,75 points = 7 986 NIS/an (0,5 pt bonus "femme") ' +
+      'Applique automatiquement via Tofes 101 a chaque prise de poste ou periodiquement par ' +
+      'l\'employeur. Pas de demande specifique. ' +
+      'Cumulable avec : ' +
+      '- Nekudot Zikui Yeladim (enfants, cf. slug suivant) ' +
+      '- Credit academic degree (licence/master/phd, deja au catalogue) ' +
+      '- Nekudot Zikui Meshukhrar (36 mois post-service, cf. C6) ' +
+      '- Credit parent isole (horim yekhidim, cf. slug suivant) ' +
+      '- Credits lies a la zone periferique (zikuy_mas_priferia)',
+    conditions: {
+      requires_resident: true,
+    },
+    estimated_annual_value: 6534,  // homme base
+    value_unit: 'NIS/an (6 534 H / 7 986 F)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Verifier Tofes 101',
+    info_url: 'https://www.kolzchut.org.il/he/נקודות_זיכוי_ממס_הכנסה',
+    disclaimer:
+      'Automatique via Tofes 101 rempli chez l\'employeur. Si vous decouvrez que votre bulletin de ' +
+      'paie ne tient pas compte de vos points (par exemple vous avez change d\'employeur et oublie ' +
+      'de remplir Tofes 101), vous pouvez reclamer via Hachzar Mas Hakhnasa jusqu\'a 6 ans en arriere.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C7). Complete le socle de credits fiscaux deja present (credit_woman, credit_academic_degree, etc.) avec la base toshav que toute personne doit verifier.',
+  },
+  {
+    slug: 'nekudot_zikui_yeladim',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Credits fiscaux enfants (Nekudot Zikui Yeladim)',
+    title_he: 'נקודות זיכוי בגין ילדים',
+    description_fr:
+      'Points de credit fiscaux attribues aux parents pour chaque enfant de 0 a 18 ans, graduels selon l\'age et le sexe du parent declarant.',
+    full_description_fr:
+      'Credits fiscaux attribues aux parents de chaque enfant mineur (0-18 ans). ' +
+      'Grille 2026 (1 pt = 2 904 NIS/an) : ' +
+      'Pour la MERE (par enfant) : ' +
+      '- Enfant 0-1 an   : 1,5 pt = 4 356 NIS/an ' +
+      '- Enfant 1-5 ans  : 2,5 pts = 7 260 NIS/an ' +
+      '- Enfant 6-17 ans : 1 pt = 2 904 NIS/an ' +
+      '- Annee des 18 ans: 0,5 pt = 1 452 NIS/an ' +
+      'Pour le PERE (par enfant, dans certains cas) : ' +
+      '- Enfant 0-1 an   : 1 pt = 2 904 NIS/an ' +
+      '- Enfant 1-3 ans  : 2 pts = 5 808 NIS/an ' +
+      '- Pas de credit au-dela de 3 ans cote pere (sauf parent isole) ' +
+      'Pour une famille avec 3 enfants mineurs (ex. 2 ans / 5 ans / 10 ans), la MERE peut reclamer : ' +
+      '2,5 + 2,5 + 1 = 6 pts = 17 424 NIS/an de credits pour les enfants, + ses 2,75 pts de base ' +
+      '= ~25 400 NIS/an total. ' +
+      'Cumulable avec credit_young_child (deja au catalogue, cible le plus jeune enfant < 6 ans).',
+    conditions: {
+      min_children: 1,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2904 * 2,  // mediane par enfant
+    value_unit: 'NIS/an/enfant (1-7 260 selon age et parent)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Verifier credits enfants',
+    info_url: 'https://www.kolzchut.org.il/he/נקודות_זיכוי_בגין_ילדים',
+    disclaimer:
+      'Automatique via Tofes 101 si vous cochez "parent d\'enfants mineurs" et indiquez leurs dates ' +
+      'de naissance. Cumulable avec credit_young_child (0-6 ans) deja au catalogue. Les parents ' +
+      'divorces se repartissent typiquement les credits selon le jugement (jour de garde majoritaire).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C7). Complete credit_young_child qui ne couvrait que les enfants < 6 ans. Ici on couvre toute la tranche 0-18.',
+  },
+  {
+    slug: 'nekudot_zikui_horim_yehidim',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Credits fiscaux parent isole (Nekudot Zikui Horim Yekhidim)',
+    title_he: 'נקודות זיכוי להורה יחיד',
+    description_fr:
+      'Points de credit fiscaux supplementaires attribues aux parents isoles (celibataires, divorces, separes, veufs) avec enfants mineurs a charge : +1 pt = +2 904 NIS/an.',
+    full_description_fr:
+      'Credit fiscal specifique "parent isole" (Im Khad Horit) : +1 point supplementaire par rapport ' +
+      'au regime standard pour le parent assumant seul la garde des enfants (jour majoritaire ou garde ' +
+      'exclusive). ' +
+      'Valeur 2026 : 2 904 NIS/an cumulatif sur les autres credits. ' +
+      'Conditions : ' +
+      '- Statut Im Khad Horit reconnu par Rashut HaMisim ' +
+      '  (definition : parent divorce / separe / veuf / celibataire assumant seul l\'enfant) ' +
+      '- Au moins 1 enfant mineur a charge ' +
+      '- Pas de vie commune avec un conjoint (meme de fait) ' +
+      'Cumulable avec : tous les autres credits (toshav, yeladim, credit_woman pour la mere isolee, ' +
+      'credit academic degree). Pour une mere isolee avec 2 enfants jeunes, le cumul peut atteindre ' +
+      '25 000-30 000 NIS/an de credits fiscaux, ce qui annule totalement l\'impot sur un salaire ' +
+      'median (~14 000 NIS/mois brut).',
+    conditions: {
+      required_marital_status: ['divorced', 'separated', 'widowed', 'single'],
+      min_children: 1,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2904,
+    value_unit: 'NIS/an (1 pt supplementaire cumulable)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Declarer parent isole',
+    info_url: 'https://www.kolzchut.org.il/he/נקודות_זיכוי_להורה_יחיד',
+    disclaimer:
+      'Statut a cocher dans Tofes 101. Si vous avez ete parent isole(e) dans le passe et n\'avez pas ' +
+      'reclame les credits, vous pouvez le faire retroactivement via Hachzar Mas Hakhnasa (6 ans). ' +
+      'Attention aux parents divorces avec garde partagee : en general, un seul parent peut reclamer ' +
+      'le credit (celui declare par convention aupres de Rashut HaMisim).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C7). Utilise required_marital_status pour discriminer. Attention : celibataire sans enfant n\'est PAS eligible — c\'est le cumul marital_status + min_children qui active le droit.',
+  },
+  {
+    slug: 'petur_mas_nakhut',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Exoneration impot invalidite 90%+ (Petur Mas Nakhut)',
+    title_he: 'פטור ממס הכנסה לנכים',
+    description_fr:
+      'Exemption TOTALE d\'impot sur le revenu pour les personnes reconnues invalides a ≥ 90% (ou 100% fonctionnel), jusqu\'a un plafond tres eleve (~624 000 NIS/an en 2026).',
+    full_description_fr:
+      'Petur Mas Hakhnasa li-Nakhut : exoneration totale d\'impot sur le revenu (Mas Hakhnasa) pour ' +
+      'les contribuables reconnus invalides a 90% ou plus (ou 100% fonctionnel defini par BTL, ' +
+      'Agaf HaShikum, Rashut Shoah, etc.). ' +
+      'Plafond 2026 : ~624 000 NIS/an de revenus totalement exoneres (couvre tous les cas normaux). ' +
+      'Application : ' +
+      '- Salarie : tous les mois, l\'employeur ne retient plus d\'impot (cochage Tofes 101 + joindre ' +
+      '  attestation Vaadat Refuit) ' +
+      '- Independant : exempte du calcul du Mas Hakhnasa dans le bilan annuel (section 9(5)) ' +
+      '- Rente BTL Nakhut Klalit : deja non imposable par defaut (regime specifique) ' +
+      'Tous types d\'invalidite acceptes : ' +
+      '- Nakhut Klalit BTL (invalidite generale) ≥ 90% ou 100% fonctionnel ' +
+      '- Nakhei Tsahal (invalidite IDF) ≥ 90% (Agaf HaShikum) ' +
+      '- Invalidite accidents du travail ≥ 90% (Nifgaei Avoda BTL) ' +
+      '- Shoah (cf. gmala_niztolei_shoah) 90%+ ' +
+      '- Maladie grave reconnue au titre de la section 9(5) ' +
+      'Pour les invalides 19-89%, voir plutot maanak_hashtatafut_mas_tsahal (cf. C5).',
+    conditions: {
+      min_disability: 90,
+      requires_resident: true,
+    },
+    estimated_annual_value: 150000,  // estimation economie pour salaire median impose a 40% marginal
+    value_unit: 'NIS/an (economie totale sur impot revenu)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Demande petur mas nakhut',
+    info_url: 'https://www.kolzchut.org.il/he/פטור_ממס_הכנסה_לנכים',
+    disclaimer:
+      'Conditionne a une invalidite ≥ 90% ou 100% fonctionnel reconnue par une commission medicale ' +
+      'formelle (BTL, Agaf HaShikum, Rashut Shoah). Un justificatif est obligatoire. Si vous avez ' +
+      'paye de l\'impot pendant des annees sans reclamer, vous pouvez reclamer retroactivement via ' +
+      'Hachzar Mas Hakhnasa jusqu\'a 6 ans. Gain potentiel tres eleve — consulter un yoetz mas.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C7). Valeur estimee 150k NIS/an correspond a l\'economie fiscale typique d\'un salaire median (~14k NIS/mois brut) — pour les hauts revenus le gain est considerable (>300k NIS/an).',
+  },
+  {
+    slug: 'petur_mas_shkhirat_dira',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Exoneration impot loyers residentiels (Petur Mas Shkhirat Dira)',
+    title_he: 'פטור ממס הכנסה על שכר דירה',
+    description_fr:
+      'Les bailleurs d\'un bien residentiel peuvent beneficier d\'une exoneration totale d\'impot sur les loyers percus jusqu\'a 5 654 NIS/mois (67 848 NIS/an) en 2026, sous conditions.',
+    full_description_fr:
+      'Regime special pour les proprietaires-bailleurs residentiels : exoneration totale d\'impot ' +
+      'sur les loyers dans la limite de 5 654 NIS/mois en 2026 (seuil indexe annuellement sur CPI). ' +
+      'Conditions cumulatives : ' +
+      '- Le bien loue est residentiel (pas commercial, pas Airbnb en locations courtes repetees) ' +
+      '- Le locataire est une personne physique (pas une societe) ' +
+      '- Le loyer total est ≤ 5 654 NIS/mois (si plusieurs biens, cumul global) ' +
+      '- Le bailleur utilise le bien en location a l\'annee (bail ecrit ou verbal > 6 mois) ' +
+      'Au-dela de 5 654 NIS/mois : 2 options possibles (a ne pas mixer) : ' +
+      '- Option partielle : impot sur l\'exces (loyers - 5 654) au taux marginal ' +
+      '- Option taux unique 10% : impot forfaitaire de 10 % sur tous les loyers (sans abattement) ' +
+      'Nota : si le bailleur cumule plusieurs biens, la somme de tous les loyers doit respecter le ' +
+      'plafond. Option forfaitaire 10 % souvent plus avantageuse pour les portefeuilles diversifies.',
+    conditions: {
+      requires_landlord: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 12000,  // economie typique pour loyer 4 500 NIS/mois
+    value_unit: 'NIS/an (economie fiscale selon tranche marginale)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Infos petur loyers',
+    info_url: 'https://www.kolzchut.org.il/he/פטור_ממס_הכנסה_על_הכנסה_מהשכרת_דירה',
+    disclaimer:
+      'Plafond 5 654 NIS/mois indexe annuellement — verifier la valeur exacte sur gov.il avant ' +
+      'declaration. Attention : location courte duree repetee (Airbnb > 30 jours/an) est reclassee ' +
+      'en commerce et exclue du regime. Les olim proprietaires-bailleurs ignorent souvent ce droit ' +
+      'et paient l\'impot inutilement.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C7). Premiere utilisation de requires_landlord ajoute en infra etape C. Seuil 5 654 NIS/mois confirme via glossaire. Economie typique 12k NIS/an pour un loyer Tel-Aviv moyen (4-5k NIS/mois) selon tranche marginale.',
+  },
+  {
+    slug: 'zikuy_mas_priferia',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Credit fiscal peripherie (Zikuy Mas Priferia, Chok Yesodot)',
+    title_he: 'זיכוי מס ליישובי פריפריה',
+    description_fr:
+      'Reduction fiscale en pourcentage du revenu imposable pour les residents des zones de priorite nationale A ou B (Negev, Galil, Eilat, frontiere), jusqu\'a 11-12 % selon la ville.',
+    full_description_fr:
+      'Chok Yesodot HaTaktziv (loi budgetaire) : credit fiscal specifique pour encourager l\'installation ' +
+      'en zones de priorite nationale (Negev, Galil, Eilat, cisjordanie, frontiere). ' +
+      'Taux 2026 (a confirmer par circulaire annuelle Rashut HaMisim) : ' +
+      '- Zone A (priorite max, ex. Eilat, Arad, Dimona, Beit Shean, Kiryat Shmona, Sderot, etc.) : ' +
+      '  jusqu\'a 12 % du revenu imposable, dans la limite annuelle (~244 800 NIS de revenus) ' +
+      '- Zone B (priorite intermediaire) : ~7-10 % du revenu imposable, meme plafond ' +
+      '- Zone C (priorite basse / limitrophe) : ~5 % du revenu imposable ' +
+      '- Autres villes (centre) : pas de credit priferia ' +
+      'Cumulable avec tous les autres credits (toshav, yeladim, horim yekhidim, etc.). Pour un ' +
+      'salarie zone A a 15 000 NIS/mois, le credit peut representer jusqu\'a 20 000-22 000 NIS/an ' +
+      'd\'economie nette d\'impot. ' +
+      'Applique automatiquement via Tofes 101 si la ville de residence declaree est en zone A/B/C.',
+    conditions: {
+      required_city_priority_zone: ['a', 'b', 'c'],
+      requires_resident: true,
+    },
+    estimated_annual_value: 15000,
+    value_unit: 'NIS/an (5-12% du revenu imposable selon zone)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Infos credit priferia',
+    info_url: 'https://www.kolzchut.org.il/he/זיכוי_מס_ליישובי_פריפריה',
+    disclaimer:
+      'Taux exacts et liste des villes A/B/C mis a jour annuellement par circulaire Rashut HaMisim. ' +
+      'Consulter la liste officielle avant declaration. Certaines villes peuvent changer de categorie ' +
+      'd\'une annee sur l\'autre. Le champ city_priority_zone doit etre correctement rempli au profil ' +
+      '(la page profil propose une suggestion automatique via src/lib/priorityZones.ts).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C7). Premiere utilisation de required_city_priority_zone ajoute en infra etape C. Valeur indicative 15k NIS/an est une mediane — peut etre 5k (zone C + bas revenu) ou 25k+ (zone A + haut revenu).',
+  },
+  {
+    slug: 'hatavat_mas_gil_60',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Taux reduits revenus capital 60+ (Hatavat Mas Gil 60)',
+    title_he: 'הטבת מס לגיל 60 ומעלה על הכנסות הון',
+    description_fr:
+      'Contribuables ages de 60 ans et plus beneficient de taux d\'imposition reduits (voire 10 % forfait) sur les revenus du capital (interets, dividendes, rentes privees, pensions complementaires).',
+    full_description_fr:
+      'Mekanism de l\'Asara (article 125B-125D du Pkudat Mas Hakhnasa) : a partir de 60 ans, les ' +
+      'contribuables israeliens beneficient de taux reduits sur les revenus hors travail, au lieu ' +
+      'des taux marginaux (jusqu\'a 50 %) applicables aux revenus du travail. ' +
+      'Regimes applicables (selon type de revenu) : ' +
+      '- Interets bancaires / obligations : 15 % au lieu de 25 % ' +
+      '- Dividendes (non controles) : 25 % comme avant mais possibilite d\'integrer a la tranche marginale ' +
+      '  si favorable (rare au-dela de 60 ans) ' +
+      '- Rente privee (Kupat Gemel, Keren Pensia) : barème réduit, souvent 10-20 % effectif ' +
+      '- Location Airbnb / commerciale : pas d\'aménagement 60+ specifique ' +
+      'Conditions : ' +
+      '- Age ≥ 60 ans a la fin de l\'annee fiscale ' +
+      '- Contribuable israelien (toshav) ' +
+      'Cumulable avec tous les autres avantages seniors (Kitzbat Zikna BTL, arnona_retiree, etc.).',
+    conditions: {
+      min_age: 60,
+      requires_resident: true,
+    },
+    estimated_annual_value: 5000,  // economie typique pour epargnant moyen
+    value_unit: 'NIS/an (economie fiscale sur revenus capital)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Infos taux reduits 60+',
+    info_url: 'https://www.kolzchut.org.il/he/מיסוי_הכנסות_מריבית_לגיל_60',
+    disclaimer:
+      'A declarer dans le bilan annuel (Dokh Shnati 1301) en cochant la case "senior 60+". L\'employeur ' +
+      'de revenus n\'applique pas automatiquement le regime — c\'est au contribuable de reclamer le ' +
+      'recalcul en fin d\'annee. Un yoetz mas est utile pour optimiser la strategie fiscale.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C7). Confidence medium car les taux exacts varient selon le type de revenu et sont ajustes chaque annee. Valeur 5k NIS/an est indicative pour un epargnant moyen ; peut etre beaucoup plus pour les retraites a haut patrimoine.',
+  },
+]
+
+// =====================================================
+// SECTION C8 — Misrad HaShikun / Logement (S3 du glossaire)
+// =====================================================
+// Sources :
+// - https://www.gov.il/he/departments/ministry_of_construction_and_housing
+// - https://www.kolzchut.org.il/he/דיור_ציבורי
+// - https://www.kolzchut.org.il/he/מחיר_למשתכן
+// - https://www.kolzchut.org.il/he/סיוע_בשכר_דירה
+//
+// Ces 8 aides couvrent le logement social, l\'achat a prix reduit, l\'aide
+// au loyer et les adaptations pour publics specifiques. Elles completent
+// les entrees olim existantes (rental_assistance_olim, mashkanta_olim).
+
+const HOUSING_EXTRAS_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'dira_tziburit',
+    category: 'housing',
+    authority: 'misrad_hashikun',
+    title_fr: 'Logement social (Dira Tziburit)',
+    title_he: 'דיור ציבורי',
+    description_fr:
+      'Logement a loyer tres reduit (5-10% du prix du marche) attribue par Misrad HaShikun aux menages a revenus tres faibles remplissant les criteres sociaux.',
+    full_description_fr:
+      'Parc de logements publics gere par Amidar / Amigur / Prazot / Khalamish (operateurs agrees ' +
+      'Misrad HaShikun) : loyer massivement subventionne pour les menages eligibles. ' +
+      'Loyers typiques 2026 : 300-1 200 NIS/mois (selon ville et taille), vs marche a 3 000-8 000 NIS. ' +
+      'Economie mensuelle : 2 000-6 000 NIS. ' +
+      'Conditions cumulatives (strictes) : ' +
+      '- Revenus du menage < 60% du salaire moyen economie ' +
+      '- Pas de bien immobilier (ou vendu depuis > 10 ans) ' +
+      '- Priorite aux : familles 3+ enfants, monoparentaux, handicapes, survivants Shoah, Olim Hadashim ' +
+      '  dans leurs 5 premieres annees, veterans IDF, victimes violences conjugales ' +
+      '- Delai d\'attente : 3-10 ans selon ville et taille recherchee ' +
+      'Procedure : ' +
+      '- Dossier Misrad HaShikun (formulaire unique national) ' +
+      '- Examen par Vaadat Zakaut (commission d\'eligibilite) ' +
+      '- Inscription sur liste d\'attente par ville ' +
+      '- Attribution selon ordre + pointage social ' +
+      'Souvent cumule avec siyua_shkhar_dira en attendant l\'attribution.',
+    conditions: {
+      requires_resident: true,
+      max_monthly_income: 8000,
+    },
+    estimated_annual_value: 3000 * 12,  // economie sur loyer
+    typical_monthly_amount: 3000,
+    value_unit: 'NIS/mois (economie vs marche)',
+    application_url: 'https://www.gov.il/he/service/public_housing_application',
+    action_label: 'Demande dira tziburit',
+    info_url: 'https://www.kolzchut.org.il/he/דיור_ציבורי',
+    disclaimer:
+      'Delai d\'attente tres long (3-10 ans selon ville). Il vaut mieux cumuler avec siyua_shkhar_dira ' +
+      '(aide au loyer dans le prive) en parallele. Les Olim Hadashim ont priorite relative pendant ' +
+      '5 ans. Les revenus sont recontroles periodiquement : si ils depassent le seuil, le loyer ' +
+      'augmente progressivement ou le logement peut etre retire.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C8). Seuil revenus approximatif — a verifier annuellement. Complementaire a siyua_shkhar_dira (aide dans le prive).',
+  },
+  {
+    slug: 'dira_behanacha_mehir_lemishtaken',
+    category: 'housing',
+    authority: 'misrad_hashikun',
+    title_fr: 'Logement prix reduit Mehir LaMishtaken (loterie)',
+    title_he: 'דיור בהנחה - מחיר למשתכן',
+    description_fr:
+      'Programme de loteries publiques permettant aux primo-accedants eligibles d\'acheter un logement neuf a 20-40% sous le prix du marche (reduction typique 300 000-1 000 000 NIS).',
+    full_description_fr:
+      'Programme Mehir LaMishtaken lance en 2015 (actualise en Mehir Matara 2023+) : loteries de ' +
+      'lotissements construits sur terrains publics ILA, proposes aux primo-accedants eligibles a ' +
+      'un prix fixe par l\'Etat, inferieur au marche. ' +
+      'Economie typique 2026 : ' +
+      '- Peripherie (Arad, Karmiel, Afula) : -20 a -30 % vs marche = 250 000-500 000 NIS d\'economie ' +
+      '- Centre (Yavne, Rishon LeZion) : -15 a -25 % = 400 000-800 000 NIS ' +
+      '- Tel-Aviv / Jerusalem : rare, programmes limites, -10 a -15 % ' +
+      'Conditions (primo-accedants) : ' +
+      '- Pas de bien immobilier possede dans les 6 dernieres annees ' +
+      '- Couples / celibataires ≥ 21 ans ' +
+      '- Pas de plafond de revenus (sauf programmes speciaux low-income) ' +
+      '- Financement via mashkanta classique + apport personnel ≥ 20-25 % ' +
+      'Loterie gratuite sur gov.il par projet (certaines loteries ont 10 000+ candidats pour 100 ' +
+      'logements). La gagne est semi-aleatoire, ponderee par statut (famille, militaire, peripherie). ' +
+      'Delai construction : 2-5 ans apres loterie.',
+    conditions: {
+      min_age: 21,
+      requires_resident: true,
+    },
+    estimated_annual_value: 300000,  // economie capital (one-shot amorti)
+    value_unit: 'NIS (economie capital, versement unique)',
+    application_url: 'https://www.gov.il/he/service/mehirlamishtaken',
+    action_label: 'S\'inscrire a une loterie',
+    info_url: 'https://www.kolzchut.org.il/he/מחיר_למשתכן',
+    disclaimer:
+      'Loterie : les chances varient selon ville (peripherie = meilleure chance). Reservee aux primo-' +
+      'accedants. Necessite un apport personnel de 20-25 % + mashkanta approuvee (souvent olim utilisent ' +
+      'la mashkanta_olim en complement). Delai entre loterie et cle : 2-5 ans (projet en construction).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C8). Valeur 300k NIS est l\'economie capital typique. Pas un revenu annuel, a afficher differemment dans l\'UI.',
+  },
+  {
+    slug: 'siyua_shkhar_dira',
+    category: 'housing',
+    authority: 'misrad_hashikun',
+    title_fr: 'Aide au loyer panier logement (Siyua Shkhar Dira)',
+    title_he: 'סיוע בשכר דירה - סל דיור',
+    description_fr:
+      'Aide mensuelle au loyer pour les menages a revenus faibles n\'ayant pas acces au logement social (Dira Tziburit), versee directement au locataire ou a son compte.',
+    full_description_fr:
+      'Complement de Dira Tziburit (souvent mobilise en attendant l\'attribution d\'un logement public) : ' +
+      'Misrad HaShikun verse un subside mensuel au locataire pour l\'aider a payer son loyer dans le ' +
+      'marche prive. ' +
+      'Montants 2026 (selon situation familiale et ville) : ' +
+      '- Celibataire / couple sans enfants : 700-1 400 NIS/mois ' +
+      '- Famille avec 1-2 enfants          : 1 500-2 400 NIS/mois ' +
+      '- Famille 3+ enfants                 : 2 400-3 200 NIS/mois ' +
+      '- Parent isole avec enfants         : +500 NIS/mois bonus (voir slug suivant) ' +
+      'Conditions : ' +
+      '- Revenus du menage < 8 000-12 000 NIS/mois (selon taille famille) ' +
+      '- Pas de bien immobilier ' +
+      '- Bail locatif de minimum 12 mois avec un bailleur prive ' +
+      '- Residence israelienne ' +
+      'Versement : directement au compte bancaire du locataire (pas au bailleur), chaque mois, tant ' +
+      'que les conditions restent remplies. Recontrole annuel obligatoire.',
+    conditions: {
+      requires_resident: true,
+      max_monthly_income: 10000,
+    },
+    estimated_annual_value: 1500 * 12,
+    typical_monthly_amount: 1500,
+    value_unit: 'NIS/mois (700-3 200 selon situation familiale)',
+    application_url: 'https://www.gov.il/he/service/rental_assistance',
+    action_label: 'Demande sal dyur',
+    info_url: 'https://www.kolzchut.org.il/he/סיוע_בשכר_דירה',
+    disclaimer:
+      'Cumulable avec rental_assistance_olim (aide olim 1ere annee) pendant la 1ere annee. Recontrole ' +
+      'annuel : si revenus augmentent, l\'aide diminue ou s\'arrete. Pour les olim francophones, ' +
+      'Misrad HaShikun propose des formulaires en francais.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C8). Plafond revenus et montants approximatifs — gov.il publie une grille detaillee par ville et situation. A raffiner avec un tableau siyua_shkhar_dira.ts si besoin.',
+  },
+  {
+    slug: 'siyua_shkhar_dira_khad_horiot',
+    category: 'housing',
+    authority: 'misrad_hashikun',
+    title_fr: 'Aide loyer parent isole (Siyua Shkhar Dira Khad Horiot)',
+    title_he: 'סיוע בשכר דירה - הורה יחיד',
+    description_fr:
+      'Majoration de l\'aide au loyer pour les parents isoles (Im Khad Horit) avec enfants mineurs : +500 NIS/mois en moyenne par rapport au regime general.',
+    full_description_fr:
+      'Supplement Im Khad Horit : majoration de l\'aide au loyer standard (siyua_shkhar_dira) pour ' +
+      'reconnaitre la situation economique plus difficile des parents isoles. ' +
+      'Montants 2026 (supplement au regime general) : ' +
+      '- Parent isole avec 1 enfant  : +400-500 NIS/mois en plus de la base ' +
+      '- Parent isole avec 2 enfants : +500-700 NIS/mois ' +
+      '- Parent isole avec 3+ enfants: +700-1 000 NIS/mois ' +
+      'Plafonds revenus assouplis (par rapport a siyua_shkhar_dira standard) : ' +
+      '- Jusqu\'a ~9 000 NIS/mois pour 1 enfant ' +
+      '- Jusqu\'a ~13 000 NIS/mois pour 3+ enfants ' +
+      'Conditions Im Khad Horit : celibataire, divorce, separe ou veuf assumant seul les enfants ' +
+      '(meme reconnaissance que pour horim_yehidim en fiscal).',
+    conditions: {
+      required_marital_status: ['divorced', 'separated', 'widowed', 'single'],
+      min_children: 1,
+      requires_resident: true,
+      max_monthly_income: 12000,
+    },
+    estimated_annual_value: 500 * 12,  // supplement uniquement
+    typical_monthly_amount: 500,
+    value_unit: 'NIS/mois (supplement a cumuler avec siyua_shkhar_dira)',
+    application_url: 'https://www.gov.il/he/service/rental_assistance',
+    action_label: 'Demande aide parent isole',
+    info_url: 'https://www.kolzchut.org.il/he/סיוע_בשכר_דירה_להורה_יחיד',
+    disclaimer:
+      'Supplement cumulable avec siyua_shkhar_dira standard. Cocher "parent isole" dans le dossier + ' +
+      'joindre jugement de divorce / certificat de deces du conjoint. Les parents en garde alternee ' +
+      'doivent prouver la garde majoritaire (> 6 mois/an chez le parent demandeur).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C8). Valeur typique 500 NIS/mois est le supplement seul — la valeur totale percue inclut aussi la base siyua_shkhar_dira (~1 500 NIS/mois).',
+  },
+  {
+    slug: 'siyua_mugdal_dira_tziburit',
+    category: 'housing',
+    authority: 'misrad_hashikun',
+    title_fr: 'Aide renforcee logement public handicape (Siyua Mugdal)',
+    title_he: 'סיוע מוגדל בדיור ציבורי לנכים',
+    description_fr:
+      'Aide renforcee (logement prioritaire, adaptation gratuite, loyer davantage reduit) pour les personnes handicapees dans le circuit du logement public ou privé subventionné.',
+    full_description_fr:
+      'Misrad HaShikun offre aux personnes handicapees reconnues un paquet d\'aides renforcees : ' +
+      '- Priorite dans les listes d\'attente Dira Tziburit (en moyenne -50 % de delai) ' +
+      '- Adaptation gratuite du logement : jusqu\'a 150 000 NIS pris en charge (rampes, monte-escalier, ' +
+      '  salle de bains accessible, cuisine abaissee, elargissement portes, ascenseur residentiel) ' +
+      '- Loyer davantage reduit dans Dira Tziburit (jusqu\'a 30 % de plus sur la subvention) ' +
+      '- Aide au demenagement : 5 000-15 000 NIS one-shot si relocation vers logement adapte ' +
+      '- Cumul avec siyua_shkhar_dira + siyua_shkhar_dira_khad_horiot ' +
+      'Conditions : ' +
+      '- Taux d\'invalidite reconnu ≥ 60% (Nakhut Klalit BTL, Nakhei Tsahal, Sherutim Meyukhadim) ' +
+      '- Avis medical sur les besoins d\'adaptation (ergotherapeute agree) ' +
+      '- Residence israelienne ' +
+      'Les adaptations se demandent via un ergotherapeute agree qui dessine le plan et obtient ' +
+      'l\'accord de Misrad HaShikun + eventuellement de la mairie.',
+    conditions: {
+      min_disability: 60,
+      requires_resident: true,
+    },
+    estimated_annual_value: 20000,  // aide amortie sur adaptation
+    value_unit: 'NIS (adaptations jusqu\'a 150 000 NIS + reductions recurrentes)',
+    application_url: 'https://www.gov.il/he/service/housing_adaptation_for_disabled',
+    action_label: 'Demande adaptation logement',
+    info_url: 'https://www.kolzchut.org.il/he/סיוע_בדיור_לנכים',
+    disclaimer:
+      'Necessite une evaluation par un ergotherapeute agree + attestation d\'invalidite. Les olim avec ' +
+      'handicap peuvent aussi cumuler avec la mashkanta_olim pour l\'achat d\'un logement deja adapte. ' +
+      'Delai de traitement : 3-9 mois pour les grandes adaptations.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C8). Valeur 20k NIS/an est une moyenne annuelle ; les adaptations one-shot peuvent atteindre 150k NIS.',
+  },
+  {
+    slug: 'siyua_diyur_niztolei_shoah',
+    category: 'housing',
+    authority: 'misrad_hashikun',
+    title_fr: 'Logement survivants Shoah (Siyua Dyur Niztolei Shoah)',
+    title_he: 'סיוע בדיור לניצולי שואה',
+    description_fr:
+      'Paquet d\'aides au logement pour les survivants de la Shoah reconnus : priorite Dira Tziburit, aide au loyer renforcee, adaptations gratuites, subvention deplacement en maison de retraite.',
+    full_description_fr:
+      'Misrad HaShikun + Rashut leNiztolei HaShoah cofinancent un paquet specifique pour les survivants ' +
+      'de la Shoah : ' +
+      '- Priorite tres elevee dans Dira Tziburit (attribution typique en 6-18 mois vs 3-10 ans general) ' +
+      '- Aide au loyer renforcee : jusqu\'a 2 500-4 000 NIS/mois dans le prive (vs 700-3 200 pour le ' +
+      '  general) ' +
+      '- Adaptation du logement entierement prise en charge (pas de plafond 150k NIS) ' +
+      '- Maison de retraite subventionnee : prise en charge partielle par Rashut Shoah des frais de ' +
+      '  beit avot (~8 000-15 000 NIS/mois economies) ' +
+      '- Frais de demenagement pris en charge ' +
+      'Conditions : ' +
+      '- Reconnaissance formelle survivant Shoah (Rashut ou Claims Conference) ' +
+      '- Age tres eleve (majoritairement 80+ ans) ' +
+      '- Residence israelienne ' +
+      'Procedure : dossier via Misrad HaShikun avec copie de l\'attestation Rashut Shoah.',
+    conditions: {
+      requires_holocaust_survivor: true,
+      requires_resident: true,
+      min_age: 75,  // les survivants encore en vie sont majoritairement 80+
+    },
+    estimated_annual_value: 3000 * 12,
+    typical_monthly_amount: 3000,
+    value_unit: 'NIS/mois (economie totale via subventions cumulees)',
+    application_url: 'https://www.gov.il/he/service/housing_assistance_holocaust_survivors',
+    action_label: 'Demande logement survivant',
+    info_url: 'https://www.kolzchut.org.il/he/סיוע_בדיור_לניצולי_שואה',
+    disclaimer:
+      'Beaucoup de survivants agees connaissent uniquement Dira Tziburit et ignorent la branche ' +
+      'renforcee Shoah. Les coordinateurs Rashut Shoah et les travailleurs sociaux Yad Vashem peuvent ' +
+      'accompagner gratuitement. Cumulable avec l\'ensemble des autres aides Shoah (gmala, arnona, ' +
+      'services domicile).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C8). Complementaire a holocaust_monthly_stipend / holocaust_in_home_services / holocaust_arnona_full_exemption (SECTION 16).',
+  },
+  {
+    slug: 'mashkanta_zkaim',
+    category: 'housing',
+    authority: 'misrad_hashikun',
+    title_fr: 'Aide hypothecaire seniors (Mashkanta Zkaim)',
+    title_he: 'משכנתא לזקנים',
+    description_fr:
+      'Pret hypothecaire subventionne (taux inferieur au marche + garantie Misrad HaShikun) pour les seniors 67+ souhaitant acheter un logement adapte a leur vieillesse.',
+    full_description_fr:
+      'Misrad HaShikun propose une mashkanta specifique pour les seniors qui souhaitent acheter un ' +
+      'logement plus petit / plus adapte a leur autonomie (logements accessibles, Beit Horim, etc.) : ' +
+      '- Montant : jusqu\'a 600 000 NIS (2026, reevaluable) ' +
+      '- Taux d\'interet subventionne : 2-3 % vs 5-6 % marche ' +
+      '- Duree : jusqu\'a 30 ans ou a vie (amortissement au deces avec recuperation sur succession) ' +
+      '- Garantie Misrad HaShikun pour les banques (facilite obtention) ' +
+      'Conditions : ' +
+      '- Age ≥ 67 ans ' +
+      '- Revenus limites (typiquement pension vieillesse + complements < 12 000 NIS/mois) ' +
+      '- Pas de bien immobilier principal (vente prealable autorisee) ' +
+      '- Acte d\'achat pour logement resident principal (pas investissement) ' +
+      'Particularite : la mashkanta peut etre viagere (remboursement au deces sur le bien) — utile ' +
+      'pour les seniors sans heritiers directs souhaitant s\'installer dans un logement adapte sans ' +
+      'impacter leur pension.',
+    conditions: {
+      min_age: 67,
+      requires_resident: true,
+      max_monthly_income: 12000,
+    },
+    estimated_annual_value: 12000,  // economie interets vs marche
+    value_unit: 'NIS/an (economie interets)',
+    application_url: 'https://www.gov.il/he/service/senior_mortgage',
+    action_label: 'Demande mashkanta zkaim',
+    info_url: 'https://www.kolzchut.org.il/he/משכנתא_לזקנים',
+    disclaimer:
+      'Moins connu des olim que la mashkanta_olim (pour les nouveaux arrivants). Demande via les ' +
+      'banques conventionnees (Hapoalim, Leumi, Mizrahi) avec lettre d\'eligibilite Misrad HaShikun. ' +
+      'Cumulable avec les autres aides seniors (Kitzbat Zikna, Hashlamat Hachnasa, arnona_retiree).',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C8). Plafond 600 000 NIS est indicatif — la valeur exacte 2026 doit etre confirmee aupres de Misrad HaShikun. Economie annuelle 12k NIS calculee sur ecart taux 2-3 % vs 5-6 %.',
+  },
+  {
+    slug: 'yivua_meshek_bayit',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Exoneration economie domestique (Yivua Meshek Bayit)',
+    title_he: 'ייבוא משק בית',
+    description_fr:
+      'Regime fiscal special pour les petites activites economiques geree a domicile (location partielle, famille d\'accueil senior, micro-commerce residentiel), complementaire a petur_mas_shkhirat_dira.',
+    full_description_fr:
+      'Article 122B du Pkudat Mas Hakhnasa : regime simplifie de taxation forfaitaire (10 %) pour ' +
+      'les petites activites economiques a domicile, ouvert en complement de petur_mas_shkhirat_dira ' +
+      'pour les bailleurs residentiels depassant le plafond 5 654 NIS/mois. ' +
+      'Activites eligibles : ' +
+      '- Location residentielle au-dela du plafond petur ' +
+      '- Sous-location partielle (chambre, studio dans l\'appart principal) ' +
+      '- Accueil d\'une personne agee / handicapee au foyer (omna adultes) ' +
+      '- Garde d\'enfants a domicile (mishpachton agree) ' +
+      '- Petit commerce residentiel (atelier, cours particuliers) ' +
+      'Regime : impot forfaitaire de 10 % sur le revenu brut, sans possibilite de deduire des ' +
+      'charges (interets mashkanta, travaux, amortissement). Alternative : declaration normale avec ' +
+      'taux marginal + deduction charges (rarement avantageux sous 20 000 NIS/an de revenu). ' +
+      'Conditions : ' +
+      '- Proprietaire ou locataire principal ' +
+      '- Revenu brut de l\'activite < 366 000 NIS/an (2026) ' +
+      '- Pas de salarie pour l\'activite (micro, a domicile) ',
+    conditions: {
+      requires_landlord: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 8000,  // economie vs taux marginal sur 40k NIS/an
+    value_unit: 'NIS/an (economie vs taux marginal)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Infos yivua meshek bayit',
+    info_url: 'https://www.kolzchut.org.il/he/מיסוי_פעילות_עסקית_קטנה',
+    disclaimer:
+      'Alternative au petur_mas_shkhirat_dira pour les bailleurs depassant le plafond 5 654 NIS/mois. ' +
+      'Les deux regimes sont exclusifs (impossible de mixer). Un yoetz mas peut aider a choisir le ' +
+      'plus avantageux selon les charges deductibles. La condition requires_landlord est large — peut ' +
+      'generer des faux positifs pour les bailleurs sous le plafond petur (qui ont interet a rester sur ' +
+      'petur_mas_shkhirat_dira).',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C8). Doublon partiel avec petur_mas_shkhirat_dira (C7) — les deux sont mutuellement exclusifs mais couvrent des situations differentes. Le glossaire les range dans HaShikun (logement) mais fiscalement c\'est HaMisim (impots) — on garde le slug cote fiscal.',
+  },
+]
+
+// =====================================================
+// SECTION C9 — Retraite / seniors + Kupot Holim (S1 Retraite + S12)
+// =====================================================
+// Sources :
+// - https://www.btl.gov.il/benefits/Old_age/Pages/default.aspx
+// - https://www.kolzchut.org.il/he/קצבת_זקנה
+// - https://www.kolzchut.org.il/he/הטבות_רפואיות_לקשישים
+//
+// Ces 7 aides completent old_age_pension + old_age_income_supplement deja
+// presents (SECTION 4) : pension olim specifique, bonifications, prime
+// chauffage, reductions kupot holim.
+
+const SENIORS_EXTRAS_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'gimlat_ezrach_vatik_meyukhedet',
+    category: 'retirement',
+    authority: 'bituach_leumi',
+    title_fr: 'Pension olim speciale (Gimlat Ezrach Vatik Meyukhedet)',
+    title_he: 'גמלת אזרח ותיק מיוחדת לעולים',
+    description_fr:
+      'Pension vieillesse speciale versee aux olim arrives apres l\'age de la retraite et n\'ayant pas pu cotiser assez a BTL pour la Kitzbat Zikna standard.',
+    full_description_fr:
+      'Regime alternatif a la Kitzbat Zikna classique (old_age_pension) : les olim qui ont fait leur ' +
+      'alyah apres avoir deja atteint l\'age de la retraite dans leur pays d\'origine n\'ont pas eu le ' +
+      'temps de cotiser a BTL pendant les annees requises. Pour ne pas les laisser sans pension, BTL ' +
+      'verse une pension speciale finances par le Tresor. ' +
+      'Montants officiels 2026 (verifies kolzchut / btl) : ' +
+      '- Individu oleh vatik           : 2 282 NIS/mois (base) ' +
+      '- Couple oleh vatik              : 3 133 NIS/mois ' +
+      '- Complements possibles         : anciennete en Israel (2% par annee), age 80+, conjoint a charge ' +
+      'Conditions : ' +
+      '- Age legal de retraite atteint (67 H / 62 F+ selon date naissance) ' +
+      '- Residence permanente en Israel + statut oleh ' +
+      '- Ne pas avoir cotise suffisamment pour la Kitzbat Zikna standard ' +
+      '- Ne pas avoir de pension etrangere equivalente (sinon amnat_beinleumiyot — coordination) ' +
+      'Cumulable avec : Hashlamat Hachnasa (complement revenus si tres faibles), arnona_retiree, ' +
+      'hanacha_hashmal, rav_kav_senior_free (67+).',
+    conditions: {
+      min_age_female: 62,
+      min_age_male: 67,
+      requires_oleh: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2282 * 12,
+    typical_monthly_amount: 2282,
+    value_unit: 'NIS/mois (2 282 individu / 3 133 couple)',
+    application_url: 'https://www.btl.gov.il/benefits/Old_age/Pages/default.aspx',
+    action_label: 'Demande pension oleh vatik',
+    info_url: 'https://www.kolzchut.org.il/he/גמלת_אזרח_ותיק_מיוחדת',
+    disclaimer:
+      'Specifique aux olim vatik ayant fait alyah apres 60 ans et n\'ayant pas pu cotiser assez a BTL. ' +
+      'Pour les olim plus jeunes qui ont cotise le minimum, c\'est old_age_pension standard. ' +
+      'Delai de depot : a faire dans les 12 mois apres atteinte de l\'age legal, sinon perte de ' +
+      'retroactivite.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C9). Montants 2026 confirmes via glossaire. Complementaire a old_age_pension (regime classique) — les olim ages doivent verifier laquelle des deux leur est applicable.',
+  },
+  {
+    slug: 'tosefet_dkhiyat_kitzva',
+    category: 'retirement',
+    authority: 'bituach_leumi',
+    title_fr: 'Bonification report retraite (Tosefet Dkhiyat Kitzva)',
+    title_he: 'תוספת דחיית קצבה',
+    description_fr:
+      'Bonification permanente de la pension vieillesse BTL pour les seniors qui reportent volontairement leur demande de retraite au-dela de l\'age legal (67 H / 62-65 F), +5% par annee reportee.',
+    full_description_fr:
+      'Mecanisme incitatif BTL pour encourager le report de la demande de pension apres l\'age legal ' +
+      '(utile pour les seniors qui travaillent encore et ne veulent pas perdre le benefice du test ' +
+      'de revenu applique entre 67 et 70 ans). ' +
+      'Regle : +5 % de pension permanente par annee reportee, jusqu\'a l\'age de 70 ans (au-dela, la ' +
+      'pension devient automatique de toute facon). ' +
+      'Exemples : ' +
+      '- Homme 67 ans reportant jusqu\'a 70 ans : +15 % pension permanente (3 annees x 5%) ' +
+      '- Femme 65 ans reportant jusqu\'a 70 ans : +25 % pension permanente (5 annees x 5%) ' +
+      'Soit pour une pension de base 1 795 NIS/mois, un report de 3 ans donne : ' +
+      '1 795 + (1 795 × 15%) = 2 064 NIS/mois pour le restant de la vie (~270 NIS/mois de plus). ' +
+      'Conditions : ' +
+      '- Age legal atteint mais demande non faite ' +
+      '- Pas encore 70 ans (au-dela, plus de bonification) ' +
+      '- Au moment de la demande, la bonification est calculee et appliquee pour toujours.',
+    conditions: {
+      min_age: 67,
+      max_age: 70,  // la bonification n\'est plus possible apres
+      requires_resident: true,
+    },
+    estimated_annual_value: 1795 * 0.15 * 12,  // bonification 15% sur pension moyenne
+    typical_monthly_amount: 270,  // bonification mensuelle moyenne
+    value_unit: 'NIS/mois (bonification permanente a vie)',
+    application_url: 'https://www.btl.gov.il/benefits/Old_age/Pages/default.aspx',
+    action_label: 'Infos report retraite',
+    info_url: 'https://www.kolzchut.org.il/he/תוספת_דחיית_קצבה',
+    disclaimer:
+      'Decision strategique : reporter la retraite est interessant si on continue a travailler (evite ' +
+      'le test de revenu 67-70 ans) ET si on a une esperance de vie > 10 ans apres la retraite (pour ' +
+      'amortir la bonification). Pour les seniors qui arretent de travailler a 67 ans, preferer la ' +
+      'demande immediate (eviter de perdre des annees de pension).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C9). Modelisation : max_age: 70 pour suggerer uniquement aux seniors dans la fenetre utile (67-70). Apres, plus de bonification possible.',
+  },
+  {
+    slug: 'maanak_khimum',
+    category: 'welfare',
+    authority: 'bituach_leumi',
+    title_fr: 'Prime chauffage seniors (Maanak Khimum)',
+    title_he: 'מענק חימום',
+    description_fr:
+      'Prime annuelle (~700 NIS) versee automatiquement en hiver aux retraites a revenus tres faibles beneficiaires de Hashlamat Hachnasa, pour couvrir le chauffage.',
+    full_description_fr:
+      'Aide saisonniere versee une fois par an (octobre-decembre) aux seniors a tres faibles revenus. ' +
+      'Montant 2026 : ~700 NIS (indexe CPI, versement unique). ' +
+      'Conditions cumulatives : ' +
+      '- Age ≥ 67 ans ' +
+      '- Beneficiaire de Kitzbat Zikna + Hashlamat Hachnasa (complement revenu retraite) ' +
+      '- OU beneficiaire de Havtachat Hakhnasa (revenu minimum garanti) ' +
+      '- Residence en Israel ' +
+      'Versement automatique : si vous etes eligible, BTL verse en octobre-decembre sans demande. ' +
+      'Verifiez votre compte ~novembre. ' +
+      'Dans certaines villes montagnardes (Jerusalem, Safed, Metoula), la prime peut etre majoree ' +
+      'ou completee par la mairie.',
+    conditions: {
+      min_age: 67,
+      max_monthly_income: 4375,  // proxy : seuil Hashlamat Hachnasa individu
+      requires_resident: true,
+    },
+    estimated_annual_value: 700,
+    value_unit: 'NIS/an (versement unique en hiver)',
+    application_url: 'https://www.btl.gov.il/benefits/Heating_grant/Pages/default.aspx',
+    action_label: 'Verifier prime chauffage',
+    info_url: 'https://www.kolzchut.org.il/he/מענק_חימום',
+    disclaimer:
+      'Versement automatique pour les ayants-droit identifies par BTL (beneficiaires Hashlamat ou ' +
+      'Havtachat). Si vous etes beneficiaire mais n\'avez rien recu : contacter BTL. Dans les villes ' +
+      'froides (Jerusalem, Safed), demander aussi a la mairie s\'il existe un supplement local.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C9). Aide modeste mais meconnue — beaucoup de seniors ne verifient pas leur compte en novembre.',
+  },
+  {
+    slug: 'hatavot_mas_pensia_atzmai',
+    category: 'fiscal',
+    authority: 'tax_authority',
+    title_fr: 'Deductions cotisations retraite volontaires (Hatavot Mas Pensia Atzmai)',
+    title_he: 'הטבות מס הפרשה לפנסיה',
+    description_fr:
+      'Deductions fiscales pouvant atteindre 35% sur les cotisations volontaires a des kupot gemel, keren hishtalmut ou keren pensia, plafonnees selon le revenu du contribuable.',
+    full_description_fr:
+      'Article 47 du Pkudat Mas Hakhnasa : le contribuable peut deduire de son revenu imposable les ' +
+      'cotisations volontaires a des plans de retraite complementaire, dans la limite de plafonds ' +
+      'annuels : ' +
+      'Plafonds 2026 (indexes) : ' +
+      '- Keren Pensia Mekifa (plan complet) : jusqu\'a 7 % du revenu (plafonne a 27 500 NIS/an) ' +
+      '- Kupat Gemel (epargne defiscalisee) : jusqu\'a 16 % du revenu (plafonne a 35 700 NIS/an) ' +
+      '- Keren Hishtalmut (fonds de perfectionnement) : 2,5 % du revenu (plafond 20 800 NIS/an, ' +
+      '  retrait apres 6 ans en exoneration totale) ' +
+      'Taux effectif de l\'avantage : depend de la tranche marginale : ' +
+      '- Tranche 30 % : economie de 30 % de la cotisation versee ' +
+      '- Tranche 40 % : economie de 40 % de la cotisation versee ' +
+      '- Tranche 50 % : economie de 50 % de la cotisation versee ' +
+      'Cumulable entre les 3 types (Pensia + Gemel + Hishtalmut). ' +
+      'Applicable aux salaries comme aux independants (mais plafonds leves differemment).',
+    conditions: {
+      required_employment: ['employed', 'self_employed'],
+      requires_resident: true,
+    },
+    estimated_annual_value: 8000,  // economie typique pour revenu median
+    value_unit: 'NIS/an (economie fiscale selon tranche et cotisations)',
+    application_url: 'https://www.gov.il/he/departments/israel_tax_authority',
+    action_label: 'Optimiser epargne retraite',
+    info_url: 'https://www.kolzchut.org.il/he/ניכוי_לפנסיה',
+    disclaimer:
+      'Necessite l\'ouverture d\'un compte Kupat Gemel / Keren Pensia / Keren Hishtalmut dans une ' +
+      'banque ou assureur. Tres efficace pour les hauts revenus (tranches 40-50 %). Un yoetz mas ou ' +
+      'conseiller financier peut optimiser le mix (Pensia vs Gemel vs Hishtalmut selon horizon).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C9). Aide plus technique qu\'urgente — utile pour les salarie-es a haut revenu souhaitant optimiser leur fiscalite. Valeur 8k NIS/an est indicative pour un salaire median (~14k NIS/mois brut).',
+  },
+  {
+    slug: 'demi_bituakh_briut_kitzvat_zikna',
+    category: 'health',
+    authority: 'bituach_leumi',
+    title_fr: 'Cotisation sante reduite pensionnes (Demi Bituakh Briut)',
+    title_he: 'דמי ביטוח בריאות מופחתים לקצבת זקנה',
+    description_fr:
+      'Les beneficiaires de Kitzbat Zikna paient une cotisation sante reduite (123-340 NIS/mois au lieu de 500-800 NIS pour un salarie), deduite directement de la pension.',
+    full_description_fr:
+      'Les retraites (Kitzbat Zikna) beneficient d\'un regime de cotisation sante allege : ' +
+      'Montants 2026 (deduits automatiquement de la pension) : ' +
+      '- Retraite minimale (pension uniquement)          : 123 NIS/mois ' +
+      '- Retraite moyenne (pension + autres revenus)      : 200-280 NIS/mois ' +
+      '- Retraite elevee (avec revenus complementaires)   : jusqu\'a 340 NIS/mois ' +
+      'Comparaison avec un salarie : un salarie paie 3.1 % du salaire (jusqu\'a ~800 NIS/mois pour ' +
+      'salaire median) + son employeur cotise de son cote (~3.45 %). ' +
+      'Le retraite paie donc 50-70 % de moins, economie mensuelle de 300-500 NIS soit 3 600-6 000 NIS/an. ' +
+      'Automatique : BTL deduit directement de la pension versee. Pas de demande a faire. ' +
+      'Cumulable avec : ' +
+      '- Hanakha Trufot Havtakhat Hakhnasa (reduction 50% medicaments, cf. slug suivant) ' +
+      '- Tipulei Shinayim Vatikim (soins dentaires seniors, qui sera en C10) ' +
+      '- Hanakha sur implants auditifs / prothèses (sal briut)',
+    conditions: {
+      min_age: 67,
+      requires_resident: true,
+    },
+    estimated_annual_value: 5000,  // economie typique
+    value_unit: 'NIS/an (economie vs cotisation salarie)',
+    application_url: 'https://www.btl.gov.il/benefits/Health_insurance/Pages/default.aspx',
+    action_label: 'Verifier cotisation sante',
+    info_url: 'https://www.kolzchut.org.il/he/דמי_ביטוח_בריאות_לקצבת_זקנה',
+    disclaimer:
+      'Automatique pour les retraites avec Kitzbat Zikna. Si vous etes retraite mais continuez a ' +
+      'travailler, verifiez sur votre bulletin de paie que votre cotisation sante est bien au taux ' +
+      'reduit (pas 3.1 % comme un salarie lambda). Sinon, contactez BTL.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C9). Economie "silencieuse" — les retraites ne voient pas la deduction car elle est automatique, mais elle represente plusieurs milliers de NIS/an.',
+  },
+  {
+    slug: 'hanakha_trufot_havtakhat_hakhnasa',
+    category: 'health',
+    authority: 'bituach_leumi',
+    title_fr: 'Reduction medicaments Havtakhat Hakhnasa (Hanakha Trufot)',
+    title_he: 'הנחה בתרופות למקבלי הבטחת הכנסה',
+    description_fr:
+      'Reduction permanente de 50 a 55 % sur tous les medicaments prescrits pour les beneficiaires de Havtakhat Hakhnasa (revenu minimum BTL) ou de pension complet a faibles revenus.',
+    full_description_fr:
+      'Dispositif cofinance Misrad HaBriut + BTL + Kupot Holim pour les menages a tres faibles revenus : ' +
+      '- Reduction de 50 % sur les medicaments listes au Sal HaBriut (medicaments rembourses) ' +
+      '- Reduction de 55 % pour les seniors 67+ percevant Hashlamat Hachnasa (cumul +5 %) ' +
+      '- Appliquee automatiquement a la pharmacie avec la carte kupat holim marquee " הנחה " ' +
+      'Economie typique pour un senior avec plusieurs traitements chroniques : 200-500 NIS/mois, ' +
+      'soit 2 400-6 000 NIS/an. ' +
+      'Conditions (l\'une des 3) : ' +
+      '- Beneficiaire de Havtachat Hakhnasa (revenu minimum garanti BTL) ' +
+      '- Beneficiaire de Hashlamat Hachnasa (complement retraite) ' +
+      '- Beneficiaire de pension survivant a faible revenu ' +
+      'Activation : contacter la kupat holim avec attestation BTL (Teudat Zakaut) pour activer le ' +
+      'profil beneficiaire. Pas de demande a renouveler tant que le statut BTL est actif.',
+    conditions: {
+      min_age: 67,
+      max_monthly_income: 4375,
+      requires_resident: true,
+    },
+    estimated_annual_value: 3600,  // 300 NIS/mois mediane
+    value_unit: 'NIS/an (economie sur medicaments prescrits)',
+    application_url: 'https://www.btl.gov.il/benefits/Health_insurance/Pages/default.aspx',
+    action_label: 'Activer profil reduction',
+    info_url: 'https://www.kolzchut.org.il/he/הנחה_בתרופות',
+    disclaimer:
+      'Necessite d\'activer le profil beneficiaire aupres de la kupat holim avec l\'attestation BTL. ' +
+      'Automatique ensuite a la pharmacie. Sale recontrole regulier : si le statut BTL change (revenus ' +
+      'augmentent au-dessus du seuil), la reduction s\'arrete. Cumulable avec demi_bituakh_briut_kitzvat_zikna.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C9). Utilise max_monthly_income: 4375 (seuil Hashlamat Hachnasa individu) comme proxy. Economie substantielle pour les seniors en ALD (affections longue duree).',
+  },
+  {
+    slug: 'hanakha_kupat_holim_olim',
+    category: 'health',
+    authority: 'bituach_leumi',
+    title_fr: 'Reduction plafond sante olim 1ere annee (Hanakha Kupat Holim Olim)',
+    title_he: 'הנחה בתקרת השתתפות לעולים',
+    description_fr:
+      'Le plafond trimestriel de franchises (Stromat Tikra) est reduit de 50% pour les olim dans leurs 6 premiers mois, limitant les depenses sante.',
+    full_description_fr:
+      'Dispositif cofinance Misrad HaKlita + Misrad HaBriut pour les olim nouvellement arrives : ' +
+      'Regle standard : le plafond trimestriel des franchises kupat holim (Tikrat Hishtatfut Atsmit) ' +
+      'limite le total que chaque assure paie en franchise (consultations, imagerie, tests). ' +
+      'Plafonds 2026 : ~465 NIS/trimestre pour un adulte actif, ~230 NIS pour les seniors/invalides. ' +
+      'Reduction olim : pendant les 6 premiers mois, ce plafond est reduit de 50 %, soit ' +
+      '~230 NIS/trimestre pour les olim adultes (au lieu de 465). ' +
+      'Economie : ~940 NIS sur les 6 premiers mois. ' +
+      'Automatique : applique par la kupat holim des l\'inscription (bituach_briut_olim = les 6 mois ' +
+      'd\'assurance sante gratuite s\'appliquent en parallele). ' +
+      'Conditions : ' +
+      '- Oleh Hadash dans les 6 premiers mois ' +
+      '- Inscrit a une kupat holim israelienne ' +
+      'Cumulable avec les autres aides olim (sal_klita, ulpan, rental_assistance_olim).',
+    conditions: {
+      requires_oleh: true,
+      aliyah_years_range: [0, 1],
+      requires_resident: true,
+    },
+    estimated_annual_value: 940,
+    value_unit: 'NIS (economie totale sur 6 premiers mois)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_health',
+    action_label: 'Infos franchises olim',
+    info_url: 'https://www.kolzchut.org.il/he/זכויות_בריאות_לעולים',
+    disclaimer:
+      'Automatique a l\'inscription kupat holim. Si vous payez des franchises plein tarif pendant ' +
+      'les 6 premiers mois, demander a votre kupat holim de verifier votre profil olim. La reduction ' +
+      'cesse automatiquement apres 6 mois (passage au regime standard).',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C9). Aide modeste mais meconnue — beaucoup d\'olim savent que bituach_briut_olim est gratuit les 6 premiers mois mais ignorent que le plafond reste reduit.',
+  },
+]
+
+// =====================================================
+// SECTION C10 — HaRvaha / HaBriut / Divers BTL (S6 + S7 + S1 divers)
+// =====================================================
+// Sources :
+// - https://www.gov.il/he/departments/ministry_of_welfare_and_social_services
+// - https://www.gov.il/he/departments/ministry_of_health
+// - https://www.kolzchut.org.il/he/אלימות_במשפחה
+//
+// Ce dernier lot couvre : aide sociale bien-etre (HaRvaha), soins
+// specifiques (HaBriut), et 3 aides rares BTL (martyrs, conventions
+// internationales, grant equite).
+
+const WELFARE_HEALTH_EXTRAS_BENEFITS: BenefitDefinition[] = [
+  {
+    slug: 'siyua_khomri_ezrakhim_vatikim',
+    category: 'welfare',
+    authority: 'other',  // Misrad HaRvaha
+    title_fr: 'Aide materielle seniors (Siyua Khomri Ezrakhim Vatikim)',
+    title_he: 'סיוע חומרי לאזרחים ותיקים',
+    description_fr:
+      'Aide materielle mensuelle versee par Misrad HaRvaha aux seniors 67+ a revenus faibles, pour couvrir les depenses de base (alimentation, vetements, frais medicaux non rembourses).',
+    full_description_fr:
+      'Dispositif complementaire a Hashlamat Hachnasa, gere par Misrad HaRvaha (plutot que BTL). ' +
+      'Cible les seniors en grande difficulte economique : ' +
+      '- Montant : jusqu\'a 1 210 NIS/mois (montant 2026) ' +
+      '- Verse mensuellement sur compte bancaire ' +
+      '- Cumulable avec Kitzbat Zikna + Hashlamat Hachnasa + arnona_retiree ' +
+      '- Bons d\'achat alimentaires (Teudat Mazon) parfois proposes en alternative ou complement ' +
+      'Conditions : ' +
+      '- Age ≥ 67 ans ' +
+      '- Revenus du menage < seuil local (varie par mairie) ' +
+      '- Evaluation sociale par le travailleur social de la mairie (Oved Sotsyali) ' +
+      '- Pas de patrimoine (plafond epargne 41 528 NIS individu / 62 292 NIS couple, meme seuil ' +
+      '  que Hashlamat Hachnasa) ' +
+      'Procedure : contacter l\'Oved Sotsyali de la mairie, qui visite a domicile et monte le dossier. ' +
+      'Acces par plusieurs canaux : mairie, centre communautaire, rabbanut, ONGs (Leket, Yad Sarah).',
+    conditions: {
+      min_age: 67,
+      max_monthly_income: 4375,
+      requires_resident: true,
+    },
+    estimated_annual_value: 1210 * 12,
+    typical_monthly_amount: 1210,
+    value_unit: 'NIS/mois (jusqu\'a 1 210)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_welfare_and_social_services',
+    action_label: 'Contacter oved sotsyali',
+    info_url: 'https://www.kolzchut.org.il/he/סיוע_לאזרחים_ותיקים',
+    disclaimer:
+      'Depend fortement de la mairie — les grandes villes (Tel Aviv, Jerusalem, Haifa) ont des ' +
+      'budgets plus consequents que les petites. Cumulable avec toutes les autres aides seniors. ' +
+      'Accompagnement par Yad Sarah ou Leket Israel peut accelerer l\'acces. Reconfiguration ' +
+      'periodique : revenus recontroles chaque annee.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Montant maximum 1 210 NIS/mois confirme via glossaire. Les montants reels varient : moyenne 500-900 NIS/mois selon mairie.',
+  },
+  {
+    slug: 'maanak_histaglut_nashim_alimut',
+    category: 'welfare',
+    authority: 'other',  // Misrad HaRvaha
+    title_fr: 'Grant reinstallation violences conjugales (Maanak Histaglut)',
+    title_he: 'מענק הסתגלות לנשים נפגעות אלימות',
+    description_fr:
+      'Grant one-shot (~11 000 NIS) verse aux femmes victimes de violences conjugales qui quittent le foyer pour se reinstaller seules ou en foyer protege.',
+    full_description_fr:
+      'Dispositif Misrad HaRvaha finance par l\'Etat + fonds prives (Wizo, Naamat) pour aider les ' +
+      'femmes victimes de violences a quitter le domicile conjugal et se reinstaller : ' +
+      '- Grant one-shot : ~11 000 NIS (montant 2026) verse immediatement ' +
+      '- Utilisable pour : caution nouvelle location, mobilier essentiel, frais juridiques, demenagement ' +
+      '- Cumulable avec entree en Maon HaGana (foyer protege, gratuit 3-6 mois) ' +
+      '- Suivi social et juridique gratuit ensuite (Oved Sotsyali dedie + avocat pro bono) ' +
+      'Conditions : ' +
+      '- Femme (ou homme, rare) victime de violences conjugales / familiales documentees ' +
+      '- Plainte deposee ou temoignage Oved Sotsyali OU centre d\'aide aux victimes ' +
+      '- Quitter effectivement le foyer conjugal dans un delai de 30 jours ' +
+      'Aucune condition de revenu — c\'est un grant d\'urgence. ' +
+      'Procedure d\'urgence : contacter le 118 (Hotline nationale violence) ou 1-800-220-000 (Naamat).',
+    conditions: {
+      required_gender: 'female',
+      requires_resident: true,
+    },
+    estimated_annual_value: 11000,
+    value_unit: 'NIS (versement unique d\'urgence)',
+    application_url: 'https://www.gov.il/he/service/escape_grant_for_domestic_violence_victims',
+    action_label: 'Demande grant d\'urgence',
+    info_url: 'https://www.kolzchut.org.il/he/אלימות_במשפחה',
+    disclaimer:
+      'APPEL D\'URGENCE : 118 (24/7, gratuit). Ligne d\'ecoute dediee Naamat : 1-800-220-000. ' +
+      'Cumulable avec la prise en charge en Maon HaGana (foyer protege). Aucune condition de revenu. ' +
+      'Modelisation imparfaite : le catalogue declenche pour toutes les femmes, sans verifier le ' +
+      'statut de victime. A raffiner avec un champ profile is_domestic_violence_victim.',
+    confidence: 'high',
+    status: 'needs_verification',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Status needs_verification car le matching declencherait pour toutes les femmes — eviter le faux positif massif. A activer manuellement apres ajout du champ is_domestic_violence_victim au profil.',
+  },
+  {
+    slug: 'tmikha_sotsyalit_vatikim',
+    category: 'welfare',
+    authority: 'other',  // Misrad HaRvaha
+    title_fr: 'Soutien travailleur social senior (Tmikha Sotsyalit)',
+    title_he: 'תמיכה סוציאלית לאזרחים ותיקים',
+    description_fr:
+      'Accompagnement gratuit par un travailleur social (Oved Sotsyali) dedie pour les seniors isoles : visites a domicile, aide administrative, coordination des aides, orientation vers services.',
+    full_description_fr:
+      'Service gratuit propose par Misrad HaRvaha via les mairies : un travailleur social dedie ' +
+      'est attribue aux seniors isoles ou a mobilite reduite pour : ' +
+      '- Visites regulieres a domicile (1-2 fois/mois) pour briser l\'isolement ' +
+      '- Aide a remplir les formulaires BTL, kupat holim, mairie ' +
+      '- Coordination des aides existantes (eviter que des droits restent non reclames) ' +
+      '- Orientation vers services medicaux, centres de jour, activites communautaires ' +
+      '- Mediation avec la famille (enfants, petits-enfants) en cas de conflit sur la prise en charge ' +
+      '- Accompagnement en cas de deuil, de maladie grave, de perte d\'autonomie ' +
+      'Conditions : ' +
+      '- Age ≥ 67 ans ' +
+      '- Isolement (seul, sans famille proche, ou famille eloignee) ' +
+      'OU ' +
+      '- Besoin specifique (recent veuvage, diagnostic maladie grave, perte autonomie) ' +
+      'Procedure : contact direct avec le service "Ezrakhim Vatikim" de sa mairie. Gratuit et ' +
+      'confidentiel. Cumulable avec Gimlat Sicud (aide BTL a domicile).',
+    conditions: {
+      min_age: 67,
+      requires_resident: true,
+    },
+    estimated_annual_value: 5000,  // valeur service en nature
+    value_unit: 'service gratuit (valeur ~5k NIS/an)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_welfare_and_social_services',
+    action_label: 'Demande oved sotsyali',
+    info_url: 'https://www.kolzchut.org.il/he/עבודה_סוציאלית_לאזרחים_ותיקים',
+    disclaimer:
+      'Service en nature (pas monetaire) — non visible sur le compte bancaire mais tres valorise par ' +
+      'les seniors qui le recoivent. Particulierement important pour les olim francophones isoles ' +
+      'qui ont perdu leur cercle social. Demande via la mairie (service rivkha ezrakhim vatikim) ou ' +
+      'via les ONGs (Ezrat Nashim, Eshel).',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Valeur 5k NIS/an est indicative pour representer la valeur equivalente des services rendus (pas une somme monetaire). A afficher differemment dans l\'UI.',
+  },
+  {
+    slug: 'siyua_nifgeot_alimut_mishpakha',
+    category: 'health',
+    authority: 'other',  // Misrad HaRvaha
+    title_fr: 'Soutien psychologique violences domestiques (Siyua Nifgeot Alimut)',
+    title_he: 'סיוע נפשי לנפגעות אלימות במשפחה',
+    description_fr:
+      'Psychotherapie gratuite et soutien psychologique pour les victimes (femmes, enfants, parfois hommes) de violences domestiques : seances illimitees, therapies de groupe, suivi a long terme.',
+    full_description_fr:
+      'Dispositif Misrad HaRvaha + Misrad HaBriut + ONGs (Wizo, Naamat, Hosen, Lev Shomea) : ' +
+      'psychotherapie entierement gratuite pour les victimes de violences familiales, sans limite ' +
+      'de seances. ' +
+      'Prestations : ' +
+      '- Therapie individuelle : 1-2 seances/semaine selon besoin, sans duree max ' +
+      '- Therapie de groupe (groupes de parole entre victimes) : gratuit ' +
+      '- Therapie pour enfants temoins de violence (art-therapie, psychomotricite) ' +
+      '- Therapie familiale post-separation (mediation) ' +
+      '- Ligne d\'ecoute 118 (24/7, gratuite) ' +
+      '- Hotline Naamat 1-800-220-000 ' +
+      '- Groupes Hosen pour reservistes et civils traumatises ' +
+      'Conditions : ' +
+      '- Etre victime (ou temoin proche) de violences domestiques ' +
+      '- Plainte NON obligatoire (anonymat garanti) ' +
+      '- Tous ages, tous genres, toutes situations familiales ' +
+      'Procedure : contacter le 118 ou se rendre a un centre Hosen / centre d\'aide aux victimes. ' +
+      'Acces prioritaire et immediat, meme sans documents d\'identite pour les cas d\'urgence.',
+    conditions: {
+      requires_resident: true,
+    },
+    estimated_annual_value: 15000,  // valeur seances
+    value_unit: 'service gratuit (~15k NIS/an equivalent seances prives)',
+    application_url: 'https://www.gov.il/he/service/mental_health_services_domestic_violence',
+    action_label: 'Contacter centre d\'aide',
+    info_url: 'https://www.kolzchut.org.il/he/סיוע_נפשי_לנפגעי_אלימות_במשפחה',
+    disclaimer:
+      'URGENCES : 118 (24/7, gratuit, anonyme). Service ouvert a TOUS les ages et genres (pas seulement ' +
+      'les femmes). Les olim francophones peuvent demander un therapeute francophone (disponibles a ' +
+      'Tel Aviv, Jerusalem, Netanya, Raanana). Aucune condition de revenu.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Entree generique (pas de discriminant profile) car le catalogue ne peut pas savoir si l\'utilisateur est victime de violences. Affichee a tous — le disclaimer clarifie.',
+  },
+  {
+    slug: 'maanak_maavar_nashim',
+    category: 'welfare',
+    authority: 'bituach_leumi',
+    title_fr: 'Aide transition femmes (Maanak Maavar Nashim)',
+    title_he: 'מענק מעבר לנשים בנות 62',
+    description_fr:
+      'Aide mensuelle pour les femmes de 62 ans en periode de transition entre la fin d\'emploi et le debut de la Kitzbat Zikna (64-65 ans selon annee de naissance).',
+    full_description_fr:
+      'Ecart structurel : les femmes nees entre 1955 et 1961 peuvent commencer a percevoir Kitzbat Zikna ' +
+      'a 62 ans (regle transitoire), mais les nees apres 1962 doivent attendre 64-65 ans selon l\'echelle ' +
+      'progressive jusqu\'a 65 ans en 2032. ' +
+      'Pendant cette periode de transition (62-65 ans), celles qui ont perdu leur emploi sans ' +
+      'allocation chomage peuvent beneficier de : ' +
+      '- Maanak Maavar : allocation mensuelle 1 500-2 500 NIS/mois, versee entre 62 et 64-65 ans ' +
+      '- Recyclage professionnel finance (Lishkat Ta\'asuka) ' +
+      '- Bons d\'achat (Teudat Mazon) en complement ' +
+      'Conditions : ' +
+      '- Femme nee avant 1962 (future Kitzbat Zikna > 62 ans) ' +
+      '- Revenus du menage sous un seuil (~7 000 NIS/mois) ' +
+      '- Sans emploi salarie depuis minimum 6 mois ' +
+      '- Residence israelienne ' +
+      'Mesure transitoire — amenee a disparaitre progressivement quand l\'age Kitzbat Zikna femmes ' +
+      'sera uniformise a 65 ans.',
+    conditions: {
+      required_gender: 'female',
+      min_age: 62,
+      max_age: 65,
+      max_monthly_income: 7000,
+      requires_resident: true,
+    },
+    estimated_annual_value: 2000 * 12,
+    typical_monthly_amount: 2000,
+    value_unit: 'NIS/mois (1 500-2 500 selon situation)',
+    application_url: 'https://www.btl.gov.il/benefits/Old_age/Pages/default.aspx',
+    action_label: 'Demande maanak maavar',
+    info_url: 'https://www.kolzchut.org.il/he/מענק_מעבר_לנשים',
+    disclaimer:
+      'Mesure transitoire : disparaitra progressivement avec l\'alignement de l\'age femme a 65 ans ' +
+      '(horizon 2032). Verifier eligibilite annee par annee. Cumulable avec dmei_avtala si encore ' +
+      'des droits restants, puis avec Hashlamat Hachnasa si necessaire.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Mesure transitoire — a surveiller annuellement. Montants approximatifs.',
+  },
+  {
+    slug: 'yetom_alimut_mishpakha',
+    category: 'special',
+    authority: 'other',  // Misrad HaRvaha
+    title_fr: 'Droits orphelins violences domestiques (Yetom Alimut Mishpakha)',
+    title_he: 'יתום אלימות במשפחה',
+    description_fr:
+      'Pension mensuelle + prise en charge complete (scolarite, sante, therapie, vacances) pour les enfants mineurs d\'une victime de feminicide ou de violences domestiques graves.',
+    full_description_fr:
+      'Dispositif Misrad HaRvaha + BTL pour les enfants mineurs dont la mere (ou parent) a ete tue(e) ' +
+      'ou gravement blesse(e) par son conjoint : ' +
+      '- Pension mensuelle a vie (jusqu\'a 18 ans, 21 si etudes superieures) : 3 500-5 000 NIS/mois ' +
+      '- Bourses scolaires, frais extrascolaires, activites de loisirs couverts ' +
+      '- Therapie individuelle illimitee ' +
+      '- Frais de justice + suivi juridique gratuit (tutelle, successions) ' +
+      '- Aide au logement (si logement parental perdu) ' +
+      '- Vacances organisees chaque annee par Wizo, Hosen ' +
+      'Conditions : ' +
+      '- Enfant mineur (< 18 ans) ou etudiant < 21 ans ' +
+      '- Parent tue ou gravement blesse (≥ 40 % invalidite) par l\'autre parent / conjoint ' +
+      '- Reconnaissance par jugement OU rapport police + Oved Sotsyali ' +
+      'Cumulable avec Kitsbat Yeladim standard + survivor_pension_orphan si le parent etait assure BTL.',
+    conditions: {
+      requires_bereaved: true,  // proxy, un enfant orphelin via violence est "bereaved"
+      requires_resident: true,
+    },
+    estimated_annual_value: 4000 * 12,
+    typical_monthly_amount: 4000,
+    value_unit: 'NIS/mois (3 500-5 000 + services gratuits)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_welfare_and_social_services',
+    action_label: 'Infos droits orphelins violence',
+    info_url: 'https://www.kolzchut.org.il/he/יתומים_מאלימות_במשפחה',
+    disclaimer:
+      'Dispositif declenche automatiquement par le Oved Sotsyali ou la police apres incident grave. ' +
+      'Les tuteurs / familles d\'accueil de l\'enfant peuvent ensuite solliciter les aides cumulables. ' +
+      'Modelisation imparfaite : le catalogue declenche pour tout "bereaved" (IDF ou civil) — a ' +
+      'raffiner avec un champ is_orphan_of_domestic_violence.',
+    confidence: 'medium',
+    status: 'needs_verification',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Niche mais critique pour les rares cas concernes. Status needs_verification — pas de champ profile dedie, risque faux positif avec bereaved IDF.',
+  },
+  {
+    slug: 'tipulei_shinayim_vatikim',
+    category: 'health',
+    authority: 'other',  // Misrad HaBriut + Kupot Holim
+    title_fr: 'Soins dentaires seniors 72+ (Tipulei Shinayim Vatikim)',
+    title_he: 'טיפולי שיניים חינם לאזרחים ותיקים',
+    description_fr:
+      'Couverture gratuite ou tres subventionnee des soins dentaires (extractions, couronnes, protheses) pour les seniors a partir de 72 ans, via le sal briut (prestations sante de base).',
+    full_description_fr:
+      'Reforme 2022-2024 : l\'age d\'eligibilite au programme Tipulei Shinayim Hinam a ete abaisse ' +
+      'progressivement de 75 a 72 ans, puis 70 ans en 2027. ' +
+      'Prestations 2026 (72+ ans) : ' +
+      '- Soins de base (detartrage, caries, extractions) : 100 % pris en charge ' +
+      '- Couronnes et bridges : pris en charge partiellement (70-80 %) ' +
+      '- Protheses amovibles completes : 100 % pris en charge (une par arcade tous les 5 ans) ' +
+      '- Implants : NON couverts (sauf exceptions medicales) ' +
+      'Conditions : ' +
+      '- Age ≥ 72 ans (2026) ' +
+      '- Assure a une kupat holim ' +
+      '- Beneficiaire identifie dans le sistem Sal HaBriut ' +
+      'Procedure : rendez-vous chez un dentiste conventionne kupat holim (la plupart des clinic). ' +
+      'Presenter la carte kupat holim + piece d\'identite. Aucun paiement d\'avance — la facture est ' +
+      'directement reglee par la kupat holim. Les depassements (non-couverts) restent a la charge du ' +
+      'patient. ' +
+      'Economie typique : 5 000-20 000 NIS/an pour les seniors ayant besoin de prosthetic majeur.',
+    conditions: {
+      min_age: 72,
+      requires_resident: true,
+    },
+    estimated_annual_value: 5000,
+    value_unit: 'NIS/an (valeur des soins couverts)',
+    application_url: 'https://www.gov.il/he/service/dental_care_for_seniors',
+    action_label: 'Infos soins dentaires seniors',
+    info_url: 'https://www.kolzchut.org.il/he/טיפולי_שיניים_לקשישים',
+    disclaimer:
+      'Seuil 72 ans en 2026 — sera 70 ans en 2027 selon la reforme. Implants dentaires NON couverts ' +
+      '(hors cas medicaux tres specifiques). Bien verifier que le dentiste est conventionne (clinic ' +
+      'kupat holim ou dentiste prive conventionne).',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Reforme progressive — surveiller les seuils d\'age annuels (72 en 2026, 70 en 2027).',
+  },
+  {
+    slug: 'sal_shikum_mitmodedei_nefesh',
+    category: 'health',
+    authority: 'other',  // Misrad HaBriut
+    title_fr: 'Panier rehabilitation psychiatrique (Sal Shikum Mitmodedei Nefesh)',
+    title_he: 'סל שיקום למתמודדי נפש',
+    description_fr:
+      'Paquet de services de readaptation psychiatrique en nature (logement protege, atelier therapeutique, accompagnement social, emploi adapte) pour les personnes avec handicap psychiatrique reconnu ≥ 40%.',
+    full_description_fr:
+      'Chok Shikum Nikhim (loi de rehabilitation des malades mentaux, 2000) : Misrad HaBriut et les ' +
+      'ENOSH / Beit HaGilda / autres operateurs agrees offrent un "panier de rehabilitation" (Sal Shikum) ' +
+      'aux personnes reconnues avec handicap psychiatrique ≥ 40% : ' +
+      'Services disponibles (selon besoins evalues par Vaadat Shikum) : ' +
+      '- Hebergement : logement protege (Hostel, Diur Mugal), appart autonome supervise ' +
+      '- Emploi adapte : ateliers proteges, programmes d\'integration professionnelle (Shikum Taasuka) ' +
+      '- Accompagnement social : chargé d\'accompagnement (Melave Mashikum) qui visite regulierement ' +
+      '- Activites de jour : centres de jour (Makom Hevrati), ateliers creatifs ' +
+      '- Therapie : psychologue, psychiatre, art-therapie, ergotherapie ' +
+      '- Aide a l\'acquisition de competences autonomie (budget, cuisine, transport) ' +
+      'Valeur totale : 20 000-80 000 NIS/an selon niveau d\'accompagnement. ' +
+      'Conditions : ' +
+      '- Handicap psychiatrique reconnu ≥ 40% par Vaadat Refuit BTL ' +
+      '- Residence israelienne ' +
+      '- Evaluation par Vaadat Shikum (commission de rehabilitation Misrad HaBriut) ' +
+      'Procedure : adresser a Vaadat Shikum via son psychiatre traitant ou le Oved Sotsyali local.',
+    conditions: {
+      min_disability: 40,
+      // Idealement : required_disability_type: 'psychiatric' — mais le catalogue n\'a pas ce champ.
+      requires_resident: true,
+    },
+    estimated_annual_value: 30000,
+    value_unit: 'NIS/an (valeur des services en nature)',
+    application_url: 'https://www.gov.il/he/departments/ministry_of_health',
+    action_label: 'Demande sal shikum nefesh',
+    info_url: 'https://www.kolzchut.org.il/he/סל_שיקום_למתמודדי_נפש',
+    disclaimer:
+      'Demande via psychiatre traitant ou Oved Sotsyali. Vaadat Shikum evalue les besoins et attribue ' +
+      'le panier (modulable selon evolution). Pour les olim francophones : ENOSH, Beit HaGilda et ' +
+      'Hosen proposent des services en francais dans les grandes villes.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Modelisation imparfaite : la condition min_disability: 40 ne discrimine pas les handicaps psychiatriques specifiquement. A raffiner avec un champ disability_type.',
+  },
+  {
+    slug: 'harugui_malkhut',
+    category: 'special',
+    authority: 'bituach_leumi',
+    title_fr: 'Familles martyrs (Harugui Malkhut)',
+    title_he: 'הרוגי מלכות',
+    description_fr:
+      'Pension mensuelle versee aux familles (conjoint, enfants, parents) des personnes executees historiquement dans un pays etranger pour leur engagement sioniste ou leur appartenance au peuple juif.',
+    full_description_fr:
+      'Loi 5715-1955 (Chok Gimlaot le-Harugui Malkhut u-Vnei Mishpahoteihem). ' +
+      'Concerne les familles de martyrs : personnes executees (pendaison, fusillade) dans un pays ' +
+      'etranger, pour : ' +
+      '- Engagement sioniste (Haganah, Etzel, Lehi avant 1948) ' +
+      '- Activites en faveur d\'Israel dans des pays hostiles (URSS, pays arabes, Iran) ' +
+      '- Simple appartenance au peuple juif (executions antisemites reconnues) ' +
+      'Prestations : ' +
+      '- Pension mensuelle a vie : ~10 000-14 000 NIS/mois pour conjoint survivant ' +
+      '- Pension orphelin : jusqu\'a 21 ans (ou 27 en cas d\'etudes) ' +
+      '- Avantages medicaux complets ' +
+      '- Logement subventionne, reductions Arnona ' +
+      'Reconnaissance : commission speciale BL + Yad Vashem + archives historiques. Dossiers souvent ' +
+      'deposes plusieurs annees apres l\'execution, avec temoignages tardifs. ' +
+      'Beneficiaires typiques : descendants de juifs executes en URSS (proces antisemites), en ' +
+      'Syrie, Iran, Irak, Yemen durant les annees 40-70.',
+    conditions: {
+      requires_bereaved: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 11000 * 12,
+    typical_monthly_amount: 11000,
+    value_unit: 'NIS/mois (~10 000-14 000)',
+    application_url: 'https://www.btl.gov.il/benefits/Hostile_action/Pages/default.aspx',
+    action_label: 'Demande reconnaissance harugui malkhut',
+    info_url: 'https://www.kolzchut.org.il/he/חוק_הרוגי_מלכות',
+    disclaimer:
+      'Droit niche reserve aux familles de martyrs reconnus historiquement. La reconnaissance se fait ' +
+      'via une commission speciale BL + Yad Vashem. Dossiers typiques : descendants de juifs executes ' +
+      'en URSS / Syrie / Iran / pays arabes. Confidence medium car montants exacts non publics.',
+    confidence: 'medium',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Droit tres niche mais critique pour les rares familles concernees. Le modele bereaved peut donner des faux positifs — le disclaimer est crucial.',
+  },
+  {
+    slug: 'amnat_beinleumiyot',
+    category: 'retirement',
+    authority: 'bituach_leumi',
+    title_fr: 'Conventions bi-nationales (Amnat Beinleumiyot)',
+    title_he: 'אמנות בינלאומיות לביטוח לאומי',
+    description_fr:
+      'Mecanisme de coordination entre Bituach Leumi israelien et les systemes de securite sociale etrangers (France, USA, Canada, UK, Allemagne, Suisse, Pays-Bas, etc.) pour les olim.',
+    full_description_fr:
+      'Israel a signe des conventions bi-nationales de securite sociale avec ~25 pays, permettant aux ' +
+      'olim de cumuler les periodes cotisees en Israel et dans leur pays d\'origine pour : ' +
+      '- Calculer la pension vieillesse (Kitzbat Zikna) meme si les annees de cotisation israeliennes ' +
+      '  sont insuffisantes ' +
+      '- Eviter la double cotisation (regle du pays d\'emploi) ' +
+      '- Beneficier des aides pour invalidite/accidents en cumulant les droits ' +
+      'Pays conventiones (liste partielle 2026) : France, Belgique, Suisse, Royaume-Uni, Allemagne, ' +
+      'Autriche, Pays-Bas, Danemark, Suede, Norvege, Finlande, Italie, Espagne, Canada, USA, ' +
+      'Uruguay, Argentine, Bulgarie, Roumanie, Slovaquie, Tchequie, Hongrie. ' +
+      'Procedure : ' +
+      '- Demande a BL Israel avec attestations de cotisation du pays d\'origine ' +
+      '- BL contacte son homologue etranger via les formulaires de coordination ' +
+      '- Delai de traitement : 6-18 mois ' +
+      'Cumulable avec : pension du pays d\'origine qui continue a etre versee en Israel (ex. pension ' +
+      'francaise CNAV versee sur compte israelien).',
+    conditions: {
+      requires_oleh: true,
+      requires_resident: true,
+    },
+    estimated_annual_value: 20000,  // gain median d\'une coordination
+    value_unit: 'NIS/an (gain variable selon carriere)',
+    application_url: 'https://www.btl.gov.il/benefits/International/Pages/default.aspx',
+    action_label: 'Demande coordination internationale',
+    info_url: 'https://www.kolzchut.org.il/he/אמנות_בטחון_סוציאלי_בינלאומיות',
+    disclaimer:
+      'Mecanisme technique — un yoetz mas ou la Sokhnut peut aider a monter le dossier. Tres utile ' +
+      'pour les olim francophones ayant cotise 20+ ans en France avant alyah : ils peuvent ainsi ' +
+      'continuer a percevoir leur pension CNAV en Israel tout en accumulant des droits BL. Delai ' +
+      'de traitement long (6-18 mois) — a initier bien avant l\'age de retraite.',
+    confidence: 'high',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Valeur 20k NIS/an est une mediane — depend fortement de la carriere pre-alyah. Critique pour les olim francais ayant cotise 20+ ans en France.',
+  },
+  {
+    slug: 'hanaka_mitaamei_tzedek',
+    category: 'welfare',
+    authority: 'bituach_leumi',
+    title_fr: 'Grant equite / justice (Hanaka Mitaamei Tzedek)',
+    title_he: 'הנקה מטעמי צדק',
+    description_fr:
+      'Prestation discretionnaire exceptionnelle versee par BL dans des cas specifiques ne rentrant dans aucun regime regulier mais justifies par l\'equite (cas humanitaires, erreurs administratives, situations atypiques).',
+    full_description_fr:
+      'Article 387 du Chok HaBituach HaLeumi : BL peut accorder une prestation exceptionnelle ' +
+      '(one-shot ou mensuelle) a titre gracieux, "mitaamei tzedek" (pour des raisons d\'equite ou ' +
+      'de justice), lorsqu\'un demandeur : ' +
+      '- Ne rentre dans aucun regime regulier (age, statut, situation atypique) ' +
+      '- MAIS se trouve dans une situation de grande difficulte reconnue humaine / equitable ' +
+      '- ET a une demande formelle soutenue par un rapport Oved Sotsyali ou un avocat ' +
+      'Exemples reels : ' +
+      '- Olim ages arrives en Israel sans papiers suffisants pour prouver leur droit a une pension ' +
+      '- Veuves de combattants non reconnus comme tels par defaut d\'archives ' +
+      '- Parents d\'enfants handicapes non reconnus parce que le diagnostic est recent ' +
+      '- Cas de feminicide / traite humaine necessitant une prise en charge immediate ' +
+      'Montants : variables selon dossier — de 5 000 NIS (one-shot) a 3 500 NIS/mois. ' +
+      'Decision : par le Directeur General BL ou une commission speciale, sur avis social et legal.',
+    conditions: {
+      requires_resident: true,
+    },
+    estimated_annual_value: 12000,  // estimation median
+    value_unit: 'NIS (variable, one-shot ou mensuel selon dossier)',
+    application_url: 'https://www.btl.gov.il/',
+    action_label: 'Demande hanaka mitaamei tzedek',
+    info_url: 'https://www.kolzchut.org.il/he/הנקה_מטעמי_צדק',
+    disclaimer:
+      'Procedure discretionnaire — resultats non garantis. Necessite un avocat specialise ou une ONG ' +
+      '(Amutat Lev Shomea, Bizkhut, Moked HaSiyua) pour construire un dossier convaincant. Delai : ' +
+      '6-24 mois. Entree meta pour rappeler aux olim qu\'il existe une voie de recours quand tous ' +
+      'les regimes reguliers sont refuses.',
+    confidence: 'low',
+    status: 'verified',
+    verified_at: '2026-04-16',
+    tax_year: 2026,
+    notes: 'Ajout catalogue 16/04/2026 (etape C10). Confidence low car tres discretionnaire. Utile surtout comme mention (voie de recours) plutot que comme droit a reclamer — le disclaimer le clarifie.',
+  },
+]
+
+// =====================================================
 // SECTION 21 — Helper functions
 // =====================================================
 
@@ -2454,9 +5529,9 @@ export function getCatalogStats() {
  * Metadata du catalogue pour le dashboard admin.
  */
 export const CATALOG_METADATA = {
-  version: '1.0.0',
-  last_updated: '2026-04-12',
-  total_benefits: 35,  // mis a jour a chaque ajout
+  version: '2.0.0',
+  last_updated: '2026-04-16',
+  total_benefits: 125,  // mis a jour a chaque ajout (etape C : +68 vs 1.0.0)
   data_sources: [
     'https://www.btl.gov.il/',
     'https://www.kolzchut.org.il/',
@@ -2474,7 +5549,7 @@ export const CATALOG_METADATA = {
  * Version statistiques utilisee par /admin/legal-watch.
  */
 export const CATALOG_SUMMARY = {
-  total: 35,
+  total: 125,
   high_confidence: 0,  // Sera calcule dynamiquement
   needs_verification: 0,
   by_category: {
@@ -2516,6 +5591,16 @@ export const BENEFITS_CATALOG: BenefitDefinition[] = [
   ...COMBAT_RESERVIST_BENEFITS,
   ...CHILDCARE_BENEFITS,
   ...UTILITY_BENEFITS,
+  ...BTL_FAMILY_EXTRAS_BENEFITS,
+  ...BTL_ACCIDENT_BENEFITS,
+  ...HOLOCAUST_EXTRAS_BENEFITS,
+  ...KHARVOT_BARZEL_BENEFITS,
+  ...NAKHEI_TSAHAL_BENEFITS,
+  ...DISCHARGED_SOLDIERS_BENEFITS,
+  ...TAX_EXTRAS_BENEFITS,
+  ...HOUSING_EXTRAS_BENEFITS,
+  ...SENIORS_EXTRAS_BENEFITS,
+  ...WELFARE_HEALTH_EXTRAS_BENEFITS,
 ]
 
 // Calcul dynamique des stats au chargement
