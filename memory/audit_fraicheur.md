@@ -328,4 +328,97 @@ Slug explicitement millésimé 2026, `verified_at: 2026-04-13`. ✅
 
 ---
 
-<!-- Audit glossary + recos ajoutés en sous-étape 4 -->
+## Audit de `memory/glossary.md`
+
+### Métadonnées
+
+- **Date de dernière mise à jour** affichée (ligne 5) : `2026-04-16` → ✅ **Frais**.
+- **Nombre d'aides annoncé** (titre ligne 1) : `116 aides sociales israéliennes`.
+- **Nombre de slugs effectivement extraits** (regex backticks) : `116` ✅ cohérent.
+- Le glossaire référence 16 sources institutionnelles (BTL, Misrad HaKlita, Misrad HaShikun, Rashut HaMisim, Rashut Shoah, Misrad HaRvaha, Misrad HaBriut, Misrad HaKhinukh, Arnona, Tahbura, Nakhei IDF, Kupot Holim, Soldats libérés, Claims, BEG, 7 octobre/KB).
+
+### 🔴 Incohérence de couverture : glossaire ≠ catalogue
+
+- Glossaire : **116 slugs**
+- Catalogue `BENEFITS_CATALOG` : **125 slugs**
+- **40 slugs dans le glossaire sont absents du catalogue** (la plupart sont des variantes de nommage : `kitzvat_yeladim` glossaire vs `kitsbat_yeladim` catalogue, `maanak_leyda` vs `maanak_leida`, `hisakhon_lekhol_yeled` vs `chisachon_lekol_yeled`, etc.)
+- **49 slugs dans le catalogue sont absents du glossaire** (ajouts post-glossaire, essentiellement via l'Étape C du 16/04/2026)
+
+#### Slugs du glossaire sans équivalent au catalogue (40)
+
+Majorité = variantes orthographiques non-harmonisées. Quelques vraies omissions :
+
+| Slug glossaire | Motif probable |
+|---|---|
+| `ageret_hinukh_olim` | pas encore au catalogue |
+| `arnona_hanacha_olim` | variante (catalogue = `arnona_olim`) |
+| `bituach_briut_olim` | pas encore au catalogue |
+| `dmei_kvura` | allocation funèbre BTL — absent |
+| `dmei_kiyum_olim` | absent (aide à l'entretien olim) |
+| `ezrat_shekher_olim` | absent (aide loyer 1ère année) |
+| `gan_khofshi_olim` | absent (jardin gratuit olim) |
+| `gmala_niztolei_shoah_misrad_haotzer` | variante (catalogue = `tagmul_niztolei_shoah_vatik`) |
+| `halva_klita` | absent (prêt d'absorption) |
+| `hanakat_mas_hakhnasa_olim` | absent (réduction IRPP olim 10 ans) |
+| `hanakat_mkhes_rakav` | absent (réduction achat véhicule olim) |
+| `hanakha_arnona_nakhim` | variante (catalogue = `arnona_disability`) |
+| `hanakha_arnona_niztolei_shoah` | variante (catalogue = `holocaust_arnona_full_exemption`) |
+| `hanakha_arnona_vatikim` | variante (catalogue = `arnona_retiree`) |
+| `hanakha_tahbura_tziburit` | variante (catalogue = `rav_kav_senior_free` + autres) |
+| `hisakhon_lekhol_yeled` | variante (catalogue = `chisachon_lekol_yeled`) |
+| `khozrim_begimlaot` | absent (toshav khozer retraité) |
+| `kitzvat_ezrach_vatik` | variante (catalogue = `old_age_pension`) |
+| `kitzvat_ilad_nakhe` | absent (allocation enfant handicapé) |
+| `kitzvat_shaarim` | variante (catalogue = `survivor_pension_spouse`) |
+| `kitzvat_yeladim` | variante (catalogue = `kitsbat_yeladim`) |
+| `maanak_avoda_nidreshet` | absent (prime soldats libérés) |
+| `maanak_leyda` | variante (catalogue = `maanak_leida`) |
+| `maanak_ptira` | absent (prime décès) |
+| `malgot_siyua_talmidim_nezakkim` | absent (bourses scolaires) |
+| `mas_rechisha_olim` | variante (catalogue = `olim_purchase_tax_reduction`) |
+| `minhal_hastudentim_olim` | variante (catalogue = `student_authority_olim`) |
+| `nakhut_klalit` | variante (catalogue = `disability_pension_general`) |
+| `nayadut` | variante (catalogue = `mobility_allowance`) |
+| `petur_mas_hakhnasa_huhul` | absent (exonération IRPP maladie grave) |
+| `sherutim_meyukhadim` | absent / variante catalogue (`attendance_allowance` approche) |
+| `shikum_miktzoi` | absent (réadaptation pro BTL) |
+| `tahbura_aeroport_olim` | absent (transport aéroport olim) |
+| `tosefet_hashlamat_hakhnasa` | absent (complément revenu retraité) |
+| `tosefet_vetek` | absent (supplément ancienneté retraite) |
+| `ulpan_olim` | variante (catalogue = `ulpan_free`) |
+| `zkhuyot_pshitat_regel` | absent (droits faillite employeur) |
+| `zkhuyot_toshavim_chozrim` | absent (droits résidents de retour) |
+
+**~20 vraies omissions + ~20 variantes orthographiques.** Pas un problème de fraîcheur mais un **problème d'harmonisation des slugs** + **complétude du catalogue**.
+
+#### Slugs au catalogue absents du glossaire (49)
+
+Ce sont majoritairement :
+- **Variantes orthographiques** (ex. `kitsbat_yeladim` catalogue vs `kitzvat_yeladim` glossaire) → **même entrée, slug différent**.
+- **Entrées 2026 ajoutées post-glossaire** : `oleh_2026_full_exemption`, `miluim_tax_credit_combat`, `combat_reservist_bonuses_2026`, `miluim_low_income_supplement`.
+- **Entrées détaillées au catalogue** : `survivor_pension_spouse` + `survivor_pension_orphan` vs `kitzvat_shaarim` glossaire (1 entrée glossaire = 2 entrées catalogue).
+
+> **Action recommandée** : standardiser les slugs entre les deux sources (convention unique, par ex. toujours utiliser la translit du catalogue) et mettre à jour le glossaire pour refléter les 125 entrées du catalogue.
+
+### Cohérence montants glossaire vs catalogue
+
+Contrôle échantillon sur 10 entrées communes :
+
+| Slug glossaire | Montant glossaire | Catalogue (typique) | Cohérent ? |
+|---|---|---|---|
+| `kitzvat_yeladim` / `kitsbat_yeladim` | 188–211 NIS/mois/enfant | 173 / 219 NIS | 🟡 glossaire dépassé (anciennes valeurs) |
+| `maanak_leyda` / `maanak_leida` | ~1 750 NIS | 2 103 / 946 / 631 NIS | 🟡 glossaire dépassé |
+| `kitzvat_ezrach_vatik` / `old_age_pension` | 2 282–5 400+ NIS | 1 795 individu / 2 762 couple + suppléments | 🟡 glossaire gonflé ou intègre suppléments |
+| `dmei_kvura` (funèbre) | ~9 000 NIS | absent du catalogue | 🔴 |
+| `gimlat_sioud` / `gimlat_sicud` | ~3 000–9 000 NIS | confirmé à jour | ✅ |
+| `keren_sif2_article2_fund` | 667 EUR (~2 734 NIS) | `667 EUR (~2 670 NIS)` ailleurs | 🟡 taux de change variable |
+| `nekudot_zikui_toshav` | 5 436–6 636 NIS/an | **6 534–7 986 NIS/an** (calc) | 🔴 glossaire basé sur vieux point |
+| `nekudot_zikui_khayalim_meshukrarim` | 2 904–5 808 NIS/an | 2 904 × 2 = 5 808 NIS/an | ✅ |
+| `tagmul_basissi_nakhei_tsahal` | 1 161–8 130 NIS/mois | confirmé à jour | ✅ |
+| `maanak_shnati_shoah` | 7 688 NIS/an | confirmé à jour | ✅ |
+
+> **Observation clé** : le glossaire est **daté du 2026-04-16** mais certains montants reflètent des valeurs d'avant l'audit (nouveaux montants BTL publiés début 2026). Mise à jour partielle → **date de la dernière mise à jour incohérente avec le contenu**.
+
+---
+
+<!-- Recos + checklist ajoutés en sous-étape 5 -->
