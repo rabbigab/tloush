@@ -63,6 +63,7 @@ export interface UserProfile {
   has_mobility_limitation: boolean
   has_disabled_child: boolean
   is_bereaved_family: boolean
+  is_7octobre_victim: boolean
 
   // Financier
   is_income_supplement_eligible: boolean

@@ -45,7 +45,7 @@ const EDITABLE_FIELDS: (keyof UserProfileUpdate)[] = [
   'education_level', 'is_current_student', 'institution_name',
   'kupat_holim', 'disability_level',
   'is_holocaust_survivor', 'shoah_period', 'is_caregiver', 'chronic_illness',
-  'has_mobility_limitation', 'has_disabled_child',
+  'has_mobility_limitation', 'has_disabled_child', 'is_7octobre_victim',
   'city', 'municipality', 'housing_status', 'home_size_sqm', 'has_mortgage',
   'receives_kitsbat_yeladim', 'receives_old_age_pension', 'receives_disability_pension',
   'receives_income_support', 'receives_rental_assistance', 'receives_ulpan',
@@ -607,6 +607,17 @@ export default function ProfileEditClient({ initialProfile }: { initialProfile: 
                 className="w-4 h-4 rounded"
               />
               <span className="text-sm text-slate-700 dark:text-slate-300">J'ai un enfant handicape</span>
+            </label>
+            <label className={CHECKBOX_LABEL_CLS}>
+              <input
+                type="checkbox"
+                checked={profile.is_7octobre_victim}
+                onChange={(e) => update('is_7octobre_victim', e.target.checked)}
+                className="w-4 h-4 rounded"
+              />
+              <span className="text-sm text-slate-700 dark:text-slate-300">
+                Victime (ou famille de) du 7 octobre / Kharvot Barzel
+              </span>
             </label>
           </div>
         </Field>

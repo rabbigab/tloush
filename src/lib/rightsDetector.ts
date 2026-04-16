@@ -368,6 +368,17 @@ function matchProfile(
     }
   }
 
+  // Victime 7 octobre / Kharvot Barzel
+  if (conditions.requires_7octobre_victim) {
+    totalChecks++
+    if (profile.is_7octobre_victim) {
+      passedChecks++
+      reasons.push('Victime 7 octobre / Kharvot Barzel')
+    } else {
+      return { matches: false, score: 0, reasons: [] }
+    }
+  }
+
   // Enfant handicape
   if (conditions.requires_disabled_child) {
     totalChecks++
