@@ -4,16 +4,39 @@
 
 // ------ Document Types ------
 export type DocumentType =
-  | "payslip"          // Fiche de paie (tlush)
-  | "contract"         // Contrat de travail
-  | "officialLetter"   // Lettre officielle
-  | "taxNotice"        // Avis d'imposition
-  | "lease"            // Contrat de location
-  | "termination"      // Lettre de licenciement
-  | "universal";       // Fallback : analyse générique pour tout autre document
+  | "payslip"           // Fiche de paie (tlush)
+  | "contract"          // Contrat de travail
+  | "officialLetter"    // Lettre officielle
+  | "taxNotice"         // Avis d'imposition
+  | "lease"             // Contrat de location
+  | "termination"       // Lettre de licenciement
+  | "medicalBill"       // Facture médicale / hospitalière
+  | "kupatHolimLetter"  // Courrier caisse de santé (Clalit/Maccabi/Meuhedet/Leumit)
+  | "prescription"      // Ordonnance (mirsham)
+  | "labResults"        // Résultats d'analyses de laboratoire
+  | "universal";        // Fallback : analyse générique pour tout autre document
 
 // Types spécialisés (= tous sauf "universal")
 export type SpecializedDocumentType = Exclude<DocumentType, "universal">;
+
+// ------ Health documents ------
+// Sous-ensemble de types qui déclenchent un disclaimer médical dans l'UI.
+export type HealthDocumentType =
+  | "medicalBill"
+  | "kupatHolimLetter"
+  | "prescription"
+  | "labResults";
+
+export const HEALTH_DOCUMENT_TYPES: HealthDocumentType[] = [
+  "medicalBill",
+  "kupatHolimLetter",
+  "prescription",
+  "labResults",
+];
+
+export function isHealthDocument(type: DocumentType): type is HealthDocumentType {
+  return (HEALTH_DOCUMENT_TYPES as DocumentType[]).includes(type);
+}
 
 // ------ Contract (Contrat de travail) ------
 export interface ContractAnalysis {
@@ -179,6 +202,120 @@ export interface PayslipAnalysis {
   }>;
 }
 
+// ------ Medical Bill (Facture médicale) ------
+// Couvre factures d'hôpital, cliniques privées, laboratoires, dentistes,
+// médecine privée. Attention : ne remplace pas un avis médical.
+export interface MedicalBillAnalysis {
+  provider: string | null;            // Nom établissement (hôpital, clinique, labo)
+  providerType:
+    | "hospital"
+    | "clinic"
+    | "laboratory"
+    | "doctor"
+    | "dentist"
+    | "pharmacy"
+    | "other"
+    | null;
+  patientName: string | null;
+  serviceDate: string | null;         // ISO date du soin
+  invoiceDate: string | null;         // ISO date d'émission
+  dueDate: string | null;             // ISO date limite de paiement
+  totalAmount: number | null;         // NIS — montant total facturé
+  amountDue: number | null;           // NIS — reste à payer par le patient
+  amountReimbursable: number | null;  // NIS — part remboursable par kupat holim / assurance
+  reimburserName: string | null;      // Nom kupat holim ou assurance
+  serviceType: string | null;         // Description courte du soin (FR)
+  items: Array<{
+    description: string;              // Poste de facturation (traduit FR)
+    amount: number;                   // NIS
+  }>;
+  alerts: Array<{
+    severity: "low" | "medium" | "high";
+    message: string;
+    recommendation: string;
+  }>;
+}
+
+// ------ Kupat Holim Letter (Courrier caisse de santé) ------
+export interface KupatHolimLetterAnalysis {
+  sender: string | null;              // Nom complet expéditeur
+  kupatHolim:
+    | "clalit"
+    | "maccabi"
+    | "meuhedet"
+    | "leumit"
+    | "other"
+    | null;
+  subject: string | null;
+  letterType:
+    | "authorization"      // Autorisation d'un traitement
+    | "refusal"            // Refus
+    | "summons"            // Convocation / RDV imposé
+    | "payment_reminder"   // Rappel de paiement
+    | "information"        // Information générale
+    | "other"
+    | null;
+  treatmentConcerned: string | null;  // Traitement / procédure concerné (FR)
+  deadline: string | null;            // ISO date limite de réponse / action
+  summary: string;                    // 2-3 phrases FR
+  fullTranslation: string;            // Traduction HE→FR des sections importantes
+  appealProcess: string | null;       // Procédure d'appel si refus
+  suggestedResponse: string | null;   // Template de réponse prête à envoyer
+  alerts: Array<{
+    severity: "low" | "medium" | "high";
+    message: string;
+    recommendation: string;
+  }>;
+}
+
+// ------ Prescription (Ordonnance / mirsham) ------
+export interface PrescriptionAnalysis {
+  prescriber: string | null;          // Nom du médecin
+  prescriberSpecialty: string | null; // Spécialité (FR)
+  issueDate: string | null;           // ISO date d'émission
+  patientName: string | null;
+  medications: Array<{
+    nameHe: string | null;            // Nom hébreu tel qu'écrit
+    nameFr: string | null;            // Nom français / DCI si possible
+    dosage: string | null;            // Ex: "500 mg"
+    frequency: string | null;         // Ex: "3 fois par jour"
+    duration: string | null;          // Ex: "7 jours"
+    quantity: string | null;          // Ex: "30 comprimés"
+    renewable: boolean | null;        // Renouvelable oui/non
+  }>;
+  interactionWarnings: string[];      // Alertes d'interaction détectées
+  alerts: Array<{
+    severity: "low" | "medium" | "high";
+    message: string;
+    recommendation: string;
+  }>;
+}
+
+// ------ Lab Results (Résultats d'analyses) ------
+export interface LabResultsAnalysis {
+  labName: string | null;             // Nom du laboratoire
+  testDate: string | null;            // ISO date du prélèvement
+  reportDate: string | null;          // ISO date du compte-rendu
+  patientName: string | null;
+  prescribingDoctor: string | null;   // Médecin prescripteur
+  results: Array<{
+    nameHe: string | null;            // Nom hébreu du paramètre
+    nameFr: string;                   // Traduction française (hémoglobine, glucose, etc.)
+    value: number | string | null;    // Valeur mesurée (nombre ou texte type "positif")
+    unit: string | null;              // Unité (g/dL, mg/dL, %, etc.)
+    referenceRange: string | null;    // Intervalle de référence (ex: "12-15", "< 100")
+    horsNorme: boolean;               // Flag visible : true si valeur hors normes
+    interpretation: "low" | "high" | "normal" | "unclear" | null;
+  }>;
+  hasAbnormalValues: boolean;         // True si au moins un horsNorme
+  summary: string;                    // "Tout est normal" OU liste des anormales à discuter
+  alerts: Array<{
+    severity: "low" | "medium" | "high";
+    message: string;
+    recommendation: string;
+  }>;
+}
+
 // ------ Universal (fallback) ------
 // Produit par le mode "universal" quand le document ne correspond à aucun
 // type spécialisé. Toujours renvoie :
@@ -232,6 +369,10 @@ export type DocumentAnalysis =
   | TaxNoticeAnalysis
   | LeaseAnalysis
   | TerminationAnalysis
+  | MedicalBillAnalysis
+  | KupatHolimLetterAnalysis
+  | PrescriptionAnalysis
+  | LabResultsAnalysis
   | UniversalAnalysis;
 
 // ------ Detection result (first pass) ------
@@ -302,6 +443,34 @@ export const DOCUMENT_TYPES: DocumentTypeCard[] = [
     label: "Lettre de licenciement",
     description: "Vérifiez votre indemnité de fin de contrat",
     color: "danger",
+  },
+  {
+    id: "medicalBill",
+    icon: "🏥",
+    label: "Facture médicale",
+    description: "Hôpital, clinique, laboratoire, dentiste",
+    color: "info",
+  },
+  {
+    id: "kupatHolimLetter",
+    icon: "⚕️",
+    label: "Courrier caisse santé",
+    description: "Clalit, Maccabi, Meuhedet, Leumit",
+    color: "info",
+  },
+  {
+    id: "prescription",
+    icon: "💊",
+    label: "Ordonnance",
+    description: "Mirsham : médicaments, posologie, durée",
+    color: "info",
+  },
+  {
+    id: "labResults",
+    icon: "🧪",
+    label: "Résultats d'analyses",
+    description: "Bilan sanguin, urines, autres examens",
+    color: "info",
   },
   {
     id: "universal",

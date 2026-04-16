@@ -20,6 +20,10 @@ const VALID_DOCUMENT_TYPES: DocumentType[] = [
   "taxNotice",
   "lease",
   "termination",
+  "medicalBill",
+  "kupatHolimLetter",
+  "prescription",
+  "labResults",
   "universal",
 ];
 
