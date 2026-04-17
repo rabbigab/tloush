@@ -18,7 +18,8 @@ const PROTECTED_ROUTES = [
   '/recherche',
   '/admin',
   '/aides',
-  '/parrainage',
+  // '/parrainage' retire de PROTECTED (page publique FB share).
+  // L'API /api/parrainage/submit verifie l'auth elle-meme.
   '/letters',
   '/freelance',
   '/mashkanta',
@@ -33,7 +34,7 @@ const PROTECTED_ROUTES = [
 // Note: '/annuaire' couvre aussi /annuaire/artisans, /annuaire/professionnels
 // via startsWith(). Ancienne route '/experts' redirigee 308 vers
 // /annuaire/professionnels par next.config.js (Chantier 1 P1 PR #2C).
-const PUBLIC_ROUTES = ['/', '/auth', '/pricing', '/droits', '/privacy', '/calculateurs', '/modeles', '/scanner', '/annuaire', '/contact', '/a-propos', '/faq', '/aide', '/api/stripe/webhook', '/api/annuaire/prestataires', '/api/annuaire/search', '/api/annuaire/inscription', '/api/annuaire/avis', '/api/track', '/api/experts/waitlist']
+const PUBLIC_ROUTES = ['/', '/auth', '/pricing', '/droits', '/privacy', '/calculateurs', '/modeles', '/scanner', '/annuaire', '/parrainage', '/contact', '/a-propos', '/faq', '/aide', '/api/stripe/webhook', '/api/annuaire/prestataires', '/api/annuaire/search', '/api/annuaire/inscription', '/api/annuaire/avis', '/api/track', '/api/experts/waitlist', '/api/parrainage']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
