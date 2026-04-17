@@ -185,7 +185,7 @@ export default function AssistantClient({
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3 px-1">Vos documents</p>
             <div className="space-y-1">
               <button
-                onClick={() => { setActiveDoc(null); setConversationId(null); router.push('/assistant') }}
+                onClick={() => { setActiveDoc(null); setConversationId(null); router.push('/assistant-ia') }}
                 className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-colors min-h-[40px] ${!activeDoc ? 'bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-300 font-medium' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
               >
                 Question générale

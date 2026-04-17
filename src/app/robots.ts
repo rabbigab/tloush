@@ -23,31 +23,27 @@ import { MetadataRoute } from 'next'
 const DISALLOW_ROUTES = [
   '/api/',
   '/auth/',
-  // Zone authentifiee (app)/ — alignee avec middleware PROTECTED_ROUTES
-  '/assistant',
+  // Zone authentifiee (app)/ — alignee avec middleware PROTECTED_ROUTES.
+  // Note: tous les slugs ont ete francises (P2). Anciens chemins
+  // /assistant, /compare, /folders, /search, /referral, /bank-import,
+  // /inbox sont rediriges 308 par next.config.js (pas indexables).
+  '/assistant-ia',
   '/profile',
   '/dashboard',
-  '/compare',
+  '/comparer-fiches',
   '/documents',
-  '/folders',
+  '/mes-documents',
   '/expenses',
-  '/search',
+  '/recherche',
   '/admin',
-  // Ancienne route /rights-check et /rights-detector fusionnees dans /aides
-  // (Chantier 1 P1). Les deux anciens chemins sont rediriges 308 permanent
-  // via next.config.js -- pas indexables de toute facon.
   '/aides',
-  '/referral',
-  // '/help' retire : page supprimee, /aide (public) est desormais la
-  // source unique (Chantier 1 P0) et doit etre indexable.
+  '/parrainage',
   '/letters',
-  // '/bituach-leumi' retire : redirige vers /aides (deja en disallow).
   '/freelance',
   '/mashkanta',
   '/assurances',
-  '/bank-import',
+  '/import-bancaire',
   '/miluim',
-  // '/tax-refund' couvert par '/aides' (deplace dans /aides/tax-refund).
   '/family',
   '/payslips',
   // Pages vides ou en construction — noindex additionnel via leur

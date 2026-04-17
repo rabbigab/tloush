@@ -395,7 +395,7 @@ export default function AdminDashboard() {
       <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/inbox" className="text-slate-400 hover:text-slate-600 transition-colors">
+            <Link href="/dashboard" className="text-slate-400 hover:text-slate-600 transition-colors">
               <ArrowLeft size={20} />
             </Link>
             <h1 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">

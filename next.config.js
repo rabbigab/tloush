@@ -82,6 +82,58 @@ const nextConfig = {
         destination: '/aides/tax-refund',
         permanent: true,
       },
+      // Standardisation des slugs anglais vers le francais (P2).
+      // /inbox supprime (etait deja un redirect vers /dashboard).
+      {
+        source: '/inbox',
+        destination: '/dashboard',
+        permanent: true,
+      },
+      {
+        source: '/folders',
+        destination: '/mes-documents',
+        permanent: true,
+      },
+      {
+        source: '/folders/:path*',
+        destination: '/mes-documents/:path*',
+        permanent: true,
+      },
+      {
+        source: '/search',
+        destination: '/recherche',
+        permanent: true,
+      },
+      {
+        source: '/referral',
+        destination: '/parrainage',
+        permanent: true,
+      },
+      {
+        source: '/assistant',
+        destination: '/assistant-ia',
+        permanent: true,
+      },
+      {
+        source: '/assistant/:path*',
+        destination: '/assistant-ia/:path*',
+        permanent: true,
+      },
+      {
+        source: '/bank-import',
+        destination: '/import-bancaire',
+        permanent: true,
+      },
+      {
+        source: '/compare',
+        destination: '/comparer-fiches',
+        permanent: true,
+      },
+      {
+        source: '/compare/:path*',
+        destination: '/comparer-fiches/:path*',
+        permanent: true,
+      },
     ];
   },
   async headers() {

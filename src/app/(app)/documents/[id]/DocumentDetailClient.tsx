@@ -195,7 +195,7 @@ export default function DocumentDetailClient({ document: doc, originalUrl }: { d
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
       {/* Back + header */}
       <div className="flex items-center gap-3">
-        <Link href="/inbox" className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+        <Link href="/dashboard" className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
           <ArrowLeft size={18} className="text-slate-600 dark:text-slate-400" />
         </Link>
         <div className="flex-1 min-w-0">

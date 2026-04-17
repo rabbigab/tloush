@@ -174,8 +174,8 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
           { label: 'Freelance', href: '/freelance', icon: Briefcase, color: 'bg-green-50 dark:bg-green-950/30 text-green-600' },
           { label: 'Mashkanta', href: '/mashkanta', icon: Landmark, color: 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600' },
           { label: 'Mes droits', href: '/aides?tab=travail', icon: Shield, color: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600' },
-          { label: 'Comparer tlushs', href: '/compare', icon: GitCompareArrows, color: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600' },
-          { label: 'Import bancaire', href: '/bank-import', icon: FileSpreadsheet, color: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600' },
+          { label: 'Comparer tlushs', href: '/comparer-fiches', icon: GitCompareArrows, color: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600' },
+          { label: 'Import bancaire', href: '/import-bancaire', icon: FileSpreadsheet, color: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600' },
         ].map(tool => (
           <Link
             key={tool.href}
@@ -320,7 +320,7 @@ export default function DashboardClient({ documents, expenses = [], payslipEvolu
             </div>
             <h2 className="font-bold text-slate-800 dark:text-slate-200">Documents recents</h2>
           </div>
-          <Link href="/folders" className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1">
+          <Link href="/mes-documents" className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1">
             Voir tout <ArrowRight size={12} />
           </Link>
         </div>
